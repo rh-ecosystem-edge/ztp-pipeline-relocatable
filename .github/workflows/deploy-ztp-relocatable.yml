@@ -30,7 +30,7 @@ jobs:
       - name: Verification
         run: |
           cd ${{env.SHARED_DIR}}
-          ./verify.sh
+          ./verify_preflight.sh
 
   deploy-RHACM:
     needs: preflight           
