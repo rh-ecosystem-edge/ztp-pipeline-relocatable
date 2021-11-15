@@ -29,8 +29,8 @@ ready=false
 while [ "$timeout" -lt "60" ] ; do
   oc get crd | grep -q multiclusterhubs.operator.open-cluster-management.io && ready=true && break;
   echo "Waiting for CRD multiclusterhubs.operator.open-cluster-management.io to be created"
-  sleep 5
-  timeout=$(($timeout + 5))
+  sleep 1
+  timeout=$(($timeout + 1))
 done
 if [ "$ready" == "false" ] ; then
  echo "timeout waiting for CRD multiclusterhubs.operator.open-cluster-management.io"
