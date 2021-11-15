@@ -1,0 +1,37 @@
+name: deploy-ztp-relocatable
+on:
+  workflow_dispatch:
+    inputs:
+      RUNNER:
+        description: 'Github Action Runner Tag'
+        required: true
+
+
+env:
+  SHARED_DIR: shared-utils
+
+
+jobs:
+  requirements:
+    runs-on: ${{github.event.inputs.RUNNER}}   #tag with your runner tag
+
+    steps:
+      - uses: actions/checkout@v2 # create a checkout (pull repository) in the runner working_dir (usually _work)
+      - run: git pull origin ${GITHUB_REF##*/}
+
+      - name: Requirements
+        run: |
+          cd ${{env.SHARED_DIR}}
+          ./requirements.sh
+
+
+  deploy-microshift:
+    needs: requirements           # create dependencies between jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    if: github.event.inputs.OC_DEPLOY_OCP == 'yes'
+    steps:
+      - name: Deploy ocp using kcli
+        run: |
+          cd ${{env.DEPLOY_OCP_DIR}}
+          ./build.sh
+          
