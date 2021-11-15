@@ -27,7 +27,7 @@ oc create -f 04-acm-cr.yml; sleep 60
 
 echo ">>>> Wait for ACM deployment finished"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-../"$SHARED_UTILS"/wait_for_pod.sh "multiclusterhub-operator" "" "open-cluster-management"
+../"$SHARED_DIR"/wait_for_pod.sh "multiclusterhub-operator" "" "open-cluster-management"
 
 #
 #echo ">>>> Wait for ACM and AI deployed successfully"
