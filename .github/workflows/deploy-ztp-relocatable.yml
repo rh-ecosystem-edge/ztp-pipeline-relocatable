@@ -2,12 +2,16 @@ name: deploy-ztp-relocatable
 on:
   workflow_dispatch:
     inputs:
+      OC_KUBECONFIG_PATH:
+        description: 'Absolute path to kubeconfig file?'
+        required: true
       RUNNER:
         description: 'Github Action Runner Tag'
         required: true
 
 
 env:
+  OC_KUBECONFIG_PATH: ${{github.event.inputs.OC_KUBECONFIG_PATH}}
   SHARED_DIR: shared-utils
 
 
@@ -24,14 +28,3 @@ jobs:
           cd ${{env.SHARED_DIR}}
           ./requirements.sh
 
-
-  deploy-microshift:
-    needs: requirements           # create dependencies between jobs
-    runs-on: ${{github.event.inputs.RUNNER}}
-    if: github.event.inputs.OC_DEPLOY_OCP == 'yes'
-    steps:
-      - name: Deploy ocp using kcli
-        run: |
-          cd ${{env.DEPLOY_OCP_DIR}}
-          ./build.sh
-          
