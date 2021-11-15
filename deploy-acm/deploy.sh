@@ -26,7 +26,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 timeout=0
 ready=false
 while [ "$timeout" -lt "60" ] ; do
-  oc get crd | grep -q multiclusterhubs.operator.open-cluster-management.io && ready=true && break;
+  oc get crd | grep -q multiclusterhubs.operator.open-cluster-management.io | && ready=true && break;
   echo "Waiting for CRD multiclusterhubs.operator.open-cluster-management.io to be created"
   sleep 1
   timeout=$(($timeout + 1))
