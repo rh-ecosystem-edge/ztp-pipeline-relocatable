@@ -23,7 +23,7 @@ oc create -f 03-subscription.yml; sleep 2
 
 echo ">>>> Wait for ACM to be ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-while [[ $(oc get pod -n open-cluster-management) != *"1/1"* ]]; do
+while [[ $(oc get pod -n open-cluster-management | awk '{print $2}' | grep 0/* ) ]]; do
     echo "Waiting for ACM to be ready..."
     sleep 5
 done
@@ -34,6 +34,10 @@ oc create -f 04-acm-cr.yml; sleep 2
 
 echo ">>>> Wait for ACM and AI deployed successfully"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
+    echo "Waiting for Assisted installer to be ready..."
+    sleep 5
+done
 ../$SHARED_DIR/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
 
 
