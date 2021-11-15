@@ -40,9 +40,10 @@ if [ ! -f "$OC_KUBECONFIG_PATH" ]; then
 fi
 export KUBECONFIG="$OC_KUBECONFIG_PATH"
 
-echo ">>>> Verify ocp server version"
+echo ">>>> Verify ocp server version $OC_OCP_VERSION"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-if [[ $(oc version |grep -i server | grep $OC_OCP_VERSION | wc -l) -eq 1 ]]; then
+
+if [[ $(oc version |grep -i server | grep $OC_OCP_VERSION | wc -l) -ne 1 ]]; then
     echo "Error: OCP version not supported"
     exit 1
 fi
