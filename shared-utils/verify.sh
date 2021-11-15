@@ -5,9 +5,10 @@ set -o pipefail
 set -o nounset
 set -m
 
-###### Variables
-################
-# OC_KUBECONFIG_PATH=/root/admin.kubeconfig   # change or get from gh-env vars 
+# variables
+# #########
+# uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
+# export KUBECONFIG=/root/admin.kubeconfig   
 
 echo ">>>> Download jq, oc, kubectl and set bash completion"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
