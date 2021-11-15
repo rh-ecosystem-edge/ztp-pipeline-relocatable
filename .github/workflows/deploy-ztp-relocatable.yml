@@ -16,15 +16,15 @@ env:
 
 
 jobs:
-  requirements:
+  preflight:
     runs-on: ${{github.event.inputs.RUNNER}}   #tag with your runner tag
 
     steps:
       - uses: actions/checkout@v2 # create a checkout (pull repository) in the runner working_dir (usually _work)
       - run: git pull origin ${GITHUB_REF##*/}
 
-      - name: Requirements
+      - name: Verification
         run: |
           cd ${{env.SHARED_DIR}}
-          ./requirements.sh
+          ./verify.sh
 
