@@ -21,7 +21,6 @@ oc create -f 01-namespace.yml; sleep 2
 oc create -f 02-operatorgroup.yml; sleep 2
 oc create -f 03-subscription.yml; sleep 2
 
-
 echo ">>>> Wait for ACM to be ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 timeout=0
@@ -36,7 +35,15 @@ if [ "$ready" == "false" ] ; then
  echo "timeout waiting for CRD multiclusterhubs.operator.open-cluster-management.io"
  exit 1
 fi
-echo "ACM version $OC_ACM_VERSION deployed!"
+
+echo ">>>> Deploy ACM cr manifest"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
+oc create -f 04-acm-cr.yml; sleep 2
+
+echo ">>>> Wait for ACM and AI deployed successfully"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+../$SHARED_DIR/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
+
 
 echo ">>>>EOF"
 echo ">>>>>>>"
