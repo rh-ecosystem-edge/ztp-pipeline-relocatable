@@ -23,18 +23,10 @@ oc create -f 03-subscription.yml; sleep 2
 
 echo ">>>> Wait for ACM to be ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-timeout=0
-ready=false
-while [ "$timeout" -lt "60" ] ; do
-  oc get crd | grep -q multiclusterhubs.operator.open-cluster-management.io | && ready=true && break;
-  echo "Waiting for CRD multiclusterhubs.operator.open-cluster-management.io to be created"
-  sleep 1
-  timeout=$(($timeout + 1))
+while [[ $(oc get pod -n open-cluster-management) != *"1/1"* ]]; do
+    echo "Waiting for ACM to be ready..."
+    sleep 5
 done
-if [ "$ready" == "false" ] ; then
- echo "timeout waiting for CRD multiclusterhubs.operator.open-cluster-management.io"
- exit 1
-fi
 
 echo ">>>> Deploy ACM cr manifest"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
