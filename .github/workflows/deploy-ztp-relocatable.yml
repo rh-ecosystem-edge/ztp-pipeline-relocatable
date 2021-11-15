@@ -12,8 +12,8 @@ on:
 
 env:
   OC_KUBECONFIG_PATH: ${{github.event.inputs.OC_KUBECONFIG_PATH}}
-  OC_OCP_VERSION: 4.9
-  OC_ACM_VERSION: 2.4
+  OC_OCP_VERSION: '4.9'
+  OC_ACM_VERSION: '2.4'
   DEPLOY_ACM_DIR: deploy-acm
   DEPLOY_REGISTRY_DIR: deploy-disconnected-registry
   SHARED_DIR: shared-utils
