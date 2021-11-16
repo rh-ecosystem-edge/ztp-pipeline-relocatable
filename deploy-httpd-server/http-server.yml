@@ -51,7 +51,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: httpd-pv-claim
 spec:
-  storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
