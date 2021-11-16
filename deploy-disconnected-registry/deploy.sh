@@ -23,8 +23,17 @@ oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigj
 OPENSHIFT_RELEASE_IMAGE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.image'})
 OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})-x86_64
 LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -1)
+oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d /etc/pki/ca-trust/source/anchors/internal-registry.crt
+update-ca-trust extract
 
-oc adm release mirror -a ./pull-secret.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4
+oc login -u kubeadmin -p "$(oc get secret kubeadmin -n kube-system -ojsonpath={'.data'.kubeadmin})"
+TOKEN=$(oc whoami -t)
+oc logout
+KEY=$( echo -n kubeadmin:$TOKEN | base64)
+export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
+jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"jhendrix@karmalabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
+
+oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4
 
 echo ">>>>EOF"
 echo ">>>>>>>"
