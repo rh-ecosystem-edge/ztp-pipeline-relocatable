@@ -45,7 +45,18 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 8080
-
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: httpd-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
