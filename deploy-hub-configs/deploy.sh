@@ -21,15 +21,19 @@ sed -i "s/HTTPD_SERVICE/$httpservice/g" 04-agent-service-config.yml
 pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
 sed -i "s/PULL_SECRET/$pull/g" 05-pullsecrethub.yml
 
-#
-#echo ">>>> Wait for ACM and AI deployed successfully"
-#echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-#while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
-#    echo "Waiting for Assisted installer to be ready..."
-#    sleep 5
-#done
-#../$SHARED_DIR/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
-#
+
+cert del registry: oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d | sudo tee /etc/pki/ca-trust/source/anchors/${HOST}.crt 
+ 
+
+
+echo ">>>> Wait for ACM and AI deployed successfully"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
+    echo "Waiting for Assisted installer to be ready..."
+    sleep 5
+done
+../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
+
 
 echo ">>>>EOF"
 echo ">>>>>>>"
