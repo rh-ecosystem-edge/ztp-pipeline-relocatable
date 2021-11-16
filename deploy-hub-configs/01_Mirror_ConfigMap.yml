@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: lab-index-mirror
+  name: mirror-ref
   namespace: open-cluster-management
   labels:
     app: assisted-service

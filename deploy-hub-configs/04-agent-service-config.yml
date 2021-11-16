@@ -20,7 +20,7 @@ spec:
       requests:
         storage: 40Gi
   mirrorRegistryRef:
-    name: "lab-index-mirror"
+    name: "mirror-ref"
   osImages:
     - openshiftVersion: "4.9"
       version: "CHANGEME"
