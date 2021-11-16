@@ -24,7 +24,7 @@ spec:
             limits:
               cpu: "200m"
               memory: "200Mi"
-          image: nginx
+          image: quay.io/openshift-scale/nginx:latest
           ports:
           - containerPort: 8080
           volumeMounts:
