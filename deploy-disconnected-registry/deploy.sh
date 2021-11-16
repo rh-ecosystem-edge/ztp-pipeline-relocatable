@@ -9,7 +9,6 @@ set -m
 # #########
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig   
-export KUBECONFIG="$OC_KUBECONFIG_PATH"
 
 
 

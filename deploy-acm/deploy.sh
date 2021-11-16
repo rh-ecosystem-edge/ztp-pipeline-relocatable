@@ -8,8 +8,7 @@ set -m
 # variables
 # #########
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
-# export KUBECONFIG=/root/admin.kubeconfig   
-export KUBECONFIG="$OC_KUBECONFIG_PATH"
+# export KUBECONFIG=/root/admin.kubeconfig 
 
 echo ">>>> Modify files to replace with pipeline info gathered"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

@@ -34,11 +34,10 @@ oc completion bash >>/etc/bash_completion.d/oc_completion
 
 echo ">>>> Loading the Kubeconfig file"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-if [ ! -f "$OC_KUBECONFIG_PATH" ]; then
+if [ ! -f "$KUBECONFIG" ]; then
     echo "Error: Kubeconfig file not found in the path passed in github actions"
     exit 1 
 fi
-export KUBECONFIG="$OC_KUBECONFIG_PATH"
 
 echo ">>>> Verify ocp server version $OC_OCP_VERSION"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
