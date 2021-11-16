@@ -13,6 +13,7 @@ on:
 env:
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
   OC_OCP_VERSION: '4.9'
+  OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary 
   OC_ACM_VERSION: '2.4'
   DEPLOY_ACM_DIR: deploy-acm
   DEPLOY_REGISTRY_DIR: deploy-disconnected-registry

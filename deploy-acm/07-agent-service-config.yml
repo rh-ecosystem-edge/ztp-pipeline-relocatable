@@ -23,6 +23,6 @@ spec:
     name: "lab-index-mirror"
   osImages:
     - openshiftVersion: "4.9"
-      version: ""
+      version: "CHANGEME"
       url: "http://INSTALLER_IP/rhcos-live.x86_64.iso"
       rootFSUrl: "http://INSTALLER_IP/rhcos-live-rootfs.x86_64.img"

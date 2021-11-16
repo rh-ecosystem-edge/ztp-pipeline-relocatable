@@ -47,6 +47,7 @@ echo ">>>> Deploy AI over ACM"
 echo ">>>>>>>>>>>>>>>>>>>>>>>"
 
 sed -i "s%TAG_OCP_IMAGE_RELEASE%$OC_OCP_VERSION%g" 05-cluster_imageset.yml
+sec -i "s/CHANGEME/$OC_RHCOS_RELEASE/g" 07-agent-service-config.yml
 
 
 #
