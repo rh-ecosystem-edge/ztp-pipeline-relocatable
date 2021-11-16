@@ -11,7 +11,7 @@ set -m
 # export KUBECONFIG=/root/admin.kubeconfig   
 export KUBECONFIG="$OC_KUBECONFIG_PATH"
 
-domain=$(grep server kubeconfig | awk '{print $2}' | cut -d '.' -f 2- | cut -d ':' -f 1)
+domain=$(grep server "$KUBECONFIG" | awk '{print $2}' | cut -d '.' -f 2- | cut -d ':' -f 1)
 sed -i "s/CHANGEDOMAIN/$domain/g" http-server.yml
 
 oc create -f http-server.yml; sleep 2
