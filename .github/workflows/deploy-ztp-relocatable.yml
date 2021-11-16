@@ -14,8 +14,10 @@ env:
   OC_KUBECONFIG_PATH: ${{github.event.inputs.OC_KUBECONFIG_PATH}}
   OC_OCP_VERSION: '4.9'
   OC_ACM_VERSION: '2.4'
+  OC_
   DEPLOY_ACM_DIR: deploy-acm
   DEPLOY_REGISTRY_DIR: deploy-disconnected-registry
+  DEPLOY_HTTPD_SERVER_DIR: deploy-httpd-server
   SHARED_DIR: shared-utils
 
 
@@ -32,20 +34,30 @@ jobs:
           cd ${{env.SHARED_DIR}}
           ./verify_preflight.sh
 
-  deploy-RHACM:  
-    needs: preflight           # run in parallel with the other jobs
-    runs-on: ${{github.event.inputs.RUNNER}}
-    steps:
-      - name: Deploy RHACM with AI  
-        run: |
-          cd ${{env.DEPLOY_ACM_DIR}}
-          ./deploy.sh
-
-  deploy-disconnected-registry:
+  deploy-httpd-server:
     needs: preflight          # run in parallel with the other jobs       
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
-      - name: Deploy Internal Disconnected Registry 
+      - name: Deploy Internal HTTPD Server
         run: |
-          cd ${{env.DEPLOY_REGISTRY_DIR}}
+          cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
           ./deploy.sh
+
+  #deploy-disconnected-registry:
+  #  needs: preflight          # run in parallel with the other jobs       
+  #  runs-on: ${{github.event.inputs.RUNNER}}
+  #  steps:
+  #    - name: Deploy Internal Disconnected Registry 
+  #      run: |
+  #        cd ${{env.DEPLOY_REGISTRY_DIR}}
+  #        ./deploy.sh
+#
+  #deploy-RHACM:  
+  #  needs: [deploy-disconnected-registry, deploy-httpd-server]          # run in parallel with the other jobs
+  #  runs-on: ${{github.event.inputs.RUNNER}}
+  #  steps:
+  #    - name: Deploy RHACM with AI  
+  #      run: |
+  #        cd ${{env.DEPLOY_ACM_DIR}}
+  #        ./deploy.sh
+#

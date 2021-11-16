@@ -27,6 +27,7 @@ oc create -f 04-acm-cr.yml; sleep 60
 
 
 echo ">>>> Wait until acm ready"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 timeout=0
 ready=false
 sleep 240
@@ -42,6 +43,13 @@ if [ "$ready" == "false" ] ; then
  echo "timeout waiting for ACM pods "
  exit 1
 fi
+
+echo ">>>> Deploy AI over ACM"
+echo ">>>>>>>>>>>>>>>>>>>>>>>"
+
+sed -i "s%TAG_OCP_IMAGE_RELEASE%$OC_OCP_VERSION%g" 05-cluster_imageset.yml
+
+
 #
 #echo ">>>> Wait for ACM and AI deployed successfully"
 #echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

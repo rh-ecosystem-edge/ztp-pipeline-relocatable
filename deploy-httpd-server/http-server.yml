@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      volumes:
+        - name: httpd-pv-storage
+          persistentVolumeClaim:
+            claimName: httpd-pv-claim
+      containers:
+        - name: nginx
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "200Mi"
+          image: nginx
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+          - mountPath: "/usr/share/nginx/html"
+            name: httpd-pv-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-server-service
+spec:
+  type: ClusterIP
+  # Uncomment the below line to create a Headless Service
+  # clusterIP: None
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: nginx
+  name: httpd-server-route
+  namespace: default
+spec:
+  host: httpd-server.CHANGEDOMAIN
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: httpd-server-service
+  wildcardPolicy: None
