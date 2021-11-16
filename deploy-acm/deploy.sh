@@ -25,10 +25,23 @@ echo ">>>> Deploy ACM cr manifest"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
 oc create -f 04-acm-cr.yml; sleep 60
 
-echo ">>>> Wait for ACM deployment finished"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-../"$SHARED_DIR"/wait_for_pod.sh "multiclusterhub-operator" "" "open-cluster-management"
 
+echo ">>>> Wait until acm ready"
+timeout=0
+ready=false
+sleep 240
+while [ "$timeout" -lt "60" ] ; do
+  if [[ $(oc get pod -n open-cluster-management | grep -i running | wc -l) -eq  $(oc get pod -n open-cluster-management | grep -v NAME | wc -l) ]]; then
+    ready=true
+    break
+  fi
+  sleep 5
+  timeout=$(($timeout + 5))
+done
+if [ "$ready" == "false" ] ; then
+ echo "timeout waiting for ACM pods "
+ exit 1
+fi
 #
 #echo ">>>> Wait for ACM and AI deployed successfully"
 #echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
