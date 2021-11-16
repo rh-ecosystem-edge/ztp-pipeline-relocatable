@@ -47,8 +47,11 @@ echo ">>>> Deploy AI over ACM"
 echo ">>>>>>>>>>>>>>>>>>>>>>>"
 
 sed -i "s%TAG_OCP_IMAGE_RELEASE%$OC_OCP_VERSION%g" 05-cluster_imageset.yml
-sec -i "s/CHANGEME/$OC_RHCOS_RELEASE/g" 07-agent-service-config.yml
-
+sed -i "s/CHANGEME/$OC_RHCOS_RELEASE/g" 07-agent-service-config.yml
+httpservice=$(oc get routes -n default|grep httpd-server-route|awk '{print $2}')
+sed -i "s/HTTPD_SERVICE/$httpservice/g" 07-agent-service-config.yml
+pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
+sed -i "s/PULL_SECRET/$pull/g" 08-pullsecrethub.yml
 
 #
 #echo ">>>> Wait for ACM and AI deployed successfully"

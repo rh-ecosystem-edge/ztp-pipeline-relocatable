@@ -24,5 +24,6 @@ spec:
   osImages:
     - openshiftVersion: "4.9"
       version: "CHANGEME"
-      url: "http://INSTALLER_IP/rhcos-live.x86_64.iso"
-      rootFSUrl: "http://INSTALLER_IP/rhcos-live-rootfs.x86_64.img"
+      url: "http://HTTPD_SERVICE/rhcos-live.x86_64.iso"
+      rootFSUrl: "http://HTTPD_SERVICE/rhcos-live-rootfs.x86_64.img"
+      cpuArchitecture: x86_64
