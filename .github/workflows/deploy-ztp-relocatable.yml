@@ -5,6 +5,9 @@ on:
       KUBECONFIG:
         description: 'Absolute path to kubeconfig file?'
         required: true
+      OC_KUBEADMIN_PASS_SECRET:
+        description: 'Kubeadmin password:'
+        required: true
       RUNNER:
         description: 'Github Action Runner Tag'
         required: true
@@ -12,7 +15,7 @@ on:
 
 env:
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
-  OC_KUBEADMIN_PASS_SECRET: ${{secrets.OC_KUBEADMIN_PASS_SECRET}}
+  OC_KUBEADMIN_PASS_SECRET: ${{github.event.inputs.OC_KUBEADMIN_PASS_SECRET}}
   OC_OCP_VERSION: '4.9'
   OC_OCP_TAG: '4.9.0-x86_64'
   OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary 
