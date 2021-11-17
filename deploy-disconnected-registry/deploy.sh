@@ -26,7 +26,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 OPENSHIFT_RELEASE_IMAGE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.image'})
 OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})-x86_64
 LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -1)
-oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d /etc/pki/ca-trust/source/anchors/internal-registry.crt
+oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d > /etc/pki/ca-trust/source/anchors/internal-registry.crt
 update-ca-trust extract
 
 oc login -u kubeadmin -p "$OC_KUBEADMIN_PASS_SECRET"
