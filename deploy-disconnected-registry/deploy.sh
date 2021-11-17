@@ -36,6 +36,7 @@ oc logout ; oc config use-context admin
 KEY=$( echo -n kubeadmin:"$TOKEN" | base64 -w0)
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
 jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"info@alklabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
+cat ./pull-secret-internal-registry.json
 
 oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
 
