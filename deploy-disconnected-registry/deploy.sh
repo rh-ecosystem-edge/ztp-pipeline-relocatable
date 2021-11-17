@@ -31,9 +31,9 @@ TOKEN=$(oc whoami -t)
 oc logout
 KEY=$( echo -n kubeadmin:$TOKEN | base64)
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
-jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"jhendrix@karmalabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
+jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"info@alklabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
 
-oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4
+oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
 
 echo ">>>>EOF"
 echo ">>>>>>>"
