@@ -29,8 +29,8 @@ LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -
 oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d > /etc/pki/ca-trust/source/anchors/internal-registry.crt
 update-ca-trust extract
 
-echo $OC_KUBEADMIN_PASS_SECRET
-oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
+OC_KUBEADMIN_PASS=eZAES-cDIj4-wJ3mA-KmckP
+oc login -u kubeadmin -p $OC_KUBEADMIN_PASS
 TOKEN=$(oc whoami -t)
 oc logout ; oc config use-context admin
 KEY=$( echo -n kubeadmin:"$TOKEN" | base64 -w0)
