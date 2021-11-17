@@ -16,7 +16,9 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 domain=$(grep server "$KUBECONFIG" | awk '{print $2}' | cut -d '.' -f 2- | cut -d ':' -f 1)
 sed -i "s/CHANGEDOMAIN/apps.$domain/g" http-server.yml
 
-oc create -f http-server.yml; sleep 30
+oc create -f http-server.yml
+../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n default nginx
+
 
 
 echo ">>>> Pre-load the images rhcos to be available"
