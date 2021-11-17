@@ -16,7 +16,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 domain=$(grep server "$KUBECONFIG" | awk '{print $2}' | cut -d '.' -f 2- | cut -d ':' -f 1)
 sed -i "s/CHANGEDOMAIN/apps.$domain/g" http-server.yml
 
-oc create -f http-server.yml; sleep 10
+oc create -f http-server.yml; sleep 30
 
 
 echo ">>>> Pre-load the images rhcos to be available"
