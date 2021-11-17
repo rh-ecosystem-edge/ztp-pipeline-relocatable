@@ -25,7 +25,7 @@ env:
 
 
 jobs:
-  preflight:
+  pre-flight:
     runs-on: ${{github.event.inputs.RUNNER}}   #tag with your runner tag
 
     steps:
@@ -38,7 +38,7 @@ jobs:
           ./verify_preflight.sh
 
   deploy-httpd-server:
-    needs: preflight          # run in parallel with the other jobs       
+    needs: pre-flight          # run in parallel with the other jobs       
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Internal HTTPD Server
@@ -46,7 +46,7 @@ jobs:
           cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
           ./deploy.sh
   deploy-acm:  
-    needs: preflight          # run in parallel with the other jobs
+    needs: pre-flight          # run in parallel with the other jobs
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy RHACM with AI  
@@ -55,7 +55,7 @@ jobs:
           ./deploy.sh
 
   deploy-disconnected-registry:
-    needs: preflight          # run in parallel with the other jobs       
+    needs: pre-flight          # run in parallel with the other jobs       
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Internal Disconnected Registry 
@@ -64,7 +64,7 @@ jobs:
           ./deploy.sh
 
   deploy-hub-config:  
-    needs: deploy-acm          # run in parallel with the other jobs
+    needs: [deploy-acm, deploy-disconnected-registry, deploy-httpd-server]       # run in parallel with the other jobs
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy hub configuration
