@@ -28,14 +28,14 @@ LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -
 oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d > /etc/pki/ca-trust/source/anchors/internal-registry.crt
 update-ca-trust extract
 
-OC_KUBEADMIN_PASS=eZAES-cDIj4-wJ3mA-KmckP
-oc login -u kubeadmin -p $OC_KUBEADMIN_PASS
+
+oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
 TOKEN=$(oc whoami -t)
 oc logout ; oc config use-context admin
 KEY=$( echo -n kubeadmin:"$TOKEN" | base64 -w0)
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
 jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"info@alklabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
-cat ./pull-secret-internal-registry.json
+
 
 oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
 
