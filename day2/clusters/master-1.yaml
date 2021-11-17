@@ -1,0 +1,87 @@
+---
+apiVersion: agent-install.openshift.io/v1beta1
+kind: NMStateConfig
+metadata:
+ name: kubeframe-master-1
+ namespace: compact-cluster-1
+ labels:
+   nmstate_config_cluster_name: compact-cluster-1
+spec:
+ config:
+   interfaces:
+     - name: eno4
+       type: ethernet
+       state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 10000
+       ipv4:
+         enabled: true
+         address:
+           - ip: 192.168.20.11
+             prefix-length: 24
+       mtu: 1500
+       mac-address: '00:fd:45:ff:28:df'
+     - name: eno1
+       type: ethernet
+       state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 1000
+       ipv4:
+         enabled: true
+         address:
+           - ip: 192.168.7.11
+             prefix-length: 24
+       mtu: 1500
+       mac-address: '00:fd:45:ff:28:dc'
+   dns-resolver:
+     config:
+       server:
+         - 192.168.1.239
+   routes:
+     config:
+       - destination: 192.168.7.0/24
+         next-hop-address: 192.168.7.1
+         next-hop-interface: eno1
+       - destination: 0.0.0.0/0
+         next-hop-address: 192.168.20.1
+         next-hop-interface: eno4
+ interfaces:
+   - name: "eno4"
+     macAddress: '00:fd:45:ff:28:df'
+   - name: "eno1"
+     macAddress: '00:fd:45:ff:28:dc'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+ name: 'kubeframe-master-1-bmc-secret'
+ namespace: 'compact-cluster-1'
+type: Opaque
+data:
+ username: 'QWRtaW5pc3RyYXRvcg=='
+ password: 'OFZlcnlCcmlnaHRCZWFjb24k' 
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+ name: 'kubeframe-master-1'
+ namespace: 'compact-cluster-1'
+ labels:
+   infraenvs.agent-install.openshift.io: 'assisted-infra-env'
+ annotations:
+   inspect.metal3.io: disabled
+   bmac.agent-install.openshift.io/hostname: 'kubeframe-master-1'
+spec:
+ online: false
+ bootMACAddress: '00:fd:45:ff:28:dc'
+ rootDeviceHints:
+   deviceName: /dev/sda
+ bmc:
+   disableCertificateVerification: true
+   address: 'redfish-virtualmedia+https://192.168.10.13/redfish/v1/Systems/1'
+   credentialsName: 'kubeframe-master-1-bmc-secret'
+     
