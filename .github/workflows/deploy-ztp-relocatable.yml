@@ -18,7 +18,7 @@ env:
   DEPLOY_ACM_DIR: deploy-acm
   DEPLOY_REGISTRY_DIR: deploy-disconnected-registry
   DEPLOY_HTTPD_SERVER_DIR: deploy-httpd-server
-  DEPLOY-HUB-CONFIGS: deploy-hub-configs
+  DEPLOY_HUB_CONFIGS_DIR: deploy-hub-configs
   SHARED_DIR: shared-utils
 
 
@@ -67,5 +67,5 @@ jobs:
     steps:
       - name: Deploy hub configuration
         run: |
-          cd ${{env.DEPLOY_HUB_CONFIGS}}
+          cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
           ./deploy.sh
