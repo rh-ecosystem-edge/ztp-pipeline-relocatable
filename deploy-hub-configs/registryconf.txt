@@ -5,10 +5,10 @@
       location = "quay.io/openshift-release-dev/ocp-release"
       mirror-by-digest-only = true
       [[registry.mirror]]
-        location = "CHANGEDOMAIN/ocp-release-dev/ocp4"
+        location = "CHANGEDOMAIN/ocp-release-dev/ocp4/openshift4"
     [[registry]]
       prefix = ""
       location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
       mirror-by-digest-only = true
       [[registry.mirror]]
-        location = "CHANGEDOMAIN/ocp-release-dev/ocp4"
+        location = "CHANGEDOMAIN/ocp-release-dev/ocp4/openshift4"

@@ -43,29 +43,29 @@ jobs:
         run: |
           cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
           ./deploy.sh
-  #deploy-acm:  
-  #  needs: preflight          # run in parallel with the other jobs
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy RHACM with AI  
-  #      run: |
-  #        cd ${{env.DEPLOY_ACM_DIR}}
+  deploy-acm:  
+    needs: preflight          # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy RHACM with AI  
+        run: |
+          cd ${{env.DEPLOY_ACM_DIR}}
   #        ./deploy.sh
 
-  #deploy-disconnected-registry:
-  #  needs: preflight          # run in parallel with the other jobs       
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy Internal Disconnected Registry 
-  #      run: |
-  #        cd ${{env.DEPLOY_REGISTRY_DIR}}
+  deploy-disconnected-registry:
+    needs: preflight          # run in parallel with the other jobs       
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy Internal Disconnected Registry 
+        run: |
+          cd ${{env.DEPLOY_REGISTRY_DIR}}
   #        ./deploy.sh
 
-  #deploy-hub-config:  
-  #  needs: [deploy-acm, deploy-disconnected-registry, deploy-httpd-server]          # run in parallel with the other jobs
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy hub configuration
-  #      run: |
-  #        cd ${{env.DEPLOY_HUB_CONFIGS}}
-  #        ./deploy.sh
+  deploy-hub-config:  
+    needs: deploy-acm          # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy hub configuration
+        run: |
+          cd ${{env.DEPLOY_HUB_CONFIGS}}
+          ./deploy.sh
