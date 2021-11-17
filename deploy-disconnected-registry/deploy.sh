@@ -7,8 +7,7 @@ set -m
 
 # variables
 # #########
-# uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
-export KUBECONFIG=$KUBECONFIG
+# uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)echo 
 
 echo ">>>> Enable internal registry"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -32,7 +31,7 @@ update-ca-trust extract
 OC_KUBEADMIN_PASS=eZAES-cDIj4-wJ3mA-KmckP
 oc login -u kubeadmin -p $OC_KUBEADMIN_PASS
 TOKEN=$(oc whoami -t)
-oc logout ; oc config use-context admin
+oc config use-context admin
 KEY=$( echo -n kubeadmin:"$TOKEN" | base64 -w0)
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
 jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"info@alklabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
@@ -40,6 +39,7 @@ cat ./pull-secret-internal-registry.json
 
 oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
 
+oc logout ; 
 echo ">>>>EOF"
 echo ">>>>>>>"
 
