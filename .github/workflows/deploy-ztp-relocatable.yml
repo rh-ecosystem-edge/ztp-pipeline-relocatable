@@ -12,6 +12,7 @@ on:
 
 env:
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
+  OC_KUBEADMIN_PASS_SECRET: ${{secrets.OC_KUBEADMIN_PASS_SECRET}}
   OC_OCP_VERSION: '4.9'
   OC_OCP_TAG: '4.9.0-x86_64'
   OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary 
@@ -51,7 +52,7 @@ jobs:
       - name: Deploy RHACM with AI  
         run: |
           cd ${{env.DEPLOY_ACM_DIR}}
-  #        ./deploy.sh
+          ./deploy.sh
 
   deploy-disconnected-registry:
     needs: preflight          # run in parallel with the other jobs       
@@ -60,7 +61,7 @@ jobs:
       - name: Deploy Internal Disconnected Registry 
         run: |
           cd ${{env.DEPLOY_REGISTRY_DIR}}
-  #        ./deploy.sh
+          ./deploy.sh
 
   deploy-hub-config:  
     needs: deploy-acm          # run in parallel with the other jobs
