@@ -15,13 +15,14 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
 oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"pvc":{"claim":null}}}}'
+oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge --patch '{"spec":{"defaultRoute":true}}' 
 
 echo ">>>> Get the pull secret from hub to file ./pull-secret.json"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d > ./pull-secret.json
 
-echo ">>>> Get the reigstry cert and update pull secret"
+echo ">>>> Get the registry cert and update pull secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 OPENSHIFT_RELEASE_IMAGE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.image'})
 OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})-x86_64
@@ -31,8 +32,8 @@ update-ca-trust extract
 
 oc login -u kubeadmin -p "$OC_KUBEADMIN_PASS_SECRET"
 TOKEN=$(oc whoami -t)
-oc logout
-KEY=$( echo -n kubeadmin:$TOKEN | base64)
+oc logout ; oc config use-context admin
+KEY=$( echo -n kubeadmin:"$TOKEN" | base64 -w0)
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
 jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"info@alklabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
 
