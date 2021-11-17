@@ -14,7 +14,7 @@ set -m
 echo ">>>> Preparing and replace info in the manifests"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-sed -i "s%TAG_OCP_IMAGE_RELEASE%$OC_OCP_VERSION%g" 02-cluster_imageset.yml
+
 sed -i "s/CHANGEME/$OC_RHCOS_RELEASE/g" 04-agent-service-config.yml
 HTTPSERVICE=$(oc get routes -n default|grep httpd-server-route|awk '{print $2}')
 sed -i "s/HTTPD_SERVICE/$HTTPSERVICE/g" 04-agent-service-config.yml
@@ -24,6 +24,9 @@ LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -
 sed -i "s/CHANGEDOMAIN/$LOCAL_REG/g" registryconf.txt
 CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
 echo -e "  ca-bundle.crt: |\n$(echo -n "$CABUNDLE"  | sed "s/^/    /")" >> 01_Mirror_ConfigMap.yml
+cat registryconf.txt >> 01_Mirror_ConfigMap.yml
+NEWTAG=$LOCAL_REG/ocp4/openshift4:$OC_OCP_TAG
+sed -i "s%TAG_OCP_IMAGE_RELEASE%$NEWTAG%g" 02-cluster_imageset.yml
 
 echo ">>>> Deploy hub configs"
 echo ">>>>>>>>>>>>>>>>>>>>>>>"
