@@ -26,8 +26,10 @@ RHCOS_ISO="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-
 RHCOS_ROOTFS="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/latest/rhcos-live-rootfs.x86_64.img"
 BASE_ISO=$(basename $RHCOS_ISO)
 BASE_ROOTFS=$(basename $RHCOS_ROOTFS)
-curl -Lk $RHCOS_ISO > /usr/share/nginx/html/"$BASE_ISO"
-curl -Lk $RHCOS_ROOTFS > /usr/share/nginx/html/"$BASE_ROOTFS"
+podname=$(oc get pod -n default |grep nginx| awk '{print $1}')
+
+oc exec $podname -- curl -Lk $RHCOS_ISO -o /usr/share/nginx/html/"$BASE_ISO"
+oc exec $podname -- curl -Lk $RHCOS_ROOTFS -o /usr/share/nginx/html/"$BASE_ROOTFS"
 
 echo ">>>>EOF"
 echo ">>>>>>>"
