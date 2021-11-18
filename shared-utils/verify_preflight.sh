@@ -41,9 +41,9 @@ oc completion bash >>/etc/bash_completion.d/oc_completion
 
 echo ">>>> Verify podman command"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-if ! command -v podmanx &> /dev/null; then
-    echo "Error: podman command not found"
-    exit 1 
+if ! command -v podman &> /dev/null; then
+    echo "Error: podman command not found. Installing..."
+    yum install -y podman
 fi
 
 echo ">>>> Loading the Kubeconfig file"
@@ -58,28 +58,28 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 if [[ $(oc version |grep -i server | grep $OC_OCP_VERSION | wc -l) -ne 1 ]]; then
     echo "Error: OCP version not supported"
-    exit 1
+    exit 2
 fi
 
 echo ">>>> Verify oc get nodes"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]]; then
 	echo "Error: Nodes are not ready"
-    exit 2
+    exit 3
 fi
 
 echo ">>>> Verify the cluster operator ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get co | awk '{print $3}' | grep -i true | wc -l) -ne $(($(oc get co | wc -l) - 1)) ]]; then
 	echo "Error: some cluster operators are not ready"
-    exit 3
+    exit 4
 fi
 
 echo ">>>> Verify the metal3 pods ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get pod -n openshift-machine-api | wc -l) -lt 1 ]]; then
 	echo "Error: metal3 pods are not available to use ztp"
-    exit 4
+    exit 5
 fi
 
 echo ">>>> Verify the PV available"
@@ -87,7 +87,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get pv | wc -l) -lt 3 ]]; then
     #TODO verify the PV size  and if does not exists, create it from disk 
 	echo "Error: Persisten volumes not available in the hub"
-    exit 5
+    exit 6
 fi
 
 echo ">>>> EOF"
