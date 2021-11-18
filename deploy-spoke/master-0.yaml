@@ -3,9 +3,9 @@ apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
  name: kubeframe-master-0
- namespace: compact-cluster-1
+ namespace: spoke-cluster-1
  labels:
-   nmstate_config_cluster_name: compact-cluster-1
+   nmstate_config_cluster_name: spoke-cluster-1
 spec:
  config:
    interfaces:
@@ -22,7 +22,7 @@ spec:
            - ip: 192.168.20.10
              prefix-length: 24
        mtu: 1500
-       mac-address: '00:FD:45:FF:2B:78'
+       mac-address: 'CHANGE_SPOKE-1-MASTER-0_ENO4_MAC'
      - name: eno1
        type: ethernet
        state: up
@@ -36,7 +36,7 @@ spec:
            - ip: 192.168.7.10
              prefix-length: 24
        mtu: 1500
-       mac-address: '00:fd:45:ff:2b:75'
+       mac-address: 'CHANGE_SPOKE-1-MASTER-0_ENO1_MAC'
    dns-resolver:
      config:
        server:
@@ -51,25 +51,25 @@ spec:
          next-hop-interface: eno4
  interfaces:
    - name: "eno4"
-     macAddress: '00:FD:45:FF:2B:78'
+     macAddress: 'CHANGE_SPOKE-1-MASTER-0_ENO4_MAC'
    - name: "eno1"
-     macAddress: '00:fd:45:ff:2b:75'
+     macAddress: 'CHANGE_SPOKE-1-MASTER-0_ENO1_MAC'
 ---
 apiVersion: v1
 kind: Secret
 metadata:
  name: 'kubeframe-master-0-bmc-secret'
- namespace: 'compact-cluster-1'
+ namespace: 'spoke-cluster-1'
 type: Opaque
 data:
- username: 'QWRtaW5pc3RyYXRvcg=='
- password: 'OFZlcnlCcmlnaHRCZWFjb24k'
+ username: 'CHANGE_SPOKE-1-MASTER-0_BMC_USERNAME'
+ password: 'CHANGE_SPOKE-1-MASTER-0_BMC_PASSWORD'
 ---
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
  name: 'kubeframe-master-0'
- namespace: 'compact-cluster-1'
+ namespace: 'spoke-cluster-1'
  labels:
    infraenvs.agent-install.openshift.io: 'assisted-infra-env'
  annotations:
@@ -77,7 +77,7 @@ metadata:
    bmac.agent-install.openshift.io/hostname: 'kubeframe-master-0'
 spec:
  online: false
- bootMACAddress: '00:fd:45:ff:2b:75'
+ bootMACAddress: 'CHANGE_SPOKE-1-MASTER-0_ENO1_MAC'
  rootDeviceHints:
    deviceName: /dev/sda
  bmc:

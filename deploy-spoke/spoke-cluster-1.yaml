@@ -1,0 +1,110 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: spoke-cluster-1
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pull-secret-spoke-cluster-1
+  namespace: spoke-cluster-1
+stringData:
+  .dockerconfigjson: 'CHANGE_PULL_SECRET'
+  type: kubernetes.io/dockerconfigjson
+---
+apiVersion: extensions.hive.openshift.io/v1beta1
+kind: AgentClusterInstall
+metadata:
+  name: spoke-cluster-1
+  namespace: spoke-cluster-1
+spec:
+  clusterDeploymentRef:
+    name: spoke-cluster-1
+  imageSetRef:
+    name: CHANGE_SPOKE-1-CLUSTERIMAGESET
+  apiVIP: "CHANGE_SPOKE-1-API"
+  ingressVIP: "CHANGE_SPOKE-1-INGRESS"
+  networking:
+    clusterNetwork:
+      - cidr: "CHANGE_SPOKE-1_CLUSTER-NET-CIDR"
+        hostPrefix: CHANGE_SPOKE-1_CLUSTER-NET-PREFIX
+    serviceNetwork:
+      - "CHANGE_SPOKE-1_CLUSTER-NET-CIDR"
+  provisionRequirements:
+    controlPlaneAgents: 3
+  sshPublicKey: 'CHANGE_RSA_PUB_KEY'
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: spoke-cluster-1
+  namespace: spoke-cluster-1
+spec:
+  baseDomain: kubeframe.local
+  clusterName: spoke-cluster-1
+  controlPlaneConfig:
+    servingCertificates: {}
+  clusterInstallRef:
+    group: extensions.hive.openshift.io
+    kind: AgentClusterInstall
+    name: spoke-cluster-1
+    version: v1beta1
+  platform:
+    agentBareMetal:
+      agentSelector:
+        matchLabels:
+          cluster-name: "spoke-cluster-1"
+  pullSecretRef:
+    name: pull-secret-spoke-cluster-1
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: spoke-cluster-1
+  namespace: spoke-cluster-1
+spec:
+  clusterName: spoke-cluster-1
+  clusterNamespace: spoke-cluster-1
+  clusterLabels:
+    name: spoke-cluster-1
+    cloud: Baremetal
+  applicationManager:
+    argocdCluster: false
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: spoke-cluster-1
+  namespace: spoke-cluster-1
+  labels:
+    name: spoke-cluster-1
+    kubeframe: "true"
+spec:
+  hubAcceptsClient: true
+  leaseDurationSeconds: 60
+---
+apiVersion: agent-install.openshift.io/v1beta1
+kind: InfraEnv
+metadata:
+ name: 'spoke-cluster-1'
+ namespace: 'spoke-cluster-1'
+spec:
+ clusterRef:
+   name: 'spoke-cluster-1'
+   namespace: 'spoke-cluster-1'
+ pullSecretRef:
+   name: 'pull-secret-spoke-cluster-1'
+ nmStateConfigLabelSelector:
+   matchLabels:
+     nmstate_config_cluster_name: spoke-cluster-1
+ sshAuthorizedKey: 'CHANGE_RSA_PUB_KEY'
