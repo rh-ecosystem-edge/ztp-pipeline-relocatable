@@ -42,6 +42,13 @@ fi
 mirror () {
 # Mirror redhat-operator index image
 
+# OPM requires authentication to registry, get pull-secret from OS and store as docker configuration for podman to work
+mkdir -p ~/.docker
+
+MYSECRET="$( oc get secret -n openshift-config  pull-secret -o yaml -o template='{{index .data ".dockerconfigjson"}}' | base64 -d)"
+
+echo "$MYSECRET" > ~/.docker/config.json
+
 if [ "${RH_OP}" = true ]
   then
     echo "opm index prune --from-index $RH_OP_INDEX --packages $RH_OP_PACKAGES --tag $LOCAL_REGISTRY/$LOCAL_REGISTRY_INDEX_TAG"
