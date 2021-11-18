@@ -41,7 +41,7 @@ oc completion bash >>/etc/bash_completion.d/oc_completion
 
 echo ">>>> Verify podman command"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-if ! command -v podman &> /dev/null; then
+if ! command -v podmanx &> /dev/null; then
     echo "Error: podman command not found"
     exit 1 
 fi
