@@ -41,7 +41,7 @@ jobs:
         run: |
           cd ${{env.SHARED_DIR}}
           ./verify_preflight.sh 
-          echo "::set-output name=result::$?"
+          echo "::set-output name=result::echo $?"
      
 
   deploy-httpd-server:
