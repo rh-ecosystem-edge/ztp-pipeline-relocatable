@@ -14,7 +14,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'; sleep 10
 oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"pvc":{"claim":null}}}}'; sleep 10
-oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge --patch '{"spec":{"defaultRoute":true}}'; sleep 30
+oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge --patch '{"spec":{"defaultRoute":true}}'; sleep 10
 echo ">>>> Get the pull secret from hub to file ./pull-secret.json"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
@@ -32,13 +32,13 @@ update-ca-trust extract
 #TODO: change user to avoid request the kubeadmin password
 oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
-podman login $REGISTRY_NAME -u kubeadmin -p $(oc whoami -t) --authfile=./pull-secret-internal-registry.json
+podman login $REGISTRY_NAME -u kubeadmin -p $(oc whoami -t) --authfile=./pull-secret.json
 oc logout ; oc config use-context admin
 if [ $(oc get ns | grep ocp4 | wc -l) -eq 0 ]; then
     oc create ns ocp4
 fi
 
-oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
+oc adm release mirror -a ./pull-secret.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
 
 echo ">>>>EOF"
 echo ">>>>>>>"
