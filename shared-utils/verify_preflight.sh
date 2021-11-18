@@ -39,6 +39,13 @@ chmod u+x /usr/bin/kubectl
 
 oc completion bash >>/etc/bash_completion.d/oc_completion
 
+echo ">>>> Verify podman command"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+if ! command -v podman &> /dev/null; then
+    echo "Error: podman command not found"
+    exit 1 
+fi
+
 echo ">>>> Loading the Kubeconfig file"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [ ! -f "$KUBECONFIG" ]; then
