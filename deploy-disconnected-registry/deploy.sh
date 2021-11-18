@@ -29,11 +29,6 @@ LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -
 oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d > /etc/pki/ca-trust/source/anchors/internal-registry.crt
 update-ca-trust extract
 
-
-sed -i "s%CHANGE_OCP_RELEASE%$OC_OCP_VERSION%g" olm-mirror.sh 
-sed -i "s%CHANGE_PULLSECRET_FILE%$PULL_SECRET%g" olm-mirror.sh
-sed -i "s%CHANGE_ROUTE_REGISTRY%$LOCAL_REG%g" olm-mirror.sh
-
 #TODO: change user to avoid request the kubeadmin password
 oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
