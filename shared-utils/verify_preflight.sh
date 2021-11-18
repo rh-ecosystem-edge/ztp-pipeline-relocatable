@@ -92,3 +92,4 @@ fi
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
+exit 0

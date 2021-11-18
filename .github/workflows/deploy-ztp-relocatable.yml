@@ -38,10 +38,10 @@ jobs:
       - name: Verification
         run: |
           cd ${{env.SHARED_DIR}}
-          ./verify_preflight.sh
+          ./verify_preflight.sh      
 
   deploy-httpd-server:
-    needs: pre-flight          # run in parallel with the other jobs       
+    needs: pre-flight          # run in parallel with the other jobs    
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Internal HTTPD Server
@@ -59,7 +59,7 @@ jobs:
           ./deploy.sh
 
   deploy-disconnected-registry:
-    needs: pre-flight          # run in parallel with the other jobs       
+    needs: deploy-acm         # run in parallel with the other jobs       
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Internal Disconnected Registry 
