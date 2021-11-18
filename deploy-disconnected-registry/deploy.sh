@@ -34,12 +34,14 @@ oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
 echo $OC_KUBEADMIN_PASS_SECRET
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
 podman login $REGISTRY_NAME -u kubeadmin -p $(oc whoami -t) --authfile=./pull-secret.json
-oc logout ; oc config use-context admin
+
 if [ $(oc get ns | grep ocp4 | wc -l) -eq 0 ]; then
     oc create ns ocp4
 fi
 
 oc adm release mirror -a ./pull-secret.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
+
+oc logout ; oc config use-context admin
 
 echo ">>>>EOF"
 echo ">>>>>>>"
