@@ -13,7 +13,7 @@ set -m
 echo ">>>> Create httpd server manifest"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-domain=apps.$(grep server "$KUBECONFIG" | awk '{print $2}' | cut -d '.' -f 2- | cut -d ':' -f 1)
+domain=apps.$(grep server "$KUBECONFIG" | awk '{print $2}' | cut -d '.' -f 2- | cut -d ':' -f 1| head -1)
 sed -i "s%CHANGEDOMAIN%$domain%g" http-server.yml
 
 oc create -f http-server.yml
