@@ -32,18 +32,20 @@ sed -i "s%CHANGE_OCP_RELEASE%$OC_OCP_VERSION%g" olm-mirror.sh
 sed -i "s%CHANGE_PULLSECRET_FILE%$KUBECONFIG%g" olm-mirror.sh
 sed -i "s%CHANGE_ROUTE_REGISTRY%$LOCAL_REG%g" olm-mirror.sh
 
+
+oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
+TOKEN=$(oc whoami -t)
+oc logout ; oc config use-context admin
+KEY=$( echo -n kubeadmin:"$TOKEN" | base64 -w0)
+export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
+jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"info@alklabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
+
+
 ./olm-mirror.sh mirror
 #./olm-mirror.sh mirror-olm
 
 
 
-
-#oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
-#TOKEN=$(oc whoami -t)
-#oc logout ; oc config use-context admin
-#KEY=$( echo -n kubeadmin:"$TOKEN" | base64 -w0)
-#export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
-#jq ".auths += {\"$REGISTRY_NAME\": {\"auth\": \"$KEY\",\"email\": \"info@alklabs.com\"}}" < ./pull-secret.json  > ./pull-secret-internal-registry.json
 
 
 #oc adm release mirror -a ./pull-secret-internal-registry.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
