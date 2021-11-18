@@ -29,6 +29,7 @@ env:
 
 jobs:
   pre-flight:
+    continue-on-error: true
     runs-on: ${{github.event.inputs.RUNNER}}   #tag with your runner tag
     outputs:
       result: ${{ steps.Verification.outputs.status }} 
