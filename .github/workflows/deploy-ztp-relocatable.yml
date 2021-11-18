@@ -32,7 +32,7 @@ jobs:
     continue-on-error: true
     runs-on: ${{github.event.inputs.RUNNER}}   #tag with your runner tag
     outputs:
-      result: ${{ steps.Verification.outputs.status }} 
+      result: ${{ steps.Verification.outputs.result }} 
     steps:
       - uses: actions/checkout@v2 # create a checkout (pull repository) in the runner working_dir (usually _work)
       - run: git pull origin ${GITHUB_REF##*/}
