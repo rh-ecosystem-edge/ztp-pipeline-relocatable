@@ -3,13 +3,13 @@ apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
  name: kubeframe-master-2
- namespace: CHANGE_SPOKE-1_NAME
+ namespace: CHANGE_SPOKE_NAME
  labels:
-   nmstate_config_cluster_name: CHANGE_SPOKE-1_NAME
+   nmstate_config_cluster_name: CHANGE_SPOKE_NAME
 spec:
  config:
    interfaces:
-     - name: CHANGE_SPOKE-1-MASTER-2_MGMT-INT
+     - name: CHANGE_SPOKE-MASTER-2_MGMT-INT
        type: ethernet
        state: up
        ethernet:
@@ -19,11 +19,11 @@ spec:
        ipv4:
          enabled: true
          address:
-           - ip: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_IP
-             prefix-length: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_MASK
+           - ip: CHANGE_SPOKE-MASTER-2_MGMT-INT_IP
+             prefix-length: CHANGE_SPOKE-MASTER-2_MGMT-INT_MASK
        mtu: 1500
-       mac-address: 'CHANGE_SPOKE-1-MASTER-2_MGMT-INT_MAC'
-     - name: CHANGE_SPOKE-1-MASTER-2_PUB-INT
+       mac-address: 'CHANGE_SPOKE-MASTER-2_MGMT-INT_MAC'
+     - name: CHANGE_SPOKE-MASTER-2_PUB-INT
        type: ethernet
        state: up
        ethernet:
@@ -33,45 +33,45 @@ spec:
        ipv4:
          enabled: true
          address:
-           - ip: CHANGE_SPOKE-1-MASTER-2_PUB-INT_IP
-             prefix-length: CHANGE_SPOKE-1-MASTER-2_PUB-INT_MASK
+           - ip: CHANGE_SPOKE-MASTER-2_PUB-INT_IP
+             prefix-length: CHANGE_SPOKE-MASTER-2_PUB-INT_MASK
        mtu: 1500
-       mac-address: 'CHANGE_SPOKE-1-MASTER-2_PUB-INT'
+       mac-address: 'CHANGE_SPOKE-MASTER-2_PUB-INT'
    dns-resolver:
      config:
        server:
-         - CHANGE_SPOKE-1_DNS
+         - CHANGE_SPOKE_DNS
    routes:
      config:
-       - destination: CHANGE_SPOKE-1-MASTER-2_PUB-INT_ROUTE_DEST
-         next-hop-address: CHANGE_SPOKE-1-MASTER-2_PUB-INT_GW
-         next-hop-interface: CHANGE_SPOKE-1-MASTER-2_PUB-INT
-       - destination: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_ROUTE_DEST
-         next-hop-address: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_GW
-         next-hop-interface: CHANGE_SPOKE-1-MASTER-2_MGMT-INT
+       - destination: CHANGE_SPOKE-MASTER-2_PUB-INT_ROUTE_DEST
+         next-hop-address: CHANGE_SPOKE-MASTER-2_PUB-INT_GW
+         next-hop-interface: CHANGE_SPOKE-MASTER-2_PUB-INT
+       - destination: CHANGE_SPOKE-MASTER-2_MGMT-INT_ROUTE_DEST
+         next-hop-address: CHANGE_SPOKE-MASTER-2_MGMT-INT_GW
+         next-hop-interface: CHANGE_SPOKE-MASTER-2_MGMT-INT
  interfaces:
-   - name: "CHANGE_SPOKE-1-MASTER-2_MGMT-INT"
-     macAddress: 'CHANGE_SPOKE-1-MASTER-2_MGMT-INT_MAC'
-   - name: "CHANGE_SPOKE-1-MASTER-2_PUB-INT"
-     macAddress: 'CHANGE_SPOKE-1-MASTER-2_PUB-INT_MAC'
+   - name: "CHANGE_SPOKE-MASTER-2_MGMT-INT"
+     macAddress: 'CHANGE_SPOKE-MASTER-2_MGMT-INT_MAC'
+   - name: "CHANGE_SPOKE-MASTER-2_PUB-INT"
+     macAddress: 'CHANGE_SPOKE-MASTER-2_PUB-INT_MAC'
 ---
 apiVersion: v1
 kind: Secret
 metadata:
  name: 'kubeframe-master-2-bmc-secret'
- namespace: 'CHANGE_SPOKE-1_NAME'
+ namespace: 'CHANGE_SPOKE_NAME'
 type: Opaque
 data:
- username: 'CHANGE_SPOKE-1-MASTER-2_BMC_USERNAME'
- password: 'CHANGE_SPOKE-1-MASTER-2_BMC_PASSWORD'
+ username: 'CHANGE_SPOKE-MASTER-2_BMC_USERNAME'
+ password: 'CHANGE_SPOKE-MASTER-2_BMC_PASSWORD'
 ---
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
  name: 'kubeframe-master-2'
- namespace: 'CHANGE_SPOKE-1_NAME'
+ namespace: 'CHANGE_SPOKE_NAME'
  labels:
-   infraenvs.agent-install.openshift.io: 'CHANGE_SPOKE-1_NAME'
+   infraenvs.agent-install.openshift.io: 'CHANGE_SPOKE_NAME'
  annotations:
    inspect.metal3.io: disabled
    bmac.agent-install.openshift.io/hostname: 'kubeframe-master-2'
@@ -82,5 +82,5 @@ spec:
    deviceName: /dev/sda
  bmc:
    disableCertificateVerification: true
-   address: 'CHANGE_SPOKE-1-MASTER-2_BMC_URL'
+   address: 'CHANGE_SPOKE-MASTER-2_BMC_URL'
    credentialsName: 'kubeframe-master-2-bmc-secret'
