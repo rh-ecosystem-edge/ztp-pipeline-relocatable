@@ -29,17 +29,16 @@ LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -
 oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d > /etc/pki/ca-trust/source/anchors/internal-registry.crt
 update-ca-trust extract
 
-#TODO: change user to avoid request the kubeadmin password
-oc login -u kubeadmin -p $OC_KUBEADMIN_PASS_SECRET
-export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
-podman login $REGISTRY_NAME -u kubeadmin -p $(oc whoami -t) --authfile=./pull-secret.json
 
 if [ $(oc get ns | grep ocp4 | wc -l) -eq 0 ]; then
     oc create ns ocp4
 fi
 
+export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
+oc -n ocp4 create sa robot
+oc -n ocp4 adm policy add-role-to-user registry-editor -z robot
+podman login $REGISTRY_NAME -u robot -p $(oc -n ocp4 serviceaccounts get-token robot) --authfile=./pull-secret.json
 oc adm release mirror -a ./pull-secret.json --from="$OPENSHIFT_RELEASE_IMAGE" --to-release-image="${LOCAL_REG}"/ocp4/openshift4:"${OCP_RELEASE}" --to="${LOCAL_REG}"/ocp4/openshift4
-
 #oc logout ; oc config use-context admin
 
 echo ">>>>EOF"
