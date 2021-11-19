@@ -1,42 +1,42 @@
 spokes:
-  - spoke1-name: 
-    - master0:
+  spoke1-name: 
+    master0:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
       - bmc_pass: "user-pass"
-    - master1:
+    master1:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
       - bmc_pass: "user-pass"
-    - master2:
+    master2:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
       - bmc_pass: "user-pass"
-    - worker0:
+    worker0:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
       - bmc_pass: "user-pass"
-  - spoke2-name: 
-    - master0:
+  spoke2-name: 
+    master0:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
       - bmc_pass: "user-pass"
-    - master1:
+    master1:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
       - bmc_pass: "user-pass"
-    - master2:
+    master2:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
       - bmc_pass: "user-pass"
-    - worker0:
+    worker0:
       - mac: "aa:ss:dd:ee:bb:cc"
       - bmc_url: "<url bmc>"
       - bmc_user: "user-bmc"
