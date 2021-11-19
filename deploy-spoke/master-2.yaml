@@ -3,13 +3,13 @@ apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
  name: kubeframe-master-2
- namespace: compact-cluster-1
+ namespace: CHANGE_SPOKE-1_NAME
  labels:
-   nmstate_config_cluster_name: compact-cluster-1
+   nmstate_config_cluster_name: CHANGE_SPOKE-1_NAME
 spec:
  config:
    interfaces:
-     - name: eno4
+     - name: CHANGE_SPOKE-1-MASTER-2_MGMT-INT
        type: ethernet
        state: up
        ethernet:
@@ -19,11 +19,11 @@ spec:
        ipv4:
          enabled: true
          address:
-           - ip: 192.168.20.12
-             prefix-length: 24
+           - ip: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_IP
+             prefix-length: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_MASK
        mtu: 1500
-       mac-address: '00:FD:45:FF:29:2c'
-     - name: eno1
+       mac-address: 'CHANGE_SPOKE-1-MASTER-2_MGMT-INT_MAC'
+     - name: CHANGE_SPOKE-1-MASTER-2_PUB-INT
        type: ethernet
        state: up
        ethernet:
@@ -33,54 +33,54 @@ spec:
        ipv4:
          enabled: true
          address:
-           - ip: 192.168.7.12
-             prefix-length: 24
+           - ip: CHANGE_SPOKE-1-MASTER-2_PUB-INT_IP
+             prefix-length: CHANGE_SPOKE-1-MASTER-2_PUB-INT_MASK
        mtu: 1500
-       mac-address: '00:fd:45:ff:29:29'
+       mac-address: 'CHANGE_SPOKE-1-MASTER-2_PUB-INT'
    dns-resolver:
      config:
        server:
-         - 192.168.1.239
+         - CHANGE_SPOKE-1_DNS
    routes:
      config:
-       - destination: 192.168.7.0/24
-         next-hop-address: 192.168.7.1
-         next-hop-interface: eno1
-       - destination: 0.0.0.0/0
-         next-hop-address: 192.168.20.1
-         next-hop-interface: eno4
+       - destination: CHANGE_SPOKE-1-MASTER-2_PUB-INT_ROUTE_DEST
+         next-hop-address: CHANGE_SPOKE-1-MASTER-2_PUB-INT_GW
+         next-hop-interface: CHANGE_SPOKE-1-MASTER-2_PUB-INT
+       - destination: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_ROUTE_DEST
+         next-hop-address: CHANGE_SPOKE-1-MASTER-2_MGMT-INT_GW
+         next-hop-interface: CHANGE_SPOKE-1-MASTER-2_MGMT-INT
  interfaces:
-   - name: "eno4"
-     macAddress: '00:FD:45:FF:29:2c'
-   - name: "eno1"
-     macAddress: '00:fd:45:ff:29:29'
+   - name: "CHANGE_SPOKE-1-MASTER-2_MGMT-INT"
+     macAddress: 'CHANGE_SPOKE-1-MASTER-2_MGMT-INT_MAC'
+   - name: "CHANGE_SPOKE-1-MASTER-2_PUB-INT"
+     macAddress: 'CHANGE_SPOKE-1-MASTER-2_PUB-INT_MAC'
 ---
 apiVersion: v1
 kind: Secret
 metadata:
  name: 'kubeframe-master-2-bmc-secret'
- namespace: 'compact-cluster-1'
+ namespace: 'CHANGE_SPOKE-1_NAME'
 type: Opaque
 data:
- username: 'QWRtaW5pc3RyYXRvcg=='
- password: 'OFZlcnlCcmlnaHRCZWFjb24k'
+ username: 'CHANGE_SPOKE-1-MASTER-2_BMC_USERNAME'
+ password: 'CHANGE_SPOKE-1-MASTER-2_BMC_PASSWORD'
 ---
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
  name: 'kubeframe-master-2'
- namespace: 'compact-cluster-1'
+ namespace: 'CHANGE_SPOKE-1_NAME'
  labels:
-   infraenvs.agent-install.openshift.io: 'assisted-infra-env'
+   infraenvs.agent-install.openshift.io: 'CHANGE_SPOKE-1_NAME'
  annotations:
    inspect.metal3.io: disabled
    bmac.agent-install.openshift.io/hostname: 'kubeframe-master-2'
 spec:
  online: false
- bootMACAddress: '00:fd:45:ff:29:29'
+ bootMACAddress: 'CHANGE_SPOKE-1-MASTER-2_PUB-INT_MAC'
  rootDeviceHints:
    deviceName: /dev/sda
  bmc:
    disableCertificateVerification: true
-   address: 'redfish-virtualmedia+https://192.168.10.14/redfish/v1/Systems/1'
+   address: 'CHANGE_SPOKE-1-MASTER-2_BMC_URL'
    credentialsName: 'kubeframe-master-2-bmc-secret'
