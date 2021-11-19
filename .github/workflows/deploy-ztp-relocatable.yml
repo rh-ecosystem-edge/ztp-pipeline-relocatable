@@ -5,9 +5,6 @@ on:
       KUBECONFIG:
         description: 'Absolute path to kubeconfig file?'
         required: true
-      OC_KUBEADMIN_PASS_SECRET:
-        description: 'Kubeadmin password:'
-        required: true
       RUNNER:
         description: 'Github Action Runner Tag'
         required: true
