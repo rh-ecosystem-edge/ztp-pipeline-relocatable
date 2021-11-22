@@ -40,7 +40,7 @@ create_kustomization() {
 	while [ "${RESULT}" != "null" ]; do
 		# Generate the 4 files for each spoke
 		cat <<EOF >>${OUTPUT}
-  - spoke-${i}.yaml
+  - spoke-${i}-cluster.yaml
   - spoke-${i}-master-0.yaml
   - spoke-${i}-master-1.yaml
   - spoke-${i}-master-2.yaml
@@ -73,7 +73,7 @@ create_spoke_definitions() {
 		#export CHANGE_SPOKE_DNS= # hub ip or name ???
 
 		# Generate the spoke definition yaml
-		cat <<EOF >${OUTPUT_DIR}/spoke-cluster-${i}.yaml
+		cat <<EOF >${OUTPUT_DIR}/spoke-${i}-cluster.yaml
 ---
 apiVersion: v1
 kind: Namespace
