@@ -46,6 +46,14 @@ if ! command -v podman &>/dev/null; then
 	yum install -y podman
 fi
 
+echo ">>>> Verify yq command"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+if ! command -v yq &>/dev/null; then
+	echo "Error: yq command not found. Installing..."
+	wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O /usr/bin/yq &&\
+    chmod +x /usr/bin/yq
+fi
+
 echo ">>>> Loading the Kubeconfig file"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [ ! -f "$KUBECONFIG" ]; then
