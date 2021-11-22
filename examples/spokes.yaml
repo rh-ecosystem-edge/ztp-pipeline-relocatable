@@ -1,15 +1,13 @@
 spokes:
   - spoke1-name:
     master0:
-      # ext_dhcp -> DHCP
-      # int_static -> Internal IP for cluster communication
-      nic_ext_dhcp: eno4
-      nic_int_static: eno5
+      nic_ext_dhcp: eno4 # ext_dhcp -> DHCP
+      nic_int_static: eno5 # int_static -> Internal IP for cluster communication
       mac_ext_dhcp: "aa:ss:dd:ee:b0:10"
       mac_int_static: "aa:ss:dd:ee:b1:10"
       bmc_url: "<url bmc>"
-      bmc_user: "user-bmc"
-      bmc_pass: "user-pass"
+      bmc_user: "user-bmc"  #TODO  may be clear test and render with script
+      bmc_pass: "user-pass" #TODO  may be clear test and render with script
     master1:
       nic_ext_dhcp: eno4
       nic_int_static: eno5
