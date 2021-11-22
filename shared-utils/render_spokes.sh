@@ -43,67 +43,49 @@ export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
 export CHANGE_SPOKE_CLUSTER_NET_CIDR=172.30.0.0/16
 export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
 export CHANGE_RSA_PUB_KEY=~/.ssh/id_rsa.pub
-export CHANGE_SPOKE_DNS= # hub ip or name ???
+#export CHANGE_SPOKE_DNS= # hub ip or name ???
 
 # Master-0
-export CHANGE_SPOKE_MASTER_0_MGMT_INT=eno4             # dhcp remove from here
-export CHANGE_SPOKE_MASTER_0_MGMT_INT_MAC=             # dhcp remove from here
-export CHANGE_SPOKE_MASTER_0_MGMT_INT_IP=192.168.20.10 #dhcp remove from here
-export CHANGE_SPOKE_MASTER_0_MGMT_INT_MASK=16          #dhcp remove from here
-export CHANGE_SPOKE_MASTER_0_MGMT_INT_GW=192.168.20.1 #dhcp remove from here
-export CHANGE_SPOKE_MASTER_0_MGMT_INT_ROUTE_DEST=0.0.0.0/0 # dhcp remove from here
-export CHANGE_SPOKE_MASTER_0_PUB_INT=eno5                  #eno5 no eno1
+export CHANGE_SPOKE_MASTER_0_MGMT_INT=eno4
+export CHANGE_SPOKE_MASTER_0_PUB_INT=eno5
 export CHANGE_SPOKE_MASTER_0_PUB_INT_IP=192.168.7.10
 export CHANGE_SPOKE_MASTER_0_PUB_INT_MASK=16
 export CHANGE_SPOKE_MASTER_0_PUB_INT_GW=192.168.7.1
 export CHANGE_SPOKE_MASTER_0_PUB_INT_ROUTE_DEST=192.168.7.0/24
-#CHANGE_SPOKE-MASTER-0_BMC_URL=redfish-virtualmedia+https://192.168.10.12/redfish/v1/Systems/1
 
-export CHANGE_SPOKE_MASTER_0_PUB_INT_MAC=$(yq eval ".spokes[0].master0.mac" ${YAML})
-export CHANGE_SPOKE_MASTER_0_BMC_USERNAME=$(yq eval ".spokes[0].master0.bmc_user" ${YAML})
-export CHANGE_SPOKE_MASTER_0_BMC_PASSWORD=$(yq eval ".spokes[0].master0.bmc_pass" ${YAML})
-export CHANGE_SPOKE_MASTER_0_BMC_URL=$(yq eval ".spokes[0].master0.bmc_url" ${YAML})
+export CHANGE_SPOKE_MASTER_0_PUB_INT_MAC=$(yq eval ".spokes[$i].master0.mac" ${YAML})
+export CHANGE_SPOKE_MASTER_0_BMC_USERNAME=$(yq eval ".spokes[$i].master0.bmc_user" ${YAML})
+export CHANGE_SPOKE_MASTER_0_BMC_PASSWORD=$(yq eval ".spokes[$i].master0.bmc_pass" ${YAML})
+export CHANGE_SPOKE_MASTER_0_BMC_URL=$(yq eval ".spokes[$i].master0.bmc_url" ${YAML})
 
 # Master-1
-export CHANGE_SPOKE_MASTER_1_MGMT_INT=eno4                 # dhcp remove from here
-export CHANGE_SPOKE_MASTER_1_MGMT_INT_MAC=XXXX             # dhcp remove from here
-export CHANGE_SPOKE_MASTER_1_MGMT_INT_IP=192.168.20.11     # dhcp remove from here
-export CHANGE_SPOKE_MASTER_1_MGMT_INT_MASK=16              # dhcp remove from here
-export CHANGE_SPOKE_MASTER_1_MGMT_INT_GW=192.168.20.1      # dhcp remove from here
-export CHANGE_SPOKE_MASTER_1_MGMT_INT_ROUTE_DEST=0.0.0.0/0 # dhcp remove from here
+export CHANGE_SPOKE_MASTER_1_MGMT_INT=eno4
 export CHANGE_SPOKE_MASTER_1_PUB_INT=eno5
 export CHANGE_SPOKE_MASTER_1_PUB_INT_IP=192.168.7.11
 export CHANGE_SPOKE_MASTER_1_PUB_INT_MASK=16
 export CHANGE_SPOKE_MASTER_1_PUB_INT_GW=192.168.7.1
 export CHANGE_SPOKE_MASTER_1_PUB_INT_ROUTE_DEST=192.168.7.0/24
-#CHANGE_SPOKE-MASTER-1_BMC_URL=redfish-virtualmedia+https://192.168.10.12/redfish/v1/Systems/1
 
 
-export CHANGE_SPOKE_MASTER_1_PUB_INT_MAC=$(yq eval ".spokes[0].master1.mac" ${YAML})
-export CHANGE_SPOKE_MASTER_1_BMC_USERNAME=$(yq eval ".spokes[0].master1.bmc_user" ${YAML})
-export CHANGE_SPOKE_MASTER_1_BMC_PASSWORD=$(yq eval ".spokes[0].master1.bmc_pass" ${YAML})
-export CHANGE_SPOKE_MASTER_1_BMC_URL=$(yq eval ".spokes[0].master1.bmc_url" ${YAML})
+export CHANGE_SPOKE_MASTER_1_PUB_INT_MAC=$(yq eval ".spokes[$i].master1.mac" ${YAML})
+export CHANGE_SPOKE_MASTER_1_BMC_USERNAME=$(yq eval ".spokes[$i].master1.bmc_user" ${YAML})
+export CHANGE_SPOKE_MASTER_1_BMC_PASSWORD=$(yq eval ".spokes[$i].master1.bmc_pass" ${YAML})
+export CHANGE_SPOKE_MASTER_1_BMC_URL=$(yq eval ".spokes[$i].master1.bmc_url" ${YAML})
 
 
 
 # Master-2
-export CHANGE_SPOKE_MASTER_2_MGMT_INT=eno4                 # dhcp remove from here
-export CHANGE_SPOKE_MASTER_2_MGMT_INT_MAC=XXXX             # dhcp remove from here
-export CHANGE_SPOKE_MASTER_2_MGMT_INT_IP=192.168.20.12     # dhcp remove from here
-export CHANGE_SPOKE_MASTER_2_MGMT_INT_MASK=16              # dhcp remove from here
-export CHANGE_SPOKE_MASTER_2_MGMT_INT_GW=192.168.20.1      # dhcp remove from here
-export CHANGE_SPOKE_MASTER_2_MGMT_INT_ROUTE_DEST=0.0.0.0/0 # dhcp remove from here
+export CHANGE_SPOKE_MASTER_2_MGMT_INT=eno4
 export CHANGE_SPOKE_MASTER_2_PUB_INT=eno5
 export CHANGE_SPOKE_MASTER_2_PUB_INT_IP=192.168.7.12
 export CHANGE_SPOKE_MASTER_2_PUB_INT_MASK=16
 export CHANGE_SPOKE_MASTER_2_PUB_INT_GW=192.168.7.1
 export CHANGE_SPOKE_MASTER_2_PUB_INT_ROUTE_DEST=192.168.7.0/24
-#CHANGE_SPOKE-MASTER-2_BMC_URL=redfish-virtualmedia+https://192.168.10.12/redfish/v1/Systems/1
 
-export CHANGE_SPOKE_MASTER_2_PUB_INT_MAC=$(yq eval ".spokes[0].master2.mac" ${YAML})
-export CHANGE_SPOKE_MASTER_2_BMC_USERNAME=$(yq eval ".spokes[0].master2.bmc_user" ${YAML})
-export CHANGE_SPOKE_MASTER_2_BMC_PASSWORD=$(yq eval ".spokes[0].master2.bmc_pass" ${YAML})
-export CHANGE_SPOKE_MASTER_2_BMC_URL=$(yq eval ".spokes[0].master2.bmc_url" ${YAML})
+export CHANGE_SPOKE_MASTER_2_PUB_INT_MAC=$(yq eval ".spokes[$i].master2.mac" ${YAML})
+export CHANGE_SPOKE_MASTER_2_BMC_USERNAME=$(yq eval ".spokes[$i].master2.bmc_user" ${YAML})
+export CHANGE_SPOKE_MASTER_2_BMC_PASSWORD=$(yq eval ".spokes[$i].master2.bmc_pass" ${YAML})
+export CHANGE_SPOKE_MASTER_2_BMC_URL=$(yq eval ".spokes[$i].master2.bmc_url" ${YAML})
 
 EOF
 

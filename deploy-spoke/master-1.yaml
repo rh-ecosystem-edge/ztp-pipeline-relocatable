@@ -38,10 +38,6 @@ spec:
              prefix-length: CHANGE_SPOKE-MASTER-1_PUB-INT_MASK
        mtu: 1500
        mac-address: 'CHANGE_SPOKE-MASTER-1_PUB-INT'
-   dns-resolver:
-     config:
-       server:
-         - CHANGE_SPOKE_DNS
    routes:
      config:
        - destination: CHANGE_SPOKE-MASTER-1_PUB-INT_ROUTE_DEST

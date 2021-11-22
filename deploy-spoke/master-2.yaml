@@ -37,19 +37,12 @@ spec:
            - ip: CHANGE_SPOKE-MASTER-2_PUB-INT_IP
              prefix-length: CHANGE_SPOKE-MASTER-2_PUB-INT_MASK
        mtu: 1500
-       mac-address: 'CHANGE_SPOKE-MASTER-2_PUB-INT'
-   dns-resolver:
-     config:
-       server:
-         - CHANGE_SPOKE_DNS
+       mac-address: 'CHANGE_SPOKE-MASTER-2_PUB-INT_MAC'
    routes:
      config:
        - destination: CHANGE_SPOKE-MASTER-2_PUB-INT_ROUTE_DEST
          next-hop-address: CHANGE_SPOKE-MASTER-2_PUB-INT_GW
          next-hop-interface: CHANGE_SPOKE-MASTER-2_PUB-INT
-       - destination: CHANGE_SPOKE-MASTER-2_MGMT-INT_ROUTE_DEST
-         next-hop-address: CHANGE_SPOKE-MASTER-2_MGMT-INT_GW
-         next-hop-interface: CHANGE_SPOKE-MASTER-2_MGMT-INT
  interfaces:
    - name: "CHANGE_SPOKE-MASTER-2_MGMT-INT"
      macAddress: 'CHANGE_SPOKE-MASTER-2_MGMT-INT_MAC'
