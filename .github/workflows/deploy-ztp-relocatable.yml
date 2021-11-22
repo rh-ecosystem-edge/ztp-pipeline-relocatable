@@ -5,6 +5,9 @@ on:
       KUBECONFIG:
         description: 'Absolute path to kubeconfig file?'
         required: true
+      SPOKES_FILE:
+        description: 'Absolute path to the Spokes yaml file?'
+        required: true
       RUNNER:
         description: 'Github Action Runner Tag'
         required: true
@@ -12,6 +15,7 @@ on:
 
 env:
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
+  SPOKES_FILE: ${{github.event.inputs.SPOKES_FILE}}
   OC_OCP_VERSION: '4.9'
   OC_OCP_TAG: '4.9.0-x86_64'
   OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary 
@@ -20,6 +24,7 @@ env:
   DEPLOY_REGISTRY_DIR: deploy-disconnected-registry
   DEPLOY_HTTPD_SERVER_DIR: deploy-httpd-server
   DEPLOY_HUB_CONFIGS_DIR: deploy-hub-configs
+  DEPLOY_SPOKES_DIR: deploy-spoke
   SHARED_DIR: shared-utils
 
 
@@ -76,4 +81,14 @@ jobs:
       - name: Deploy hub configuration
         run: |
           cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
+          ./deploy.sh
+
+  deploy-spokes:
+    needs: deploy-hub-config
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy Spokes
+        run: |
+          cd ${{env.DEPLOY_SPOKES_DIR}}
+          ./render_spokes.sh ${{github.event.inputs.SPOKES_FILE}}; sleep 3
           ./deploy.sh
