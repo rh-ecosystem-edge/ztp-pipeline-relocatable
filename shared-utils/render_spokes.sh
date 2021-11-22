@@ -10,8 +10,8 @@ set -m
 YAML=${1}
 
 if [ ! -f "${YAML}" ]; then
-  echo "File ${YAML} does not exist"
-  exit 1
+	echo "File ${YAML} does not exist"
+	exit 1
 fi
 
 # Store alongside Kubeconfig
@@ -32,9 +32,9 @@ while [ "${RESULT}" != "null" ]; do
 	SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
 	OUTPUT="${OUTPUT_DIR}/spoke_vars_${i}.sh"
 
-    # Empty output file for safety
-    echo ""> ${OUTPUT}
-    cat <<EOF >>${OUTPUT}
+	# Empty output file for safety
+	echo "" >${OUTPUT}
+	cat <<EOF >>${OUTPUT}
 export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
 export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
 export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
@@ -48,9 +48,9 @@ export CHANGE_RSA_PUB_KEY=~/.ssh/id_rsa.pub
 #export CHANGE_SPOKE_DNS= # hub ip or name ???
 EOF
 
-    # Now process blocks for each master
-    for master in 0 1 2; do
-        cat <<EOF >>${OUTPUT}
+	# Now process blocks for each master
+	for master in 0 1 2; do
+		cat <<EOF >>${OUTPUT}
 
 # Master loop
 export CHANGE_SPOKE_MASTER_${master}_MGMT_INT=eno4
@@ -65,7 +65,7 @@ export CHANGE_SPOKE_MASTER_${master}_BMC_USERNAME=$(yq eval ".spokes[$i].master$
 export CHANGE_SPOKE_MASTER_${master}_BMC_PASSWORD=$(yq eval ".spokes[$i].master$master.bmc_pass" ${YAML})
 export CHANGE_SPOKE_MASTER_${master}_BMC_URL=$(yq eval ".spokes[$i].master$master.bmc_url" ${YAML})
 EOF
-done
+	done
 
 	# Prepare for next loop
 	i=$((i + 1))
