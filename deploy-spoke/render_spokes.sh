@@ -189,16 +189,16 @@ spec:
 EOF
 
 		# Generic vars for all masters
-		export CHANGE_SPOKE_MASTER_PUB_INT=eno5
 		export CHANGE_SPOKE_MASTER_PUB_INT_MASK=16
 		export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
 		export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
-		export CHANGE_SPOKE_MASTER_MGMT_INT=eno4
 
 		# Now process blocks for each master
 		for master in 0 1 2; do
 
 			# Master loop
+			export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[$i].master$master.nic_int_static" ${YAML})
+			export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[$i].master$master.nic_ext_dhcp" ${YAML})
 
 			export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
 
