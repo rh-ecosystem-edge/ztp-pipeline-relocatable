@@ -30,7 +30,7 @@ fi
 
 while [ "${RESULT}" != "null" ]; do
 	SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
-	OUTPUT="${OUTPUT_DIR}/${SPOKE_NAME}.sh"
+	OUTPUT="${OUTPUT_DIR}/spoke_vars_${i}.sh"
 
     # Empty output file for safety
     echo ""> ${OUTPUT}
