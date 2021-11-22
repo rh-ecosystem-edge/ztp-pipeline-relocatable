@@ -30,7 +30,7 @@ fi
 
 while [ "${RESULT}" != "null" ]; do
 	SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
-	OUTPUT="${OUTPUT_DIR}/${SPOKE_NAME}.yml"
+	OUTPUT="${OUTPUT_DIR}/${SPOKE_NAME}.sh"
 
 	cat <<EOF >${OUTPUT}
 export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
