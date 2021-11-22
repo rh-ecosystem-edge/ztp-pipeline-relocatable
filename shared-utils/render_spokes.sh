@@ -7,7 +7,12 @@ set -o nounset
 set -m
 
 # Path to read YAML from (change to $1 in production)
-YAML=/home/iranzo/DEVEL/RH/syseng/MINT/ztp-pipeline-relocatable/examples/spokes.yaml
+YAML=${1}
+
+if [ ! -f "${YAML}" ]; then
+  echo "File ${YAML} does not exist"
+  exit 1
+fi
 
 # Store alongside Kubeconfig
 OUTPUT_DIR=$(dirname ${KUBECONFIG})
