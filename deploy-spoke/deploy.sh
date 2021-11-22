@@ -13,7 +13,7 @@ set -m
 echo ">>>> Deploy all the manifests using kustomize"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-oc apply -k . 
+oc apply -k .
 
 echo ">>>>EOF"
 echo ">>>>>>>"

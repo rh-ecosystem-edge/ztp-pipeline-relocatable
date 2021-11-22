@@ -58,19 +58,21 @@ create_spoke_definitions() {
 	RESULT=$(yq eval ".spokes[$i]" ${YAML})
 	SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
 
+	# Generic vars for all spokes
+	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
+	export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
+	export CHANGE_SPOKE_CLUSTERIMAGESET=openshift-v4.9.0
+	export CHANGE_SPOKE_API=192.168.7.243
+	export CHANGE_SPOKE_INGRESS=192.168.7.242
+	export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
+	export CHANGE_SPOKE_CLUSTER_NET_CIDR=172.30.0.0/16
+	export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
+	export CHANGE_RSA_PUB_KEY=~/.ssh/id_rsa.pub
+	#export CHANGE_SPOKE_DNS= # hub ip or name ???
+
 	while [ "${RESULT}" != "null" ]; do
 		# Set vars
 		export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
-		export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
-		export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
-		export CHANGE_SPOKE_CLUSTERIMAGESET=openshift-v4.9.0
-		export CHANGE_SPOKE_API=192.168.7.243
-		export CHANGE_SPOKE_INGRESS=192.168.7.242
-		export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
-		export CHANGE_SPOKE_CLUSTER_NET_CIDR=172.30.0.0/16
-		export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
-		export CHANGE_RSA_PUB_KEY=~/.ssh/id_rsa.pub
-		#export CHANGE_SPOKE_DNS= # hub ip or name ???
 
 		# Generate the spoke definition yaml
 		cat <<EOF >${OUTPUT_DIR}/spoke-${i}-cluster.yaml
@@ -186,21 +188,25 @@ spec:
  sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
 EOF
 
+		# Generic vars for all masters
+		export CHANGE_SPOKE_MASTER_PUB_INT=eno5
+		export CHANGE_SPOKE_MASTER_PUB_INT_MASK=16
+		export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
+		export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
+		export CHANGE_SPOKE_MASTER_MGMT_INT=eno4
+
 		# Now process blocks for each master
 		for master in 0 1 2; do
 
 			# Master loop
-			export CHANGE_SPOKE_MASTER_PUB_INT=eno5
+
 			export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
-			export CHANGE_SPOKE_MASTER_PUB_INT_MASK=16
-			export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
-			export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
+
 			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].master$master.mac_int_static" ${YAML})
 			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].master$master.bmc_user" ${YAML})
 			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].master$master.bmc_pass" ${YAML})
 			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].master$master.bmc_url" ${YAML})
 
-			export CHANGE_SPOKE_MASTER_MGMT_INT=eno4
 			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].master$master.mac_ext_dhcp" ${YAML})
 
 			# Now, write the template to disk
