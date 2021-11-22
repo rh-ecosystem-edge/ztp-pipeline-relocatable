@@ -18,12 +18,12 @@ spec:
          speed: 10000
        ipv4:
          enabled: true
-         address:
-           - ip: CHANGE_SPOKE-MASTER-0_MGMT-INT_IP
-             prefix-length: CHANGE_SPOKE-MASTER-0_MGMT-INT_MASK
+         dhcp: true
+         auto-dns: true
+         auto-gateway: true
+         auto-routes: true
        mtu: 1500
-       mac-address: 'CHANGE_SPOKE-MASTER-0_MGMT-INT_MAC'
-     - name: CHANGE_SPOKE-MASTER-0_PUB-INT
+     - name: CHANGE_SPOKE-1-MASTER-0_PUB-INT
        type: ethernet
        state: up
        ethernet:
