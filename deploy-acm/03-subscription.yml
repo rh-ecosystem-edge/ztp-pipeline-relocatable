@@ -9,4 +9,3 @@ spec:
   name: advanced-cluster-management
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  
