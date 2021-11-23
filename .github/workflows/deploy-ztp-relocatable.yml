@@ -72,7 +72,9 @@ jobs:
       - name: Deploy Internal Disconnected Registry
         run: |
           cd ${{env.DEPLOY_REGISTRY_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh hub
+          ./ocp-sync.sh hub
+          ./olm-sync.sh hub
 
   deploy-hub-config:
     needs: [deploy-acm, deploy-disconnected-registry, deploy-httpd-server]       # run in parallel with the other jobs
