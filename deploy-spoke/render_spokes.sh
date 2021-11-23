@@ -56,7 +56,6 @@ create_spoke_definitions() {
 	# Reset loop for spoke general definition
 	i=0
 	RESULT=$(yq eval ".spokes[$i]" ${YAML})
-	
 
 	# Generic vars for all spokes
 	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
@@ -71,7 +70,7 @@ create_spoke_definitions() {
 	#export CHANGE_SPOKE_DNS= # hub ip or name ???
 
 	while [ "${RESULT}" != "null" ]; do
-    SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
+		SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
 		# Set vars
 		export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
 
@@ -205,7 +204,7 @@ EOF
 
 			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_int_static" ${YAML})
 			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${YAML})
-			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${YAML}|base64)
+			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${YAML} | base64)
 			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_url" ${YAML})
 
 			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_ext_dhcp" ${YAML})

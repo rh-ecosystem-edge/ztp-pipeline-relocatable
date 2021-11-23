@@ -1,5 +1,5 @@
 config:
-  
+
 spokes:
   - spoke1-name:
       master0:
@@ -10,7 +10,7 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"  #TODO  may be clear test and render with script
         bmc_pass: "user-pass" #TODO  may be clear test and render with script
-        storage_disk: 
+        storage_disk:
           - sdb
           - sdc
           - sde
@@ -23,7 +23,7 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        storage_disk: 
+        storage_disk:
           - sdb
           - sdc
           - sde
@@ -36,11 +36,11 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        storage_disk: 
+        storage_disk:
           - sdb
           - sdc
           - sde
-          - sdd      
+          - sdd
       worker0:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
@@ -58,11 +58,11 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        storage_disk: 
+        storage_disk:
           - sdb
           - sdc
           - sde
-          - sdd      
+          - sdd
       master1:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
@@ -71,11 +71,11 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        storage_disk: 
+        storage_disk:
           - sdb
           - sdc
           - sde
-          - sdd      
+          - sdd
       master2:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
@@ -84,11 +84,11 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        storage_disk: 
+        storage_disk:
           - sdb
           - sdc
           - sde
-          - sdd      
+          - sdd
       worker0:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
