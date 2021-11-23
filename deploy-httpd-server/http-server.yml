@@ -67,7 +67,7 @@ metadata:
 spec:
   host: httpd-server.CHANGEDOMAIN
   port:
-    targetPort: http
+    targetPort: 8080
   to:
     kind: Service
     name: httpd-server-service
