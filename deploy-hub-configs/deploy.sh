@@ -14,7 +14,7 @@ echo ">>>> Preparing and replace info in the manifests"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 sed -i "s/CHANGEME/$OC_RHCOS_RELEASE/g" 04-agent-service-config.yml
-HTTPSERVICE=$(oc get routes -n default | grep httpd-server-route | awk '{print $2}')
+HTTPSERVICE=$(oc get routes -n default | grep httpd-server-route | awk '{print $2}').default.svc
 sed -i "s/HTTPD_SERVICE/$HTTPSERVICE/g" 04-agent-service-config.yml
 pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
 sed -i "s/PULL_SECRET/$pull/g" 05-pullsecrethub.yml
