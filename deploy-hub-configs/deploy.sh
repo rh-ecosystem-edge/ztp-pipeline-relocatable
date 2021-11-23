@@ -10,6 +10,14 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+YAML="$1"
+
+
+	if [ ! -f "${YAML}" ]; then
+		echo "File ${YAML} does not exist"
+		exit 1
+	fi
+
 echo ">>>> Preparing and replace info in the manifests"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
