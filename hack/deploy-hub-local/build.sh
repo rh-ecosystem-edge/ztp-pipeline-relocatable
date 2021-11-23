@@ -7,7 +7,7 @@ set -m
 
 # variables
 # #########
-export DEPLOY_OCP_DIR="./lab-kcli-ipi-baremetal"
+export DEPLOY_OCP_DIR="./"
 export OC_AMORGANT_PULL_SECRET='"{"auths": ... }"'
 export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.0-x86_64"
 export OC_CLUSTER_NAME="test-ci"
