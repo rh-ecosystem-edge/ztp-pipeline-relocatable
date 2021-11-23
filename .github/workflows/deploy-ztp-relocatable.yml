@@ -54,7 +54,7 @@ jobs:
       - name: Deploy Internal HTTPD Server
         run: |
           cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh
 
   deploy-acm:
     needs: pre-flight          # run in parallel with the other jobs
@@ -63,7 +63,7 @@ jobs:
       - name: Deploy RHACM with AI
         run: |
           cd ${{env.DEPLOY_ACM_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh
 
   deploy-disconnected-registry:
     needs: deploy-acm         # run in parallel with the other jobs
@@ -72,7 +72,7 @@ jobs:
       - name: Deploy Internal Disconnected Registry
         run: |
           cd ${{env.DEPLOY_REGISTRY_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh
 
   deploy-hub-config:
     needs: [deploy-acm, deploy-disconnected-registry, deploy-httpd-server]       # run in parallel with the other jobs
@@ -81,7 +81,7 @@ jobs:
       - name: Deploy hub configuration
         run: |
           cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh
 
   deploy-spokes:
     needs: deploy-hub-config
