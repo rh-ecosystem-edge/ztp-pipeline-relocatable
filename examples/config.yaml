@@ -1,0 +1,97 @@
+spokes:
+  - spoke1-name:
+    master0:
+      nic_ext_dhcp: eno4 # ext_dhcp -> DHCP
+      nic_int_static: eno5 # int_static -> Internal IP for cluster communication
+      mac_ext_dhcp: "aa:ss:dd:ee:b0:10"
+      mac_int_static: "aa:ss:dd:ee:b1:10"
+      bmc_url: "<url bmc>"
+      bmc_user: "user-bmc"  #TODO  may be clear test and render with script
+      bmc_pass: "user-pass" #TODO  may be clear test and render with script
+      storage_disk: 
+        - sdb
+        - sdc
+        - sde
+        - sdd
+    master1:
+      nic_ext_dhcp: eno4
+      nic_int_static: eno5
+      mac_ext_dhcp: "aa:ss:dd:ee:b0:11"
+      mac_int_static: "aa:ss:dd:ee:b1:11"
+      bmc_url: "<url bmc>"
+      bmc_user: "user-bmc"
+      bmc_pass: "user-pass"
+      storage_disk: 
+        - sdb
+        - sdc
+        - sde
+        - sdd
+    master2:
+      nic_ext_dhcp: eno4
+      nic_int_static: eno5
+      mac_ext_dhcp: "aa:ss:dd:ee:b0:12"
+      mac_int_static: "aa:ss:dd:ee:b1:12"
+      bmc_url: "<url bmc>"
+      bmc_user: "user-bmc"
+      bmc_pass: "user-pass"
+      storage_disk: 
+        - sdb
+        - sdc
+        - sde
+        - sdd      
+    worker0:
+      nic_ext_dhcp: eno4
+      nic_int_static: eno5
+      mac_ext_dhcp: "aa:ss:dd:ee:b0:19"
+      mac_int_static: "aa:ss:dd:ee:b1:19"
+      bmc_url: "<url bmc>"
+      bmc_user: "user-bmc"
+      bmc_pass: "user-pass"
+  - spoke2-name:
+      master0:
+        nic_ext_dhcp: eno4
+        nic_int_static: eno5
+        mac_ext_dhcp: "aa:ss:dd:ee:b0:20"
+        mac_int_static: "aa:ss:dd:ee:b1:20"
+        bmc_url: "<url bmc>"
+        bmc_user: "user-bmc"
+        bmc_pass: "user-pass"
+        storage_disk: 
+          - sdb
+          - sdc
+          - sde
+          - sdd      
+      master1:
+        nic_ext_dhcp: eno4
+        nic_int_static: eno5
+        mac_ext_dhcp: "aa:ss:dd:ee:b0:21"
+        mac_int_static: "aa:ss:dd:ee:b1:21"
+        bmc_url: "<url bmc>"
+        bmc_user: "user-bmc"
+        bmc_pass: "user-pass"
+        storage_disk: 
+          - sdb
+          - sdc
+          - sde
+          - sdd      
+      master2:
+        nic_ext_dhcp: eno4
+        nic_int_static: eno5
+        mac_ext_dhcp: "aa:ss:dd:ee:b0:22"
+        mac_int_static: "aa:ss:dd:ee:b1:22"
+        bmc_url: "<url bmc>"
+        bmc_user: "user-bmc"
+        bmc_pass: "user-pass"
+        storage_disk: 
+          - sdb
+          - sdc
+          - sde
+          - sdd      
+      worker0:
+        nic_ext_dhcp: eno4
+        nic_int_static: eno5
+        mac_ext_dhcp: "aa:ss:dd:ee:b0:29"
+        mac_int_static: "aa:ss:dd:ee:b1:29"
+        bmc_url: "<url bmc>"
+        bmc_user: "user-bmc"
+        bmc_pass: "user-pass"
