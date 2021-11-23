@@ -6,6 +6,11 @@ set -o pipefail
 set -o nounset
 set -m
 
+# Load common vars
+export YAML="$1"
+source ${WORKDIR}/shared-utils/common.sh
+
+
 sanity_check() {
   # Path to read YAML from (change to $1 in production)
   export YAML=${1}
