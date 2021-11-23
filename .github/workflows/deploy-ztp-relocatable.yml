@@ -63,7 +63,7 @@ jobs:
       - name: Deploy RHACM with AI
         run: |
           cd ${{env.DEPLOY_ACM_DIR}}
-          ./deploy.sh
+  #        ./deploy.sh
 
   deploy-disconnected-registry:
     needs: deploy-acm         # run in parallel with the other jobs
