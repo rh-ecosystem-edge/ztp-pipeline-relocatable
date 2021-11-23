@@ -35,6 +35,9 @@ oc create -f 03-configmap.yml
 oc create -f 04-agent-service-config.yml
 oc create -f 05-pullsecrethub.yml
 
+oc patch hiveconfig hive --type merge -p '{"spec":{"targetNamespace":"hive","logLevel":"debug","featureGates":{"custom":{"enabled":["AlphaAgentInstallStrategy"]},"featureSet":"Custom"}}}'
+
+
 echo ">>>> Wait for ACM and AI deployed successfully"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
