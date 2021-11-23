@@ -60,7 +60,7 @@ create_spoke_definitions() {
 
 	# Generic vars for all spokes
 	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
-	export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
+	export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}')
 	export CHANGE_SPOKE_CLUSTERIMAGESET=openshift-v4.9.0
 	export CHANGE_SPOKE_API=192.168.7.243
 	export CHANGE_SPOKE_INGRESS=192.168.7.242
@@ -204,7 +204,7 @@ EOF
 
 			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].master$master.mac_int_static" ${YAML})
 			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].master$master.bmc_user" ${YAML})
-			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].master$master.bmc_pass" ${YAML})
+			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].master$master.bmc_pass" ${YAML}|base64)
 			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].master$master.bmc_url" ${YAML})
 
 			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].master$master.mac_ext_dhcp" ${YAML})
