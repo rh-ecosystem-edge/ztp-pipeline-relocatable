@@ -1,0 +1,38 @@
+lab: true
+version: ci
+provisioning_enable: false
+disconnected: false
+virtual_protocol: redfish
+uefi_legacy: true
+virtual_masters: true
+virtual_workers: false
+launch_steps: true
+deploy_openshift: true
+cluster: test-ci
+domain: alklabs.com
+baremetal_cidr: 192.168.150.0/24
+baremetal_net: bare-net
+provisioning_net: lab-prov
+virtual_masters_memory: 18000
+virtual_masters_numcpus: 16
+virtual_workers_deploy: false
+api_ip: 192.168.150.253
+ingress_ip: 192.168.150.252
+ipmi_user: amorgant
+ipmi_password: alknopfler
+disk_size: 300
+disconnected_operators:
+  - local-storage-operator
+#- advanced-cluster-management
+#- ocs-operator
+#- performance-addon-operator
+#- ptp-operator
+#- sriov-network-operator
+baremetal_ips:
+- 192.168.150.10
+- 192.168.150.11
+- 192.168.150.12
+baremetal_macs:
+- aa:aa:aa:ba:cc:11
+- aa:aa:aa:ba:cc:22
+- aa:aa:aa:ba:cc:33

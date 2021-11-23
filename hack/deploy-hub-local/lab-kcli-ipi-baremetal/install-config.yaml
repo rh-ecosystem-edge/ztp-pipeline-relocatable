@@ -1,0 +1,198 @@
+{% if api_ip != None and ':' in api_ip %}
+{% set ipv6 = True %}
+{% else %}
+{% set ipv6 = False %}
+{% endif %}
+{% if virtual_masters %}
+{% set extra_masters = [] %}
+{% for num in range(0, virtual_masters_number) %}
+{% do extra_masters.append({}) %}
+{% endfor %}
+{% set masters = extra_masters + masters %}
+{% endif %}
+{% if virtual_workers and virtual_workers_deploy %}
+{% set extra_workers = [] %}
+{% for num in range(0, virtual_workers_number) %}
+{% do extra_workers.append({}) %}
+{% endfor %}
+{% set workers = extra_workers + workers %}
+{% endif %}
+{% if provisioning_enable %}
+{% set virtual_masters_bootmac_prefix = virtual_masters_mac_prefix %}
+{% set virtual_workers_bootmac_prefix = virtual_workers_mac_prefix %}
+{% else %}
+{% set virtual_masters_bootmac_prefix = virtual_masters_baremetal_mac_prefix %}
+{% set virtual_workers_bootmac_prefix = virtual_workers_baremetal_mac_prefix %}
+{% endif %}
+{% set cluster_network_ipv6 = {"cidr": "fd01::/48", "hostPrefix": 64} %}
+{% set cluster_network_ipv4 = {"cidr": "10.132.0.0/14", "hostPrefix": 23} %}
+{% set service_network_ipv6 = ["fd02::/112"] %}
+{% set service_network_ipv4 = ["172.30.0.0/16"] %}
+{% set machine_cidr_ipv4 = ["10.0.0.0/16"] %}
+{% set machine_cidr_ipv6 = ["fc00::/48"] %}
+{% if dualstack|default(False) %}
+{% set machine_cidrs = machine_cidr_ipv4 + machine_cidr_ipv6 %}
+{% set cluster_networks = [cluster_network_ipv4] + [cluster_network_ipv6] %}
+{% set service_networks = service_network_ipv4 + service_network_ipv6 %}
+{% if ipv6 %}
+{% set machine_cidrs = machine_cidrs|reverse %}
+{% set cluster_networks = cluster_networks|reverse %}
+{% set service_networks = service_networks|reverse %}
+{% endif %}
+{% elif ipv6 %}
+{% set machine_cidrs = machine_cidr_ipv6 %}
+{% set cluster_networks = [cluster_network_ipv6] %}
+{% set service_networks = service_network_ipv6 %}
+{% else %}
+{% set machine_cidrs = machine_cidr_ipv4 %}
+{% set cluster_networks = [cluster_network_ipv4] %}
+{% set service_networks = service_network_ipv4 %}
+{% endif %}
+apiVersion: v1
+{% if fips %}
+fips: True
+{% endif %}
+baseDomain: {{ domain }}
+{% if http_proxy != None %}
+proxy:
+    httpProxy: {{ 'http://' + http_proxy if 'http' not in http_proxy else http_proxy }}
+    httpsProxy: {{ 'http://' + http_proxy if 'http' not in http_proxy else http_proxy }}
+{% if no_proxy != None %}
+    noProxy: {{ no_proxy }}
+{% endif %}
+{% endif %}
+networking:
+  networkType: {{ network_type }}
+  machineNetwork:
+  - cidr: {{ baremetal_cidr }}
+{% if dualstack and dualstack_cidr != None %}
+  - cidr: {{ dualstack_cidr }}
+{% endif %}
+  clusterNetworks:
+{% for network in cluster_networks %}
+  - cidr: {{ network['cidr'] }}
+    hostPrefix: {{ network['hostPrefix'] }}
+{% endfor %}
+  serviceNetwork:
+{% for network in service_networks %}
+  - {{ network }}
+{% endfor %}
+metadata:
+  name: {{ cluster }}
+compute:
+- name: worker
+  replicas: {{ workers|length }}
+controlPlane:
+  name: master
+  replicas: {{ masters|length }}
+platform:
+  baremetal:
+    apiVIP: {{ api_ip }}
+{% if dns_ip != None %}
+    dnsVIP: {{ dns_ip }}
+{% endif %}
+    ingressVIP: {{ ingress_ip }}
+{% if not provisioning_enable %}
+    provisioningNetwork: "Disabled"
+{% if baremetal_noprovisioning_ip != None %}
+    provisioningHostIP: {{ baremetal_noprovisioning_ip }}
+{% endif %}
+{% if baremetal_noprovisioning_bootstrap_ip != None %}
+    bootstrapProvisioningIP: {{ baremetal_noprovisioning_bootstrap_ip }}
+{% endif %}
+{% else %}
+    provisioningBridge: {{ provisioning_net }}
+{% if virtual_masters %}
+    provisioningNetworkInterface: {{ 'enp1s0' if virtual_protocol == 'redfish' else 'ens3' }}
+{% else %}
+   provisioningNetworkInterface: {{ provisioning_interface }}
+{% endif %}
+{% endif %}
+    externalBridge: {{ baremetal_net }}
+    libvirtURI: qemu+ssh://{{ 'root' if config_user == 'apache' else config_user }}@{{ config_host if config_host != '127.0.0.1' else baremetal_net|local_ip(true) }}/system
+    hosts:
+{% for master in masters %}
+{% set num = loop.index0|string %}
+    - name: {{ cluster }}-master-{{ num }}
+      role: master
+      bmc:
+        {% if 'redfish_address' in master %}
+        disableCertificateVerification: True
+        {% if 'redfish' in master['redfish_address'] or 'idrac' in master['redfish_address'] %}
+        address: {{ master['redfish_address'] }}
+        {% elif master['model']|default(model) == 'hpe' %}
+        address: redfish-virtualmedia://{{ master['redfish_address'] }}/redfish/v1/Systems/1
+        {% else %}
+        address: idrac-virtualmedia://{{ master['redfish_address'] }}/redfish/v1/Systems/System.Embedded.1
+        {% endif %}
+        {% else %}
+        address: ipmi://{{ master['ipmi_address'] | default('DONTCHANGEME:623' + num)}}
+        {% endif %}
+        username: {{ ipmi_user }}
+        password: {{ ipmi_password }}
+{% if 'provisioning_mac' in master %}
+      bootMACAddress: {{ master['provisioning_mac'] }}
+{% elif not provisioning_enable and baremetal_macs and baremetal_macs|length > num|int %}
+      bootMACAddress: {{ baremetal_macs[num|int] }}
+{% else %}
+      bootMACAddress: {{ virtual_masters_bootmac_prefix + ":" + "%02.d" | format(num|int + 1)| string }}
+{% endif %}
+      {% if 'disk' in master %}
+      rootDeviceHints:
+        deviceName: "/dev/{{ master['disk'] | basename }}"
+      {% endif %}
+{% endfor %}
+{% for worker in workers %}
+{% set num = loop.index0|string %}
+    - name: {{ cluster }}-worker-{{ num }}
+      role: worker
+      bmc:
+        {% if 'redfish_address' in worker %}
+        disableCertificateVerification: True
+        {% if 'redfish' in worker['redfish_address'] or 'idrac' in worker['redfish_address'] %}
+        address: {{ worker['redfish_address'] }}
+        {% elif worker['model']|default(model) == 'hpe' %}
+        address: redfish-virtualmedia://{{ worker['redfish_address'] }}/redfish/v1/Systems/1
+        {% else %}
+        address: idrac-virtualmedia://{{ worker['redfish_address'] }}/redfish/v1/Systems/System.Embedded.1
+        {% endif %}
+        {% else %}
+        address: ipmi://{{ worker['ipmi_address'] | default('DONTCHANGEME:624' + num)}}
+        {% endif %}
+        username: {{ ipmi_user }}
+        password: {{ ipmi_password }}
+{% if 'provisioning_mac' in worker %}
+      bootMACAddress: {{ worker ['provisioning_mac'] }}
+{% elif not provisioning_enable and baremetal_macs and baremetal_macs|length > virtual_masters_number + num|int %}
+      bootMACAddress: {{ baremetal_macs[virtual_masters_number + num|int] }}
+{% else %}
+      bootMACAddress: {{ virtual_workers_bootmac_prefix + ":" + "%02.d" | format(num|int + 1)| string }}
+{% endif %}
+      hardwareProfile: unknown
+      {% if 'disk' in worker %}
+      rootDeviceHints:
+        deviceName: "/dev/{{ worker['disk'] | basename }}"
+      {% endif %}
+{% endfor %}
+{% if cas %}
+additionalTrustBundle: |
+{% for ca in cas %}
+ {{ ca | certificate | replace('\n', '\n ') }}
+{% endfor %}
+{% endif %}
+{% if disconnected_url is defined %}
+imageContentSources:
+- mirrors:
+  - {{ disconnected_url }}/ocp/release
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+- mirrors:
+  - {{ disconnected_url }}/ocp/release
+  source: registry.ci.openshift.org/ocp/release
+{% elif imagecontentsources %}
+imageContentSources:
+{% for source in imagecontentsources %}
+- mirrors:
+  - {{ source }}
+  source: image-registry.openshift-image-registry.svc:5000/openshift/{{ source | basename | replace("openshift-", "")}}
+{% endfor %}
+{% endif %}
