@@ -28,7 +28,7 @@ sanity_check() {
 
     export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${YAML})
     export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${YAML})
-    export OC_OCP_TAG$(yq eval ".config.OC_OCP_TAG" ${YAML})
+    export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${YAML})
     export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${YAML})
 }
 
