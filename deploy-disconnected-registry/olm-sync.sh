@@ -85,7 +85,8 @@ function mirror() {
     echo ">>>> Trying to push OLM images to Internal Registry"
     GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}
 
-    for packagemanifest in $(oc get packagemanifest -n openshift-marketplace -o name); do
+    PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
+    for packagemanifest in $(oc get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
         for package in $(oc get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
             echo
             echo "Package: ${package}"
