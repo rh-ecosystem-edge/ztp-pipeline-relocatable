@@ -42,7 +42,7 @@ if [[ "${1}" == "hub" ]]; then
 	## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
 	export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
 	## OCP INDEX IMAGE
-	export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OCP_RELEASE}"
+	export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
 elif [[ "${1}" == "spoke" ]]; then
 	echo "TO BE IMPLEMENTED"
