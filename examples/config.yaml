@@ -1,7 +1,5 @@
 config:
   clusterimageset: openshift-v4.9.0
-  
-
 spokes:
   - spoke1-name:
       master0:
