@@ -50,8 +50,8 @@ echo ">>>> Verify yq command"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if ! command -v yq &>/dev/null; then
 	echo "Error: yq command not found. Installing..."
-	wget https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linux_amd64 -O /usr/bin/yq &&\
-    chmod +x /usr/bin/yq
+	wget https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linux_amd64 -O /usr/bin/yq &&
+		chmod +x /usr/bin/yq
 fi
 
 echo ">>>> Loading the Kubeconfig file"

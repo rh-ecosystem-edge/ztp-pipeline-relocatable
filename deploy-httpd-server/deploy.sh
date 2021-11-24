@@ -13,7 +13,7 @@ set -m
 echo ">>>> Create httpd server manifest"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-domain=apps.$(grep server "$KUBECONFIG" | awk '{print $2}' | cut -d '.' -f 2- | cut -d ':' -f 1 | head -1)
+domain=$(oc get ingresscontroller -n openshift-ingress-operator default -o jsonpath='{.spec.domain}')
 sed -i "s%CHANGEDOMAIN%$domain%g" http-server.yml
 
 oc create -f http-server.yml

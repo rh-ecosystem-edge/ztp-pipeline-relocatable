@@ -1,0 +1,39 @@
+lab: true
+provisioning_enable: false
+pool: default
+disconnected: true
+virtual_masters: true
+launch_steps: true
+deploy_openshift: true
+version: ci
+tag: 4.8.0-0.nightly-2021-06-03-221810
+openshift_version: 4.8
+cluster: test-ci
+domain: alklabs.com
+openshift_image: registry.ci.openshift.org/ocp/release:4.8.0-0.nightly-2021-06-03-221810
+baremetal_cidr: 2620:52:0:1304::/64
+baremetal_net: bare-net
+provisioning_net: labipv6-prov
+virtual_masters_memory: 18000
+virtual_masters_numcpus: 16
+virtual_workers_deploy: false
+api_ip: 2620:52:0:1304::2
+ingress_ip: 2620:52:0:1304::3
+disk_size: 300
+ipmi_user: jimi
+disconnected_operators:
+  - local-storage-operator
+#- advanced-cluster-management
+#- ocs-operator
+#- performance-addon-operator
+#- ptp-operator
+#- sriov-network-operator
+ipmi_password: hendrix
+baremetal_ips:
+  - 2620:52:0:1304::20
+  - 2620:52:0:1304::21
+  - 2620:52:0:1304::22
+baremetal_macs:
+  - aa:aa:aa:aa:bb:01
+  - aa:aa:aa:aa:bb:02
+  - aa:aa:aa:aa:bb:03

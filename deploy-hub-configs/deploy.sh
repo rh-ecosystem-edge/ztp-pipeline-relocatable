@@ -10,6 +10,14 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+YAML="$1"
+
+
+	if [ ! -f "${YAML}" ]; then
+		echo "File ${YAML} does not exist"
+		exit 1
+	fi
+
 echo ">>>> Preparing and replace info in the manifests"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
@@ -36,7 +44,6 @@ oc create -f 04-agent-service-config.yml
 oc create -f 05-pullsecrethub.yml
 
 oc patch hiveconfig hive --type merge -p '{"spec":{"targetNamespace":"hive","logLevel":"debug","featureGates":{"custom":{"enabled":["AlphaAgentInstallStrategy"]},"featureSet":"Custom"}}}'
-
 
 echo ">>>> Wait for ACM and AI deployed successfully"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

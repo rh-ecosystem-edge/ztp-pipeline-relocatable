@@ -54,7 +54,7 @@ jobs:
       - name: Deploy Internal HTTPD Server
         run: |
           cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
 
   deploy-acm:
     needs: pre-flight          # run in parallel with the other jobs
@@ -63,7 +63,7 @@ jobs:
       - name: Deploy RHACM with AI
         run: |
           cd ${{env.DEPLOY_ACM_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh
 
   deploy-disconnected-registry:
     needs: deploy-acm         # run in parallel with the other jobs
@@ -76,6 +76,7 @@ jobs:
           ./ocp-sync.sh hub
           ./olm-sync.sh hub
 
+
   deploy-hub-config:
     needs: [deploy-acm, deploy-disconnected-registry, deploy-httpd-server]       # run in parallel with the other jobs
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -83,7 +84,7 @@ jobs:
       - name: Deploy hub configuration
         run: |
           cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
-    #      ./deploy.sh
+          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
 
   deploy-spokes:
     needs: deploy-hub-config
@@ -93,4 +94,4 @@ jobs:
         run: |
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./render_spokes.sh ${{github.event.inputs.SPOKES_FILE}}; sleep 3
-          ./deploy.sh
+          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
