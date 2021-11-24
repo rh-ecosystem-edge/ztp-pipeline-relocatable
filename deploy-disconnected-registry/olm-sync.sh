@@ -59,7 +59,9 @@ function mirror() {
 	# Check for credentials for OPM
 	if [ ! -f ~/.docker/config.json ]; then
 		echo "ERROR: missing ~/.docker/config.json config"
-		exit 1
+        echo "Creating file"
+        mkdir -p ~/.docker/
+        cp -f ${PULL_SECRET} ~/.docker/config.json
 	fi
 
 	echo ">>>> Mirror OLM Operators"
