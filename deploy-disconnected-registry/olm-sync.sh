@@ -47,17 +47,23 @@ function prepare_env() {
 
 	echo ">>>> Creating Namespace and Service Accounts"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	if [ $(oc get ns | grep olm | wc -l) -eq 0 ]; then
+	if [ $(oc get ns | grep ${OLM_DESTINATION_REGISTRY_IMAGE_NS} | wc -l) -eq 0 ]; then
 		oc create ns ${OLM_DESTINATION_REGISTRY_IMAGE_NS}
+	fi
+
+	if [ $(oc get ns | grep ${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index | wc -l) -eq 0 ]; then
+		oc create ns ${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index
 	fi
 
 	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} create sa robot || echo "Done"
 	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot || echo "Done"
+	oc -n "${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index" create sa robot || echo "Done"
+	oc -n "${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index" adm policy add-role-to-user registry-editor -z robot || echo "Done"
 }
 
 function mirror() {
 	# Check for credentials for OPM
-    podman login ${DESTINATION_REGISTRY} -u robot -p $(oc -n olm serviceaccounts get-token robot) --authfile=${PULL_SECRET}
+    podman login ${DESTINATION_REGISTRY} -u robot -p $(oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} serviceaccounts get-token robot) --authfile=${PULL_SECRET}
 
 	if [ ! -f ~/.docker/config.json ]; then
 		echo "ERROR: missing ~/.docker/config.json config"
