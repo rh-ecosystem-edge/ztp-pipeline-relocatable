@@ -35,7 +35,7 @@ if [[ "${1}" == "hub" ]]; then
 	## NS where the OLM images will be mirrored
 	export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
 	## NS where the OLM INDEX for RH OPERATORS image will be mirrored
-	export OLM_DESTINATION_REGISTRY_INDEX_NS=olm-index/redhat-operator-index
+	export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
 	## OLM INDEX IMAGE
 	export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION}"
 	## OCP

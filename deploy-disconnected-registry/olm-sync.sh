@@ -51,14 +51,8 @@ function prepare_env() {
 		oc create ns ${OLM_DESTINATION_REGISTRY_IMAGE_NS}
 	fi
 
-	if [ $(oc get ns | grep ${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index | wc -l) -eq 0 ]; then
-		oc create ns ${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index
-	fi
-
 	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} create sa robot || echo "Done"
 	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot || echo "Done"
-	oc -n "${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index" create sa robot || echo "Done"
-	oc -n "${OLM_DESTINATION_REGISTRY_IMAGE_NS}-index" adm policy add-role-to-user registry-editor -z robot || echo "Done"
 }
 
 function mirror() {
