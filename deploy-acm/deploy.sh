@@ -10,10 +10,6 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
-# Load common vars
-export YAML="$1"
-source ${WORKDIR}/shared-utils/common.sh
-
 echo ">>>> Modify files to replace with pipeline info gathered"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 sed -i "s/CHANGEME/$OC_ACM_VERSION/g" 03-subscription.yml
