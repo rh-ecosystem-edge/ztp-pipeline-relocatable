@@ -18,7 +18,7 @@ fi
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 export KUBECONFIG_HUB=${KUBECONFIG}
-export PULL_SECRET=${OC_PULL_SECRET}
+export PULL_SECRET=../${SHARED_DIR}/pull_secret.json
 
 if [[ ! -f ${PULL_SECRET} ]]; then
     echo "Pull secret file $PULL_SECRET does not exist, grabbing from OpenShift"
