@@ -63,7 +63,7 @@ create_spoke_definitions() {
 
 	# Generic vars for all spokes
 	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
-	export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}')
+	export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
 	export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${YAML})
 	export CHANGE_SPOKE_API=192.168.7.243
 	export CHANGE_SPOKE_INGRESS=192.168.7.242
