@@ -57,6 +57,8 @@ function prepare_env() {
 
 function mirror() {
 	# Check for credentials for OPM
+    podman login ${DESTINATION_REGISTRY} -u robot -p $(oc -n olm serviceaccounts get-token robot) --authfile=${PULL_SECRET}
+
 	if [ ! -f ~/.docker/config.json ]; then
 		echo "ERROR: missing ~/.docker/config.json config"
         echo "Creating file"
