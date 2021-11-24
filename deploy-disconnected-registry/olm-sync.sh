@@ -53,11 +53,6 @@ function prepare_env() {
     
     oc -n ${DESTINATION_REGISTRY_IMAGE_NS} create sa robot
     oc -n ${DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot
-
-
-    echo "Source Index: ${SOURCE_INDEX}"
-    echo "Destination Index: ${OLM_DESTINATION_INDEX}"
-    echo "Destination Registry: ${DESTINATION_REGISTRY}"
 }
 
 function mirror() {
@@ -69,6 +64,12 @@ function mirror() {
 
     echo ">>>> Mirror OLM Operators"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "Pull Secret: ${PULL_SECRET}"
+    echo "Source Index: ${SOURCE_INDEX}"
+    echo "Source Packages: ${SOURCE_PACKAGES}"
+    echo "Destination Index: ${OLM_DESTINATION_INDEX}"
+    echo "Destination Registry: ${DESTINATION_REGISTRY}"
+    echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
 	# Mirror redhat-operator index image
 	echo "opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 	opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
@@ -78,5 +79,6 @@ function mirror() {
 
 prepare_env ${1}
 mirror
+create_cs
 
 exit 0
