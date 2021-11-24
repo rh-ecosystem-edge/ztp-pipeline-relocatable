@@ -81,23 +81,17 @@ function mirror() {
 	opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
 	GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
 
-    for i in {1..5}
-    do
-        echo ">>>> Trying to push OLM images to Internal Registry: ${i}/5"
-        GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}
 
-        if [[ $? -eq 0 ]]; then
-            echo ">>>> Mirroring Done!"
-            MIRROR_RC=0
-        else
-            MIRROR_RC=1
-        fi
-    done
+    echo ">>>> Trying to push OLM images to Internal Registry"
+    GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}
 
-    if [[ "${MIRROR_RC}" -ne 0 ]]; then
-        echo "OLM Mirroring step has failed, check the logs"
-        exit 1
-    fi
+    for packagemanifest in $(oc get packagemanifest -n openshift-marketplace -o name); do
+        for package in $(oc get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
+            echo
+            echo "Package: ${package}"
+            skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+		done
+	done
 }
 
 prepare_env ${1}
