@@ -10,77 +10,76 @@ set -m
 export YAML="$1"
 source ${WORKDIR}/shared-utils/common.sh
 
-
 sanity_check() {
-  # Path to read YAML from (change to $1 in production)
-  export YAML=${1}
+	# Path to read YAML from (change to $1 in production)
+	export YAML=${1}
 
-  if [ ! -f "${YAML}" ]; then
-    echo "File ${YAML} does not exist"
-    exit 1
-  fi
+	if [ ! -f "${YAML}" ]; then
+		echo "File ${YAML} does not exist"
+		exit 1
+	fi
 
-  # Check first item only
-  RESULT=$(yq eval ".spokes[0]" ${YAML})
+	# Check first item only
+	RESULT=$(yq eval ".spokes[0]" ${YAML})
 
-  if [ "${RESULT}" == "null" ]; then
-    echo "Couldn't evaluate name of first spoke in YAML at $YAML, please check and retry"
-    exit 1
-  fi
+	if [ "${RESULT}" == "null" ]; then
+		echo "Couldn't evaluate name of first spoke in YAML at $YAML, please check and retry"
+		exit 1
+	fi
 }
 
 create_kustomization() {
-  # Loop for spokes
-  # Prepare loop for spokes
-  i=0
+	# Loop for spokes
+	# Prepare loop for spokes
+	i=0
 
-  # Check first item
-  RESULT=$(yq eval ".spokes[$i]" ${YAML})
-  # Pregenerate kustomization.yaml and spoke cluster config
-  OUTPUT="${OUTPUT_DIR}/kustomization.yaml"
+	# Check first item
+	RESULT=$(yq eval ".spokes[$i]" ${YAML})
+	# Pregenerate kustomization.yaml and spoke cluster config
+	OUTPUT="${OUTPUT_DIR}/kustomization.yaml"
 
-  # Write header
-  echo "resources:" >${OUTPUT}
+	# Write header
+	echo "resources:" >${OUTPUT}
 
-  while [ "${RESULT}" != "null" ]; do
-    # Generate the 4 files for each spoke
-    cat <<EOF >>${OUTPUT}
+	while [ "${RESULT}" != "null" ]; do
+		# Generate the 4 files for each spoke
+		cat <<EOF >>${OUTPUT}
   - spoke-${i}-cluster.yaml
   - spoke-${i}-master-0.yaml
   - spoke-${i}-master-1.yaml
   - spoke-${i}-master-2.yaml
 EOF
 
-    # Prepare for next loop
-    i=$((i + 1))
-    RESULT=$(yq eval ".spokes[${i}]" ${YAML})
-  done
+		# Prepare for next loop
+		i=$((i + 1))
+		RESULT=$(yq eval ".spokes[${i}]" ${YAML})
+	done
 }
 
 create_spoke_definitions() {
-  # Reset loop for spoke general definition
-  i=0
-  RESULT=$(yq eval ".spokes[$i]" ${YAML})
+	# Reset loop for spoke general definition
+	i=0
+	RESULT=$(yq eval ".spokes[$i]" ${YAML})
 
-  # Generic vars for all spokes
-  export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
-  export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}')
-  export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${YAML})
-  export CHANGE_SPOKE_API=192.168.7.243
-  export CHANGE_SPOKE_INGRESS=192.168.7.242
-  export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
-  export CHANGE_SPOKE_CLUSTER_NET_CIDR=172.30.0.0/16
-  export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
-  export CHANGE_RSA_PUB_KEY=~/.ssh/id_rsa.pub
-  #export CHANGE_SPOKE_DNS= # hub ip or name ???
+	# Generic vars for all spokes
+	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
+	export CHANGE_PULL_SECRET=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}')
+	export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${YAML})
+	export CHANGE_SPOKE_API=192.168.7.243
+	export CHANGE_SPOKE_INGRESS=192.168.7.242
+	export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
+	export CHANGE_SPOKE_CLUSTER_NET_CIDR=172.30.0.0/16
+	export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
+	export CHANGE_RSA_PUB_KEY=~/.ssh/id_rsa.pub
+	#export CHANGE_SPOKE_DNS= # hub ip or name ???
 
-  while [ "${RESULT}" != "null" ]; do
-    SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
-    # Set vars
-    export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
+	while [ "${RESULT}" != "null" ]; do
+		SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
+		# Set vars
+		export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
 
-    # Generate the spoke definition yaml
-    cat <<EOF >${OUTPUT_DIR}/spoke-${i}-cluster.yaml
+		# Generate the spoke definition yaml
+		cat <<EOF >${OUTPUT_DIR}/spoke-${i}-cluster.yaml
 ---
 apiVersion: v1
 kind: Namespace
@@ -193,31 +192,31 @@ spec:
  sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
 EOF
 
-    # Generic vars for all masters
-    export CHANGE_SPOKE_MASTER_PUB_INT_MASK=24
-    export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
-    export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
+		# Generic vars for all masters
+		export CHANGE_SPOKE_MASTER_PUB_INT_MASK=24
+		export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
+		export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
 
-    # Now process blocks for each master
-    for master in 0 1 2; do
+		# Now process blocks for each master
+		for master in 0 1 2; do
 
-      # Master loop
-      export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_int_static" ${YAML})
-      export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_ext_dhcp" ${YAML})
+			# Master loop
+			export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_int_static" ${YAML})
+			export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_ext_dhcp" ${YAML})
 
-      export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
+			export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
 
-      export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_int_static" ${YAML})
-      export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${YAML})
-      export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${YAML} | base64)
-      export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_url" ${YAML})
+			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_int_static" ${YAML})
+			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${YAML})
+			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${YAML} | base64)
+			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_url" ${YAML})
 
-      export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_ext_dhcp" ${YAML})
+			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_ext_dhcp" ${YAML})
 
-      # Now, write the template to disk
-      OUTPUT="${OUTPUT_DIR}/spoke-${i}-master-${master}.yaml"
+			# Now, write the template to disk
+			OUTPUT="${OUTPUT_DIR}/spoke-${i}-master-${master}.yaml"
 
-      cat <<EOF >${OUTPUT}
+			cat <<EOF >${OUTPUT}
 ---
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
@@ -300,12 +299,12 @@ spec:
 
 EOF
 
-    done
+		done
 
-    # Prepare for next loop
-    i=$((i + 1))
-    RESULT=$(yq eval ".spokes[${i}]" ${YAML})
-  done
+		# Prepare for next loop
+		i=$((i + 1))
+		RESULT=$(yq eval ".spokes[${i}]" ${YAML})
+	done
 }
 
 # Main code

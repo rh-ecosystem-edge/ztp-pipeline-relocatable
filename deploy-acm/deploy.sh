@@ -14,7 +14,6 @@ set -m
 export YAML="$1"
 source ${WORKDIR}/shared-utils/common.sh
 
-
 echo ">>>> Modify files to replace with pipeline info gathered"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 sed -i "s/CHANGEME/$OC_ACM_VERSION/g" 03-subscription.yml
