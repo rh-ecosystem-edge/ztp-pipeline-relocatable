@@ -27,6 +27,7 @@ env:
   DEPLOY_SPOKES_DIR: deploy-spoke
   SHARED_DIR: shared-utils
   WORKDIR: ${GITHUB_WORKSPACE}
+  TEMPDIR: ${RUNNER_TEMP}
 
 
 jobs:
