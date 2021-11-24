@@ -15,11 +15,16 @@ fi
 
 # variables
 # #########
-echo ">>>> Get the pull secret from hub to file ./pull-secret.json"
+echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 export KUBECONFIG_HUB=${KUBECONFIG}
-oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >./pull-secret.json
-export PULL_SECRET=./pull-secret.json
+export PULL_SECRET=${OC_PULL_SECRET}
+
+if [[ ! -f ${PULL_SECRET} ]]; then
+    echo "Pull secret file $PULL_SECRET does not exist, grabbing from OpenShift"
+    oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d > ${PULL_SECRET}
+fi
+
 export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator'
 export OCP_RELEASE=${OC_OCP_VERSION}
 export OCP_RELEASE_FULL=${OCP_RELEASE}.0
