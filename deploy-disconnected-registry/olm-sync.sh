@@ -72,6 +72,8 @@ function mirror() {
 	echo "Destination Index: ${OLM_DESTINATION_INDEX}"
 	echo "Destination Registry: ${DESTINATION_REGISTRY}"
 	echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+
 	# Mirror redhat-operator index image
 	echo "opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 	opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}

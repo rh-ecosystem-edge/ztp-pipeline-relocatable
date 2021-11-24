@@ -29,7 +29,7 @@ if [[ "${1}" == "hub" ]]; then
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	export OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})
 	export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OCP_RELEASE}-x86_64"
-	export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OCP_RELEASE}"
+	export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION}"
 	export DESTINATION_REGISTRY="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
 	## OLM
 	## NS where the OLM images will be mirrored
