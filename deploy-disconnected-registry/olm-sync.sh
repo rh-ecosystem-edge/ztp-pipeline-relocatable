@@ -48,11 +48,11 @@ function prepare_env() {
 	echo ">>>> Creating Namespace and Service Accounts"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	if [ $(oc get ns | grep olm | wc -l) -eq 0 ]; then
-		oc create ns ${DESTINATION_REGISTRY_IMAGE_NS}
+		oc create ns OLM_DESTINATION_REGISTRY_IMAGE_NS
 	fi
 
-	oc -n ${DESTINATION_REGISTRY_IMAGE_NS} create sa robot
-	oc -n ${DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot
+	oc -n OLM_DESTINATION_REGISTRY_IMAGE_NS create sa robot
+	oc -n OLM_DESTINATION_REGISTRY_IMAGE_NS adm policy add-role-to-user registry-editor -z robot
 }
 
 function mirror() {
