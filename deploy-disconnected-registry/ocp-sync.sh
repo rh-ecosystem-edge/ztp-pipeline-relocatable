@@ -14,8 +14,8 @@ if [ $(oc get ns | grep ocp4 | wc -l) -eq 0 ]; then
 fi
 
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
-oc -n ocp4 create sa robot
-oc -n ocp4 adm policy add-role-to-user registry-editor -z robot
+oc -n ocp4 create sa robot || echo "Done"
+oc -n ocp4 adm policy add-role-to-user registry-editor -z robot || echo "Done"
 podman login ${DESTINATION_REGISTRY} -u robot -p $(oc -n ocp4 serviceaccounts get-token robot) --authfile=${PULL_SECRET}
 
 echo ">>>> Mirror Openshift Version"

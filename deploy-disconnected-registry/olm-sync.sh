@@ -51,8 +51,8 @@ function prepare_env() {
 		oc create ns ${OLM_DESTINATION_REGISTRY_IMAGE_NS}
 	fi
 
-	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} create sa robot
-	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot
+	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} create sa robot || echo "Done"
+	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot || echo "Done"
 }
 
 function mirror() {
