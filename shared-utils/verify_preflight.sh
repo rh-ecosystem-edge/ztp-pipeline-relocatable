@@ -10,6 +10,11 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+# Load common vars
+export YAML="$1"
+source ${WORKDIR}/shared-utils/common.sh
+
+
 echo ">>>> Download jq, oc, kubectl and set bash completion"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 curl -Ls https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 >/usr/bin/jq

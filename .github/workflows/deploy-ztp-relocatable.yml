@@ -3,13 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       KUBECONFIG:
-        description: 'Absolute path to kubeconfig file?'
+        description: 'Absolute path to KUBECONFIG file?'
         required: true
       SPOKES_FILE:
-        description: 'Absolute path to the Spokes yaml file?'
+        description: 'Absolute path to the Spokes YAML file?'
         required: true
       RUNNER:
-        description: 'Github Action Runner Tag'
+        description: 'GitHub Action Runner Tag'
         required: true
 
 
@@ -26,6 +26,7 @@ env:
   DEPLOY_HUB_CONFIGS_DIR: deploy-hub-configs
   DEPLOY_SPOKES_DIR: deploy-spoke
   SHARED_DIR: shared-utils
+  WORKDIR: ${GITHUB_WORKSPACE}
 
 
 jobs:
@@ -39,7 +40,7 @@ jobs:
       - name: Verification
         run: |
           cd ${{env.SHARED_DIR}}
-          ./verify_preflight.sh
+          ./verify_preflight.sh ${{github.event.inputs.SPOKES_FILE}}
       #TODO create the verify step if hub exist just to start from spoke step
       #- name: verify-if-hub-exists
       #  run: |
@@ -63,7 +64,7 @@ jobs:
       - name: Deploy RHACM with AI
         run: |
           cd ${{env.DEPLOY_ACM_DIR}}
-          ./deploy.sh
+  #        ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
 
   deploy-disconnected-registry:
     needs: deploy-acm         # run in parallel with the other jobs
