@@ -44,8 +44,8 @@ oc patch hiveconfig hive --type merge -p '{"spec":{"targetNamespace":"hive","log
 echo ">>>> Wait for ACM and AI deployed successfully"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
-    echo "Waiting for Assisted installer to be ready..."
-    sleep 5
+	echo "Waiting for Assisted installer to be ready..."
+	sleep 5
 done
 ../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
 

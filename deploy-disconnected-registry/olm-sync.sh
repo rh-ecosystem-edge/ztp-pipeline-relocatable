@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function create_cs() {
-		cat > ./catalogsource.yaml <<EOF
+	cat >./catalogsource.yaml <<EOF
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -17,42 +17,42 @@ spec:
       interval: 30m
 EOF
 
-		echo ""
-		echo "To apply the Red Hat Operators catalog mirror configuration to your cluster, do the following once per cluster:"
-		echo "oc apply -f ./catalogsource.yaml"
+	echo ""
+	echo "To apply the Red Hat Operators catalog mirror configuration to your cluster, do the following once per cluster:"
+	echo "oc apply -f ./catalogsource.yaml"
 }
 
 function prepare_env() {
-    ## Load Env
-    source ./common.sh ${1}
+	## Load Env
+	source ./common.sh ${1}
 
-    ## Checks
-    fail_counter=0
-    for binary in {opm,oc,skopeo,podman}; do
-        if [[ -z $(command -v $binary) ]]; then
-            echo "You need to install $binary!"
-            let "fail_counter++"
-        fi
-    done
+	## Checks
+	fail_counter=0
+	for binary in {opm,oc,skopeo,podman}; do
+		if [[ -z $(command -v $binary) ]]; then
+			echo "You need to install $binary!"
+			let "fail_counter++"
+		fi
+	done
 
-    if [[ ! -f ${PULL_SECRET} ]]; then
-        echo ">> Pull Secret not found in ${PULL_SECRET}!"
-        let "fail_counter++"
-    fi
+	if [[ ! -f ${PULL_SECRET} ]]; then
+		echo ">> Pull Secret not found in ${PULL_SECRET}!"
+		let "fail_counter++"
+	fi
 
-    if [[ ${fail_counter} -ge 1 ]]; then
-        echo "#########"
-        #exit 1
-    fi
+	if [[ ${fail_counter} -ge 1 ]]; then
+		echo "#########"
+		#exit 1
+	fi
 
-    echo ">>>> Creating Namespace and Service Accounts"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    if [ $(oc get ns | grep olm | wc -l) -eq 0 ]; then
-          oc create ns ${DESTINATION_REGISTRY_IMAGE_NS} 
-    fi
-    
-    oc -n ${DESTINATION_REGISTRY_IMAGE_NS} create sa robot
-    oc -n ${DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot
+	echo ">>>> Creating Namespace and Service Accounts"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	if [ $(oc get ns | grep olm | wc -l) -eq 0 ]; then
+		oc create ns ${DESTINATION_REGISTRY_IMAGE_NS}
+	fi
+
+	oc -n ${DESTINATION_REGISTRY_IMAGE_NS} create sa robot
+	oc -n ${DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot
 }
 
 function mirror() {
@@ -62,14 +62,14 @@ function mirror() {
 		exit 1
 	fi
 
-    echo ">>>> Mirror OLM Operators"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "Pull Secret: ${PULL_SECRET}"
-    echo "Source Index: ${SOURCE_INDEX}"
-    echo "Source Packages: ${SOURCE_PACKAGES}"
-    echo "Destination Index: ${OLM_DESTINATION_INDEX}"
-    echo "Destination Registry: ${DESTINATION_REGISTRY}"
-    echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
+	echo ">>>> Mirror OLM Operators"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+	echo "Pull Secret: ${PULL_SECRET}"
+	echo "Source Index: ${SOURCE_INDEX}"
+	echo "Source Packages: ${SOURCE_PACKAGES}"
+	echo "Destination Index: ${OLM_DESTINATION_INDEX}"
+	echo "Destination Registry: ${DESTINATION_REGISTRY}"
+	echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
 	# Mirror redhat-operator index image
 	echo "opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 	opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
