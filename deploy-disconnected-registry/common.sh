@@ -37,7 +37,7 @@ if [[ "${1}" == "hub" ]]; then
 	## NS where the OLM INDEX for RH OPERATORS image will be mirrored
 	export OLM_DESTINATION_REGISTRY_INDEX_NS=olm-index/redhat-operator-index
 	## OLM INDEX IMAGE
-	export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OCP_RELEASE_FULL}"
+	export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION}"
 	## OCP
 	## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
 	export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
