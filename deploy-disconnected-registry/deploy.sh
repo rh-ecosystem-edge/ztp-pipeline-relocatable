@@ -7,6 +7,10 @@ set -m
 
 # variables
 # #########
+
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 source ./common.sh ${1}
 
 echo ">>>> Deploy internal registry on: ${REGISTRY} Namespace"
