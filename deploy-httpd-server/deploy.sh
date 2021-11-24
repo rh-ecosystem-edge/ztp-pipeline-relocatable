@@ -13,7 +13,7 @@ set -m
 echo ">>>> Create httpd server manifest"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-domain=$(oc get ingresscontroller -n openshift-ingress-operator default -o jsonpath='{.spec.domain}')
+domain=$(oc get ingresscontroller -n openshift-ingress-operator default -o jsonpath='{.status.domain}')
 sed -i "s%CHANGEDOMAIN%$domain%g" http-server.yml
 
 oc create -f http-server.yml
