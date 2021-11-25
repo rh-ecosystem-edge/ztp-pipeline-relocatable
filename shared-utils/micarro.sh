@@ -3,6 +3,6 @@
 
 export WORKDIR=$GITHUB_WORKSPACE
 echo $WORKDIR
-. $WORKDIR/common.sh
+. ${WORKDIR}/${SHARED_DIR}common.sh
 
 env
