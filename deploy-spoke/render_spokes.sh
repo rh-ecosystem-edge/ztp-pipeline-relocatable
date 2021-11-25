@@ -75,7 +75,7 @@ create_spoke_definitions() {
 	export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
 	export CHANGE_SPOKE_CLUSTER_NET_CIDR=10.128.0.0/14
 	export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
-	export CHANGE_RSA_PUB_KEY=$(cat ~/.ssh/id_rsa.pub) #TODO get from inputs??? ask for it to customer???
+    export CHANGE_RSA_PUB_KEY=$(oc get cm -n kube-system cluster-config-v1 -o yaml | grep -A 1 sshKey | tail -1)
 	#export CHANGE_SPOKE_DNS= # hub ip or name ???
 
 	while [ "${RESULT}" != "null" ]; do
