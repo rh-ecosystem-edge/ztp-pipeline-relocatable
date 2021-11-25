@@ -56,7 +56,7 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
-   #       ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
 
   deploy-acm:
     needs: pre-flight          # run in parallel with the other jobs
@@ -66,7 +66,7 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_ACM_DIR}}
-  #        ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
 
   deploy-disconnected-registry:
     needs: deploy-acm         # run in parallel with the other jobs
@@ -76,8 +76,8 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_REGISTRY_DIR}}
-    #      ./deploy.sh hub
-    #      ./ocp-sync.sh hub
+          ./deploy.sh hub
+          ./ocp-sync.sh hub
     #      ./olm-sync.sh hub
 
 
@@ -89,7 +89,7 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
-   #       ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
 
   deploy-spokes:
     needs: deploy-hub-config
