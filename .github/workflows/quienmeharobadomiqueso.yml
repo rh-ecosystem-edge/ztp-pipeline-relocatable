@@ -1,4 +1,4 @@
-name: deploy-ztp-relocatable
+name: ¿Quien ha robado mi queso?
 on:
   workflow_dispatch:
     inputs:
