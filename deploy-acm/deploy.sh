@@ -9,6 +9,7 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+<<<<<<< HEAD
 if ./verify.sh; then
 
 	# Load common vars
@@ -16,7 +17,9 @@ if ./verify.sh; then
 
 	echo ">>>> Modify files to replace with pipeline info gathered"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	sed -i "s/CHANGEME/${OC_ACM_VERSION}/g" 03-subscription.yml
+    ACM_SOURCE=$(oc get packagemanifest -n openshift-marketplace advanced-cluster-management -o jsonpath='{.status.catalogSource}')
+    ACM_CHANNEL=$(oc get packagemanifest -n openshift-marketplace advanced-cluster-management -o jsonpath='{.status.defaultChannel}')
+    sed -i -e "s/CHANGESOURCE/${ACM_SOURCE}/" -e "s/CHANGECHANNEL/${ACM_CHANNEL}/" 03-subscription.yml
 
 	echo ">>>> Deploy manifests to install ACM ${OC_ACM_VERSION}"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

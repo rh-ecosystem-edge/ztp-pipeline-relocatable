@@ -5,7 +5,7 @@ metadata:
   name: advanced-cluster-management
   namespace: open-cluster-management
 spec:
-  channel: "release-CHANGEME"
+  channel: "CHANGECHANNEL"
   name: advanced-cluster-management
-  source: redhat-operators
+  source: "CHANGESOURCE"
   sourceNamespace: openshift-marketplace
