@@ -14,7 +14,7 @@ on:
 
 
 env:
-  WORKDIR: ${{ github.action_path}}
+  WORKDIR: ${{github.action_path}}
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
   SPOKES_FILE: ${{github.event.inputs.SPOKES_FILE}}
   OC_OCP_VERSION: '4.9'
