@@ -13,6 +13,7 @@ set -m
 echo ">>>> Deploy all the manifests using kustomize"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
+oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
 oc apply -k .
 
 echo ">>>>EOF"
