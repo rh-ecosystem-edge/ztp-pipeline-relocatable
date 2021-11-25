@@ -43,7 +43,7 @@ jobs:
         run: |
           cd ${{env.SHARED_DIR}}
           echo $WORKDIR
-          echo ${{ GITHUB_WORKSPACE }}
+          
           echo $GITHUB_WORKSPACE
           ./micarro.sh
 
