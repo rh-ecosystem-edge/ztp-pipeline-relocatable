@@ -212,7 +212,7 @@ EOF
             export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
 
             export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_int_static" ${YAML})
-            export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${YAML})
+            export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${YAML} | base64)
             export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${YAML} | base64)
             export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_url" ${YAML})
 
