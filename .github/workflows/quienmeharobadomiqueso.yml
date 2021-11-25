@@ -14,7 +14,7 @@ on:
 
 
 env:
-  WORKDIR: ${{ env.GITHUB_WORKSPACE }}
+  WORKDIR: ${GITHUB_WORKSPACE}
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
   SPOKES_FILE: ${{github.event.inputs.SPOKES_FILE}}
   OC_OCP_VERSION: '4.9'
@@ -43,7 +43,6 @@ jobs:
         run: |
           cd ${{env.SHARED_DIR}}
           echo $WORKDIR
-          
-          echo $GITHUB_WORKSPACE
+
           ./micarro.sh
 
