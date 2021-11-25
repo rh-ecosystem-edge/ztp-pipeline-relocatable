@@ -101,3 +101,25 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./render_spokes.sh ${{github.event.inputs.SPOKES_FILE}}; sleep 3
           ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+
+  extract-spokes-list:
+    needs: deploy-spokes
+    runs-on: ${{github.event.inputs.RUNNER}}
+    outputs:
+      services: ${{ steps.spokeslist.outputs.services }}
+    steps:
+      - name: Extract list of Spokes
+        id: spokeslist
+        run: |
+          echo "::set-output name=services::$(cat ${{github.event.inputs.SPOKES_FILE}} | yq e '.spokes.[] | keys | join(",")' - | jq -Rsc '. / "\n" - [""]')"
+          
+  verify-installation:
+    needs: extract-spokes-list
+    runs-on: ${{github.event.inputs.RUNNER}}
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.extract-spokes-list.outputs.services) }}
+    steps:
+      - name: ${{ matrix.service }}
+        run: |
+          echo ${{ matrix.service }}
