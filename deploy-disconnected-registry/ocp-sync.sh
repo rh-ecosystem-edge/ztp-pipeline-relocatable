@@ -18,7 +18,7 @@ oc -n ocp4 create sa robot || echo "Done"
 oc -n ocp4 adm policy add-role-to-user registry-editor -z robot || echo "Done"
 oc -n ocp4 adm policy add-cluster-role-to-user cluster-admin -z assisted-service || echo "Done"
 oc -n ocp4 adm policy add-cluster-role-to-user cluster-admin -z robot || echo "Done"
-podman login ${DESTINATION_REGISTRY} -u robot -p $(oc -n ocp4 serviceaccounts get-token robot) --authfile=${PULL_SECRET}
+podman login ${DESTINATION_REGISTRY} -u robot -p $(oc -n ocp4 serviceaccounts get-token robot) --authfile=${PULL_SECRET}   # to create a merge with the registry original adding the registry auth entry
 
 echo ">>>> Mirror Openshift Version"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
