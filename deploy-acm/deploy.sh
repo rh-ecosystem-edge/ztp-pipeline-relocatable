@@ -39,7 +39,7 @@ while [ "$timeout" -lt "60" ]; do
 		break
 	fi
 	sleep 5
-	timeout=$(($timeout + 5))
+	timeout=$((timeout + 5))
 done
 if [ "$ready" == "false" ]; then
 	echo "timeout waiting for ACM pods "
