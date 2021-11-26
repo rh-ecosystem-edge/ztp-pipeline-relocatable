@@ -7,7 +7,7 @@ set -m
 
 if [[ $# -lt 1 ]]; then
 	echo "Usage :"
-	echo "  \$1: hub|spoke"
+	echo '  $1: hub|spoke'
 	echo "Sample: "
 	echo "  $0 hub|spoke"
 	exit 1
@@ -21,15 +21,15 @@ export KUBECONFIG_HUB=${KUBECONFIG}
 export PULL_SECRET=../${SHARED_DIR}/pull_secret.json
 
 if [[ ! -f ${PULL_SECRET} ]]; then
-    echo "Pull secret file $PULL_SECRET does not exist, grabbing from OpenShift"
-    oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d > ${PULL_SECRET}
+	echo "Pull secret file $PULL_SECRET does not exist, grabbing from OpenShift"
+	oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
 fi
 
 export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator'
 export OCP_RELEASE=${OC_OCP_VERSION}
 export OCP_RELEASE_FULL=${OCP_RELEASE}.0
 
-if [[ "${1}" == "hub" ]]; then
+if [[ ${1} == "hub" ]]; then
 	echo ">>>> Get the registry cert and update pull secret for: ${1}"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	export OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})
@@ -49,7 +49,7 @@ if [[ "${1}" == "hub" ]]; then
 	## OCP INDEX IMAGE
 	export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
-elif [[ "${1}" == "spoke" ]]; then
+elif [[ ${1} == "spoke" ]]; then
 	echo "TO BE IMPLEMENTED"
 	exit 1
 	#export SOURCE_INDEX="$LOCAL_REG"

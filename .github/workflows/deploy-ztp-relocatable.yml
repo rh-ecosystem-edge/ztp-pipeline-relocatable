@@ -112,7 +112,7 @@ jobs:
         id: spokeslist
         run: |
           echo "::set-output name=services::$(cat ${{github.event.inputs.SPOKES_FILE}} | yq e '.spokes.[] | keys | join(",")' - | jq -Rsc '. / "\n" - [""]')"
-          
+
   verify-installation:
     needs: extract-spokes-list
     runs-on: ${{github.event.inputs.RUNNER}}
