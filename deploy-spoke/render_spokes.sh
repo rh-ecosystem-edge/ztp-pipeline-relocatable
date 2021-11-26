@@ -294,7 +294,7 @@ metadata:
    bmac.agent-install.openshift.io/hostname: 'kubeframe-master-${master}'
 spec:
  online: false
- bootMACAddress: '$CHANGE_SPOKE_MASTER_PUB_INT_MAC'
+ bootMACAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
  rootDeviceHints:
    deviceName: /dev/sda
  bmc:
