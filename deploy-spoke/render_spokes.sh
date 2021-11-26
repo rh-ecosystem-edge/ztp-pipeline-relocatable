@@ -67,7 +67,7 @@ create_spoke_definitions() {
 
     # Generic vars for all spokes
     export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
-    export PULL_SECRET=../${SHARED_DIR}/pull_secret.json   #ToDo: get from pablo commons (remove it from here)
+    export PULL_SECRET=../${SHARED_DIR}/pull_secret.json   #TODO: get from pablo commons (remove it from here)
     export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
     export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${YAML})
     export CHANGE_SPOKE_API=192.168.7.243
@@ -75,7 +75,7 @@ create_spoke_definitions() {
     export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
     export CHANGE_SPOKE_CLUSTER_NET_CIDR=172.30.0.0/16
     export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
-    export CHANGE_RSA_PUB_KEY=$(cat ~/.ssh/id_rsa.pub)      #ToDo get from inputs??? ask for it to customer???
+    export CHANGE_RSA_PUB_KEY=$(cat ~/.ssh/id_rsa.pub)      #TODO get from inputs??? ask for it to customer???
     #export CHANGE_SPOKE_DNS= # hub ip or name ???
 
     while [ "${RESULT}" != "null" ]; do
