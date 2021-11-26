@@ -122,4 +122,6 @@ jobs:
     steps:
       - name: ${{ matrix.service }}
         run: |
-          echo ${{ matrix.service }}
+          SPOKE=${{ matrix.service }}
+          cd ${{env.DEPLOY_SPOKES_DIR}}
+          ./wait_for_spoke.sh $SPOKE
