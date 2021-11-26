@@ -32,6 +32,7 @@ if [ "$OC_DEPLOY_METAL" = "yes" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "$OC_RELEASE" | awk -F: '{print $2}')
             kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="$VERSION" -P tag="$t" -P openshift_image="$OC_RELEASE" -P cluster="$OC_CLUSTER_NAME" "$OC_CLUSTER_NAME"
+            kcli create plan -k -f create-vm.yml "$OC_CLUSTER_NAME"
 
         else
             echo "Metal3 + ipv4 + disconnected"
@@ -48,6 +49,18 @@ else
    echo "Without Metal3 + ipv4 + connected"
    kcli create kube openshift --force --paramfile lab-withoutMetal3.yml -P tag="$OC_RELEASE" -P cluster="$OC_CLUSTER_NAME" "$OC_CLUSTER_NAME"
 fi
+
+IP=$(kcli info vm test-ci-installer|grep ip | awk '{print $2}')
+SPOKE1_0=$(kcli info vm spoke1-m0 | grep id | awk '{print $2}')
+SPOKE1_1=$(kcli info vm spoke1-m1 | grep id | awk '{print $2}')
+SPOKE1_2=$(kcli info vm spoke1-m2 | grep id | awk '{print $2}')
+
+sed -i "s/CHANGE_IP/$IP/g" ../spokes.yaml
+sed -i "s/CHANGE_ID_0/$SPOKE1_0/g" ../spokes.yaml
+sed -i "s/CHANGE_ID_1/$SPOKE1_1/g" ../spokes.yaml
+sed -i "s/CHANGE_ID_2/$SPOKE1_2/g" ../spokes.yaml
+
+ kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 
 echo ">>>> EOF"
 echo ">>>>>>>>"

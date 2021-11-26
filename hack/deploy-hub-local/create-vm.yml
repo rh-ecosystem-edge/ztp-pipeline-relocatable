@@ -1,0 +1,23 @@
+parameters:
+  nodes: 3 
+
+{% for num in range(0, nodes) %}
+spoke1-m{{ num }}:
+  uefi_legacy: true
+  start: false
+  memory: 16000
+  numcpus: 8
+  nets:
+  - name: bare-net
+    mac: ee:ee:ee:ee:ee:{{ num }}e
+  - name: kubeframe
+    nic: enp2s0
+    mac: aa:aa:aa:aa:aa:{{ num }}a
+  disks:
+  - size: 40
+    interface: scsi
+  - size: 40
+    interface: scsi
+  - size: 40
+    interface: scsi
+{% endfor %}
