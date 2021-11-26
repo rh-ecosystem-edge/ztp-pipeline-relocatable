@@ -10,6 +10,11 @@ set -m
 SPOKE="$1"
 wait_time=3600
 
+echo ">>>> Wait for bmh of spoke $SPOKE"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+
+
 echo ">>>> Wait for deployment of spoke $SPOKE"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
