@@ -55,12 +55,12 @@ SPOKE1_0=$(kcli info vm spoke1-m0 | grep id | awk '{print $2}')
 SPOKE1_1=$(kcli info vm spoke1-m1 | grep id | awk '{print $2}')
 SPOKE1_2=$(kcli info vm spoke1-m2 | grep id | awk '{print $2}')
 
-sed -i "s/CHANGE_IP/$IP/g" ../spokes.yaml
-sed -i "s/CHANGE_ID_0/$SPOKE1_0/g" ../spokes.yaml
-sed -i "s/CHANGE_ID_1/$SPOKE1_1/g" ../spokes.yaml
-sed -i "s/CHANGE_ID_2/$SPOKE1_2/g" ../spokes.yaml
+sed  "s/CHANGE_IP/$IP/g" ./spokes-orig.yaml > ./spokes.yaml
+sed  "s/CHANGE_ID_0/$SPOKE1_0/g" ./spokes-orig.yaml > ./spokes.yaml
+sed  "s/CHANGE_ID_1/$SPOKE1_1/g" ./spokes-orig.yaml > ./spokes.yaml
+sed  "s/CHANGE_ID_2/$SPOKE1_2/g" ./spokes-orig.yaml > ./spokes.yaml
 
- kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
