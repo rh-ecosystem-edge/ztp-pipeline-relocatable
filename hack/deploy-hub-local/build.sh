@@ -51,9 +51,9 @@ else
 fi
 
 IP=$(kcli info vm test-ci-installer|grep ip | awk '{print $2}')
-SPOKE1_0=$(kcli info vm spoke1-m0 | grep id | awk '{print $2}')
-SPOKE1_1=$(kcli info vm spoke1-m1 | grep id | awk '{print $2}')
-SPOKE1_2=$(kcli info vm spoke1-m2 | grep id | awk '{print $2}')
+SPOKE1_0=$(kcli info vm spoke1-m0 | grep id | awk '{print $2}')
+SPOKE1_1=$(kcli info vm spoke1-m1 | grep id | awk '{print $2}')
+SPOKE1_2=$(kcli info vm spoke1-m2 | grep id | awk '{print $2}')
 
 sed  "s/CHANGE_IP/$IP/g" ./spokes-orig.yaml > ./spokes.yaml
 sed  "s/CHANGE_ID_0/$SPOKE1_0/g" ./spokes-orig.yaml > ./spokes.yaml
