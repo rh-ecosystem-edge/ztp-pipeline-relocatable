@@ -116,6 +116,7 @@ jobs:
   verify-installation:
     needs: extract-spokes-list
     runs-on: ${{github.event.inputs.RUNNER}}
+    continue-on-error: true
     strategy:
       matrix:
         service: ${{ fromJSON(needs.extract-spokes-list.outputs.services) }}

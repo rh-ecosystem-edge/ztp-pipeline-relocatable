@@ -14,10 +14,12 @@ spoke1-m{{ num }}:
     nic: enp2s0
     mac: aa:aa:aa:aa:aa:{{ num }}a
   disks:
-  - size: 40
+  - size: 200
     interface: scsi
-  - size: 40
+  - size: 200
     interface: scsi
-  - size: 40
+  - size: 200
+    interface: scsi
+  - size: 200
     interface: scsi
 {% endfor %}
