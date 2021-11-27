@@ -5,7 +5,7 @@ parameters:
 spoke1-m{{ num }}:
   uefi_legacy: true
   start: false
-  memory: 18000
+  memory: 24000
   numcpus: 8
   nets:
   - name: bare-net
