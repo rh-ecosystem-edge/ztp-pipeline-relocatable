@@ -8,8 +8,8 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels:  
-      name: kubeframe-registry 
+    matchLabels:
+      name: kubeframe-registry
   template:
     metadata:
       labels:
@@ -17,9 +17,9 @@ spec:
     spec:
       containers:
         - name: kubeframe-registry
-          image: quay.io/jparrill/registry:2 
+          image: quay.io/jparrill/registry:2
           ports:
-            - name: registry 
+            - name: registry
               containerPort: 5000
               protocol: TCP
           volumeMounts:
