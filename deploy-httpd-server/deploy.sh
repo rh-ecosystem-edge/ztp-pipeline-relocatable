@@ -19,7 +19,8 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 domain=$(oc get ingresscontroller -n openshift-ingress-operator default -o jsonpath='{.status.domain}')
 sed -i "s%CHANGEDOMAIN%$domain%g" http-server.yml
 
-oc apply -f http-server.yml
+# TODO: create on their proper NS
+oc apply -n default -f http-server.yml
 ../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n default nginx
 
 echo ">>>> Pre-load the images rhcos to be available"
