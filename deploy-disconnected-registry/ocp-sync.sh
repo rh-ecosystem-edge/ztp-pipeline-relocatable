@@ -12,13 +12,8 @@ source ${WORKDIR}/shared-utils/common.sh
 
 source ./common.sh ${1}
 
-<<<<<<< HEAD
 if [[ "$1" == 'hub' ]]; then
     if ./verify.sh ; then
-=======
-if [[ $1 == "hub" ]]; then
-	if ./verify.sh; then
->>>>>>> 58ff17a364fa8ad1608ef24956a7b8b7e44031e9
 		oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
 		export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
