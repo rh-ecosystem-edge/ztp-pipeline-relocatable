@@ -7,6 +7,7 @@ set -m
 
 # variables
 # #########
+export CLUSTERS=$1
 export DEPLOY_OCP_DIR="./"
 export OC_AMORGANT_PULL_SECRET='"{"auths": ... }"'
 export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.0-x86_64"
@@ -15,6 +16,11 @@ export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
 export VERSION="ci"
+
+if $# -ne 1; then
+    echo "Usage: $0 <clusters>"
+    exit 1
+fi
 
 echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
@@ -33,7 +39,7 @@ if [ "$OC_DEPLOY_METAL" = "yes" ]; then
             t=$(echo "$OC_RELEASE" | awk -F: '{print $2}')
             kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
             kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="$VERSION" -P tag="$t" -P openshift_image="$OC_RELEASE" -P cluster="$OC_CLUSTER_NAME" "$OC_CLUSTER_NAME"
-            kcli create plan -k -f create-vm.yml "$OC_CLUSTER_NAME"
+            kcli create plan -k -f create-vm.yml  -P clusters="$CLUSTERS" "$OC_CLUSTER_NAME"
 
         else
             echo "Metal3 + ipv4 + disconnected"
