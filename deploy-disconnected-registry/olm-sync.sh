@@ -90,7 +90,7 @@ function mirror() {
 		done
 	done
 }
-if [[ $1 == "hub" ]]; then
+if [[ "$1" == 'hub' ]]; then
     if ./verify.sh ; then
 		prepare_env ${1}
 		mirror

@@ -12,7 +12,7 @@ source ${WORKDIR}/shared-utils/common.sh
 
 source ./common.sh ${1}
 
-if [[ $1 == "hub" ]]; then
+if [[ "$1" == 'hub' ]]; then
     if ./verify.sh ; then
 		oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
