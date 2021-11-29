@@ -11,6 +11,7 @@ set -m
 # export KUBECONFIG=/root/admin.kubeconfig
 
 # Load common vars
+source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Download jq, oc, kubectl and set bash completion"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

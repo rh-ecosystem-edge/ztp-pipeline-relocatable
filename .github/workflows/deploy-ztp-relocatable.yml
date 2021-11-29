@@ -40,7 +40,7 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.SHARED_DIR}}
-          ./verify_preflight.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./verify_preflight.sh
       #TODO create the verify step if hub exist just to start from spoke step
       #- name: verify-if-hub-exists
       #  run: |
@@ -56,7 +56,7 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
-          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./deploy.sh
 
   deploy-acm:
     needs: pre-flight          # run in parallel with the other jobs
@@ -66,7 +66,7 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_ACM_DIR}}
-          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./deploy.sh
 
   deploy-disconnected-registry:
     needs: deploy-acm         # run in parallel with the other jobs
@@ -89,7 +89,7 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
-          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./deploy.sh
 
   deploy-spokes:
     needs: deploy-hub-config
@@ -99,8 +99,8 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_SPOKES_DIR}}
-          ./render_spokes.sh ${{github.event.inputs.SPOKES_FILE}}; sleep 3
-          ./deploy.sh ${{github.event.inputs.SPOKES_FILE}}
+          ./render_spokes.sh; sleep 3
+          ./deploy.sh
 
   extract-spokes-list:
     needs: deploy-spokes
@@ -123,6 +123,7 @@ jobs:
     steps:
       - name: ${{ matrix.service }}
         run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
           SPOKE=${{ matrix.service }}
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh $SPOKE

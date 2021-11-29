@@ -7,6 +7,9 @@ set -m
 
 # variables
 # #########
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 source ./common.sh ${1}
 
 if [ $(oc get ns | grep ${REGISTRY} | wc -l) -eq 0 ]; then

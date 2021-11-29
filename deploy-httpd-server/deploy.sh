@@ -10,6 +10,9 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 echo ">>>> Create httpd server manifest"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 

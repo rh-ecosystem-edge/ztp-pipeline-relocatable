@@ -12,6 +12,9 @@ set -o pipefail
 set -o nounset
 set -m
 
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 DEFAULT_TIMEOUT=60
 DEFAULT_NAMESPACE=default
 

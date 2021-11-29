@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 function create_cs() {
 	cat >./catalogsource.yaml <<EOF
 apiVersion: operators.coreos.com/v1alpha1

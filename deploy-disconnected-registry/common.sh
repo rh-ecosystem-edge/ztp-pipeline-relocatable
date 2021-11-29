@@ -15,20 +15,20 @@ fi
 
 # variables
 # #########
+
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 export KUBECONFIG_HUB=${KUBECONFIG}
 export REGISTRY=kubeframe-registry
-export PULL_SECRET=../${SHARED_DIR}/pull_secret.json
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-if [[ ! -f ${PULL_SECRET} ]]; then
-	echo "Pull secret file $PULL_SECRET does not exist, grabbing from OpenShift"
-	oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
-fi
+
 
 export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator'
 export OCP_RELEASE=${OC_OCP_VERSION}

@@ -7,30 +7,15 @@ set -o nounset
 set -m
 
 # Load common vars
-export YAML="$1"
+source ${WORKDIR}/shared-utils/common.sh
 
-sanity_check() {
-	# Path to read YAML from (change to $1 in production)
-	export YAML=${1}
+# Check first item only
+RESULT=$(yq eval ".spokes[0]" ${SPOKES_FILE})
 
-	if [ ! -f "${YAML}" ]; then
-		echo "File ${YAML} does not exist"
-		exit 1
-	fi
-
-	# Check first item only
-	RESULT=$(yq eval ".spokes[0]" ${YAML})
-
-	if [ "${RESULT}" == "null" ]; then
-		echo "Couldn't evaluate name of first spoke in YAML at $YAML, please check and retry"
-		exit 1
-	fi
-
-	export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${YAML})
-	export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${YAML})
-	export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${YAML})
-	export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${YAML})
-}
+if [ "${RESULT}" == "null" ]; then
+	echo "Couldn't evaluate name of first spoke in YAML at $SPOKES_FILE, please check and retry"
+	exit 1
+fi
 
 create_kustomization() {
 	# Loop for spokes
@@ -38,7 +23,7 @@ create_kustomization() {
 	i=0
 
 	# Check first item
-	RESULT=$(yq eval ".spokes[$i]" ${YAML})
+	RESULT=$(yq eval ".spokes[$i]" ${SPOKES_FILE})
 	# Pregenerate kustomization.yaml and spoke cluster config
 	OUTPUT="${OUTPUT_DIR}/kustomization.yaml"
 
@@ -56,20 +41,20 @@ EOF
 
 		# Prepare for next loop
 		i=$((i + 1))
-		RESULT=$(yq eval ".spokes[${i}]" ${YAML})
+		RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
 	done
 }
 
 create_spoke_definitions() {
 	# Reset loop for spoke general definition
 	i=0
-	RESULT=$(yq eval ".spokes[$i]" ${YAML})
+	RESULT=$(yq eval ".spokes[$i]" ${SPOKES_FILE})
 
 	# Generic vars for all spokes
 	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
 	export PULL_SECRET=../${SHARED_DIR}/pull_secret.json #TODO: get from pablo commons (remove it from here)
 	export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
-	export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${YAML})
+	export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
 	export CHANGE_SPOKE_API=192.168.7.243
 	export CHANGE_SPOKE_INGRESS=192.168.7.242
 	export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
@@ -206,17 +191,17 @@ EOF
 		for master in 0 1 2; do
 
 			# Master loop
-			export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_int_static" ${YAML})
-			export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_ext_dhcp" ${YAML})
+			export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_int_static" ${SPOKES_FILE})
+			export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_ext_dhcp" ${SPOKES_FILE})
 
 			export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
 
-			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_int_static" ${YAML})
-			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${YAML} | base64)
-			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${YAML} | base64)
-			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_url" ${YAML})
+			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_int_static" ${SPOKES_FILE})
+			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${SPOKES_FILE} | base64)
+			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${SPOKES_FILE} | base64)
+			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_url" ${SPOKES_FILE})
 
-			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_ext_dhcp" ${YAML})
+			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_ext_dhcp" ${SPOKES_FILE})
 
 			# Now, write the template to disk
 			OUTPUT="${OUTPUT_DIR}/spoke-${i}-master-${master}.yaml"
@@ -308,7 +293,7 @@ EOF
 
 		# Prepare for next loop
 		i=$((i + 1))
-		RESULT=$(yq eval ".spokes[${i}]" ${YAML})
+		RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
 	done
 }
 
@@ -317,6 +302,5 @@ EOF
 # Store alongside Kubeconfig
 OUTPUT_DIR="./"
 
-sanity_check ${1}
 create_kustomization
 create_spoke_definitions

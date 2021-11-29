@@ -11,6 +11,7 @@ set -m
 # export KUBECONFIG=/root/admin.kubeconfig
 
 # Load common vars
+source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Preparing and replace info in the manifests"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
