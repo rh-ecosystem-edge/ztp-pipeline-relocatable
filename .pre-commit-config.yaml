@@ -74,7 +74,7 @@ repos:
           - -w
           - -i
           - "0"
-          - -s 
+          - -s
         types:
           - shell
   - repo: https://github.com/asottile/blacken-docs

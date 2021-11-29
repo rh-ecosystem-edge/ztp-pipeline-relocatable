@@ -104,25 +104,19 @@ echo ">>>> EOF"
 echo ">>>>>>>>"
 exit 0
 
-
 oc get bmh
-NAME                 STATE         CONSUMER   ONLINE   ERROR
-kubeframe-master-0   provisioned              true
-kubeframe-master-1   provisioned              true
-kubeframe-master-2   provisioned              true
+NAME STATE CONSUMER ONLINE ERROR
+kubeframe-master-0 provisioned true
+kubeframe-master-1 provisioned true
+kubeframe-master-2 provisioned true
 
 oc get agent
-NAME                                   CLUSTER          APPROVED   ROLE          STAGE
-11e619aa-20a3-4155-9e14-502502fd1fdb   spoke1-cluster   true       auto-assign
-8217b7cc-a06e-4090-841d-bb1f48215d41   spoke1-cluster   true       auto-assign
-b679cca3-1aad-4f0d-bdbb-4a4fb19857e9   spoke1-cluster   true       auto-assign
-
-
-
+NAME CLUSTER APPROVED ROLE STAGE
+11e619aa-20a3-4155-9e14-502502fd1fdb spoke1-cluster true auto-assign
+8217b7cc-a06e-4090-841d-bb1f48215d41 spoke1-cluster true auto-assign
+b679cca3-1aad-4f0d-bdbb-4a4fb19857e9 spoke1-cluster true auto-assign
 
 insufficient
-
-
 
 192.168.7.243 api.spoke1-cluster.kubeframe.local api-int.spoke1-cluster.kubeframe.local
 192.168.7.242 assisted-service-assisted-installer.apps.spoke1-cluster.kubeframe.local assisted-service-open-cluster-management.spoke1-cluster.kubeframe.local console-openshift-console.apps.spoke1-cluster.kubeframe.local multicloud-console.apps.spoke1-cluster.kubeframe.local httpd-server.apps.spoke1-cluster.kubeframe.local oauth-openshift.apps.spoke1-cluster.kubeframe.local prometheus-k8s-openshift-monitoring.apps.spoke1-cluster.kubeframe.local
