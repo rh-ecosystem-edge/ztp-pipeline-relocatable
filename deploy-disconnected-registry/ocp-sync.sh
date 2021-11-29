@@ -23,6 +23,6 @@ if [[ "$1" == 'hub' ]]; then
 		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		oc adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
 	else
-		echo ">>>> This step is not neccesary, everything looks ready"
+		echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
 	fi
 fi

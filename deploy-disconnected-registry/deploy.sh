@@ -35,6 +35,6 @@ if [[ "$1" == 'hub' ]]; then
 
 		../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
 	else
-		echo ">>>> This step is not neccesary, everything looks ready"
+		echo ">>>> This step to deploy registry is not neccesary, everything looks ready"
 	fi
 fi

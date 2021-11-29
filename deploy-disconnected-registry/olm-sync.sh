@@ -96,6 +96,6 @@ if [[ "$1" == 'hub' ]]; then
 		mirror
 		create_cs
 	else
-		echo ">>>> This step is not neccesary, everything looks ready"
+		echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
 	fi
 fi

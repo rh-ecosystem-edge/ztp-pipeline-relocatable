@@ -12,6 +12,7 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
+source ./common.sh hub
 
 if [[ $(oc get ns | grep ${REGISTRY} | wc -l) -eq 0 ]]; then
 	#namespace does not exist. Launching the step to create it...
