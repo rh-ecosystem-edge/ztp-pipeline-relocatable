@@ -19,7 +19,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
 
 
-cd ${OUTPUTDIR}
+cd ../${OUTPUTDIR}
 oc apply -f ./*.yaml
 
 echo ">>>>EOF"
