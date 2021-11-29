@@ -18,7 +18,7 @@ oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watc
 source ${WORKDIR}/shared-utils/common.sh
 
 cd ${OUTPUTDIR}
-oc apply -k .
+oc apply -f ./
 
 echo ">>>>EOF"
 echo ">>>>>>>"
