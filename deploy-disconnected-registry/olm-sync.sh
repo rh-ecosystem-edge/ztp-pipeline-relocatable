@@ -90,9 +90,12 @@ function mirror() {
 		done
 	done
 }
-
-prepare_env ${1}
-mirror
-create_cs
-
-exit 0
+if [[ $1 == "hub" ]]; then
+    if ./verify.sh ; then
+		prepare_env ${1}
+		mirror
+		create_cs
+	else
+	echo ">>>> This step is not neccesary, everything looks ready" 
+	fi
+fi
