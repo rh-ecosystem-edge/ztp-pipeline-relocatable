@@ -18,7 +18,12 @@ fi
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 export KUBECONFIG_HUB=${KUBECONFIG}
+export REGISTRY=kubeframe-registry
 export PULL_SECRET=../${SHARED_DIR}/pull_secret.json
+export AUTH_SECRET=../${SHARED_DIR}/htpasswd
+export REGISTRY_MANIFESTS=manifests
+export SECRET=auth
+export REGISTRY_CONFIG=config.yml
 
 if [[ ! -f ${PULL_SECRET} ]]; then
 	echo "Pull secret file $PULL_SECRET does not exist, grabbing from OpenShift"
@@ -28,6 +33,9 @@ fi
 export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator'
 export OCP_RELEASE=${OC_OCP_VERSION}
 export OCP_RELEASE_FULL=${OCP_RELEASE}.0
+# TODO: Change static passwords by dynamic ones
+export REG_US=dummy
+export REG_PASS=dummy
 
 if [[ ${1} == "hub" ]]; then
 	echo ">>>> Get the registry cert and update pull secret for: ${1}"
@@ -35,7 +43,7 @@ if [[ ${1} == "hub" ]]; then
 	export OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})
 	export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OCP_RELEASE}-x86_64"
 	export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION}"
-	export DESTINATION_REGISTRY="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
+	export DESTINATION_REGISTRY="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
 	## OLM
 	## NS where the OLM images will be mirrored
 	export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm

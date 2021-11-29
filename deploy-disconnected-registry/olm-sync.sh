@@ -44,26 +44,20 @@ function prepare_env() {
 		echo "#########"
 		#exit 1
 	fi
-
-	echo ">>>> Creating Namespace and Service Accounts"
-	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	if [ $(oc get ns | grep ${OLM_DESTINATION_REGISTRY_IMAGE_NS} | wc -l) -eq 0 ]; then
-		oc create ns ${OLM_DESTINATION_REGISTRY_IMAGE_NS}
-	fi
-
-	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} create sa robot || echo "Done"
-	oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} adm policy add-role-to-user registry-editor -z robot || echo "Done"
 }
 
 function mirror() {
 	# Check for credentials for OPM
-	podman login ${DESTINATION_REGISTRY} -u robot -p $(oc -n ${OLM_DESTINATION_REGISTRY_IMAGE_NS} serviceaccounts get-token robot) --authfile=${PULL_SECRET}
+	#echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
+	#echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	#podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
 
 	if [ ! -f ~/.docker/config.json ]; then
 		echo "ERROR: missing ~/.docker/config.json config"
 		echo "Creating file"
+        unalias cp || echo "Unaliased cp: Done!"
 		mkdir -p ~/.docker/
-		cp -f ${PULL_SECRET} ~/.docker/config.json
+		cp -rf ${PULL_SECRET} ~/.docker/config.json
 	fi
 
 	echo ">>>> Mirror OLM Operators"
