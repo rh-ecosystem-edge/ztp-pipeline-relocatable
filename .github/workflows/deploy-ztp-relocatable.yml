@@ -78,7 +78,7 @@ jobs:
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh hub
           ./ocp-sync.sh hub
-    #      ./olm-sync.sh hub
+          ./olm-sync.sh hub
 
 
   deploy-hub-config:
