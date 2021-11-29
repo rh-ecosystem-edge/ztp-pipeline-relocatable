@@ -32,11 +32,11 @@ sed -i "s%TAG_OCP_IMAGE_RELEASE%$NEWTAG%g" 02-cluster_imageset.yml
 echo ">>>> Deploy hub configs"
 echo ">>>>>>>>>>>>>>>>>>>>>>>"
 
-oc create -f 01_Mirror_ConfigMap.yml
-oc create -f 02-cluster_imageset.yml
-oc create -f 03-configmap.yml
-oc create -f 04-agent-service-config.yml
-oc create -f 05-pullsecrethub.yml
+oc apply -f 01_Mirror_ConfigMap.yml
+oc apply -f 02-cluster_imageset.yml
+oc apply -f 03-configmap.yml
+oc apply -f 04-agent-service-config.yml
+oc apply -f 05-pullsecrethub.yml
 
 oc patch hiveconfig hive --type merge -p '{"spec":{"targetNamespace":"hive","logLevel":"debug","featureGates":{"custom":{"enabled":["AlphaAgentInstallStrategy"]},"featureSet":"Custom"}}}'
 

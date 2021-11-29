@@ -19,16 +19,16 @@ sed -i "s/CHANGEME/$OC_ACM_VERSION/g" 03-subscription.yml
 
 echo ">>>> Deploy manifests to install ACM $OC_ACM_VERSION"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-oc create -f 01-namespace.yml
+oc apply -f 01-namespace.yml -o yaml --dry-run=client | oc apply -f -
 sleep 2
-oc create -f 02-operatorgroup.yml
+oc apply -f 02-operatorgroup.yml 
 sleep 2
-oc create -f 03-subscription.yml
+oc apply -f 03-subscription.yml
 sleep 60
 
 echo ">>>> Deploy ACM cr manifest"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-oc create -f 04-acm-cr.yml
+oc apply -f 04-acm-cr.yml
 sleep 60
 
 echo ">>>> Wait until acm ready"

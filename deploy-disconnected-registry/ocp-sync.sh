@@ -12,9 +12,7 @@ source ${WORKDIR}/shared-utils/common.sh
 
 source ./common.sh ${1}
 
-if [ $(oc get ns | grep ${REGISTRY} | wc -l) -eq 0 ]; then
-	oc create ns ${REGISTRY}
-fi
+oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
 export REGISTRY_NAME="$(oc get route -n openshift-image-registry default-route -o jsonpath={'.status.ingress[0].host'})"
 podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
