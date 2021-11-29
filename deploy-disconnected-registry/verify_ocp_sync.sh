@@ -13,10 +13,10 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
-if [[ $(oc adm release info "${DESTINATION_REGISTRY}"/"${OCP_DESTINATION_REGISTRY_IMAGE_NS}":"${OCP_RELEASE_FULL}"-x86_64 | wc -l ) -eq 1 ]]; then
-  #image has not been pulled and does not exist. Launching the step to create it...
-  exit 0
+if [[ $(oc adm release info "${DESTINATION_REGISTRY}"/"${OCP_DESTINATION_REGISTRY_IMAGE_NS}":"${OCP_RELEASE_FULL}"-x86_64 | wc -l) -eq 1 ]]; then
+	#image has not been pulled and does not exist. Launching the step to create it...
+	exit 0
 else
-  #Everyting is ready
-  exit 1
-fi 
+	#Everyting is ready
+	exit 1
+fi
