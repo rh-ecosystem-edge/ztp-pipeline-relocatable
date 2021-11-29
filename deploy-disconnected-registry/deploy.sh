@@ -16,6 +16,7 @@ source ./common.sh ${1}
 echo ">>>> Deploy internal registry on: ${REGISTRY} Namespace"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 # TODO: Render variables instead being static
+oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 htpasswd -bBc ${AUTH_SECRET} ${REG_US} ${REG_PASS}
 oc -n ${REGISTRY} create secret generic ${SECRET} --from-file=${AUTH_SECRET} -o yaml --dry-run=client | oc apply -f -
 oc -n ${REGISTRY} create configmap registry-conf --from-file=config.yml -o yaml --dry-run=client | oc apply -f -
