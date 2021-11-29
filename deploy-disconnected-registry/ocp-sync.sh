@@ -13,7 +13,7 @@ source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
 if [[ $1 == "hub" ]]; then
-    if ./verify.sh ; then
+	if ./verify.sh; then
 		oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
 		export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
@@ -23,6 +23,6 @@ if [[ $1 == "hub" ]]; then
 		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		oc adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
 	else
-		echo ">>>> This step is not neccesary, everything looks ready" 
+		echo ">>>> This step is not neccesary, everything looks ready"
 	fi
 fi

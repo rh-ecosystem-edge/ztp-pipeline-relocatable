@@ -28,8 +28,6 @@ export REGISTRY_MANIFESTS=manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-
-
 export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator'
 export OCP_RELEASE=${OC_OCP_VERSION}
 export OCP_RELEASE_FULL=${OCP_RELEASE}.0

@@ -23,7 +23,7 @@ if ./verify.sh; then
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	oc apply -f 01-namespace.yml -o yaml --dry-run=client | oc apply -f -
 	sleep 2
-	oc apply -f 02-operatorgroup.yml 
+	oc apply -f 02-operatorgroup.yml
 	sleep 2
 	oc apply -f 03-subscription.yml
 	sleep 60
@@ -51,7 +51,7 @@ if ./verify.sh; then
 		exit 1
 	fi
 elif [[ $? -eq 50 ]]; then
-	echo ">>>> Verify failed...Some pods are failing..." #TODO change to remove and launch again  
+	echo ">>>> Verify failed...Some pods are failing..." #TODO change to remove and launch again
 	exit 50
 else
 	echo ">>>> This step is not neccesary, everything looks ready"
