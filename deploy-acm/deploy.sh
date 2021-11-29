@@ -53,6 +53,8 @@ if ./verify.sh; then
 elif [[ $? -eq 50 ]]; then
 	echo ">>>> Verify failed...Some pods are failing..." #TODO change to remove and launch again  
 	exit 50
+else
+	echo ">>>> This step is not neccesary, everything looks ready"
 fi
 echo ">>>>EOF"
 echo ">>>>>>>"
