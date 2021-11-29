@@ -31,4 +31,4 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 oc --kubeconfig=${KUBECONFIG_HUB} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d >/etc/pki/ca-trust/source/anchors/internal-registry.crt
 update-ca-trust extract
 
-sleep 30
+sleep 30 # TODO change to wait for registry to be ready
