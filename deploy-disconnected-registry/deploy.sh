@@ -23,7 +23,7 @@ oc -n ${REGISTRY} create configmap registry-conf --from-file=config.yml -o yaml 
 oc -n ${REGISTRY} create -f ${REGISTRY_MANIFESTS}/deployment.yaml -o yaml --dry-run=client | oc apply -f -
 oc -n ${REGISTRY} create -f ${REGISTRY_MANIFESTS}/service.yaml -o yaml --dry-run=client | oc apply -f -
 oc -n ${REGISTRY} create -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml -o yaml --dry-run=client | oc apply -f -
-oc -n ${REGISTRY} create route reencrypt ${REGISTRY} --service=${REGISTRY} --port=registry --insecure-policy=Redirect -o yaml --dry-run=client | oc apply -f -
+oc -n ${REGISTRY} create -f ${REGISTRY_MANIFESTS}/route.yaml -o yaml --dry-run=client | oc apply -f -
 
 echo ">>>> Trusting internal registry"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
