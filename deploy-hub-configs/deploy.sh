@@ -22,7 +22,8 @@ if ./verify.sh; then
 	sed -i "s/HTTPD_SERVICE/$HTTPSERVICE/g" 04-agent-service-config.yml
 	pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
 	sed -i "s/PULL_SECRET/$pull/g" 05-pullsecrethub.yml
-	LOCAL_REG=$(oc get route -n openshift-image-registry | awk '{print $2}' | tail -1)
+	REGISTRY=kubeframe-registry   
+	LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"   #TODO change it to use the global common variable importing here the source commons
 	sed -i "s/CHANGEDOMAIN/$LOCAL_REG/g" registryconf.txt
 	CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
 	echo -e "  ca-bundle.crt: |\n$(echo -n "$CABUNDLE" | sed "s/^/    /")" >>01_Mirror_ConfigMap.yml
