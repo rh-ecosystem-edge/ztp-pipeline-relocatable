@@ -44,7 +44,7 @@ oc completion bash >>/etc/bash_completion.d/oc_completion
 
 echo ">>>> Verify podman and htpasswd command"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-if ! (command -v podman &>/dev/null || command -v htpasswd &>/dev/null); then
+if ! (command -v podman &>/dev/null && command -v htpasswd &>/dev/null); then
 	echo "Error: podman command not found. Installing..."
 	yum install -y podman httpd-tools
 fi

@@ -20,7 +20,7 @@ oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watc
 
 
 cd ${OUTPUTDIR}
-oc apply -f ./*.yaml
+oc apply -k .
 
 echo ">>>>EOF"
 echo ">>>>>>>"
