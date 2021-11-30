@@ -33,7 +33,7 @@ fi
 ## variables
 ## #########
 SPOKE="$1"
-wait_time=60 # wait until 60 min
+wait_time=90 # wait until 90 min
 declare -A states_machine
 states_machine['bmh', '{.items[*].status.errorCount}']='0 0 0'                                         # bmh's without errors
 states_machine['bmh', '{.items[*].status.provisioning.state}']='provisioned provisioned provisioned'   # bmh's state provisioned
