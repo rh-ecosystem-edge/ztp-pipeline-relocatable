@@ -22,10 +22,10 @@ for packagemanifest in $(oc get packagemanifest -n openshift-marketplace -o name
 		skopeo inspect docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --authfile ${PULL_SECRET}
 		echo $?
     if [ $? -eq 0 ]; then
-    #In this case, we don't need to mirror catalogs, everything is already there
+      echo "In this case, we don't need to mirror catalogs, everything is already there"
       break;
 		else
-    #echo "Must mirror catalog...Launching step to create them"
+      echo "Must mirror catalog...Launching step to create them"
       exit 0
     fi
 	done
