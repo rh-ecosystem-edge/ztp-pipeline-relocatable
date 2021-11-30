@@ -13,6 +13,7 @@ fi
 
 export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${SPOKES_FILE})
 export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})
+export OC_OCS_VERSION=$(yq eval ".config.OC_OCS_VERSION" ${SPOKES_FILE})
 export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${SPOKES_FILE})
 export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
 export OC_DIS_CATALOG=kubeframe-catalog
