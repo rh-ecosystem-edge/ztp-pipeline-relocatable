@@ -7,7 +7,6 @@
 # 2. Waits for the number of available replicas to match the specified one.
 #
 #
-set -o errexit
 set -o pipefail
 set -o nounset
 set -m

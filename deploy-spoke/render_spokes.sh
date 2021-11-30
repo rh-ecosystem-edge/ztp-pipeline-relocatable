@@ -1,7 +1,6 @@
 #!/bin/bash
 # Description: Renders clusters YAML into different files for each spoke cluster
 
-set -o errexit
 set -o pipefail
 set -o nounset
 set -m
