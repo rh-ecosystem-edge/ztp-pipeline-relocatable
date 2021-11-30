@@ -19,6 +19,7 @@ function validate_condition() {
 		exit 1
 	else
 		echo "Condition $1 verified"
+  
 	fi
 }
 
@@ -50,3 +51,4 @@ validate_condition "agentclusterinstall" "{.items[*].status.debugInfo.stateInfo}
 
 echo ">>>>EOF"
 echo ">>>>>>>"
+exit 0
