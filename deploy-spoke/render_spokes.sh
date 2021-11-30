@@ -25,7 +25,7 @@ create_kustomization() {
 	# Check first item
 	RESULT=$(yq eval ".spokes[$i]" ${SPOKES_FILE})
 	# Pregenerate kustomization.yaml and spoke cluster config
-	OUTPUT="${OUTPUT_DIR}/kustomization.yaml"
+	OUTPUT="${OUTPUTDIR}/kustomization.yaml"
 
 	# Write header
 	echo "resources:" >${OUTPUT}
@@ -52,7 +52,6 @@ create_spoke_definitions() {
 
 	# Generic vars for all spokes
 	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
-	export PULL_SECRET=../${SHARED_DIR}/pull_secret.json #TODO: get from pablo commons (remove it from here)
 	export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
 	export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
 	export CHANGE_SPOKE_API=192.168.7.243
@@ -69,7 +68,7 @@ create_spoke_definitions() {
 		export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
 
 		# Generate the spoke definition yaml
-		cat <<EOF >${OUTPUT_DIR}/spoke-${i}-cluster.yaml
+		cat <<EOF >${OUTPUTDIR}/spoke-${i}-cluster.yaml
 ---
 apiVersion: v1
 kind: Namespace
@@ -204,7 +203,7 @@ EOF
 			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_ext_dhcp" ${SPOKES_FILE})
 
 			# Now, write the template to disk
-			OUTPUT="${OUTPUT_DIR}/spoke-${i}-master-${master}.yaml"
+			OUTPUT="${OUTPUTDIR}/spoke-${i}-master-${master}.yaml"
 
 			cat <<EOF >${OUTPUT}
 ---
@@ -299,8 +298,6 @@ EOF
 
 # Main code
 
-# Store alongside Kubeconfig
-OUTPUT_DIR="./"
 
 create_kustomization
 create_spoke_definitions
