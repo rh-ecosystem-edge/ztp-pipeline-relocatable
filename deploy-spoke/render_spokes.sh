@@ -52,7 +52,6 @@ create_spoke_definitions() {
 
 	# Generic vars for all spokes
 	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
-	export PULL_SECRET=../${SHARED_DIR}/pull_secret.json #TODO: get from pablo commons (remove it from here)
 	export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
 	export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
 	export CHANGE_SPOKE_API=192.168.7.243
