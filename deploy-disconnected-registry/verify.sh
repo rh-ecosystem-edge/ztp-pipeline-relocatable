@@ -14,13 +14,8 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
 
-if [[ $(oc get ns | grep ${REGISTRY} | wc -l) -eq 0 ]]; then
-	#namespace does not exist. Launching the step to create it...
-	exit 0
-elif [[ $(oc get -n kubeframe-registry deployment kubeframe-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
-	#Resources are not ready...Launching the step to create them...
-	exit 0
-else
-	#Everyting is ready
+if [[ $(oc get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc get -n kubeframe-registry deployment kubeframe-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
+	#namespace or resources does not exist. Launching the step to create it...
 	exit 1
 fi
+exit 0

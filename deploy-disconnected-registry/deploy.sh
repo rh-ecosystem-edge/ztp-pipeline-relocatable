@@ -14,7 +14,7 @@ source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
 if [[ "$1" == 'hub' ]]; then
-    if ./verify.sh ; then
+    if ! ./verify.sh ; then
         echo ">>>> Deploy internal registry on: ${REGISTRY} Namespace"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         # TODO: Render variables instead being static
