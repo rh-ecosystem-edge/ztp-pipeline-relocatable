@@ -91,7 +91,7 @@ function mirror() {
 	done
 }
 if [[ "$1" == 'hub' ]]; then
-    if ./verify.sh ; then
+    if ./verify_olm_sync.sh ; then
 		prepare_env ${1}
 		mirror
 		create_cs

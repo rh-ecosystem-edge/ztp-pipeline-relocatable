@@ -13,7 +13,7 @@ source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
 if [[ "$1" == 'hub' ]]; then
-    if ./verify.sh ; then
+    if ./verify_ocp_sync.sh ; then
 		oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
 		export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
