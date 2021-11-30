@@ -17,7 +17,7 @@ export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
 export VERSION="ci"
 
-if $# -ne 1; then
+if [ $# -ne 1 ] ; then
     echo "Usage: $0 <clusters>"
     exit 1
 fi
