@@ -13,7 +13,9 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
-if [[ $(oc adm release info "${DESTINATION_REGISTRY}"/"${OCP_DESTINATION_REGISTRY_IMAGE_NS}":"${OCP_RELEASE_FULL}"-x86_64 | wc -l) -eq 1 ]]; then
+
+podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
+if [[ $(oc adm release info "${DESTINATION_REGISTRY}"/"${OCP_DESTINATION_REGISTRY_IMAGE_NS}":"${OCP_RELEASE_FULL}"-x86_64 --registry-config="${PULL_SECRET}" | wc -l) -eq 1 ]]; then  ## line 1 == error line. If found image should show more information (>1 line)
 	#image has not been pulled and does not exist. Launching the step to create it...
 	exit 0
 else
