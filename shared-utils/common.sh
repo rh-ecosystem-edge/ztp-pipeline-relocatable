@@ -28,7 +28,4 @@ if [[ ! -f ${PULL_SECRET} ]]; then
 	oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
 fi
 
-if [ -z "${ALLSPOKES}" ]; then
-	# ALLSPOKES is undefined, create it from the SPOKES_FILE
-	export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
-fi
+export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
