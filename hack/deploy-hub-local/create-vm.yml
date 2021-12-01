@@ -10,10 +10,10 @@ spoke{{ i }}-m{{ j }}:
   numcpus: 8
   nets:
   - name: bare-net
-    mac: ee:ee:ee:ee:ee:{{ j }}e
+    mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
   - name: kubeframe
     nic: enp2s0
-    mac: aa:aa:aa:aa:aa:{{ j }}a
+    mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
   disks:
   - size: 200
   - size: 200
