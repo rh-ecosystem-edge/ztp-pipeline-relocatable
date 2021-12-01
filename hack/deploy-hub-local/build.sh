@@ -23,7 +23,7 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 if [ $2 != "" ]; then
-    export CLUSTERS=$1
+    export CLUSTERS=$2
 else
     export CLUSTERS=0
 fi
