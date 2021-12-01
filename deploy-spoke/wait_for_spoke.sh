@@ -19,7 +19,7 @@ function validate_condition() {
 		exit 1
 	else
 		echo "Condition $1 verified"
-  
+
 	fi
 }
 

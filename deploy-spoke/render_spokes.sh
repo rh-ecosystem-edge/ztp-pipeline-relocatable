@@ -297,6 +297,5 @@ EOF
 
 # Main code
 
-
 create_kustomization
 create_spoke_definitions
