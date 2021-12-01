@@ -1,0 +1,23 @@
+{
+  "branch": "main",
+  "repositoryUrl": "git@github.com:rh-ecosystem-edge/ztp-pipeline-relocatable.git",
+  "tagFormat": "${version}",
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "./CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "pre-commit run --files CHANGELOG.md; pre-commit  run --files CHANGELOG.md"
+      }
+    ],
+    "@semantic-release/git",
+    "@semantic-release/github"
+  ]
+}
