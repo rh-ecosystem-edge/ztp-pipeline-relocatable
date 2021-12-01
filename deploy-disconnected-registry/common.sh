@@ -8,7 +8,7 @@ if [[ $# -lt 1 ]]; then
 	echo "Usage :"
 	echo '  $1: hub|spoke'
 	echo "Sample: "
-	echo "  $0 hub|spoke"
+	echo "  ${0} hub|spoke"
 	exit 1
 fi
 

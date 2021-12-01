@@ -24,7 +24,7 @@ export KUBECONFIG_HUB=${KUBECONFIG}
 export PULL_SECRET=${OUTPUTDIR}/pull-secret.json
 
 if [[ ! -f ${PULL_SECRET} ]]; then
-	echo "Pull secret file $PULL_SECRET does not exist, grabbing from OpenShift"
+	echo "Pull secret file ${PULL_SECRET} does not exist, grabbing from OpenShift"
 	oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
 fi
 

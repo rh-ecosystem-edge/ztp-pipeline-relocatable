@@ -18,7 +18,7 @@ DEFAULT_TIMEOUT=60
 DEFAULT_NAMESPACE=default
 
 monitor_timeout() {
-	local -r wait_pid="$1"
+	local -r wait_pid="${1}"
 	sleep "${timeout}"
 	echo "Timeout ${timeout} exceeded" >&2
 	kill "${wait_pid}"
@@ -49,13 +49,13 @@ get_available_replicas() {
 }
 
 get_deployment_jsonpath() {
-	local -r jsonpath="$1"
+	local -r jsonpath="${1}"
 
 	kubectl --namespace "${namespace}" get deployment "${deployment}" -o "jsonpath=${jsonpath}"
 }
 
 display_usage_and_exit() {
-	echo "Usage: $(basename "$0") [-n <namespace>] [-t <timeout>] <deployment>" >&2
+	echo "Usage: $(basename "${0}") [-n <namespace>] [-t <timeout>] <deployment>" >&2
 	echo "Arguments:" >&2
 	echo "deployment REQUIRED: The name of the deployment the script should wait on" >&2
 	echo "-n OPTIONAL: The namespace the deployment exists in, defaults is the 'default' namespace" >&2
@@ -78,7 +78,7 @@ shift $((OPTIND - 1))
 if [ "$#" -ne 1 ]; then
 	display_usage_and_exit
 fi
-readonly deployment="$1"
+readonly deployment="${1}"
 
 if [[ ${timeout} -le 0 ]]; then
 	display_usage_and_exit

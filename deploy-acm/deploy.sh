@@ -16,9 +16,9 @@ if ./verify.sh; then
 
 	echo ">>>> Modify files to replace with pipeline info gathered"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	sed -i "s/CHANGEME/$OC_ACM_VERSION/g" 03-subscription.yml
+	sed -i "s/CHANGEME/${OC_ACM_VERSION}/g" 03-subscription.yml
 
-	echo ">>>> Deploy manifests to install ACM $OC_ACM_VERSION"
+	echo ">>>> Deploy manifests to install ACM ${OC_ACM_VERSION}"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	oc apply -f 01-namespace.yml -o yaml --dry-run=client | oc apply -f -
 	sleep 2
@@ -37,7 +37,7 @@ if ./verify.sh; then
 	timeout=0
 	ready=false
 	sleep 240
-	while [ "$timeout" -lt "60" ]; do
+	while [ "${timeout}" -lt "60" ]; do
 		if [[ $(oc get pod -n open-cluster-management | grep -i running | wc -l) -eq $(oc get pod -n open-cluster-management | grep -v NAME | wc -l) ]]; then
 			ready=true
 			break

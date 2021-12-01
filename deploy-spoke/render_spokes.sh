@@ -22,7 +22,7 @@ create_kustomization() {
 	i=0
 
 	# Check first item
-	RESULT=$(yq eval ".spokes[$i]" ${SPOKES_FILE})
+	RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
 	# Pregenerate kustomization.yaml and spoke cluster config
 	OUTPUT="${OUTPUTDIR}/kustomization.yaml"
 
@@ -47,7 +47,7 @@ EOF
 create_spoke_definitions() {
 	# Reset loop for spoke general definition
 	i=0
-	RESULT=$(yq eval ".spokes[$i]" ${SPOKES_FILE})
+	RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
 
 	# Generic vars for all spokes
 	export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
@@ -189,17 +189,17 @@ EOF
 		for master in 0 1 2; do
 
 			# Master loop
-			export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_int_static" ${SPOKES_FILE})
-			export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.nic_ext_dhcp" ${SPOKES_FILE})
+			export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.nic_int_static" ${SPOKES_FILE})
+			export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
 
 			export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
 
-			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_int_static" ${SPOKES_FILE})
-			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_user" ${SPOKES_FILE} | base64)
-			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_pass" ${SPOKES_FILE} | base64)
-			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.bmc_url" ${SPOKES_FILE})
+			export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.mac_int_static" ${SPOKES_FILE})
+			export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.bmc_user" ${SPOKES_FILE} | base64)
+			export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.bmc_pass" ${SPOKES_FILE} | base64)
+			export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.bmc_url" ${SPOKES_FILE})
 
-			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[$i].$SPOKE_NAME.master$master.mac_ext_dhcp" ${SPOKES_FILE})
+			export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
 
 			# Now, write the template to disk
 			OUTPUT="${OUTPUTDIR}/spoke-${i}-master-${master}.yaml"
