@@ -12,7 +12,7 @@ source ${WORKDIR}/shared-utils/common.sh
 
 source ./common.sh ${1}
 
-if [[ $1 == 'hub' ]]; then
+if [[ ${1} == 'hub' ]]; then
 	if ! ./verify.sh; then
 		echo ">>>> Deploy internal registry on: ${REGISTRY} Namespace"
 		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -32,7 +32,7 @@ if [[ $1 == 'hub' ]]; then
 		oc --kubeconfig=${KUBECONFIG_HUB} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d >/etc/pki/ca-trust/source/anchors/internal-registry.crt
 		update-ca-trust extract
 
-		../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+		../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
 	else
 		echo ">>>> This step to deploy registry is not neccesary, everything looks ready"
 	fi

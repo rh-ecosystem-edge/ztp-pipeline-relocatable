@@ -7,18 +7,18 @@ set -m
 function validate_condition() {
 	timeout=0
 	ready=false
-	while [ "$timeout" -lt "$wait_time" ]; do
-		test "$(oc get $1 -o jsonpath=$2)" == "${states_machine[$1, $2]}" && ready=true && break
-		echo "Waiting for spoke cluster $SPOKE to be deployed"
+	while [ "${timeout}" -lt "${wait_time}" ]; do
+		test "$(oc get ${1} -o jsonpath=${2})" == "${states_machine[${1}, ${2}]}" && ready=true && break
+		echo "Waiting for spoke cluster ${SPOKE} to be deployed"
 		sleep 60
 		timeout=$((timeout + 1))
 	done
 
-	if [ "$ready" == "false" ]; then
-		echo "timeout waiting for spoke cluster $SPOKE to be deployed"
+	if [ "${ready}" == "false" ]; then
+		echo "timeout waiting for spoke cluster ${SPOKE} to be deployed"
 		exit 1
 	else
-		echo "Condition $1 verified"
+		echo "Condition ${1} verified"
 
 	fi
 }
@@ -26,14 +26,14 @@ function validate_condition() {
 ## main function
 ##
 
-if [ "$#" -ne 1 ]; then
-	echo "Usage: $0 <spoke>"
+if [ "${#}" -ne 1 ]; then
+	echo "Usage: ${0} <spoke>"
 	exit 1
 fi
 
 ## variables
 ## #########
-SPOKE="$1"
+SPOKE="${1}"
 wait_time=90 # wait until 90 min
 declare -A states_machine
 states_machine['bmh', '{.items[*].status.errorCount}']='0 0 0'                                         # bmh's without errors
@@ -43,7 +43,7 @@ states_machine['agentclusterinstall', '{.items[*].status.debugInfo.stateInfo}']=
 
 echo ">>>> Starting the validation until finish the installation"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-oc project $SPOKE
+oc project ${SPOKE}
 validate_condition "bmh" "{.items[*].status.errorCount}"
 validate_condition "bmh" "{.items[*].status.provisioning.state}"
 validate_condition "agent" "{.items[*].spec.approved}"

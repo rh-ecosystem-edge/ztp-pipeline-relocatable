@@ -19,7 +19,7 @@ chmod u+x /usr/bin/jq
 
 if [ ! -d "/root/bin" ]; then
 	mkdir -p /root/bin
-	export PATH="$PATH:/root/bin"
+	export PATH="${PATH}:/root/bin"
 fi
 
 cd /root/bin
@@ -58,15 +58,15 @@ fi
 
 echo ">>>> Loading the Kubeconfig file"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-if [ ! -f "$KUBECONFIG" ]; then
+if [ ! -f "${KUBECONFIG}" ]; then
 	echo "Error: Kubeconfig file not found in the path passed in github actions"
 	exit 1
 fi
 
-echo ">>>> Verify ocp server version $OC_OCP_VERSION"
+echo ">>>> Verify ocp server version ${OC_OCP_VERSION}"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-if [[ $(oc version | grep -i server | grep $OC_OCP_VERSION | wc -l) -ne 1 ]]; then
+if [[ $(oc version | grep -i server | grep ${OC_OCP_VERSION} | wc -l) -ne 1 ]]; then
 	echo "Error: OCP version not supported"
 	exit 2
 fi

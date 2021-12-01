@@ -16,19 +16,19 @@ if ./verify.sh; then
 	echo ">>>> Preparing and replace info in the manifests"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-	sed -i "s/CHANGEME/$OC_RHCOS_RELEASE/g" 04-agent-service-config.yml
+	sed -i "s/CHANGEME/${OC_RHCOS_RELEASE}/g" 04-agent-service-config.yml
 	HTTPSERVICE=$(oc get routes -n default | grep httpd-server-route | awk '{print $2}')
-	sed -i "s/HTTPD_SERVICE/$HTTPSERVICE/g" 04-agent-service-config.yml
+	sed -i "s/HTTPD_SERVICE/${HTTPSERVICE}/g" 04-agent-service-config.yml
 	pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
-	sed -i "s/PULL_SECRET/$pull/g" 05-pullsecrethub.yml
+	sed -i "s/PULL_SECRET/${pull}/g" 05-pullsecrethub.yml
 	REGISTRY=kubeframe-registry
 	LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})" #TODO change it to use the global common variable importing here the source commons
-	sed -i "s/CHANGEDOMAIN/$LOCAL_REG/g" registryconf.txt
+	sed -i "s/CHANGEDOMAIN/${LOCAL_REG}/g" registryconf.txt
 	CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
-	echo -e "  ca-bundle.crt: |\n$(echo -n "$CABUNDLE" | sed "s/^/    /")" >>01_Mirror_ConfigMap.yml
+	echo -e "  ca-bundle.crt: |\n$(echo -n "${CABUNDLE}" | sed "s/^/    /")" >>01_Mirror_ConfigMap.yml
 	cat registryconf.txt >>01_Mirror_ConfigMap.yml
-	NEWTAG=$LOCAL_REG/ocp4/openshift4:$OC_OCP_TAG
-	sed -i "s%TAG_OCP_IMAGE_RELEASE%$NEWTAG%g" 02-cluster_imageset.yml
+	NEWTAG=${LOCAL_REG}/ocp4/openshift4:${OC_OCP_TAG}
+	sed -i "s%TAG_OCP_IMAGE_RELEASE%${NEWTAG}%g" 02-cluster_imageset.yml
 
 	echo ">>>> Deploy hub configs"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>"
@@ -47,7 +47,7 @@ if ./verify.sh; then
 		echo "Waiting for Assisted installer to be ready..."
 		sleep 5
 	done
-	../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
+	../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
 
 else
 	echo ">>>> This step is not neccesary, everything looks ready"

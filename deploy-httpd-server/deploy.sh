@@ -18,11 +18,11 @@ if ./verify.sh; then
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 	domain=$(oc get ingresscontroller -n openshift-ingress-operator ${HTTPD_NS} -o jsonpath='{.status.domain}')
-	sed -i "s%CHANGEDOMAIN%$domain%g" http-server.yml
+	sed -i "s%CHANGEDOMAIN%${domain}%g" http-server.yml
 
 	# TODO: create on their proper NS
 	oc apply -n ${HTTPD_NS} -f http-server.yml
-	../"$SHARED_DIR"/wait_for_deployment.sh -t 1000 -n ${HTTPD_NS} nginx
+	../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n ${HTTPD_NS} nginx
 
 	echo ">>>> Pre-load the images rhcos to be available"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -33,8 +33,8 @@ if ./verify.sh; then
 	BASE_ROOTFS=$(basename $RHCOS_ROOTFS)
 	podname=$(oc get pod -n ${HTTPD_NS} | grep nginx | awk '{print $1}')
 
-	oc exec -n ${HTTPD_NS} $podname -- curl -Lk $RHCOS_ISO -o /usr/share/nginx/html/"$BASE_ISO"
-	oc exec -n ${HTTPD_NS} $podname -- curl -Lk $RHCOS_ROOTFS -o /usr/share/nginx/html/"$BASE_ROOTFS"
+	oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ISO} -o /usr/share/nginx/html/"${BASE_ISO}"
+	oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ROOTFS} -o /usr/share/nginx/html/"${BASE_ROOTFS}"
 else
 	echo ">>>> This step is not neccesary, everything looks ready"
 fi

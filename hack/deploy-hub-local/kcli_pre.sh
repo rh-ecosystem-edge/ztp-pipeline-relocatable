@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 {% if version in ['nightly', 'latest', 'stable'] %}
 DOTS=$(echo {{ tag }} | grep -o '\.' | wc -l)
-[ "$DOTS" -eq "1" ] || (echo tag should be 4.X && exit 1)
+[ "${DOTS}" -eq "1" ] || (echo tag should be 4.X && exit 1)
 {% elif version == 'ci' %}
 grep -q registry.ci.openshift.org {{ pullsecret }} || (echo Missing token for registry.ci.openshift.org && exit 1)
 {% endif %}
