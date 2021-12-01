@@ -8,7 +8,6 @@ set -m
 # variables
 # #########
 export DEPLOY_OCP_DIR="./"
-export OC_AMORGANT_PULL_SECRET='"{"auths": ... }"'
 export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.0-x86_64"
 export OC_CLUSTER_NAME="test-ci"
 export OC_DEPLOY_METAL="yes"
@@ -16,11 +15,21 @@ export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
 export VERSION="ci"
 
-if [ ${1} != "" ]; then
-    export CLUSTERS=${1}
+
+if [ $# -eq 0 ]; then
+  echo "No arguments supplied. Usage $0 <pull-secret.json> [<clusters-number>]"
+  echo "  - Params:"
+  echo "    1 - Pull secret file path (Mandatory)"
+  echo "    2 - Clusters Spokes number to deploy (Optional: default 1)"
+  exit 1
+fi
+if [ $2 != "" ]; then
+    export CLUSTERS=$2
 else
     export CLUSTERS=0
 fi
+
+export OC_PULL_SECRET="'$(cat $1)'"
 
 # Only complain when there's less than one cluster
 if [ ${CLUSTERS} -lt 0 ]; then
@@ -31,7 +40,8 @@ fi
 echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
 
-echo ${OC_AMORGANT_PULL_SECRET} | tr -d [:space:] | sed -e 's/^.//' -e 's/.$//' >./openshift_pull.json
+
+echo $OC_PULL_SECRET | tr -d [:space:] | sed -e 's/^.//' -e 's/.$//' >./openshift_pull.json
 
 echo ">>>> kcli create plan"
 echo ">>>>>>>>>>>>>>>>>>>>>"
@@ -68,6 +78,20 @@ fi
 >spokes.yaml
 
 CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
+# Default configuration
+cat <<EOF >>spokes.yaml
+config:
+  clusterimageset: openshift-v4.9.0
+  OC_OCP_VERSION: '4.9'
+  OC_OCP_TAG: '4.9.0-x86_64'
+  OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary
+  OC_ACM_VERSION: '2.4'
+EOF
+
+# Create header for spokes.yaml
+cat <<EOF >>spokes.yaml
+spokes:
+EOF
 
 for spoke in $(seq 0 $((CLUSTERS - 1))); do
     cat <<EOF >>spokes.yaml
