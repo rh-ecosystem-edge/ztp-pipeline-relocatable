@@ -38,8 +38,8 @@ export REG_PASS=dummy
 if [[ ${1} == "hub" ]]; then
 	echo ">>>> Get the registry cert and update pull secret for: ${1}"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	export OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})
-	export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OCP_RELEASE}-x86_64"
+	export OCP_RELEASE=$(echo ${OC_OCP_TAG} | cut -d "-" -f1)
+	export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OC_OCP_TAG}"
 	export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION}"
 	export DESTINATION_REGISTRY="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
 	## OLM
