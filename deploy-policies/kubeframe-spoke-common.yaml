@@ -17,19 +17,34 @@ spec:
         kind: ConfigurationPolicy
         metadata:
           name: kubeframe-spoke-common
+          annotations:
+            target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
         spec:
           remediationAction: enforce
           severity: low
           object-templates:
-            ## Namespace
-            # TODO
+            ## Disable Default Sources
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: config.openshift.io/v1
+                kind: OperatorHub
+                metadata:
+                  name: cluster
+                spec:
+                  disableAllDefaultSources: true
+            ## Deploy Custom catalog Sources
+            # This should be done via script, not using policies
             #- complianceType: mustonlyhave
             #  objectDefinition:
-            #    apiVersion: v1
-            #    kind: Namespace
+            #    apiVersion: operators.coreos.com/v1alpha1
+            #    kind: CatalogSource
             #    metadata:
-            #      name: metallb
-            #      labels:
-            #        openshift.io/cluster-monitoring: "true"
             #      annotations:
-            #        workload.openshift.io/allowed: management
+            #        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+            #      name: redhat-operator-index
+            #      namespace: openshift-marketplace
+            #    spec:
+            #      displayName: Kubeframe Factory
+            #      image: kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com/olm/redhat-operator-index:v4.9 
+            #      publisher: wclab
+            #      sourceType: grpc
