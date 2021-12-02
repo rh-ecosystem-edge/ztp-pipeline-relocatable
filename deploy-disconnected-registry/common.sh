@@ -20,7 +20,6 @@ source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-export KUBECONFIG_HUB=${KUBECONFIG}
 export REGISTRY=kubeframe-registry
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
@@ -38,10 +37,10 @@ export REG_PASS=dummy
 if [[ ${1} == "hub" ]]; then
 	echo ">>>> Get the registry cert and update pull secret for: ${1}"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	export OCP_RELEASE=$(oc get clusterversion -o jsonpath={'.items[0].status.desired.version'})
+	export OCP_RELEASE=$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterversion -o jsonpath={'.items[0].status.desired.version'})
 	export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OCP_RELEASE}-x86_64"
 	export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION}"
-	export DESTINATION_REGISTRY="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+	export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
 	## OLM
 	## NS where the OLM images will be mirrored
 	export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
