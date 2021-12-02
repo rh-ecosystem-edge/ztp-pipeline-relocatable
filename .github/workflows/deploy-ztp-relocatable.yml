@@ -21,6 +21,7 @@ env:
   DEPLOY_HTTPD_SERVER_DIR: deploy-httpd-server
   DEPLOY_HUB_CONFIGS_DIR: deploy-hub-configs
   DEPLOY_SPOKES_DIR: deploy-spoke
+  DEPLOY_OCS_DIR: deploy-ocs
   SHARED_DIR: shared-utils
 
 
@@ -123,3 +124,13 @@ jobs:
           SPOKE=${{ matrix.service }}
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh $SPOKE
+
+  deploy-ocs:
+    needs: verify-installation
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy OCS
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_OCS_DIR}}
+          ./deploy.sh
