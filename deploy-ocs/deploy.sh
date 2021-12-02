@@ -42,7 +42,7 @@ function extract_vars() {
 function extract_kubeconfig() {
     ## Extract the Spoke kubeconfig and put it on the shared folder
     export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${HUB_KUBECONFIG} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d > ${SPOKE_KUBECONFIG}
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d > ${SPOKE_KUBECONFIG}
 }
 
 # Load common vars
