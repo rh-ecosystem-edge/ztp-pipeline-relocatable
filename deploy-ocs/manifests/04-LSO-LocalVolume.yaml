@@ -1,0 +1,19 @@
+apiVersion: local.storage.openshift.io/v1
+kind: LocalVolume
+metadata:
+  name: localstorage-disks
+  namespace: openshift-local-storage
+spec:
+  logLevel: Normal
+  managementState: Managed
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: kubernetes.io/hostname
+        operator: In
+        values: $CHANGEME_NODES
+  storageClassDevices:
+  - devicePaths: $CHANGEME_DEVICES
+    fsType: xfs
+    storageClassName: localstorage-sc
+    volumeMode: Block

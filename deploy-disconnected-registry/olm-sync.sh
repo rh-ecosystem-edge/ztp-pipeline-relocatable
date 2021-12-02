@@ -4,12 +4,12 @@
 source ${WORKDIR}/shared-utils/common.sh
 
 function create_cs() {
-	cat >./catalogsource.yaml <<EOF
+	cat > ${OUTPUTDIR}/catalogsource.yaml <<EOF
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: kubeframe-catalog
-  namespace: openshift-marketplace
+  name: ${OC_DIS_CATALOG} 
+  namespace: ${MARKET_NS} 
 spec:
   sourceType: grpc
   image: ${OLM_DESTINATION_INDEX}
@@ -22,7 +22,7 @@ EOF
 
 	echo ""
 	echo "To apply the Red Hat Operators catalog mirror configuration to your cluster, do the following once per cluster:"
-	echo "oc apply -f ./catalogsource.yaml"
+	echo "oc apply -f ${OUTPUTDIR}/catalogsource.yaml"
 }
 
 function prepare_env() {
