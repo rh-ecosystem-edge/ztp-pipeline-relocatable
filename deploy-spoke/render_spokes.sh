@@ -209,7 +209,7 @@ EOF
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
- name: kubeframe-master-${master}
+ name: kubeframe-spoke-${i}-master-${master}
  namespace: $CHANGE_SPOKE_NAME
  labels:
    nmstate_config_cluster_name: $CHANGE_SPOKE_NAME
@@ -258,7 +258,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
- name: 'kubeframe-master-${master}-bmc-secret'
+ name: 'kubeframe-spoke-${i}-master-${master}-bmc-secret'
  namespace: '$CHANGE_SPOKE_NAME'
 type: Opaque
 data:
@@ -268,13 +268,13 @@ data:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
- name: 'kubeframe-master-${master}'
+ name: 'kubeframe-spoke-${i}-master-${master}'
  namespace: '$CHANGE_SPOKE_NAME'
  labels:
    infraenvs.agent-install.openshift.io: '$CHANGE_SPOKE_NAME'
  annotations:
    inspect.metal3.io: disabled
-   bmac.agent-install.openshift.io/hostname: 'kubeframe-master-${master}'
+   bmac.agent-install.openshift.io/hostname: 'kubeframe-spoke-${i}-master-${master}'
 spec:
  online: false
  bootMACAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
@@ -283,7 +283,7 @@ spec:
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_MASTER_BMC_URL'
-   credentialsName: 'kubeframe-master-${master}-bmc-secret'
+   credentialsName: 'kubeframe-spoke-${i}-master-${master}-bmc-secret'
 
 EOF
 
