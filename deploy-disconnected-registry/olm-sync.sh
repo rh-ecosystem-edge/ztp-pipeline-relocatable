@@ -53,7 +53,7 @@ function mirror() {
 	# Check for credentials for OPM
 	#echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
 	#echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	#podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+	podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
 
 	if [ ! -f ~/.docker/config.json ]; then
 		echo "ERROR: missing ~/.docker/config.json config"
