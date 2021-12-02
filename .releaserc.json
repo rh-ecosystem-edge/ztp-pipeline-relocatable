@@ -2,9 +2,8 @@
   "branch": "main",
   "repositoryUrl": "git@github.com:rh-ecosystem-edge/ztp-pipeline-relocatable.git",
   "tagFormat": "${version}",
-  "release": {
-    "branches": ["main"]
-  },
+  "branches": ["main"],
+
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
