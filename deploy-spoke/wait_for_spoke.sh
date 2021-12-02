@@ -8,7 +8,7 @@ function validate_condition() {
 	timeout=0
 	ready=false
 	while [ "${timeout}" -lt "${wait_time}" ]; do
-		test "$(oc get ${1} -o jsonpath=${2})" == "${states_machine[${1}, ${2}]}" && ready=true && break
+		test "$(oc get -n ${SPOKE} ${1} -o jsonpath=${2})" == "${states_machine[${1}, ${2}]}" && ready=true && break
 		echo "Waiting for spoke cluster ${SPOKE} to be deployed"
 		sleep 60
 		timeout=$((timeout + 1))
@@ -43,7 +43,7 @@ states_machine['agentclusterinstall', '{.items[*].status.debugInfo.stateInfo}']=
 
 echo ">>>> Starting the validation until finish the installation"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-oc project ${SPOKE}
+
 validate_condition "bmh" "{.items[*].status.errorCount}"
 validate_condition "bmh" "{.items[*].status.provisioning.state}"
 validate_condition "agent" "{.items[*].spec.approved}"
