@@ -129,8 +129,8 @@ for spoke in ${ALLSPOKES}; do
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	counter=0
 	for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get node -o name); do
-		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage='' --overwrite=false
-		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter} --overwrite=false
+		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage='' --overwrite=true
+		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter} --overwrite=true
 		let "counter+=1"
 	done
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
