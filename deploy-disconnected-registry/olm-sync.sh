@@ -4,12 +4,12 @@
 source ${WORKDIR}/shared-utils/common.sh
 
 function create_cs() {
-	cat > ${OUTPUTDIR}/catalogsource.yaml <<EOF
+	cat >${OUTPUTDIR}/catalogsource.yaml <<EOF
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: ${OC_DIS_CATALOG} 
-  namespace: ${MARKET_NS} 
+  name: ${OC_DIS_CATALOG}
+  namespace: ${MARKET_NS}
 spec:
   sourceType: grpc
   image: ${OLM_DESTINATION_INDEX}

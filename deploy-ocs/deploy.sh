@@ -6,43 +6,42 @@ set -o nounset
 set -m
 
 function render_file() {
-    SOURCE_FILE=${1}
-    if [[ $# -lt 1 ]]; then
-        echo "Usage :"
-        echo "  $0 <SOURCE FILE> <(optional) DESTINATION_FILE>"
-        exit 1
-    fi
+	SOURCE_FILE=${1}
+	if [[ $# -lt 1 ]]; then
+		echo "Usage :"
+		echo "  $0 <SOURCE FILE> <(optional) DESTINATION_FILE>"
+		exit 1
+	fi
 
-    DESTINATION_FILE=${2:-""}
-    if [[ "${DESTINATION_FILE}" == "" ]];then
-        envsubst < ${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -  
-    else
-        envsubst < ${SOURCE_FILE} > ${DESTINATION_FILE}
-    fi
+	DESTINATION_FILE=${2:-""}
+	if [[ ${DESTINATION_FILE} == "" ]]; then
+		envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+	else
+		envsubst <${SOURCE_FILE} >${DESTINATION_FILE}
+	fi
 }
 
 function extract_vars() {
-    # Extract variables from config file
-    DISKS_PATH=${1}
-    raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)                   
-    disks=$(echo ${raw_disks}| tr -d '\ '| sed s#-#,/dev/#g | sed 's/,*//'  | sed 's/,*//')
-    
-    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##)
-    do 
-        nodes+="${node},"
-    done
-    
-    nodes=$(echo ${nodes%*,})
-    
-    # Final Variables
-    export CHANGEME_NODES="[${nodes}]"  
-    export CHANGEME_DEVICES="[${disks}]"
+	# Extract variables from config file
+	DISKS_PATH=${1}
+	raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)
+	disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,/dev/#g | sed 's/,*//' | sed 's/,*//')
+
+	for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
+		nodes+="${node},"
+	done
+
+	nodes=$(echo ${nodes%*,})
+
+	# Final Variables
+	export CHANGEME_NODES="[${nodes}]"
+	export CHANGEME_DEVICES="[${disks}]"
 }
 
 function extract_kubeconfig() {
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -di > ${SPOKE_KUBECONFIG}
+	## Extract the Spoke kubeconfig and put it on the shared folder
+	export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
+	oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -di >${SPOKE_KUBECONFIG}
 }
 
 # Load common vars
@@ -50,10 +49,10 @@ source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Modify files to replace with pipeline info gathered"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    sed -i "s/CHANGEME/$OC_OCS_VERSION/g" manifests/03-OCS-Subscription.yaml
-    
-if [[ -z "${ALLSPOKES}" ]]; then
-    ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+sed -i "s/CHANGEME/$OC_OCS_VERSION/g" manifests/03-OCS-Subscription.yaml
+
+if [[ -z ${ALLSPOKES} ]]; then
+	ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
  
 for spoke in ${ALLSPOKES}
