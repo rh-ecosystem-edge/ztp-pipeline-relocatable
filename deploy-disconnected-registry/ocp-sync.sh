@@ -21,14 +21,15 @@ function extract_kubeconfig() {
 }
 
 function mirror_ocp() {
+
     if [[ ${MODE} == 'hub' ]];then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
     elif [[ ${MODE} == 'spoke' ]];then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
     fi
 
-	echo ">>>> Mirror OCP Operators"
-	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+	echo ">>>> Mirror Openshift Version"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	echo "Pull Secret: ${PULL_SECRET}"
 	echo "OCP Release Image: ${OPENSHIFT_RELEASE_IMAGE}"
 	echo "Destination Index: ${OCP_DESTINATION_INDEX}"
@@ -36,12 +37,9 @@ function mirror_ocp() {
 	echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-
-
-	echo ">>>> Mirror Openshift Version"
-	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	echo DEBUG: "oc adm release mirror -a ${PULL_SECRET} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${OCP_DESTINATION_INDEX} --to=${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
-	oc adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
+    echo
+	echo DEBUG: "oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${OCP_DESTINATION_INDEX} --to=${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
+	oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
 }
 
 MODE=${1}
@@ -82,6 +80,6 @@ elif [[ ${MODE} == 'spoke' ]]; then
         ## Logging into the Source and Destination registries
 	    podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
 	    podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-        mirror_ocp
+        mirror_ocp ${MODE}
     done
 fi

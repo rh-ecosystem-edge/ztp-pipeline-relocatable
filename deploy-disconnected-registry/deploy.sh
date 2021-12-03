@@ -23,14 +23,15 @@ function extract_kubeconfig() {
 }
 
 function deploy_registry() {
-    # TARGET_KUBECONFIG is the KUBECONFIG from the cluster where the Registry will be deployed
-    if [[ -z "${1}" ]]; then
-        echo "You should pass the Kubeconfig path as a first param"
-        exit 1
+
+    if [[ ${MODE} == 'hub' ]];then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster=hub
+    elif [[ ${MODE} == 'spoke' ]];then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${2}
     fi
 
-    TARGET_KUBECONFIG=${1}
-    cluster=${2}
 
     echo ">>>> Deploy internal registry: ${REGISTRY} Namespace (${cluster})"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -46,10 +47,11 @@ function deploy_registry() {
 }
 
 function trust_internal_registry() {
-    # Extract ingress TLS cert and import it on the Helper node
-    if [[ -z "${1}" ]]; then
-        echo "You should pass the Kubeconfig path as a first param"
-        exit 1
+
+    if [[ ${MODE} == 'hub' ]];then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+    elif [[ ${MODE} == 'spoke' ]];then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
     fi
 
     TARGET_KUBECONFIG=${1}
@@ -60,15 +62,16 @@ function trust_internal_registry() {
 	update-ca-trust extract
 }
 
-if [[ ${1} == 'hub' ]]; then
+MODE=${1}
+if [[ ${MODE} == 'hub' ]]; then
 	if ! ./verify.sh; then
-        deploy_registry ${KUBECONFIG_HUB} 'hub' 
-        trust_internal_registry ${KUBECONFIG_HUB}
+        deploy_registry ${MODE} 
+        trust_internal_registry ${MODE}
 	    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
 	else
-		echo ">>>> This step to deploy registry on ${1} is not neccesary, everything looks ready"
+		echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
 	fi
-elif [[ ${1} == 'spoke' ]]; then
+elif [[ ${MODE} == 'spoke' ]]; then
 
     if [[ -z "${ALLSPOKES}" ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -85,15 +88,15 @@ elif [[ ${1} == 'spoke' ]]; then
 
         # Verify step
 	    if [[ ! ./verify.sh ]]; then
-            deploy_registry ${SPOKE_KUBECONFIG} ${spoke} 
-            trust_internal_registry ${SPOKE_KUBECONFIG}
+            deploy_registry ${MODE}
+            trust_internal_registry ${MODE}
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
             export KUBECONFIG=${SPOKE_KUBECONFIG}
 	        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
             export KUBECONFIG=${KUBECONFIG_HUB}
 	    else
-	    	echo ">>>> This step to deploy registry on ${1} is not neccesary, everything looks ready"
+	    	echo ">>>> This step to deploy registry on Spoke: ${spoke} is not neccesary, everything looks ready"
 	    fi
     done
 fi
