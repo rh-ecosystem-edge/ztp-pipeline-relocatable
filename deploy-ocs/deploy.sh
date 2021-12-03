@@ -98,7 +98,7 @@ do
         timeout=0
         ready=false
         while [ "$timeout" -lt "60" ]; do
-        	if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pv -o name | wc -l) -eq 3 ]]; then
+        	if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pv -o name | wc -l) -gt 3 ]]; then
         		ready=true
         		break
         	fi
@@ -140,7 +140,7 @@ do
         ready=false
         sleep 240
         while [ "$timeout" -lt "60" ]; do
-        	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -eq $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage | grep -v NAME | wc -l) ]]; then
+        	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -eq $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | wc -l) ]]; then
         		ready=true
         		break
         	fi
