@@ -74,7 +74,10 @@ do
         ready=false
         while [ "$timeout" -lt "60" ] ; do
             echo KUBESPOKE=${SPOKE_KUBECONFIG}
-            oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep -q localvolumes.local.storage.openshift.io && ready=true && break;
+            if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep localvolumes.local.storage.openshift.io | wc -l) -eq 1 ]];then
+                ready=true
+                break;
+            fi
             echo "Waiting for CRD localvolumes.local.storage.openshift.io to be created"
             sleep 5
             timeout=$(($timeout + 5))
