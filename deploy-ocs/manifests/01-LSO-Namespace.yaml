@@ -7,4 +7,3 @@ metadata:
     openshift.io/cluster-monitoring: "true"
   annotations:
     workload.openshift.io/allowed: management
-
