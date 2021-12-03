@@ -27,7 +27,7 @@ function extract_vars() {
     raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)                   
     disks=$(echo ${raw_disks}| tr -d '\ '| sed s#-#,/dev/#g | sed 's/,*//'  | sed 's/,*//')
     
-    for node in $(oc get nodes -o name | sed s#node\/##)
+    for node in $(oc --kubeconfi=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##)
     do 
         nodes+="${node},"
     done
