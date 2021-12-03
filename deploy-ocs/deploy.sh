@@ -140,23 +140,23 @@ for spoke in ${ALLSPOKES}; do
 	oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/04-OCS-StorageCluster.yaml
 	sleep 60
 
-	echo ">>>> Waiting for: OCS Cluster"
-	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	timeout=0
-	ready=false
-	sleep 240
-	while [ "$timeout" -lt "60" ]; do
-		if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -eq $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | wc -l) ]]; then
-			ready=true
-			break
-		fi
-		sleep 5
-		timeout=$((timeout + 5))
-	done
-	if [ "$ready" == "false" ]; then
-		echo "timeout waiting for OCS pods..."
-		exit 1
-	fi
+	#echo ">>>> Waiting for: OCS Cluster"
+	#echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	#timeout=0
+	#ready=false
+	#sleep 240
+	#while [ "$timeout" -lt "60" ]; do
+	#	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -eq $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | wc -l) ]]; then
+	#		ready=true
+	#		break
+	#	fi
+	#	sleep 5
+	#	timeout=$((timeout + 5))
+	#done
+	#if [ "$ready" == "false" ]; then
+	#	echo "timeout waiting for OCS pods..."
+	#	exit 1
+	#fi
 done
 
 echo ">>>>EOF"
