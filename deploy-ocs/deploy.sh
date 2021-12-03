@@ -24,8 +24,12 @@ function render_file() {
 function extract_vars() {
 	# Extract variables from config file
 	DISKS_PATH=${1}
+    n_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null// | wc -l)
+    h_disks=$(($n_disks / 2))
 	raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)
 	disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,/dev/#g | sed 's/,*//' | sed 's/,*//')
+    FS=$(echo $disks |cut -d "," -f 1-$h_disks)
+    BLK=$(echo $disks |cut -d "," -f $((h_disks+1))-)
 
 	for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
 		nodes+="${node},"
@@ -35,7 +39,8 @@ function extract_vars() {
 
 	# Final Variables
 	export CHANGEME_NODES="[${nodes}]"
-	export CHANGEME_DEVICES="[${disks}]"
+    export CHANGEME_BLK_DEVICES="[${FS}]"
+    export CHANGEME_FS_DEVICES="[${BLK}]"
 }
 
 function extract_kubeconfig() {
@@ -124,8 +129,8 @@ for spoke in ${ALLSPOKES}; do
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	counter=0
 	for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get node -o name); do
-		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage=''
-		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter}
+		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage='' --overwrite=false
+		oc --kubeconfig=${SPOKE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter} --overwrite=false
 		let "counter+=1"
 	done
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"

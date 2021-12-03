@@ -16,7 +16,7 @@ spec:
         resources:
           requests:
             storage: 100Gi
-        storageClassName: localstorage-sc
+        storageClassName: localstorage-sc-block
         volumeMode: Block
     name: ocs-deviceset
     placement: {}
