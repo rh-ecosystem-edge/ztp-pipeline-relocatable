@@ -120,7 +120,7 @@ do
     echo ">>>> Labeling nodes for OCS"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
         counter=0
-        for node in $(oc get node -o name);
+        for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get node -o name);
         do
             oc --kubeconfig=${SPOKE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage=''
             oc --kubeconfig=${SPOKE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter}
