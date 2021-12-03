@@ -109,6 +109,11 @@ EOF
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTER}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
+        storage_disk:
+          - vda
+          - vdb
+          - vdc
+          - vdd
 EOF
     done
 
