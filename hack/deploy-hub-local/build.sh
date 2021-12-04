@@ -14,6 +14,7 @@ export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
 export VERSION="ci"
+export DEPLOY_KCLI_PLAN_VERSION="4a8c64b5ed19c4fc6192d78b4f323f6814a0c942"
 
 
 if [ $# -eq 0 ]; then
@@ -47,23 +48,28 @@ echo ">>>> kcli create plan"
 echo ">>>>>>>>>>>>>>>>>>>>>"
 
 if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
+    [ -d kcli-openshift4-baremetal ] && rm -rf kcli-openshift4-baremetal
+    echo "Cloning kcli-openshift4-baremetal repo"
+    git clone https://github.com/karmab/kcli-openshift4-baremetal
+    cp openshift_pull.json kcli-openshift4-baremetal
+    git -C kcli-openshift4-baremetal checkout ${DEPLOY_KCLI_PLAN_VERSION:-master}
     if [ "${OC_NET_CLASS}" = "ipv4" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
             kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            kcli create plan -f kcli-openshift4-baremetal --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
             kcli create plan -k -f create-vm.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
 
         else
             echo "Metal3 + ipv4 + disconnected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            kcli create plan -f kcli-openshift4-baremetal --force --paramfile=lab-metal3.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
         fi
     else
         echo "Metal3 + ipv6 + disconnected"
         t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-        kcli create plan --force --paramfile=lab_ipv6.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+        kcli create plan -f kcli-openshift4-baremetal --force --paramfile=lab-ipv6.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 
     fi
 else
