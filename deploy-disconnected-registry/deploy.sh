@@ -3,7 +3,6 @@
 set -o pipefail
 set -o nounset
 set -m
-set -x
 
 # variables
 # #########

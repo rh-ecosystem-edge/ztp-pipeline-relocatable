@@ -3,7 +3,6 @@
 set -o pipefail
 set -o nounset
 set -m
-set -x
 
 if [[ $# -lt 1 ]]; then
 	echo "Usage :"
