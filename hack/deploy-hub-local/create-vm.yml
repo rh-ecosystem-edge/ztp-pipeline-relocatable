@@ -6,8 +6,8 @@ parameters:
 spoke{{ i }}-m{{ j }}:
   uefi_legacy: true
   start: false
-  memory: 20000
-  numcpus: 8
+  memory: 32000
+  numcpus: 12
   nets:
   - name: bare-net
     mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e

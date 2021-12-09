@@ -11,11 +11,12 @@ function create_cs() {
     fi
 
 	cat > ${CS_OUTFILE} <<EOF
+
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: ${OC_DIS_CATALOG} 
-  namespace: ${MARKET_NS} 
+  name: ${OC_DIS_CATALOG}
+  namespace: ${MARKET_NS}
 spec:
   sourceType: grpc
   image: ${OLM_DESTINATION_INDEX}

@@ -1,7 +1,8 @@
+---
 apiVersion: local.storage.openshift.io/v1
 kind: LocalVolume
 metadata:
-  name: localstorage-disks
+  name: localstorage-disks-filesystem
   namespace: openshift-local-storage
 spec:
   logLevel: Normal
@@ -13,7 +14,27 @@ spec:
         operator: In
         values: $CHANGEME_NODES
   storageClassDevices:
-  - devicePaths: $CHANGEME_DEVICES
+  - devicePaths: $CHANGEME_FS_DEVICES
     fsType: xfs
-    storageClassName: localstorage-sc
+    storageClassName: localstorage-sc-filesystem
+    volumeMode: Filesystem
+---
+apiVersion: local.storage.openshift.io/v1
+kind: LocalVolume
+metadata:
+  name: localstorage-disks-block
+  namespace: openshift-local-storage
+spec:
+  logLevel: Normal
+  managementState: Managed
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: kubernetes.io/hostname
+        operator: In
+        values: $CHANGEME_NODES
+  storageClassDevices:
+  - devicePaths: $CHANGEME_BLK_DEVICES
+    fsType: xfs
+    storageClassName: localstorage-sc-block
     volumeMode: Block
