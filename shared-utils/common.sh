@@ -18,6 +18,7 @@ export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${SPOKES_FILE})
 export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
 export OC_DIS_CATALOG=kubeframe-catalog
 export MARKET_NS=openshift-marketplace
+export KUBEFRAME_NS=kubeframe
 export OUTPUTDIR=${WORKDIR}/build
 
 [ -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}

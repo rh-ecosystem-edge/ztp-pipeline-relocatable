@@ -40,9 +40,10 @@ function extract_vars() {
 
 
 function extract_kubeconfig() {
-	## Extract the Spoke kubeconfig and put it on the shared folder
-	export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-	oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -di >${SPOKE_KUBECONFIG}
+    ## Extract the Spoke kubeconfig and put it on the shared folder
+    export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d > ${SPOKE_KUBECONFIG}
+
 }
 
 # Load common vars
@@ -154,6 +155,7 @@ for spoke in ${ALLSPOKES}; do
 	#	exit 1
 	#fi
 done
+    oc patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 echo ">>>>EOF"
 echo ">>>>>>>"

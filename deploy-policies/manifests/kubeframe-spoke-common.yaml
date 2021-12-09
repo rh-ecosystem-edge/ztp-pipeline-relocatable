@@ -1,0 +1,50 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  name: kubeframe-spoke-common-policy
+  namespace: kubeframe
+spec:
+  remediationAction: enforce
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: kubeframe-spoke-common
+          annotations:
+            target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+        spec:
+          remediationAction: enforce
+          severity: low
+          object-templates:
+            ## Disable Default Sources
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: config.openshift.io/v1
+                kind: OperatorHub
+                metadata:
+                  name: cluster
+                spec:
+                  disableAllDefaultSources: true
+            ## Deploy Custom catalog Sources
+            # This should be done via script, not using policies
+            #- complianceType: mustonlyhave
+            #  objectDefinition:
+            #    apiVersion: operators.coreos.com/v1alpha1
+            #    kind: CatalogSource
+            #    metadata:
+            #      annotations:
+            #        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+            #      name: redhat-operator-index
+            #      namespace: openshift-marketplace
+            #    spec:
+            #      displayName: Kubeframe Factory
+            #      image: kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com/olm/redhat-operator-index:v4.9 
+            #      publisher: wclab
+            #      sourceType: grpc
