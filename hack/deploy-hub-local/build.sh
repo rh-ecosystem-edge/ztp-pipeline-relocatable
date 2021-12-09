@@ -116,6 +116,7 @@ done
 
 kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.spoke0-cluster.kubeframe.local -i 192.168.7.242
 
 echo ">>>> EOF"
 echo ">>>>>>>>"

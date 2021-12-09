@@ -51,15 +51,17 @@ function trust_internal_registry() {
 
     if [[ ${MODE} == 'hub' ]];then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster="hub"
     elif [[ ${MODE} == 'spoke' ]];then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${spoke}
     fi
 
 	echo ">>>> Trusting internal registry"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	## Update trusted CA from Helper
-	oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d >/etc/pki/ca-trust/source/anchors/internal-registry.crt
-	update-ca-trust extract
+	oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d >/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt 
+    update-ca-trust extract
 }
 
 MODE=${1}
@@ -90,7 +92,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         # Verify step
         if  ! ./verify.sh "${MODE}"; then
             deploy_registry ${MODE} ${spoke}
-            trust_internal_registry ${MODE}
+            trust_internal_registry ${MODE} ${spoke}
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
             export KUBECONFIG=${SPOKE_KUBECONFIG}
