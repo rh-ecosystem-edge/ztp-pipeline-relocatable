@@ -130,7 +130,7 @@ elif [[ ${1} == "spoke" ]]; then
         if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
             extract_kubeconfig ${spoke}
         else
-            SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
 
 		prepare_env ${MODE}
