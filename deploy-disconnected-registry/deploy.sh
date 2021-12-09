@@ -3,6 +3,7 @@
 set -o pipefail
 set -o nounset
 set -m
+set -x
 
 # variables
 # #########
@@ -36,10 +37,10 @@ function deploy_registry() {
     echo ">>>> Deploy internal registry: ${REGISTRY} Namespace (${cluster})"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	# TODO: Render variables instead being static
-	oc --kubeconfig=${TARGET_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
+	oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
 	htpasswd -bBc ${AUTH_SECRET} ${REG_US} ${REG_PASS}
-	oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} create secret generic ${SECRET} --from-file=${AUTH_SECRET} -o yaml --dry-run=client | oc apply -f -
-	oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} create configmap registry-conf --from-file=config.yml -o yaml --dry-run=client | oc apply -f -
+	oc -n ${REGISTRY} create secret generic ${SECRET} --from-file=${AUTH_SECRET} -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
+	oc -n ${REGISTRY} create configmap registry-conf --from-file=config.yml -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
 	oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/deployment.yaml
 	oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
 	oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
@@ -54,7 +55,6 @@ function trust_internal_registry() {
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
     fi
 
-    TARGET_KUBECONFIG=${1}
 	echo ">>>> Trusting internal registry"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	## Update trusted CA from Helper
@@ -64,7 +64,7 @@ function trust_internal_registry() {
 
 MODE=${1}
 if [[ ${MODE} == 'hub' ]]; then
-	if ! ./verify.sh; then
+    if ! ./verify.sh "${MODE}"; then
         deploy_registry ${MODE} 
         trust_internal_registry ${MODE}
 	    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
@@ -80,15 +80,16 @@ elif [[ ${MODE} == 'spoke' ]]; then
     for spoke in ${ALLSPOKES}
     do
         # Get Spoke Kubeconfig
+        echo "spoke: ${spoke}"
         if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
             extract_kubeconfig ${spoke}
         else
-            SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
 
         # Verify step
-	    if [[ ! ./verify.sh ]]; then
-            deploy_registry ${MODE}
+        if  ! ./verify.sh "${MODE}"; then
+            deploy_registry ${MODE} ${spoke}
             trust_internal_registry ${MODE}
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file

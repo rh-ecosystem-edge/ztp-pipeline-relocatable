@@ -135,6 +135,7 @@ do
     	exit 1
     fi
 done
+    oc patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 echo ">>>>EOF"
 echo ">>>>>>>"

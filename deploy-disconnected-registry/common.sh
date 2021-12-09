@@ -3,6 +3,7 @@
 set -o pipefail
 set -o nounset
 set -m
+set -x
 
 if [[ $# -lt 1 ]]; then
 	echo "Usage :"
@@ -55,11 +56,13 @@ if [[ ${1} == "hub" ]]; then
 	export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
 elif [[ ${1} == "spoke" ]]; then
-    if [[ -z ${SPOKE_KUBECONFIG} ]]; then
+    if [[ "${SPOKE_KUBECONFIG:-}" == "" ]]; then
         echo "Avoiding Hub <-> Spoke sync on favor of registry deployment"
     else
 	    echo ">>>> Filling variables for Registry sync on Spoke"
 	    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        echo "HUB: ${KUBECONFIG_HUB}"
+        echo "SPOKE: ${SPOKE_KUBECONFIG}"
 	    ## Common
         export DESTINATION_REGISTRY="$(oc --kubeconfig=${SPOKE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
         ## OCP Sync vars

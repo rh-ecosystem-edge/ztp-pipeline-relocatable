@@ -3,6 +3,7 @@
 set -o pipefail
 set -o nounset
 set -m
+set -x
 
 # variables
 # #########
@@ -17,6 +18,7 @@ function extract_kubeconfig() {
 
     ## Extract the Spoke kubeconfig and put it on the shared folder
     export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
     oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d > ${SPOKE_KUBECONFIG}
 }
 
@@ -36,7 +38,7 @@ function mirror_ocp() {
 	echo "Destination Registry: ${DESTINATION_REGISTRY}"
 	echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
-	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo
 	echo DEBUG: "oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${OCP_DESTINATION_INDEX} --to=${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
 	oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
@@ -46,7 +48,7 @@ MODE=${1}
 
 if [[ ${MODE} == 'hub' ]]; then
     # Loading variables here in purpose
-    source ./common.sh ${1}
+    source ./common.sh ${MODE}
 	
     if ! ./verify_ocp_sync.sh; then
 		oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
@@ -65,15 +67,16 @@ elif [[ ${MODE} == 'spoke' ]]; then
     
     for spoke in ${ALLSPOKES}
     do
-        # Loading variables here in purpose
-        source ./common.sh ${1}
-
         # Get Spoke Kubeconfig
         if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
             extract_kubeconfig ${spoke}
         else
-            SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
         fi
+
+        # Loading variables here in purpose
+        source ./common.sh ${MODE}
 
 	    oc --kubeconfig=${SPOKE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
