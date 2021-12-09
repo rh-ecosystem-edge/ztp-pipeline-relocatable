@@ -24,12 +24,8 @@ function render_file() {
 function extract_vars() {
 	# Extract variables from config file
 	DISKS_PATH=${1}
-	n_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null// | wc -l)
-	h_disks=$((n_disks / 2))
 	raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)
 	disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,/dev/#g | sed 's/,*//' | sed 's/,*//')
-	FS=$(echo $disks | cut -d "," -f 1-$h_disks)
-	BLK=$(echo $disks | cut -d "," -f $((h_disks + 1))-)
 
 	for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
 		nodes+="${node},"
@@ -39,9 +35,9 @@ function extract_vars() {
 
 	# Final Variables
 	export CHANGEME_NODES="[${nodes}]"
-	export CHANGEME_BLK_DEVICES="[${FS}]"
-	export CHANGEME_FS_DEVICES="[${BLK}]"
+	export CHANGEME_DEVICES="[${disks}]"
 }
+
 
 function extract_kubeconfig() {
 	## Extract the Spoke kubeconfig and put it on the shared folder
