@@ -4,7 +4,14 @@
 source ${WORKDIR}/shared-utils/common.sh
 
 function create_cs() {
-	cat >${OUTPUTDIR}/catalogsource.yaml <<EOF
+    if [[ ${MODE} == 'hub' ]]; then
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
+    elif [[ ${MODE} == 'spoke' ]]; then
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-${spoke}.yaml
+    fi
+
+	cat > ${CS_OUTFILE} <<EOF
+
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -22,7 +29,7 @@ EOF
 
 	echo ""
 	echo "To apply the Red Hat Operators catalog mirror configuration to your cluster, do the following once per cluster:"
-	echo "oc apply -f ${OUTPUTDIR}/catalogsource.yaml"
+	echo "oc apply -f ${CS_OUTFILE}"
 }
 
 function prepare_env() {
@@ -45,14 +52,15 @@ function prepare_env() {
 
 	if [[ ${fail_counter} -ge 1 ]]; then
 		echo "#########"
-		#exit 1
+		exit 1
 	fi
 }
 
 function mirror() {
 	# Check for credentials for OPM
-	#echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
-	#echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
+	podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+	echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
 	podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
 
 	if [ ! -f ~/.docker/config.json ]; then
@@ -63,6 +71,12 @@ function mirror() {
 		cp -rf ${PULL_SECRET} ~/.docker/config.json
 	fi
 
+    if [[ ${MODE} == 'hub' ]];then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+    elif [[ ${MODE} == 'spoke' ]];then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    fi
+
 	echo ">>>> Mirror OLM Operators"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 	echo "Pull Secret: ${PULL_SECRET}"
@@ -71,31 +85,58 @@ function mirror() {
 	echo "Destination Index: ${OLM_DESTINATION_INDEX}"
 	echo "Destination Registry: ${DESTINATION_REGISTRY}"
 	echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
+    echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 
 	# Mirror redhat-operator index image
-	echo "opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
+	echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 	opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
+
+    echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
 	GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
 
 	echo ">>>> Trying to push OLM images to Internal Registry"
-	GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}
+    echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
+	GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}
 
+    # Patch to avoid issues on mirroring
 	PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
-	for packagemanifest in $(oc get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
-		for package in $(oc get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
+	for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
+		for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
 			echo
 			echo "Package: ${package}"
 			skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
 		done
 	done
 }
-if [[ ${1} == 'hub' ]]; then
+
+MODE=${1}
+
+if [[ ${MODE} == 'hub' ]]; then
 	if ! ./verify_olm_sync.sh; then
-		prepare_env ${1}
-		mirror
-		create_cs
+		prepare_env ${MODE}
+		mirror ${MODE}
+		create_cs ${MODE}
 	else
 		echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
 	fi
+elif [[ ${1} == "spoke" ]]; then
+    if [[ -z "${ALLSPOKES}" ]]; then
+        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+    fi
+    
+    for spoke in ${ALLSPOKES}
+    do
+        # Get Spoke Kubeconfig
+        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
+            extract_kubeconfig ${spoke}
+        else
+            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+        fi
+
+		prepare_env ${MODE}
+		mirror ${MODE}
+		create_cs ${MODE}
+
+    done
 fi
