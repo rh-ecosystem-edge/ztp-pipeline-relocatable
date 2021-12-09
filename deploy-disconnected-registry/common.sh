@@ -40,6 +40,7 @@ if [[ ${1} == "hub" ]]; then
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	export OCP_RELEASE=$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterversion -o jsonpath={'.items[0].status.desired.version'})
 	export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OCP_RELEASE}-x86_64"
+    export SOURCE_REGISTRY="quay.io"
 	export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION}"
 	export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
 	## OLM
