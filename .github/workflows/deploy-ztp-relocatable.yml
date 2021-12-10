@@ -22,6 +22,7 @@ env:
   DEPLOY_HUB_CONFIGS_DIR: deploy-hub-configs
   DEPLOY_SPOKES_DIR: deploy-spoke
   DEPLOY_OCS_DIR: deploy-ocs
+  DEPLOY_POLICY_DIR: deploy-policies
   SHARED_DIR: shared-utils
 
 
@@ -88,6 +89,18 @@ jobs:
           cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
           ./deploy.sh
 
+
+  deploy-policies:
+    needs: deploy-acm
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy policies
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_POLICY_DIR}}
+          ./deploy.sh
+
+
   deploy-spokes:
     needs: deploy-hub-config
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -99,6 +112,7 @@ jobs:
           ./render_spokes.sh; sleep 3
           ./deploy.sh
 
+
   extract-spokes-list:
     needs: deploy-spokes
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -109,6 +123,7 @@ jobs:
         id: spokeslist
         run: |
           echo "::set-output name=services::$(cat ${{github.event.inputs.SPOKES_FILE}} | yq e '.spokes.[] | keys | join(",")' - | jq -Rsc '. / "\n" - [""]')"
+
 
   verify-installation:
     needs: extract-spokes-list
@@ -125,6 +140,7 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh $SPOKE
 
+
   deploy-ocs:
     needs: verify-installation
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -135,6 +151,7 @@ jobs:
           cd ${{env.DEPLOY_OCS_DIR}}
           ./deploy.sh
 
+          
   deploy-disconnected-registry-spokes:
     needs: deploy-ocs        # run in parallel with the other jobs
     runs-on: ${{github.event.inputs.RUNNER}}
