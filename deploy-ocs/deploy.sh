@@ -154,7 +154,7 @@ for spoke in ${ALLSPOKES}; do
 		exit 1
 	fi
 done
-    oc patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    oc --kubeconfig=${SPOKE_KUBECONFIG} patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 echo ">>>>EOF"
 echo ">>>>>>>"
