@@ -3,6 +3,18 @@
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
+function extract_kubeconfig() {
+    ## Put Hub Kubeconfig in a safe place
+    if [[ ! -f "${OUTPUTDIR}/kubeconfig-hub" ]];then 
+        cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
+    fi
+
+    ## Extract the Spoke kubeconfig and put it on the shared folder
+    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d > ${SPOKE_KUBECONFIG}
+}
+
 function create_cs() {
     if [[ ${MODE} == 'hub' ]]; then
         CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
