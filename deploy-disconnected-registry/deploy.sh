@@ -12,13 +12,13 @@ source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
 function render_file() {
-	SOURCE_FILE=${1}
+    SOURCE_FILE=${1}
     MODE=${2}
-	if [[ $# -lt 2 ]]; then
-		echo "Usage :"
-		echo "  $0 <SOURCE FILE> <MODE> [<SPOKE_NAME>]"
-		exit 1
-	fi
+    if [[ $# -lt 2 ]]; then
+    	echo "Usage :"
+    	echo "  $0 <SOURCE FILE> <MODE> [<SPOKE_NAME>]"
+    	exit 1
+    fi
     if [[ ${MODE} == 'hub' ]];then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster=hub
@@ -26,7 +26,7 @@ function render_file() {
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         cluster=${3}
     fi
-	envsubst < ${SOURCE_FILE} | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
+    envsubst < ${SOURCE_FILE} | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
 }
 
 
