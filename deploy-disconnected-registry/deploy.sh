@@ -11,6 +11,25 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
+function render_file() {
+	SOURCE_FILE=${1}
+    MODE=${2}
+	if [[ $# -lt 2 ]]; then
+		echo "Usage :"
+		echo "  $0 <SOURCE FILE> <MODE> [<SPOKE_NAME>]"
+		exit 1
+	fi
+    if [[ ${MODE} == 'hub' ]];then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster=hub
+    elif [[ ${MODE} == 'spoke' ]];then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${3}
+    fi
+	envsubst < ${SOURCE_FILE} | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
+}
+
+
 function extract_kubeconfig() {
     ## Put Hub Kubeconfig in a safe place
     if [[ ! -f "${OUTPUTDIR}/kubeconfig-hub" ]];then 
@@ -19,7 +38,7 @@ function extract_kubeconfig() {
 
     ## Extract the Spoke kubeconfig and put it on the shared folder
     export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d > ${SPOKE_KUBECONFIG}
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d > ${SPOKE_KUBECONFIG}
 }
 
 function deploy_registry() {
@@ -59,8 +78,15 @@ function trust_internal_registry() {
 	echo ">>>> Trusting internal registry"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	## Update trusted CA from Helper
-	oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d >/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt 
-    update-ca-trust extract
+    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
+	export CA_CERT_DATA=$(oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt"
+    
+    echo "${CA_CERT_DATA}" | base64 -d > "${PATH_CA_CERT}"   #update for the hub/hypervisor
+    update-ca-trust extract 
+
+    
+    
 }
 
 MODE=${1}
@@ -68,6 +94,7 @@ if [[ ${MODE} == 'hub' ]]; then
     if ! ./verify.sh "${MODE}"; then
         deploy_registry ${MODE} 
         trust_internal_registry ${MODE}
+        render_file manifests/machine-config-certs.yaml ${MODE}
 	    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
 	else
 		echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
@@ -92,6 +119,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         if  ! ./verify.sh "${MODE}"; then
             deploy_registry ${MODE} ${spoke}
             trust_internal_registry ${MODE} ${spoke}
+            render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
             export KUBECONFIG=${SPOKE_KUBECONFIG}
