@@ -94,8 +94,8 @@ if [[ ${MODE} == 'hub' ]]; then
     if ! ./verify.sh "${MODE}"; then
         deploy_registry ${MODE} 
         trust_internal_registry ${MODE}
-        render_file manifests/machine-config-certs.yaml ${MODE}
 	    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+        render_file manifests/machine-config-certs.yaml ${MODE}
 	else
 		echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
 	fi
@@ -119,12 +119,17 @@ elif [[ ${MODE} == 'spoke' ]]; then
         if  ! ./verify.sh "${MODE}"; then
             deploy_registry ${MODE} ${spoke}
             trust_internal_registry ${MODE} ${spoke}
-            render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
             export KUBECONFIG=${SPOKE_KUBECONFIG}
 	        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
             export KUBECONFIG=${KUBECONFIG_HUB}
+
+            # updated with machine config
+            render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
+
+
+
 	    else
 	    	echo ">>>> This step to deploy registry on Spoke: ${spoke} is not neccesary, everything looks ready"
 	    fi
