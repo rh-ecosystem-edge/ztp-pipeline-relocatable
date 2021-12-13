@@ -11,7 +11,7 @@ spec:
     storage:
       files:
       - contents:
-          source: data:text/plain;charset=us-ascii;base64,CA_CERT_DATA
+          source: data:text/plain;charset=us-ascii;base64,$CA_CERT_DATA
         filesystem: root
         mode: 493
-        path: PATH_CA_CERT
+        path: $PATH_CA_CERT
