@@ -165,3 +165,4 @@ jobs:
           ./ocp-sync.sh 'spoke'
           ./olm-sync.sh 'spoke'
           ./update-global-pullsecret.sh 'spoke'
+          
