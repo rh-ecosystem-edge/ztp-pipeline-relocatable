@@ -9,6 +9,20 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+function recover_mapping() {
+    MAP_FILENAME='mapping.txt'
+    echo ">>>> Finding Map file for OLM Sync"
+    if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]];then
+        echo ">>>> No mapping file found for OLM Sync"
+        MAP="${OUTPUTDIR}/${MAP_FILENAME}"
+        find ${OUTPUTDIR} -name "${MAP_FILENAME}*" -exec cp {} ${MAP} \;
+        if [[ ! -f "${MAP}" ]];then
+            echo "Mapping File: ${MAP} Not found"
+            exit 1
+        fi
+    fi
+}
+
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
@@ -28,4 +42,7 @@ for packagemanifest in $(oc --kubeconfig=${TARGET_KUBECONFIG} get packagemanifes
 	done
 done
 #In this case, we don't need to mirror catalogs, everything is already there
+
+recover_mapping
+
 exit 0
