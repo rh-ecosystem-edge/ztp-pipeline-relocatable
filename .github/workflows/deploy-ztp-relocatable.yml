@@ -165,7 +165,7 @@ jobs:
 
 
   deploy-ocs:
-    needs: verify-installation
+    needs: deploy-icsp-spokes-pre 
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy OCS
