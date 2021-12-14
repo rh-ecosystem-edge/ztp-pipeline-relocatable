@@ -13,9 +13,15 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
 
+if [[ ${MODE} == 'hub' ]];then
+    TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+elif [[ ${MODE} == 'spoke' ]];then
+    TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+fi
+
 podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-for packagemanifest in $(oc get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
-	for package in $(oc get ${packagemanifest} -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
+for packagemanifest in $(oc --kubeconfig=${TARGET_KUBECONFIG} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
+	for package in $(oc --kubeconfig=${TARGET_KUBECONFIG} get ${packagemanifest} -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
 		echo "Verify Package: ${package}"
 		#if next command fails, it means that the image is not already in the destination registry, so output command will be error (>0)
 		skopeo inspect docker://"${DESTINATION_REGISTRY}"/"${OLM_DESTINATION_REGISTRY_IMAGE_NS}"/$(echo ${package} | awk -F'/' '{print $2}')-$(basename ${package}) --authfile "${PULL_SECRET}"
