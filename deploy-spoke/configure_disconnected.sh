@@ -29,8 +29,13 @@ function icsp_mutate() {
 
 function recover_mapping() {
     echo ">>>> Finding Map file for OLM Sync"
-    MAP_FILE=$(find ${WORKDIR} -name ${MAP_FILENAME})
-    cp ${MAP_FILE} ${OUTPUTDIR}/${MAP_FILENAME}
+    
+    if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]];then
+        echo ">>>> No mapping file found for OLM Sync"
+        MAP="${OUTPUTDIR}/${MAP_FILENAME}"
+        find ${OUTPUTDIR} -name "${MAP_FILENAME}*" -exec cp {} ${MAP} \;
+    fi
+    
 }
 
 function gen_header() {
