@@ -124,7 +124,7 @@ function mirror() {
 	done
 
     # Copy extra images to the destination registry
-    for ${IMAGE} in ${EXTRA_IMAGES}
+    for image in ${EXTRA_IMAGES}
     do
         echo "Image: ${image}"
         skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
