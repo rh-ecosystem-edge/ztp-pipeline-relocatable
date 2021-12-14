@@ -6,7 +6,7 @@ metadata:
     policy.open-cluster-management.io/categories: CM Configuration Management
     policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
     policy.open-cluster-management.io/standards: NIST SP 800-53
-  name: kubeframe-spoke-metallb-policy
+  name: kubeframe-spoke-metallb-pre-policy
   namespace: kubeframe
 spec:
   remediationAction: enforce
@@ -16,22 +16,30 @@ spec:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: kubeframe-spoke-metallb
+          name: kubeframe-spoke-metallb-pre
         spec:
           remediationAction: enforce
-          severity: low
+          severity: high
           object-templates:
-            ## Subscription 
+            ## Namespace
             - complianceType: mustonlyhave
               objectDefinition:
-                apiVersion: operators.coreos.com/v1alpha1
-                kind: Subscription
+                apiVersion: v1
+                kind: Namespace
                 metadata:
-                  name: metallb-operator
+                  name: metallb
+                  labels:
+                    openshift.io/cluster-monitoring: "true"
+                  annotations:
+                    workload.openshift.io/allowed: management
+            ## OperatorGroup 
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: operators.coreos.com/v1
+                kind: OperatorGroup
+                metadata:
+                  name: metallb-operator-operatorgroup
                   namespace: metallb
                 spec:
-                  channel: "stable"
-                  name: metallb-operator
-                  ## TODO: Should be dinamic and pointing to the spoke registry, not internet
-                  source: redhat-operators
-                  sourceNamespace: openshift-marketplace
+                  targetNamespaces:
+                  - metallb

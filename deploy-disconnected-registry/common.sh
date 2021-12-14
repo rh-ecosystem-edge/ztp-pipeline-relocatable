@@ -28,6 +28,7 @@ export REGISTRY_CONFIG=config.yml
 
 export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator'
 export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
+export EXTRA_IMAGES='quay.io/jparrill/registry:2'
 export OCP_RELEASE=${OC_OCP_VERSION}
 export OCP_RELEASE_FULL=${OCP_RELEASE}.0
 # TODO: Change static passwords by dynamic ones

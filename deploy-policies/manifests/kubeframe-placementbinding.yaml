@@ -12,6 +12,12 @@ subjects:
   - name: kubeframe-spoke-common-policy 
     kind: Policy
     apiGroup: policy.open-cluster-management.io
+  - name: kubeframe-spoke-nmstate-pre-policy
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
+  - name: kubeframe-spoke-metallb-pre-policy 
+    kind: Policy
+    apiGroup: policy.open-cluster-management.io
   - name: kubeframe-spoke-nmstate-policy
     kind: Policy
     apiGroup: policy.open-cluster-management.io

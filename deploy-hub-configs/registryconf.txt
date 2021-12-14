@@ -12,3 +12,9 @@
       mirror-by-digest-only = true
       [[registry.mirror]]
         location = "CHANGEDOMAIN/ocp4/openshift4"
+    [[registry]]
+      prefix = ""
+      location = "quay.io/jparrill/registry"
+      mirror-by-digest-only = false
+      [[registry.mirror]]
+        location = "CHANGEDOMAIN/jparrill/registry"

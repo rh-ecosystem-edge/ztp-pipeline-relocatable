@@ -6,7 +6,7 @@ metadata:
     policy.open-cluster-management.io/categories: CM Configuration Management
     policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
     policy.open-cluster-management.io/standards: NIST SP 800-53
-  name: kubeframe-spoke-nmstate-policy
+  name: kubeframe-spoke-nmstate-pre-policy
   namespace: kubeframe
 spec:
   remediationAction: enforce
@@ -16,22 +16,30 @@ spec:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: kubeframe-spoke-nmstate
+          name: kubeframe-spoke-nmstate-pre
         spec:
           remediationAction: enforce
-          severity: low
+          severity: high
           object-templates:
-            ## Subscription 
+            ## Namespace
             - complianceType: mustonlyhave
               objectDefinition:
-                apiVersion: operators.coreos.com/v1alpha1
-                kind: Subscription
+                apiVersion: v1
+                kind: Namespace
                 metadata:
-                  name: kubernetes-nmstate-operator
+                  name: openshift-nmstate
+                  labels:
+                    openshift.io/cluster-monitoring: "true"
+                  annotations:
+                    workload.openshift.io/allowed: management
+            ## OperatorGroup 
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: operators.coreos.com/v1
+                kind: OperatorGroup
+                metadata:
+                  name: kubernetes-nmstate-operator-operatorgroup
                   namespace: openshift-nmstate
                 spec:
-                  channel: "stable"
-                  name: kubernetes-nmstate-operator
-                  ## TODO: Should be dinamic and pointing to the spoke registry, not internet
-                  source: redhat-operators
-                  sourceNamespace: openshift-marketplace
+                  targetNamespaces:
+                  - openshift-nmstate

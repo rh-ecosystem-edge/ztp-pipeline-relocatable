@@ -80,6 +80,17 @@ jobs:
           ./update-global-pullsecret.sh 'hub'
 
 
+  deploy-icsp-hub:
+    needs: [deploy-acm, deploy-disconnected-registry-hub, deploy-httpd-server]       # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy ICSP in the Hub
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_SPOKES_DIR}}
+          ./configure_disconnected.sh 'hub'
+
+
   deploy-hub-config:
     needs: [deploy-acm, deploy-disconnected-registry-hub, deploy-httpd-server]       # run in parallel with the other jobs
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -103,7 +114,7 @@ jobs:
 
 
   deploy-spokes:
-    needs: deploy-hub-config
+    needs: [deploy-hub-config, deploy-icsp-hub]
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Spokes
@@ -142,6 +153,17 @@ jobs:
           ./wait_for_spoke.sh $SPOKE
 
 
+  deploy-icsp-spokes-pre:
+    needs: verify-installation 
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy ICSP in all the spokes in the Pre flow 
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_SPOKES_DIR}}
+          ./configure_disconnected.sh 'spoke' 'pre'
+
+
   deploy-ocs:
     needs: verify-installation
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -165,4 +187,14 @@ jobs:
           ./ocp-sync.sh 'spoke'
           ./olm-sync.sh 'spoke'
           ./update-global-pullsecret.sh 'spoke'
-          
+
+
+  deploy-icsp-spokes-post:
+    needs: deploy-disconnected-registry-spokes 
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy ICSP in all the spokes in the Post flow 
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_SPOKES_DIR}}
+          ./configure_disconnected.sh 'spoke' 'post'

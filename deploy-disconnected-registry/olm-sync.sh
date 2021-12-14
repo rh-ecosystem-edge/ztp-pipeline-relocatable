@@ -68,6 +68,8 @@ function prepare_env() {
 	fi
 }
 
+
+
 function mirror() {
 	# Check for credentials for OPM
 	echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
@@ -120,6 +122,13 @@ function mirror() {
 			skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
 		done
 	done
+
+    # Copy extra images to the destination registry
+    for ${IMAGE} in ${EXTRA_IMAGES}
+    do
+        echo "Image: ${image}"
+        skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
+    done
 }
 
 MODE=${1}
@@ -149,6 +158,5 @@ elif [[ ${1} == "spoke" ]]; then
 		prepare_env ${MODE}
 		mirror ${MODE}
 		create_cs ${MODE}
-
     done
 fi

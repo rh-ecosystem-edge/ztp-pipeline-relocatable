@@ -32,19 +32,3 @@ spec:
                   name: cluster
                 spec:
                   disableAllDefaultSources: true
-            ## Deploy Custom catalog Sources
-            # This should be done via script, not using policies
-            #- complianceType: mustonlyhave
-            #  objectDefinition:
-            #    apiVersion: operators.coreos.com/v1alpha1
-            #    kind: CatalogSource
-            #    metadata:
-            #      annotations:
-            #        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
-            #      name: redhat-operator-index
-            #      namespace: openshift-marketplace
-            #    spec:
-            #      displayName: Kubeframe Factory
-            #      image: kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com/olm/redhat-operator-index:v4.9 
-            #      publisher: wclab
-            #      sourceType: grpc
