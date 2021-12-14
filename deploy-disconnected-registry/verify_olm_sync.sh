@@ -9,6 +9,14 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+function generate_mapping() {
+    echo ">>>> Creating OLM Manifests"
+    echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
+	GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
+    echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
+    cp -f ${OUTPUTDIR}/olm-manifests/mapping.txt ${OUTPUTDIR}/mapping.txt
+}
+
 function recover_mapping() {
     MAP_FILENAME='mapping.txt'
     echo ">>>> Finding Map file for OLM Sync"
@@ -17,8 +25,7 @@ function recover_mapping() {
         MAP="${OUTPUTDIR}/${MAP_FILENAME}"
         find ${OUTPUTDIR} -name "${MAP_FILENAME}*" -exec cp {} ${MAP} \;
         if [[ ! -f "${MAP}" ]];then
-            echo "Mapping File: ${MAP} Not found"
-            exit 1
+            generate_mapping
         fi
     fi
 }
@@ -26,6 +33,8 @@ function recover_mapping() {
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
+
+MODE=${1}
 
 if [[ ${MODE} == 'hub' ]];then
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}

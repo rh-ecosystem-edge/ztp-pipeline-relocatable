@@ -27,15 +27,26 @@ function icsp_mutate() {
     sed "s/${HUB_REG_ROUTE}/${DST_REG}/g" ${MAP} | tee "${MAP%%.*}-${spoke}.txt"
 }
 
+
+function generate_mapping() {
+    echo ">>>> Creating OLM Manifests"
+    echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
+	GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
+    echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
+	unalias cp || echo "Unaliased cp: Done!"
+    cp -f ${OUTPUTDIR}/olm-manifests/mapping.txt ${OUTPUTDIR}/mapping.txt
+}
+
 function recover_mapping() {
+    MAP_FILENAME='mapping.txt'
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh
     echo ">>>> Finding Map file for OLM Sync"
     if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]];then
         echo ">>>> No mapping file found for OLM Sync"
         MAP="${OUTPUTDIR}/${MAP_FILENAME}"
         find ${OUTPUTDIR} -name "${MAP_FILENAME}*" -exec cp {} ${MAP} \;
         if [[ ! -f "${MAP}" ]];then
-            echo "Mapping File: ${MAP} Not found"
-            exit 1
+            generate_mapping
         fi
     fi
 }
