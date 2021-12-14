@@ -22,14 +22,42 @@ if [[ -z ${ALLSPOKES} ]]; then
 fi
 
 for spoke in ${ALLSPOKES}; do
-	echo ">>>> Deploy manifests to install LSO and LocalVolume: ${spoke}"
-	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 	echo "Extract Kubeconfig for ${spoke}"
 	extract_kubeconfig ${spoke}
-	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | grep -v Completed| wc -l) ]]; then
+	echo ">>>> Verifying LSO and LocalVolume: ${spoke}"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "Check Pods..."
+	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-local-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-local-storage --no-headers | grep -v Completed| wc -l) ]]; then
+	    #ocs in the spoke not exists so we need to create it
+    	exit 1
+	fi
 
-	#ocs in the spoke not exists so we need to create it
-	exit 1
+    echo "Check LocalVolume..."
+	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} LocalVolume -n  openshift-local-storage localstorage-disks-block --no-header | wc -l) -ne 1 ]]; then
+    	exit 1
+	fi
+
+    echo "Check StorageClass..."
+	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc localstorage-sc-block --no-header | wc -l) -ne 1 ]]; then
+    	exit 1
+	fi
+
+	echo ">>>> Verifying OCS and StorageCluster: ${spoke}"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "Check Pods..."
+	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | grep -v Completed| wc -l) ]]; then
+	    #ocs in the spoke not exists so we need to create it
+    	exit 1
+	fi
+
+    echo "Check StorageCluster..."
+	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} StorageCluster -n openshift-storage ocs-storagecluster --no-header | wc -l) -ne 1 ]]; then
+    	exit 1
+	fi
+
+    echo "Check StorageClass..."
+	if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc ocs-storagecluster-cephfs --no-header | wc -l) -ne 1 ]]; then
+    	exit 1
 	fi
 done
 
