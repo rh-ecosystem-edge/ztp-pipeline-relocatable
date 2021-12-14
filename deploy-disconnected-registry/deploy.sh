@@ -96,6 +96,9 @@ if [[ ${MODE} == 'hub' ]]; then
         trust_internal_registry ${MODE}
 	    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
         render_file manifests/machine-config-certs.yaml ${MODE}
+        # after machine config is applied, we need to wait for the registry to be ready
+        sleep 100
+        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
 	else
 		echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
 	fi
