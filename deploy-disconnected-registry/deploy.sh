@@ -96,9 +96,12 @@ if [[ ${MODE} == 'hub' ]]; then
         trust_internal_registry ${MODE}
 	    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
         render_file manifests/machine-config-certs.yaml ${MODE}
-        # after machine config is applied, we need to wait for the registry to be ready
-        sleep 100
+        # after machine config is applied, we need to wait for the registry and acm pods and deployments to be ready
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+        list_acm_deployment=$(oc --kubeconfig=${KUBECONFIG_HUB} get deployment -n open-cluster-management)
+        for i in ${list_acm_deployment}; do
+            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management "${i}"
+        done
 	else
 		echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
 	fi
@@ -130,7 +133,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             # updated with machine config
             render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
-
+            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
 
 
 	    else
