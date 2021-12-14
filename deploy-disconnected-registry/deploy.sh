@@ -128,12 +128,12 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
             export KUBECONFIG=${SPOKE_KUBECONFIG}
-	        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+	        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 10000 -n "${REGISTRY}" "${REGISTRY}"
             export KUBECONFIG=${KUBECONFIG_HUB}
 
             # updated with machine config
             render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
-            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 10000 -n "${REGISTRY}" "${REGISTRY}"
 
 
 	    else
