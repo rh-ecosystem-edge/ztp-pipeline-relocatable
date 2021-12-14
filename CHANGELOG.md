@@ -1,3 +1,9 @@
+## [0.0.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/0.0.3...0.0.4) (2021-12-14)
+
+### Bug Fixes
+
+- add waitfor for the disconnected after machineconfig ([5a27fbf](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/5a27fbfb48cb7a7adad7cb3580ab5439df241153))
+
 ## [0.0.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/0.0.2...0.0.3) (2021-12-14)
 
 ### Bug Fixes
