@@ -76,12 +76,16 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         # Loading variables here in purpose
         source ./common.sh ${MODE}
+        if ! ./verify_ocp_sync.sh; then
 
-	    oc --kubeconfig=${SPOKE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
+	        oc --kubeconfig=${SPOKE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
-        ## Logging into the Source and Destination registries
-	    podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-	    podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-        mirror_ocp ${MODE}
+            ## Logging into the Source and Destination registries
+	        podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+	        podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+            mirror_ocp ${MODE}
+        else
+            echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
+        fi
     done
 fi

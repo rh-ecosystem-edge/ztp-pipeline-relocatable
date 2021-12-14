@@ -134,13 +134,13 @@ function mirror() {
 MODE=${1}
 
 if [[ ${MODE} == 'hub' ]]; then
-	if ! ./verify_olm_sync.sh; then
+	#if ! ./verify_olm_sync.sh; then
 		prepare_env ${MODE}
 		mirror ${MODE}
 		create_cs ${MODE}
-	else
-		echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
-	fi
+	#else
+	#	echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
+	#fi
 elif [[ ${1} == "spoke" ]]; then
     if [[ -z "${ALLSPOKES}" ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -154,9 +154,12 @@ elif [[ ${1} == "spoke" ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
-
-		prepare_env ${MODE}
-		mirror ${MODE}
-		create_cs ${MODE}
+	#	if ! ./verify_olm_sync.sh; then	
+			prepare_env ${MODE}
+			mirror ${MODE}
+			create_cs ${MODE}
+	#	else
+	#		echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
+	#	fi
     done
 fi
