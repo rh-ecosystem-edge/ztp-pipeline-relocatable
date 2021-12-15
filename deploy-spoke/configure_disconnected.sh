@@ -39,7 +39,7 @@ function generate_mapping() {
 
 function recover_mapping() {
     MAP_FILENAME='mapping.txt'
-    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
     echo ">>>> Finding Map file for OLM Sync"
     if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]];then
         echo ">>>> No mapping file found for OLM Sync"
@@ -82,7 +82,7 @@ function icsp_maker() {
 	# This function generated the ICSP for the current spoke
     if [[ $# -lt 3 ]]; then
         echo "Usage :"
-        echo "  icsp_maker <MAPPING FILE> <ICSP DESTINATION FILE> hub|<spoke>"
+        echo "  icsp_maker (MAPPING FILE) (ICSP DESTINATION FILE) hub|<spoke>"
         exit 1
     fi
 
@@ -108,9 +108,9 @@ function icsp_maker() {
 source ${WORKDIR}/shared-utils/common.sh
 export MAP_FILENAME='mapping.txt'
 
-recover_mapping 
-
 MODE=${1}
+
+recover_mapping 
 
 if [[ ${MODE} == 'hub' ]];then
     # Validation
@@ -166,7 +166,7 @@ elif [[ ${MODE} == 'spoke' ]];then
         elif [[ ${STAGE} == 'post' ]]; then 
             echo ">>>> Creating ICSP for: ${spoke}"
             # Use the Spoke's registry as a source
-            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE} 
             icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
             icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
 
