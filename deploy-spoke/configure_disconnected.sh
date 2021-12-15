@@ -110,7 +110,6 @@ export MAP_FILENAME='mapping.txt'
 
 MODE=${1}
 
-recover_mapping 
 
 if [[ ${MODE} == 'hub' ]];then
     # Validation
@@ -122,6 +121,7 @@ if [[ ${MODE} == 'hub' ]];then
 
     echo ">>>> Creating ICSP for: Hub"
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+    recover_mapping 
     icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
@@ -154,7 +154,7 @@ elif [[ ${MODE} == 'spoke' ]];then
         fi
 
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-
+        recover_mapping 
         # Logic
         if [[ ${STAGE} == 'pre' ]]; then
             # Spoke Sync from the Hub cluster as a Source
