@@ -8,6 +8,22 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+function check_cs() {
+    echo ">>>> Checking CatalogSource for: ${MODE} "
+    if [[ ${MODE} == 'hub' ]]; then
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
+    elif [[ ${MODE} == 'spoke' ]]; then
+        spoke=${TARGET_KUBECONFIG#*-}
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-${spoke}.yaml
+    fi
+    
+    if [[ ! -f "${CS_OUTFILE}" ]]; then
+        echo "CatalogSource file Not Found in: ${CS_OUTFILE}"
+        exit 1
+    fi
+    
+}
+
 function generate_mapping() {
     echo ">>>> Creating OLM Manifests"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
@@ -53,5 +69,6 @@ done
 #In this case, we don't need to mirror catalogs, everything is already there
 
 recover_mapping
+check_cs
 
 exit 0
