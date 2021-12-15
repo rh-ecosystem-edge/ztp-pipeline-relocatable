@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: deploy-kubeframe
+spec:
+  description: pipeline to deploy kubeframe
+  params:
+  - name: kubeconfig-path
+    type: string
+    default: ""
+  - name: config-file-path
+    type: string
+    default: ""
+  - name: git_revision
+    type: string
+    default: "main"
+  workspaces:
+  - name: kubeframe-pipelines
+  tasks:
+  - name: clone-repo
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: kubeframe-pipelines
+    params:
+    - name: url
+      value: https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable
+    - name: revision
+      value: ${params.git_revision}
+  - name: pre-flight
+    taskRef:
+      name: pre-flight
+    runAfter:
+    - clone-repo
+    workspaces:
+    - name: kubeframe-pipelines
+      workspace: kubeframe-pipelines
+    params:
+      - name: kubeconfig-path
+        type: string
+        default: ""
+      - name: config-file-path
+        type: string
+        default: ""

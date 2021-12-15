@@ -1,0 +1,41 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+ name: pre-flight
+spec:
+ workspaces:
+  - name: kubeframe-pipelines
+ params:
+  - name: kubeconfig-path
+    type: string
+    default: ""
+  - name: config-file-path
+    type: string
+    default: ""
+ steps:
+   - name: verifications
+     image: "ubi8:latest"
+     env:
+       - name: WORKDIR
+         value: /workspace/kubeframe-pipelines
+       - name: KUBECONFIG
+         value: $(params.kubeconfig-path)
+       - name: SPOKES_FILE
+         value: $(params.config-file-path)
+       - name: DEPLOY_ACM_DIR
+         value: deploy-acm
+       - name: SHARED_DIR
+         value: shared-utils
+     script: |
+      #!/usr/bin/env bash
+      cd $WORKDIR/$SHARED_DIR
+      ./verify_preflight.sh
+     volumeMounts:
+     - mountPath: /root/.kcli_ori
+       name: kcli-config
+ volumes:
+ - configMap:
+     defaultMode: 0700
+     name: kcli-config
+   name: kcli-config
+---
