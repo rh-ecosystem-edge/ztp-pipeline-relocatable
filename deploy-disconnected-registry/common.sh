@@ -26,7 +26,7 @@ export REGISTRY_MANIFESTS=manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator'
+export SOURCE_PACKAGES='kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management'
 export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
 export EXTRA_IMAGES='quay.io/jparrill/registry:2'
 export OCP_RELEASE=${OC_OCP_VERSION}

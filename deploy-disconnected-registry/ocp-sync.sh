@@ -49,7 +49,7 @@ if [[ ${MODE} == 'hub' ]]; then
     # Loading variables here in purpose
     source ./common.sh ${MODE}
 	
-    if ! ./verify_ocp_sync.sh; then
+    if ! ./verify_ocp_sync.sh ${MODE}; then
 		oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
 		export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
@@ -76,7 +76,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         # Loading variables here in purpose
         source ./common.sh ${MODE}
-        if ! ./verify_ocp_sync.sh; then
+        if ! ./verify_ocp_sync.sh ${MODE}; then
 
 	        oc --kubeconfig=${SPOKE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
