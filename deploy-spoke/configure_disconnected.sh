@@ -116,7 +116,7 @@ if [[ ${MODE} == 'hub' ]];then
     # Validation
     if [[ $# -lt 1 ]]; then
         echo "Usage :"
-        echo "  $0 hub|spoke <STAGE (mandatory on spoke MODE)>"
+        echo "  $0 hub|spoke (STAGE (mandatory on spoke MODE))"
         exit 1
     fi
 
@@ -131,7 +131,7 @@ elif [[ ${MODE} == 'spoke' ]];then
     # Validation
     if [[ $# -lt 2 ]]; then
         echo "Usage :"
-        echo "  $0 hub|spoke <STAGE (mandatory on spoke MODE)>"
+        echo "  $0 hub|spoke (STAGE (mandatory on spoke MODE))"
         exit 1
     fi
 

@@ -41,6 +41,7 @@ elif [[ ${MODE} == 'spoke' ]];then
     TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
 fi
 
+echo ">>>> Verifying OLM Sync: ${MODE}"
 podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
 for packagemanifest in $(oc --kubeconfig=${TARGET_KUBECONFIG} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
 	for package in $(oc --kubeconfig=${TARGET_KUBECONFIG} get ${packagemanifest} -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
