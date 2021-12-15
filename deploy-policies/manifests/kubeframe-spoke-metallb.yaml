@@ -33,5 +33,5 @@ spec:
                   channel: "stable"
                   name: metallb-operator
                   ## TODO: Should be dinamic and pointing to the spoke registry, not internet
-                  source: redhat-operators
+                  source: kubeframe-catalog
                   sourceNamespace: openshift-marketplace

@@ -7,5 +7,5 @@ metadata:
 spec:
   channel: "stable"
   name: local-storage-operator
-  source: redhat-operators
+  source: kubeframe-catalog
   sourceNamespace: openshift-marketplace
