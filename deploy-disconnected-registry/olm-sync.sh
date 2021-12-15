@@ -68,10 +68,35 @@ function prepare_env() {
 	fi
 }
 
+function check_registry() {
+    REG=${1}
+
+    for a in {1..30}
+    do
+        skopeo login ${REG} --authfile=${PULL_SECRET} --username ${REG_US} --password ${REG_PASS}
+        if [[ $? -eq 0 ]];then
+            echo "Registry: ${REG} available"
+            break
+        fi
+        sleep 10
+    done
+}
 
 
 function mirror() {
 	# Check for credentials for OPM
+    if [[ ${MODE} == 'hub' ]];then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+	    echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
+        check_registry ${DESTINATION_REGISTRY}
+    elif [[ ${MODE} == 'spoke' ]];then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+	    echo ">>>> Checking Source Registry: ${DESTINATION_REGISTRY}"
+        check_registry ${SOURCE_REGISTRY}
+	    echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
+        check_registry ${DESTINATION_REGISTRY}
+    fi
+
 	echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
 	podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
 	echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
@@ -85,11 +110,6 @@ function mirror() {
 		cp -rf ${PULL_SECRET} ~/.docker/config.json
 	fi
 
-    if [[ ${MODE} == 'hub' ]];then
-        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-    elif [[ ${MODE} == 'spoke' ]];then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-    fi
 
 	echo ">>>> Mirror OLM Operators"
 	echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
