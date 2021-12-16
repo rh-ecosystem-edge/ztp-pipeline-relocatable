@@ -13,6 +13,31 @@ spec:
     type: string
     default: ""
  steps:
+   - name: prepare-workspace
+     image: "quay.io/flaper87/ztp-pipeline:latest"
+     imagePullPolicy: Always
+     env:
+       - name: WORKDIR
+         value: "$(workspaces.ztp.path)/ztp-pipeline"
+       - name: SPOKES_FILE
+         value: "$(workspaces.ztp.path)/spokes.yaml"
+       - name: SPOKES_CONFIG
+         value: $(params.spokes-config)
+       - name: KUBECONFIG
+         value: "$(workspaces.ztp.path)/kubeconfig"
+       - name: OC_OCP_VERSION
+         value: "4.9"
+       - name: WORKSPACE
+         value: "$(workspaces.ztp.path)"
+     script: |
+      #!/usr/bin/env bash
+      #
+      oc config set-credentials spokes-deployer --token=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
+      cp -r /ztp-pipeline $WORKDIR
+
+      export SPOKES_FILE=$WORKSPACE/spokes.yaml
+      echo $"${SPOKES_CONFIG}" > $SPOKES_FILE
+
    - name: deploy-spokes
      image: "quay.io/flaper87/ztp-pipeline:latest"
      imagePullPolicy: Always
@@ -20,26 +45,33 @@ spec:
        - name: WORKDIR
          value: "$(workspaces.ztp.path)/ztp-pipeline"
        - name: SPOKES_FILE
-         value: $(params.config-file-path)
-       - name: SPOKES_CONFIG
-         value: $(params.spokes-config)
+         value: "$(workspaces.ztp.path)/spokes.yaml"
        - name: KUBECONFIG
          value: "$(workspaces.ztp.path)/kubeconfig"
        - name: OC_OCP_VERSION
          value: "4.9"
      script: |
       #!/usr/bin/env bash
-      export WORKSPACE=$(workspaces.ztp.path)
-      oc config set-credentials spokes-deployer --token=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
-
-
-      cp -r /ztp-pipeline $WORKDIR
-
-      export SPOKES_FILE=$WORKSPACE/spokes.yaml
-      echo $"${SPOKES_CONFIG}" > $SPOKES_FILE
-
       cd $WORKDIR
       pushd deploy-spoke
 
       ./render_spokes.sh; sleep 3
       ./deploy.sh
+
+   - name: wait-for-spoke
+     image: "quay.io/flaper87/ztp-pipeline:latest"
+     imagePullPolicy: Always
+     env:
+       - name: WORKDIR
+         value: "$(workspaces.ztp.path)/ztp-pipeline"
+       - name: SPOKES_FILE
+         value: "$(workspaces.ztp.path)/spokes.yaml"
+       - name: KUBECONFIG
+         value: "$(workspaces.ztp.path)/kubeconfig"
+       - name: OC_OCP_VERSION
+         value: "4.9"
+     script: |
+      #!/usr/bin/env bash
+      cd $WORKDIR
+      pushd deploy-spoke
+      ./wait_for_spoke.sh spoke1-name
