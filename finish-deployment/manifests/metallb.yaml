@@ -1,0 +1,10 @@
+---
+apiVersion: metallb.io/v1alpha1
+kind: AddressPool
+metadata:
+  name: api-public-ip
+  namespace: metallb
+spec:
+  protocol: layer2
+  addresses:
+    - $METALLB_IP-$METALLB_IP 

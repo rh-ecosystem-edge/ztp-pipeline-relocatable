@@ -1,0 +1,22 @@
+apiVersion: nmstate.io/v1beta1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: $NODENAME-nncp
+spec:
+  nodeSelector: 
+    kubernetes.io/hostname: $NODENAME
+  desiredState:
+    interfaces:
+    - ipv4:
+        auto-dns: true
+        auto-gateway: true
+        auto-route-table-id: 0
+        auto-routes: true
+        dhcp: true
+        enabled: true
+      lldp:
+        enabled: false
+      mtu: 1500
+      name: $NIC_EXT_DHCP
+      state: up
+      type: ethernet

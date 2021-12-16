@@ -3,7 +3,7 @@
 # SPOKES_FILE variable must be exported in the environment
 
 echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 # SPOKES_FILE variable must be exported in the environment
 if [ ! -f "${SPOKES_FILE}" ]; then
