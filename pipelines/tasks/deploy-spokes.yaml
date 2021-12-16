@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
- name: pre-flight
+ name: ztp-deploy-spokes
 spec:
  workspaces:
   - name: ztp
@@ -13,16 +13,14 @@ spec:
     type: string
     default: ""
  steps:
-   - name: verifications
+   - name: deploy-spokes
      image: "quay.io/flaper87/ztp-pipeline:latest"
      imagePullPolicy: Always
      env:
        - name: WORKDIR
-         value: /ztp-pipeline
+         value: "$(workspaces.ztp.path)/ztp-pipeline"
        - name: SPOKES_FILE
          value: $(params.config-file-path)
-       - name: SHARED_DIR
-         value: shared-utils
        - name: SPOKES_CONFIG
          value: $(params.spokes-config)
        - name: KUBECONFIG
@@ -34,8 +32,14 @@ spec:
       export WORKSPACE=$(workspaces.ztp.path)
       oc config set-credentials spokes-deployer --token=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
 
+
+      cp -r /ztp-pipeline $WORKDIR
+
       export SPOKES_FILE=$WORKSPACE/spokes.yaml
       echo $"${SPOKES_CONFIG}" > $SPOKES_FILE
 
-      cd $WORKDIR/$SHARED_DIR
-      ./verify_preflight.sh
+      cd $WORKDIR
+      pushd deploy-spoke
+
+      ./render_spokes.sh; sleep 3
+      ./deploy.sh
