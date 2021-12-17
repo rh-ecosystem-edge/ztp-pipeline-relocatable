@@ -21,6 +21,7 @@ env:
   DEPLOY_HTTPD_SERVER_DIR: deploy-httpd-server
   DEPLOY_HUB_CONFIGS_DIR: deploy-hub-configs
   DEPLOY_SPOKES_DIR: deploy-spoke
+  DEPLOY_WORKER_DIR: deploy-worker
   DEPLOY_OCS_DIR: deploy-ocs
   DEPLOY_POLICY_DIR: deploy-policies
   SHARED_DIR: shared-utils
@@ -56,7 +57,7 @@ jobs:
           cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
           ./deploy.sh
 
-  
+
   deploy-disconnected-registry-hub:
     needs: pre-flight       # run in parallel with the other jobs
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -153,12 +154,27 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh $SPOKE
 
+  deploy-workers:
+    needs: verify-installation
+    runs-on: ${{github.event.inputs.RUNNER}}
+    continue-on-error: true
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.extract-spokes-list.outputs.services) }}
+    steps:
+      - name: ${{ matrix.service }}
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          SPOKE=${{ matrix.service }}
+          cd ${{env.DEPLOY_WORKER_DIR}}
+          ./render_worker.sh $SPOKE
+
 
   deploy-icsp-spokes-pre:
-    needs: verify-installation 
+    needs: deploy-workers
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
-      - name: Deploy ICSP in all the spokes in the Pre flow 
+      - name: Deploy ICSP in all the spokes in the Pre flow
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_SPOKES_DIR}}
@@ -166,7 +182,7 @@ jobs:
 
 
   deploy-ocs:
-    needs: deploy-icsp-spokes-pre 
+    needs: deploy-icsp-spokes-pre
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy OCS
@@ -191,10 +207,10 @@ jobs:
 
 
   deploy-icsp-spokes-post:
-    needs: deploy-disconnected-registry-spokes 
+    needs: deploy-disconnected-registry-spokes
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
-      - name: Deploy ICSP in all the spokes in the Post flow 
+      - name: Deploy ICSP in all the spokes in the Post flow
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_SPOKES_DIR}}

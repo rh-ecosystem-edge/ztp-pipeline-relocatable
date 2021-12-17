@@ -100,14 +100,14 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
 EOF
     for master in 0 1 2; do
         # Stanza generation for each master
-        MASTER=$(kcli info vm spoke${spoke}-m${master} | grep id | awk '{print $2}')
+        MASTERUID=$(kcli info vm spoke${spoke}-m${master} | grep id | awk '{print $2}')
         cat <<EOF >>spokes.yaml
       master${master}:
         nic_ext_dhcp: enp1s0
         nic_int_static: enp2s0
         mac_ext_dhcp: "ee:ee:ee:ee:${master}${spoke}:${master}e"
         mac_int_static: "aa:aa:aa:aa:${master}${spoke}:${master}a"
-        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTER}"
+        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
         storage_disk:
@@ -117,6 +117,26 @@ EOF
           - vdd
 EOF
     done
+    
+    # Add the single worker
+    worker=0
+    WORKERUID=$(kcli info vm spoke${spoke}-w${workerid} | grep id | awk '{print $2}')
+
+    cat <<EOF >>spokes.yaml
+    worker${worker}:
+    nic_ext_dhcp: enp1s0
+    nic_int_static: enp2s0
+    mac_ext_dhcp: "ee:ee:ee:${worker}${spoke}:${worker}${spoke}:${worker}e"
+    mac_int_static: "aa:aa:aa:${worker}${spoke}:${worker}${spoke}:${worker}a"
+    bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${workeruid}"
+    bmc_user: "amorgant"
+    bmc_pass: "alknopfler"
+    storage_disk:
+        - vda
+        - vdb
+        - vdc
+        - vdd
+EOF
 
 done
 
