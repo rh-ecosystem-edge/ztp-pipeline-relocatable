@@ -32,9 +32,22 @@ function render_file() {
 	fi
 }
 
+function verify_cluster() {
+    cluster=${1}
+    echo ">>>> Verifying Spoke cluster: ${cluster}"
+    
+
+}
+
+function dettach_cluster() {
+    cluster=${1}
+    echo ">>>> Detaching Spoke cluster: ${cluster}"
+    oc --kubeconfig=${KUBECONFIG_HUB} delete managedcluster ${cluster}
+}
+
 source ${WORKDIR}/shared-utils/common.sh
 
-echo ">>>> Deploying MetalLB Config"
+echo ">>>> Deploying NNCP Config"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 if [[ -z ${ALLSPOKES} ]]; then
@@ -48,6 +61,14 @@ do
     # kubeframe-spoke-${i}-master-${master}
 	echo ">>>> Extract Kubeconfig for ${spoke}"
 	extract_kubeconfig ${spoke}
+	echo ">>>> Deploying NMState Operand for ${spoke}"
+    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/nmstate.yaml
+    sleep 2
+    for dep in {nmstate-cert-manager,nmstate-operatornmstate-webhook}
+    do 
+        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n openshift-nmstate ${dep}
+    done
+
 	for master in 0 1 2
     do
         export NODENAME=kubeframe-spoke-${index}-master-${master}
@@ -55,4 +76,12 @@ do
         render_file manifests/nncp.yaml  
     done
     let index++
+done
+
+sleep 40
+
+for spoke in ${ALLSPOKES}
+do
+    verify_cluster ${spoke}
+    #dettach_cluster ${spoke}
 done
