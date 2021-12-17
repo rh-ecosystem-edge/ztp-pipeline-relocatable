@@ -44,13 +44,13 @@ create_worker_definitions() {
     while [ "${RESULT}" != "null" ]; do
 
         LOOP_SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
-        loop=$((loop + 1))
         RESULT=$(yq eval ".spokes[${loop}]" ${SPOKES_FILE})
 
         if [ "${LOOP_SPOKE_NAME}" == "${SPOKE_NAME}" ]; then
             export i=${loop}
             break
         fi
+        loop=$((loop + 1))
 
     done
 
