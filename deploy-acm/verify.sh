@@ -13,14 +13,14 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 
 if [[ $(oc get ns | grep open-cluster-management | wc -l) -eq 0 ]]; then
-	#Open-Cluster-Management namespace does not exist. Launching the step to create it...
-	exit 0
+    #Open-Cluster-Management namespace does not exist. Launching the step to create it...
+    exit 0
 elif [[ $(oc get pod -n open-cluster-management | grep -i running | wc -l) -eq $(oc get pod -n open-cluster-management | grep -v NAME | wc -l) ]]; then
-	#All pods for ACM running...Skipping the step to create it
-	exit 1
+    #All pods for ACM running...Skipping the step to create it
+    exit 1
 else
-	#Some pods are failing...Stop pipe to solve it  #TODO this scenario we should remove the subscription and destroy everything and relaunch again
-	exit 50
+    #Some pods are failing...Stop pipe to solve it  #TODO this scenario we should remove the subscription and destroy everything and relaunch again
+    exit 50
 fi
 
 echo ">>>>EOF"

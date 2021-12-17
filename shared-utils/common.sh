@@ -7,8 +7,8 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 # SPOKES_FILE variable must be exported in the environment
 if [ ! -f "${SPOKES_FILE}" ]; then
-	echo "File ${SPOKES_FILE} does not exist"
-	exit 1
+    echo "File ${SPOKES_FILE} does not exist"
+    exit 1
 fi
 
 export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${SPOKES_FILE})
@@ -27,8 +27,8 @@ export KUBECONFIG_HUB=${KUBECONFIG}
 export PULL_SECRET=${OUTPUTDIR}/pull-secret.json
 
 if [[ ! -f ${PULL_SECRET} ]]; then
-	echo "Pull secret file ${PULL_SECRET} does not exist, grabbing from OpenShift"
-	oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
+    echo "Pull secret file ${PULL_SECRET} does not exist, grabbing from OpenShift"
+    oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
 fi
 
 export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})

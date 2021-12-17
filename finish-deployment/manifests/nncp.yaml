@@ -3,7 +3,7 @@ kind: NodeNetworkConfigurationPolicy
 metadata:
   name: $NODENAME-nncp
 spec:
-  nodeSelector: 
+  nodeSelector:
     kubernetes.io/hostname: $NODENAME
   desiredState:
     interfaces:

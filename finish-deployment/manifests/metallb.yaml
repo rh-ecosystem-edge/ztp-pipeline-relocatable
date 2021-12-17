@@ -7,4 +7,4 @@ metadata:
 spec:
   protocol: layer2
   addresses:
-    - $METALLB_IP-$METALLB_IP 
+    - $METALLB_IP-$METALLB_IP
