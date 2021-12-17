@@ -25,3 +25,4 @@ RUN curl -s -L https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linu
 
 
 COPY . /ztp-pipeline
+RUN chmod 777 /ztp-pipeline
