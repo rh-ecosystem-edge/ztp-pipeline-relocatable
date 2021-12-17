@@ -128,7 +128,7 @@ EOF
     nic_int_static: enp2s0
     mac_ext_dhcp: "ee:ee:ee:${worker}${spoke}:${worker}${spoke}:${worker}e"
     mac_int_static: "aa:aa:aa:${worker}${spoke}:${worker}${spoke}:${worker}a"
-    bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${workeruid}"
+    bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
     bmc_user: "amorgant"
     bmc_pass: "alknopfler"
     storage_disk:
