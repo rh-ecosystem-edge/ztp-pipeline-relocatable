@@ -24,6 +24,7 @@ function icsp_mutate() {
     DST_REG=${2}
     SPOKE=${3}
     HUB_REG_ROUTE="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+    export SPOKE_MAPPING_FILE="${MAP%%.*}-${spoke}.txt"
     sed "s/${HUB_REG_ROUTE}/${DST_REG}/g" ${MAP} | tee "${MAP%%.*}-${spoke}.txt"
 }
 
@@ -168,11 +169,11 @@ elif [[ ${MODE} == 'spoke' ]];then
             # Use the Spoke's registry as a source
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE} 
             icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
-            icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
+            icsp_maker ${SPOKE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
 
             # Clean Old stuff
-            oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml
-            oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/icsp-hub.yaml
+            oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml || echo "CatalogSoruce already deleted!"
+            oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/icsp-hub.yaml || echo "ICSP already deleted!"
 
             echo ">>>> Waiting for old stuff deletion..."
             sleep 20

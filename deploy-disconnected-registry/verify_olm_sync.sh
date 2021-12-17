@@ -34,7 +34,7 @@ function recover_mapping() {
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
-source ./common.sh hub
+source ./common.sh ${MODE}
 
 MODE=${1}
 
