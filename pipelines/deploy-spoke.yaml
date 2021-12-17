@@ -14,7 +14,7 @@ spec:
   workspaces:
   - name: ztp
   tasks:
-  
+
   - name: clone-ztp-conf
     taskRef:
       name: git-clone
@@ -37,7 +37,7 @@ spec:
     workspaces:
     - name: ztp
       workspace: ztp
-  
+
   - name: ztp-deploy-spoke
     taskRef:
       name: ztp-deploy-spoke
@@ -46,6 +46,18 @@ spec:
       value: $(params.spokes-config)
     runAfter:
     - pre-flight
+    workspaces:
+    - name: ztp
+      workspace: ztp
+
+  - name: ztp-deploy-worker
+    taskRef:
+      name: ztp-deploy-worker
+    params:
+    - name: spokes-config
+      value: $(params.spokes-config)
+    runAfter:
+    - ztp-deploy-spoke
     workspaces:
     - name: ztp
       workspace: ztp
