@@ -40,4 +40,3 @@ spoke{{ i }}-w0:
   - size: 200
   - size: 200
 {% endfor %}
-{% endfor %}
