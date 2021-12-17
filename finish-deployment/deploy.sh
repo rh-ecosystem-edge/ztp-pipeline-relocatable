@@ -55,6 +55,11 @@ function verify_cluster() {
 		echo "timeout waiting for nmstate pods "
 		exit 1
 	fi 
+
+    if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get nncp | grep -i degraded | wc -l) -gt 0 ]]; then
+        echo ">>>> NNCP is in degraded state"
+        exit 1
+    fi
 }
 
 function dettach_cluster() {
