@@ -73,7 +73,7 @@ repos:
         args:
           - -w
           - -i
-          - "0"
+          - "4"
           - -s
         types:
           - shell

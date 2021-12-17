@@ -21,3 +21,24 @@ spoke{{ i }}-m{{ j }}:
   - size: 200
 {% endfor %}
 {% endfor %}
+
+{% for i in range(0, clusters) %}
+{% for j in range(0, 0) %}
+spoke{{ i }}-w{{ j }}:
+  uefi_legacy: true
+  start: false
+  memory: 32000
+  numcpus: 12
+  nets:
+  - name: bare-net
+    mac: ee:ee:ee:{{ j }}{{ i }}:{{ j }}{{ i }}:{{ j }}e
+  - name: kubeframe
+    nic: enp2s0
+    mac: aa:aa:aa:{{ j }}{{ i }}:{{ j }}{{ i }}:{{ j }}a
+  disks:
+  - size: 200
+  - size: 200
+  - size: 200
+  - size: 200
+{% endfor %}
+{% endfor %}
