@@ -120,7 +120,7 @@ EOF
     
     # Add the single worker
     worker=0
-    WORKERUID=$(kcli info vm spoke${spoke}-w${workerid} | grep id | awk '{print $2}')
+    WORKERUID=$(kcli info vm spoke${spoke}-w${worker} | grep id | awk '{print $2}')
 
     cat <<EOF >>spokes.yaml
     worker${worker}:
