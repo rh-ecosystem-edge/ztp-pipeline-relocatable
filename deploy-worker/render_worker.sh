@@ -40,14 +40,15 @@ create_worker_definitions() {
 
     # Get our spoke index number for the following loops
     loop=0
-    RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
+    RESULT=$(yq eval ".spokes[${loop}]" ${SPOKES_FILE})
     while [ "${RESULT}" != "null" ]; do
 
         LOOP_SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
         loop=$((loop + 1))
-        RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
+        RESULT=$(yq eval ".spokes[${loop}]" ${SPOKES_FILE})
 
         if [ "${LOOP_SPOKE_NAME}" == "${SPOKE_NAME}" ]; then
+            export i=${loop}
             break
         fi
 
