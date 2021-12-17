@@ -35,8 +35,26 @@ function render_file() {
 function verify_cluster() {
     cluster=${1}
     echo ">>>> Verifying Spoke cluster: ${cluster}"
+    echo ">>>> Extract Kubeconfig for ${cluster}"
+	extract_kubeconfig ${cluster}
     
-
+    echo ">>>> Wait until nmstate ready for ${cluster}"
+	echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	timeout=0
+	ready=false
+	sleep 240
+	while [ "${timeout}" -lt "60" ]; do
+		if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get pod | grep -i running | wd -l) -gt 6 ]]; then
+			ready=true
+			break
+		fi
+		sleep 5
+		timeout=$((timeout + 5))
+	done
+	if [ "$ready" == "false" ]; then
+		echo "timeout waiting for nmstate pods "
+		exit 1
+	fi 
 }
 
 function dettach_cluster() {
