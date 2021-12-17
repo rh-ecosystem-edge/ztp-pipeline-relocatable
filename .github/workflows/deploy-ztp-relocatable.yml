@@ -154,21 +154,21 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh $SPOKE
 
-  deploy-workers:
-    needs: verify-installation
-    runs-on: ${{github.event.inputs.RUNNER}}
-    continue-on-error: true
-    strategy:
-      matrix:
-        service: ${{ fromJSON(needs.extract-spokes-list.outputs.services) }}
-    steps:
-      - name: ${{ matrix.service }}
-        run: |
-          export WORKDIR=${GITHUB_WORKSPACE}
-          SPOKE=${{ matrix.service }}
-          cd ${{env.DEPLOY_WORKER_DIR}}
-          ./render_worker.sh $SPOKE
-
+  #deploy-workers:
+  #  needs: verify-installation
+  #  runs-on: ${{github.event.inputs.RUNNER}}
+  #  continue-on-error: true
+  #  strategy:
+  #    matrix:
+  #      service: ${{ fromJSON(needs.extract-spokes-list.outputs.services) }}
+  #  steps:
+  #    - name: ${{ matrix.service }}
+  #      run: |
+  #        export WORKDIR=${GITHUB_WORKSPACE}
+  #        SPOKE=${{ matrix.service }}
+  #        cd ${{env.DEPLOY_WORKER_DIR}}
+  #        ./render_worker.sh $SPOKE
+#
 
   deploy-icsp-spokes-pre:
     needs: deploy-workers
