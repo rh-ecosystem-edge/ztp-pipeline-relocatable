@@ -70,10 +70,38 @@ function grab_api_ingress() {
 }
 
 # SPOKES_FILE variable must be exported in the environment
+export OC_DIS_CATALOG=kubeframe-catalog
+export MARKET_NS=openshift-marketplace
+export KUBEFRAME_NS=kubeframe
+export OUTPUTDIR=${OUTPUTDIR:-$WORKDIR/build}
+
+[ -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
+
+if [ ! -z ${SPOKES_CONFIG+x} ]; then
+    if [ -z "${SPOKES_FILE+x}" ]; then
+        export SPOKES_FILE="${OUTPUTDIR}/spokes.yaml"
+    fi
+
+	echo "Creating ${SPOKES_FILE} from SPOKES_CONFIG"
+    echo $"${SPOKES_CONFIG}" > "${SPOKES_FILE}"
+fi
+
 if [ ! -f "${SPOKES_FILE}" ]; then
     echo "File ${SPOKES_FILE} does not exist"
     exit 1
 fi
+
+if [[ ! -f "${KUBECONFIG}" && -f "/run/secrets/kubernetes.io/serviceaccount/token" ]]; then
+    if [ -z "${KUBECONFIG+x}" ]; then
+        export KUBECONFIG="${OUTPUTDIR}/kubeconfig"
+    fi
+	echo "Kubeconfig file doesn't exist: creating one from token"
+    oc config set-credentials spokes-deployer --token=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
+elif [[ ! -f "${KUBECONFIG}" ]]; then
+	echo "Kubeconfig file doesn't exist"
+fi
+
+export KUBECONFIG_HUB=${KUBECONFIG}
 
 export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${SPOKES_FILE})
 export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})
@@ -87,11 +115,7 @@ export OUTPUTDIR=${WORKDIR}/build
 export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
 export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
 
-[ -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
-
-export KUBECONFIG_HUB=${KUBECONFIG}
 export PULL_SECRET=${OUTPUTDIR}/pull-secret.json
-
 if [[ ! -f ${PULL_SECRET} ]]; then
     echo "Pull secret file ${PULL_SECRET} does not exist, grabbing from OpenShift"
     oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
