@@ -34,9 +34,8 @@ function recover_mapping() {
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
-source ./common.sh ${MODE}
-
 MODE=${1}
+source ./common.sh ${MODE}
 
 if [[ ${MODE} == 'hub' ]];then
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
