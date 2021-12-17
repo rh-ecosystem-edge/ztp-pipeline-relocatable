@@ -12,50 +12,16 @@ spec:
   - name: spokes-config
     type: string
     default: ""
+  - name: ztp-tag
+    type: string
+    default: "latest"
  stepTemplate:
   env:
     - name: WORKDIR
       value: "/ztp-pipeline"
-    - name: SPOKES_FILE
-      value: "$(workspaces.ztp.path)/spokes.yaml"
     - name: SPOKES_CONFIG
       value: $(params.spokes-config)
-    - name: KUBECONFIG
-      value: "$(workspaces.ztp.path)/kubeconfig"
-    #- name: OC_OCP_VERSION
-    #  value: "4.9"
-    - name: WORKSPACE
-      value: "$(workspaces.ztp.path)"
-    - name: DEPLOY_ACM_DIR
-      value: deploy-acm
-    - name: DEPLOY_REGISTRY_DIR
-      value: deploy-disconnected-registry
-    - name: DEPLOY_HTTPD_SERVER_DIR
-      value: deploy-httpd-server
-    - name: DEPLOY_HUB_CONFIGS_DIR
-      value: deploy-hub-configs
-    - name: DEPLOY_SPOKES_DIR
-      value: deploy-spoke
-    - name: DEPLOY_OCS_DIR
-      value: deploy-ocs
-    - name: DEPLOY_POLICY_DIR
-      value: deploy-policies
-    - name: SHARED_DIR
-      value: shared-utils
-  
  steps:
-
-   #- name: prepare-workspace
-   #  image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
-   #  imagePullPolicy: Always
-   #  script: |
-   #   #!/usr/bin/env bash
-   #   #
-   #   #oc config set-credentials spokes-deployer --token=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
-   #   #cp -r /ztp-pipeline $WORKDIR
-   #   #export SPOKES_FILE=$WORKSPACE/spokes.yaml
-   #   #echo $"${SPOKES_CONFIG}" > $SPOKES_FILE
-
    - name: verifications
      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
      imagePullPolicy: Always
@@ -63,4 +29,4 @@ spec:
       #!/usr/bin/env bash
 
       cd $WORKDIR/$SHARED_DIR
-      ./verify_preflight.sh
+      #./verify_preflight.sh
