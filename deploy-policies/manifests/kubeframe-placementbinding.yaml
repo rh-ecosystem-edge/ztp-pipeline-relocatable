@@ -9,18 +9,18 @@ placementRef:
   kind: PlacementRule
   apiGroup: apps.open-cluster-management.io
 subjects:
-  - name: kubeframe-spoke-common-policy 
+  - name: kubeframe-spoke-common-policy
     kind: Policy
     apiGroup: policy.open-cluster-management.io
   - name: kubeframe-spoke-nmstate-pre-policy
     kind: Policy
     apiGroup: policy.open-cluster-management.io
-  - name: kubeframe-spoke-metallb-pre-policy 
+  - name: kubeframe-spoke-metallb-pre-policy
     kind: Policy
     apiGroup: policy.open-cluster-management.io
   - name: kubeframe-spoke-nmstate-policy
     kind: Policy
     apiGroup: policy.open-cluster-management.io
-  - name: kubeframe-spoke-metallb-policy 
+  - name: kubeframe-spoke-metallb-policy
     kind: Policy
     apiGroup: policy.open-cluster-management.io

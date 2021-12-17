@@ -5,30 +5,30 @@ set -o nounset
 set -m
 
 function validate_condition() {
-	timeout=0
-	ready=false
-	while [ "${timeout}" -lt "${wait_time}" ]; do
-		test "$(oc get -n ${SPOKE} ${1} -o jsonpath=${2})" == "${states_machine[${1}, ${2}]}" && ready=true && break
-		echo "Waiting for spoke cluster ${SPOKE} to be deployed" # TODO add more info about the process adding new field to matrix with descrliption
-		sleep 60
-		timeout=$((timeout + 1))
-	done
+    timeout=0
+    ready=false
+    while [ "${timeout}" -lt "${wait_time}" ]; do
+        test "$(oc get -n ${SPOKE} ${1} -o jsonpath=${2})" == "${states_machine[${1}, ${2}]}" && ready=true && break
+        echo "Waiting for spoke cluster ${SPOKE} to be deployed" # TODO add more info about the process adding new field to matrix with descrliption
+        sleep 60
+        timeout=$((timeout + 1))
+    done
 
-	if [ "${ready}" == "false" ]; then
-		echo "timeout waiting for spoke cluster ${SPOKE} to be deployed"
-		exit 1
-	else
-		echo "Condition ${1} verified"
+    if [ "${ready}" == "false" ]; then
+        echo "timeout waiting for spoke cluster ${SPOKE} to be deployed"
+        exit 1
+    else
+        echo "Condition ${1} verified"
 
-	fi
+    fi
 }
 
 ## main function
 ##
 
 if [ "${#}" -ne 1 ]; then
-	echo "Usage: ${0} <spoke>"
-	exit 1
+    echo "Usage: ${0} <spoke>"
+    exit 1
 fi
 
 ## variables
