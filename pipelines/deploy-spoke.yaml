@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ztp-spoke-pipeline
+spec:
+  description: pipeline to deploy kubeframe
+  params:
+  - name: git-revision
+    type: string
+    default: "main"
+  - name: spokes-config
+    type: string
+    default: ""
+  workspaces:
+  - name: ztp
+  tasks:
+    #  - name: clone-repo
+    #    taskRef:
+    #      name: git-clone
+    #      kind: ClusterTask
+    #    workspaces:
+    #    - name: output
+    #      workspace: ztp
+    #    params:
+    #    - name: url
+    #      value: https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable
+    #    - name: subdirectory
+    #      value: ""
+    #    - name: deleteExisting
+    #      value: "true"
+    #    - name: revision
+    #      value: $(params.git-revision)
+  - name: pre-flight
+    taskRef:
+      name: pre-flight
+    params:
+    - name: spokes-config
+      value: $(params.spokes-config)
+        #    runAfter:
+        #    - clone-repo
+    workspaces:
+    - name: ztp
+      workspace: ztp
+  - name: ztp-deploy-spoke
+    taskRef:
+      name: ztp-deploy-spoke
+    params:
+    - name: spokes-config
+      value: $(params.spokes-config)
+    runAfter:
+    - pre-flight
+    workspaces:
+    - name: ztp
+      workspace: ztp

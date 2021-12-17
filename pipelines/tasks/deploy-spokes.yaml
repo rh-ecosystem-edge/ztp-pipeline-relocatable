@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
- name: ztp-deploy-spokes
+ name: ztp-deploy-spoke
 spec:
  workspaces:
   - name: ztp
@@ -37,7 +37,6 @@ spec:
 
       export SPOKES_FILE=$WORKSPACE/spokes.yaml
       echo $"${SPOKES_CONFIG}" > $SPOKES_FILE
-
    - name: deploy-spokes
      image: "quay.io/flaper87/ztp-pipeline:latest"
      imagePullPolicy: Always
