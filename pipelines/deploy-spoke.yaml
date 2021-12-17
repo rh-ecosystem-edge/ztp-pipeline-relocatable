@@ -5,42 +5,39 @@ metadata:
 spec:
   description: pipeline to deploy kubeframe
   params:
-  - name: git-revision
+  - name: ztp-tag
     type: string
-    default: "main"
+    default: "latest"
   - name: spokes-config
     type: string
     default: ""
   workspaces:
   - name: ztp
   tasks:
-    #  - name: clone-repo
-    #    taskRef:
-    #      name: git-clone
-    #      kind: ClusterTask
-    #    workspaces:
-    #    - name: output
-    #      workspace: ztp
-    #    params:
-    #    - name: url
-    #      value: https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable
-    #    - name: subdirectory
-    #      value: ""
-    #    - name: deleteExisting
-    #      value: "true"
-    #    - name: revision
-    #      value: $(params.git-revision)
+  
+  - name: clone-ztp-conf
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    workspaces:
+    - name: output
+      workspace: ztp
+    params:
+    - name: url
+      value: $(params.spokes-config)
+
   - name: pre-flight
     taskRef:
       name: pre-flight
     params:
     - name: spokes-config
       value: $(params.spokes-config)
-        #    runAfter:
-        #    - clone-repo
+    - name: ztp-tag
+      value: $(params.ztp-tag)
     workspaces:
     - name: ztp
       workspace: ztp
+  
   - name: ztp-deploy-spoke
     taskRef:
       name: ztp-deploy-spoke
