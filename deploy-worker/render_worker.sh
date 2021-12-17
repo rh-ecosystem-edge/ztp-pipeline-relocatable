@@ -16,17 +16,6 @@ if [ "${RESULT}" == "null" ]; then
     exit 1
 fi
 
-function extract_kubeconfig() {
-    ## Put Hub Kubeconfig in a safe place
-    if [[ ! -f "${OUTPUTDIR}/kubeconfig-hub" ]]; then
-        cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
-    fi
-
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n ${1} ${1}-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
-}
-
 create_worker_definitions() {
 
     SPOKE_NAME=${1}
@@ -157,10 +146,8 @@ spec:
 
 EOF
 
-    echo ">>>> Extract Kubeconfig for ${1}"
-    extract_kubeconfig ${1}
     echo ">>>> Deploying BMH Worker for ${1}"
-    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f ${OUTPUT}
+    oc --kubeconfig=${OUTPUTDIR}/kubeconfig-hub apply -f ${OUTPUT}
 
 }
 
