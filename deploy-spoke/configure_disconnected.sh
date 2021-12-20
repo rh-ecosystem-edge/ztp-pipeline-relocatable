@@ -101,6 +101,33 @@ function icsp_maker() {
     done <${MAP_FILE}
 }
 
+function wait_for_mcp_ready() {
+    # This function waits for the MCP to be ready
+    # It will wait for the MCP to be ready for the given number of seconds
+    # If the MCP is not ready after the given number of seconds, it will exit with an error
+    if [[ $# -lt 3 ]]; then
+        echo "Usage :"
+        echo "wait_for_mcp_ready (kubeconfig) (spoke) (TIMEOUT)"
+        exit 1
+    fi
+
+    export KUBECONF=${1}
+    export SPOKE=${2}
+    export TIMEOUT=${3}
+
+    echo ">>>> Waiting for ${SPOKE} to be ready"
+    for i in $(seq 1 ${TIMEOUT}); do
+        if [[ $(oc --kubeconfig=${KUBECONF} get mcp -n ${SPOKE} -o jsonpath={'.status.readyMachineCount'}) -eq 3 ]]; then
+            echo ">>>> MCP ${SPOKE} is ready"
+            return 0
+        fi
+        sleep 1
+    done
+
+    echo ">>>> MCP ${SPOKE} is not ready after ${TIMEOUT} seconds"
+    exit 1
+}
+
 # variables
 # #########
 # Load common vars
@@ -177,6 +204,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
             # Deploy New ICSP + CS
             oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml
             oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${spoke}.yaml
+
+            wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 240
         fi
     done
 fi
