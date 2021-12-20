@@ -29,11 +29,6 @@ function validate_condition() {
 ## main function
 ##
 
-if [ "${#}" -ne 1 ]; then
-    echo "Usage: ${0} <spoke>"
-    exit 1
-fi
-
 ## variables
 ## #########
 
