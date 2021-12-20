@@ -7,5 +7,5 @@ metadata:
 spec:
   channel: "release-CHANGEME"
   name: advanced-cluster-management
-  source: kubeframe-catalog
+  source: redhat-operators
   sourceNamespace: openshift-marketplace
