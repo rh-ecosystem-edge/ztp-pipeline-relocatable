@@ -83,8 +83,8 @@ function check_registry() {
 
 function mirror() {
     MODE=${1}
-	# Check for credentials for OPM
-    if [[ ${MODE} == 'hub' ]];then
+    # Check for credentials for OPM
+    if [[ ${MODE} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
         check_registry ${DESTINATION_REGISTRY}

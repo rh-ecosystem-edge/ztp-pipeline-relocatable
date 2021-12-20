@@ -4,6 +4,9 @@ set -o pipefail
 set -o nounset
 set -m
 
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 function validate_condition() {
     timeout=0
     ready=false
@@ -33,22 +36,29 @@ fi
 
 ## variables
 ## #########
-SPOKE="${1}"
-wait_time=90                                                                                           # wait until 90 min
-declare -A states_machine                                                                              #TODO add more steps to validate agent, agentclusterinstall and so on
-states_machine['bmh', '{.items[*].status.errorCount}']='0 0 0'                                         # bmh's without errors
-states_machine['bmh', '{.items[*].status.provisioning.state}']='provisioned provisioned provisioned'   # bmh's state provisioned
-states_machine['agent', '{.items[*].spec.approved}']='true true true'                                  # agent's state approved
-states_machine['agentclusterinstall', '{.items[*].status.debugInfo.stateInfo}']='Cluster is installed' # agent cluster install state
 
-echo ">>>> Starting the validation until finish the installation"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+if [[ -z ${ALLSPOKES} ]]; then
+    ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+fi
 
-validate_condition "bmh" "{.items[*].status.errorCount}"
-validate_condition "bmh" "{.items[*].status.provisioning.state}"
-validate_condition "agent" "{.items[*].spec.approved}"
-validate_condition "agentclusterinstall" "{.items[*].status.debugInfo.stateInfo}"
+for SPOKE in ${ALLSPOKES}; do
+    wait_time=90                                                                                           # wait until 90 min
+    declare -A states_machine                                                                              #TODO add more steps to validate agent, agentclusterinstall and so on
+    states_machine['bmh', '{.items[*].status.errorCount}']='0 0 0'                                         # bmh's without errors
+    states_machine['bmh', '{.items[*].status.provisioning.state}']='provisioned provisioned provisioned'   # bmh's state provisioned
+    states_machine['agent', '{.items[*].spec.approved}']='true true true'                                  # agent's state approved
+    states_machine['agentclusterinstall', '{.items[*].status.debugInfo.stateInfo}']='Cluster is installed' # agent cluster install state
 
-echo ">>>>EOF"
-echo ">>>>>>>"
+    echo ">>>> Starting the validation until finish the installation"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+    validate_condition "bmh" "{.items[*].status.errorCount}"
+    validate_condition "bmh" "{.items[*].status.provisioning.state}"
+    validate_condition "agent" "{.items[*].spec.approved}"
+    validate_condition "agentclusterinstall" "{.items[*].status.debugInfo.stateInfo}"
+
+    echo ">>>>EOF"
+    echo ">>>>>>>"
+
+done
 exit 0

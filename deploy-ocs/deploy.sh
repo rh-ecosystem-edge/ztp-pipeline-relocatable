@@ -153,6 +153,6 @@ if ! ./verify.sh; then
         fi
     done
     oc --kubeconfig=${SPOKE_KUBECONFIG} patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-fi   
+fi
 echo ">>>>EOF"
 echo ">>>>>>>"

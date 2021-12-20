@@ -128,47 +128,26 @@ jobs:
           ./deploy.sh
 
 
-  extract-spokes-list:
-    needs: deploy-spokes
-    runs-on: ${{github.event.inputs.RUNNER}}
-    outputs:
-      services: ${{ steps.spokeslist.outputs.services }}
-    steps:
-      - name: Extract list of Spokes
-        id: spokeslist
-        run: |
-          echo "::set-output name=services::$(cat ${{github.event.inputs.SPOKES_FILE}} | yq e '.spokes.[] | keys | join(",")' - | jq -Rsc '. / "\n" - [""]')"
-
 
   verify-installation:
-    needs: extract-spokes-list
+    needs: deploy-spokes
     runs-on: ${{github.event.inputs.RUNNER}}
-    continue-on-error: true
-    strategy:
-      matrix:
-        service: ${{ fromJSON(needs.extract-spokes-list.outputs.services) }}
     steps:
-      - name: ${{ matrix.service }}
+      - name: Verify spoke installation
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
-          SPOKE=${{ matrix.service }}
           cd ${{env.DEPLOY_SPOKES_DIR}}
-          ./wait_for_spoke.sh $SPOKE
+          ./wait_for_spoke.sh
 
   #deploy-workers:
   #  needs: verify-installation
   #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  continue-on-error: true
-  #  strategy:
-  #    matrix:
-  #      service: ${{ fromJSON(needs.extract-spokes-list.outputs.services) }}
   #  steps:
-  #    - name: ${{ matrix.service }}
+  #    - name: Deploy workers
   #      run: |
   #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        SPOKE=${{ matrix.service }}
   #        cd ${{env.DEPLOY_WORKER_DIR}}
-  #        ./render_worker.sh $SPOKE
+  #        ./render_worker.sh
 #
 
   deploy-icsp-spokes-pre:

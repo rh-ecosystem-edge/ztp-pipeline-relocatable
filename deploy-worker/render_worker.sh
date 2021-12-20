@@ -152,5 +152,10 @@ EOF
 }
 
 # Main code
+if [[ -z ${ALLSPOKES} ]]; then
+    ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+fi
 
-create_worker_definitions ${1}
+for SPOKE in ${ALLSPOKES}; do
+    create_worker_definitions ${SPOKE}
+done
