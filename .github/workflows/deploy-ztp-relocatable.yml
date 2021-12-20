@@ -24,6 +24,7 @@ env:
   DEPLOY_WORKER_DIR: deploy-worker
   DEPLOY_OCS_DIR: deploy-ocs
   DEPLOY_POLICY_DIR: deploy-policies
+  FINISH_DEP_DIR: finish-deployment
   SHARED_DIR: shared-utils
 
 
@@ -215,3 +216,13 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./configure_disconnected.sh 'spoke' 'post'
+
+  finish-deployment:
+    needs: deploy-icsp-spokes-post
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy NNCP and detach spoke clusters 
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.FINISH_DEP_DIR}}
+          ./deploy.sh

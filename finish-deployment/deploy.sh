@@ -38,26 +38,62 @@ function verify_cluster() {
     echo ">>>> Extract Kubeconfig for ${cluster}"
     extract_kubeconfig ${cluster}
 
+    echo ">>>> Wait until NNCP are Available for ${cluster}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    for a in {0..2}
+    do
+        for nncp in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nncp --no-headers -o name);
+        do
+            if [[ $(oc get --no-headers ${nncp}  -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') == 'True' ]]; then
+                echo ">>>> NNCP is in Available state"
+                break
+            fi
+        done
+        sleep 5
+    done
+}
+
+function verify_ops() {
+    cluster=${1}
+    echo ">>>> Verifying Spoke cluster: ${cluster}"
+    echo ">>>> Extract Kubeconfig for ${cluster}"
+    extract_kubeconfig ${cluster}
+
     echo ">>>> Wait until nmstate ready for ${cluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    sleep 240
-    while [ "${timeout}" -lt "60" ]; do
-        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get pod | grep -i running | wd -l) -gt 6 ]]; then
+    while [ "${timeout}" -lt "240" ]
+    do
+        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get pod | grep -i running | wc -l) -gt 6 ]]; then
             ready=true
             break
         fi
-        sleep 5
-        timeout=$((timeout + 5))
+        sleep 1
+        timeout=$((timeout + 1))
     done
+
     if [ "$ready" == "false" ]; then
         echo "timeout waiting for nmstate pods "
         exit 1
     fi
 
-    if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get nncp | grep -i degraded | wc -l) -gt 0 ]]; then
-        echo ">>>> NNCP is in degraded state"
+    echo ">>>> Wait until metallb ready for ${cluster}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+    while [ "${timeout}" -lt "240" ]
+    do
+        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n metallb get pod | grep -i running | wc -l) -eq 1 ]]; then
+            ready=true
+            break
+        fi
+        sleep 1
+        timeout=$((timeout + 1))
+    done
+
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for MetalLB pods"
         exit 1
     fi
 }
@@ -69,6 +105,7 @@ function dettach_cluster() {
 }
 
 source ${WORKDIR}/shared-utils/common.sh
+verify_ops
 
 echo ">>>> Deploying NNCP Config"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -92,8 +129,9 @@ for spoke in ${ALLSPOKES}; do
 
     for master in 0 1 2; do
         export NODENAME=kubeframe-spoke-${index}-master-${master}
-        export NIC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.nic_int_static" ${SPOKES_FILE})
+        export NIC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
         render_file manifests/nncp.yaml
+        sleep 10
     done
     let index++
 done
