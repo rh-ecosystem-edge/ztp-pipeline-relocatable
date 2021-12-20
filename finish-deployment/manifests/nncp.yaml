@@ -3,6 +3,7 @@ kind: NodeNetworkConfigurationPolicy
 metadata:
   name: $NODENAME-nncp
 spec:
+  parallel: true
   nodeSelector:
     kubernetes.io/hostname: $NODENAME
   desiredState:
