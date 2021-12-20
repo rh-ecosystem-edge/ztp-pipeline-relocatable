@@ -121,7 +121,7 @@ function wait_for_mcp_ready() {
             echo ">>>> MCP ${SPOKE} is ready"
             return 0
         fi
-        sleep 1
+        sleep 10
     done
 
     echo ">>>> MCP ${SPOKE} is not ready after ${TIMEOUT} seconds"
