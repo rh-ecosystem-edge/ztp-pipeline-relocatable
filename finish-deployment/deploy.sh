@@ -127,7 +127,6 @@ for spoke in ${ALLSPOKES}; do
         export NODENAME=kubeframe-spoke-${index}-master-${master}
         export NIC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
         render_file manifests/nncp.yaml
-        sleep 10
     done
     let index++
 done
