@@ -117,3 +117,13 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.FINISH_DEP_DIR}}
           ./deploy.sh
+
+  deploy-workers:
+    needs: finish-deployment
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy workers
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_WORKER_DIR}}
+          ./render_worker.sh
