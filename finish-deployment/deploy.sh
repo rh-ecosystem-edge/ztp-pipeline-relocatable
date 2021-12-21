@@ -119,7 +119,7 @@ for spoke in ${ALLSPOKES}; do
     echo ">>>> Deploying NMState Operand for ${spoke}"
     oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/nmstate.yaml
     sleep 2
-    for dep in {nmstate-cert-manager,nmstate-operatornmstate-webhook}; do
+    for dep in {nmstate-cert-manager,nmstate-operator,nmstate-webhook}; do
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n openshift-nmstate ${dep}
     done
 
