@@ -120,7 +120,9 @@ for spoke in ${ALLSPOKES}; do
     oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/nmstate.yaml
     sleep 2
     for dep in {nmstate-cert-manager,nmstate-operator,nmstate-webhook}; do
+        export KUBECONFIG=${SPOKE_KUBECONFIG}
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n openshift-nmstate ${dep}
+        export KUBECONFIG=${KUBECONFIG_HUB}
     done
 
     for master in 0 1 2; do
