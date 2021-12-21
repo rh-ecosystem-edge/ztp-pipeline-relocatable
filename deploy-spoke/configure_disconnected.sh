@@ -117,7 +117,7 @@ function wait_for_mcp_ready() {
 
     echo ">>>> Waiting for ${SPOKE} to be ready"
     for i in $(seq 1 ${TIMEOUT}); do
-        if [[ $(oc --kubeconfig=${KUBECONF} get mcp -n ${SPOKE} -o jsonpath={'.status.readyMachineCount'}) -eq 3 ]]; then
+        if [[ $(oc --kubeconfig=${KUBECONF} get mcp master -o jsonpath={'.status.readyMachineCount'}) -eq 3 ]]; then
             echo ">>>> MCP ${SPOKE} is ready"
             return 0
         fi
