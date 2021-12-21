@@ -104,8 +104,7 @@ function dettach_cluster() {
     oc --kubeconfig=${KUBECONFIG_HUB} delete managedcluster ${cluster}
 }
 
-source ${WORKDIR}/shared-utils/common.sh
-verify_ops
+source ${WORKDIR}/shared-utils/common.sh 
 
 echo ">>>> Deploying NNCP Config"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -116,6 +115,7 @@ fi
 
 index=0
 for spoke in ${ALLSPOKES}; do
+    verify_ops $spoke
     # METALLB_IP=$(yq e ".spokes[$i].${spoke}.metallb_ip" ${SPOKES_FILE})
     # kubeframe-spoke-${i}-master-${master}
     echo ">>>> Extract Kubeconfig for ${spoke}"
