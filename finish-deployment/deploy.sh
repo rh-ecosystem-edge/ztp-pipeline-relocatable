@@ -42,7 +42,7 @@ function verify_cluster() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     for a in {0..2}; do
         for nncp in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nncp --no-headers -o name); do
-            if [[ $(oc get --no-headers ${nncp} -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') == 'True' ]]; then
+            if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get --no-headers ${nncp} -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') == 'True' ]]; then
                 echo ">>>> NNCP is in Available state"
                 break
             fi
