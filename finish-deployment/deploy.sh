@@ -62,7 +62,7 @@ function verify_ops() {
     timeout=0
     ready=false
     while [ "${timeout}" -lt "240" ]; do
-        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get pod | grep -i running | wc -l) -gt 6 ]]; then
+        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get pod | grep -i running | wc -l) -eq 1 ]]; then
             ready=true
             break
         fi
