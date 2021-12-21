@@ -24,6 +24,7 @@ env:
   DEPLOY_WORKER_DIR: deploy-worker
   DEPLOY_OCS_DIR: deploy-ocs
   DEPLOY_POLICY_DIR: deploy-policies
+  FINISH_DEP_DIR: finish-deployment
   SHARED_DIR: shared-utils
 
 
