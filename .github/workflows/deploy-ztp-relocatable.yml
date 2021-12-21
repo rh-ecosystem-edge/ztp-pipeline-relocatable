@@ -200,7 +200,7 @@ jobs:
     needs: deploy-icsp-spokes-post
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
-      - name: Deploy NNCP and detach spoke clusters 
+      - name: Deploy NNCP and detach spoke clusters
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.FINISH_DEP_DIR}}

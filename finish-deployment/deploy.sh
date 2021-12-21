@@ -40,11 +40,9 @@ function verify_cluster() {
 
     echo ">>>> Wait until NNCP are Available for ${cluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    for a in {0..2}
-    do
-        for nncp in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nncp --no-headers -o name);
-        do
-            if [[ $(oc get --no-headers ${nncp}  -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') == 'True' ]]; then
+    for a in {0..2}; do
+        for nncp in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nncp --no-headers -o name); do
+            if [[ $(oc get --no-headers ${nncp} -o jsonpath='{.status.conditions[?(@.type=="Available")].status}') == 'True' ]]; then
                 echo ">>>> NNCP is in Available state"
                 break
             fi
@@ -63,8 +61,7 @@ function verify_ops() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    while [ "${timeout}" -lt "240" ]
-    do
+    while [ "${timeout}" -lt "240" ]; do
         if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-nmstate get pod | grep -i running | wc -l) -gt 6 ]]; then
             ready=true
             break
@@ -82,8 +79,7 @@ function verify_ops() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    while [ "${timeout}" -lt "240" ]
-    do
+    while [ "${timeout}" -lt "240" ]; do
         if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} -n metallb get pod | grep -i running | wc -l) -eq 1 ]]; then
             ready=true
             break
