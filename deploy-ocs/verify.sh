@@ -33,12 +33,12 @@ for spoke in ${ALLSPOKES}; do
     fi
 
     echo "Check LocalVolume..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} LocalVolume -n openshift-local-storage localstorage-disks-block --no-header | wc -l) -ne 1 ]]; then
+    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} LocalVolume -n openshift-local-storage localstorage-disks-block --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 
     echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc localstorage-sc-block --no-header | wc -l) -ne 1 ]]; then
+    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc localstorage-sc-block --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 
@@ -51,12 +51,12 @@ for spoke in ${ALLSPOKES}; do
     fi
 
     echo "Check StorageCluster..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} StorageCluster -n openshift-storage ocs-storagecluster --no-header | wc -l) -ne 1 ]]; then
+    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} StorageCluster -n openshift-storage ocs-storagecluster --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 
     echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc ocs-storagecluster-cephfs --no-header | wc -l) -ne 1 ]]; then
+    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc ocs-storagecluster-cephfs --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 done
