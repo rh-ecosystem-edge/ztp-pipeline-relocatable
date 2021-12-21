@@ -117,11 +117,14 @@ function wait_for_mcp_ready() {
 
     echo ">>>> Waiting for ${SPOKE} to be ready"
     for i in $(seq 1 ${TIMEOUT}); do
+        echo ">>>> Showing nodes in Spoke"
+        oc --kubeconfig=${KUBECONF} get nodes
         if [[ $(oc --kubeconfig=${KUBECONF} get mcp master -o jsonpath={'.status.readyMachineCount'}) -eq 3 ]]; then
             echo ">>>> MCP ${SPOKE} is ready"
             return 0
         fi
         sleep 10
+        echo ">>>>"
     done
 
     echo ">>>> MCP ${SPOKE} is not ready after ${TIMEOUT} seconds"
@@ -180,32 +183,46 @@ elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         recover_mapping
         # Logic
+        ICSPCHECK=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy --no-headers kubeframe-${spoke} >/dev/null 2>&1)
+        RCICSP="$?"
         if [[ ${STAGE} == 'pre' ]]; then
-            # Spoke Sync from the Hub cluster as a Source
-            echo ">>>> Deploying ICSP for: ${spoke} using the Hub as a source"
-            oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-            oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
-            oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
+            if [[ ${RCICSP} -eq 0 ]]; then
+                echo "Skipping ICSP creation as it already exists"
+            else
+                # Spoke Sync from the Hub cluster as a Source
+                echo ">>>> Deploying ICSP for: ${spoke} using the Hub as a source"
+                oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+                oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
+                oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
 
-        elif [[ ${STAGE} == 'post' ]]; then
-            echo ">>>> Creating ICSP for: ${spoke}"
-            # Use the Spoke's registry as a source
-            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
-            icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
-            icsp_maker ${SPOKE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
+            fi
 
-            # Clean Old stuff
-            oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml || echo "CatalogSoruce already deleted!"
-            oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/icsp-hub.yaml || echo "ICSP already deleted!"
+        elif
+            [[ ${STAGE} == 'post' ]]
+        then
+            if [[ ${RCICSP} -eq 0 ]]; then
+                echo ">>>> Waiting for old stuff deletion..."
+            else
+                echo ">>>> Creating ICSP for: ${spoke}"
+                # Use the Spoke's registry as a source
+                source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+                icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
+                icsp_maker ${SPOKE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
 
-            echo ">>>> Waiting for old stuff deletion..."
-            sleep 20
+                # Clean Old stuff
+                oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml || echo "CatalogSoruce already deleted!"
+                oc --kubeconfig=${TARGET_KUBECONFIG} delete -f ${OUTPUTDIR}/icsp-hub.yaml || echo "ICSP already deleted!"
 
-            # Deploy New ICSP + CS
-            oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml
-            oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${spoke}.yaml
+                echo ">>>> Waiting for old stuff deletion..."
+                sleep 20
 
-            wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 240
+                # Deploy New ICSP + CS
+                oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml
+                oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${spoke}.yaml
+
+                wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 240
+
+            fi
         fi
     done
 fi
