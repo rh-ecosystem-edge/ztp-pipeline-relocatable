@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -o errexit
 set -o pipefail
 set -o nounset
 set -m
@@ -149,6 +148,7 @@ if [[ ${MODE} == 'hub' ]]; then
 
     echo ">>>> Creating ICSP for: Hub"
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+    export STAGE='pre'
     recover_mapping
     icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
@@ -166,7 +166,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
     # STAGE is the value to reflect which step are you in
     #    if you didn't synced from Hub to Spoke you need to put 'pre'
     #    if you already synced from Hub to Spoke you need to put 'post'
-    STAGE=${2}
+    export STAGE=${2}
 
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
