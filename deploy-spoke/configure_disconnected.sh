@@ -186,6 +186,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
         recover_mapping
         # Logic
+        export MODE='spoke'
         ICSPCHECK=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy --no-headers kubeframe-${spoke} >/dev/null 2>&1)
         RCICSP="$?"
         if [[ ${STAGE} == 'pre' ]]; then
