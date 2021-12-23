@@ -184,8 +184,10 @@ elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         recover_mapping
         # Logic
+        # WC == 2 == SKIP / WC == 1 == Create ICSP
+        RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l)
         if [[ ${STAGE} == 'pre' ]]; then
-	    if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy --no-headers kubeframe-${spoke}) -ne 0 ]]; then
+	        if [[ ${RCICSP} -eq 2 ]]; then
                 echo "Skipping ICSP creation as it already exists"
             else
                 # Spoke Sync from the Hub cluster as a Source
@@ -194,10 +196,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
             fi
-        elif
-            [[ ${STAGE} == 'post' ]]
-        then
-            if [[ ${RCICSP} -eq 0 ]]; then
+        elif [[ ${STAGE} == 'post' ]]; then
+            if [[ ${RCICSP} -eq 2 ]]; then
                 echo ">>>> Waiting for old stuff deletion..."
             else
                 echo ">>>> Creating ICSP for: ${spoke}"
