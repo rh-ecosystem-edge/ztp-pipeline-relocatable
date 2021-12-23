@@ -181,9 +181,6 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
 
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        if [[ ${STAGE} == 'pre' ]]; then 
-            export MODE='hub'    # fixing because we don't have ns in spoke until registry creating so use the hub (fixing issue https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/runs/4604700129?check_suite_focus=true)
-        fi
         recover_mapping
         # Logic
         ICSPCHECK=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy --no-headers kubeframe-${spoke} >/dev/null 2>&1)
