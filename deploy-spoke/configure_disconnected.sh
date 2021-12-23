@@ -39,7 +39,7 @@ function generate_mapping() {
 
 function recover_mapping() {
     MAP_FILENAME='mapping.txt'
-    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE} ${STAGE}
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
     echo ">>>> Finding Map file for OLM Sync"
     if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]]; then
         echo ">>>> No mapping file found for OLM Sync"
@@ -181,8 +181,12 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
 
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        if [[ ${STAGE} == 'pre' ]]; then 
+            export MODE='hub'    # fixing because we don't have ns in spoke until registry creating so use the hub (fixing issue https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/runs/4604700129?check_suite_focus=true)
+        fi
         recover_mapping
         # Logic
+        export MODE='spoke'
         ICSPCHECK=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy --no-headers kubeframe-${spoke} >/dev/null 2>&1)
         RCICSP="$?"
         if [[ ${STAGE} == 'pre' ]]; then
@@ -205,7 +209,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
             else
                 echo ">>>> Creating ICSP for: ${spoke}"
                 # Use the Spoke's registry as a source
-                source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE} ${STAGE}
+                source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
                 icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
                 icsp_maker ${SPOKE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
 
