@@ -185,7 +185,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         recover_mapping
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
-        RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || echo 0)
+        RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
         if [[ ${STAGE} == 'pre' ]]; then
 	        if [[ ${RCICSP} -eq 2 ]]; then
                 echo "Skipping ICSP creation as it already exists"
