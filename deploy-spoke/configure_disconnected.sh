@@ -184,10 +184,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         recover_mapping
         # Logic
-        ICSPCHECK=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy --no-headers kubeframe-${spoke} >/dev/null 2>&1)
-        RCICSP="$?"
         if [[ ${STAGE} == 'pre' ]]; then
-            if [[ ${RCICSP} -eq 0 ]]; then
+	    if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy --no-headers kubeframe-${spoke}) -ne 0 ]]; then
                 echo "Skipping ICSP creation as it already exists"
             else
                 # Spoke Sync from the Hub cluster as a Source
@@ -195,9 +193,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
-
             fi
-
         elif
             [[ ${STAGE} == 'post' ]]
         then
@@ -222,7 +218,6 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${spoke}.yaml
 
                 wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 240
-
             fi
         fi
     done
