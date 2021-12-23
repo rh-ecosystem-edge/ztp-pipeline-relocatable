@@ -1,3 +1,11 @@
+## [0.0.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/0.0.4...0.0.5) (2021-12-23)
+
+### Reverts
+
+- Revert "fixing the unexplicable issue with reigstry phase pre" ([fdaee71](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fdaee71b6096256f40bd259d7a79610b537ad5ae))
+- Revert "deploy-spoke/configure_disconnected.sh" ([e5945cb](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/e5945cb48dc6511cd7383632cbdc5efda95e9d16))
+- Revert "trying to fix with splitting spokes kubeconfig depends on the stage" ([318a682](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/318a6824b294e96981a002275f4a0ddbfff5adbe))
+
 ## [0.0.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/0.0.3...0.0.4) (2021-12-14)
 
 ### Bug Fixes
