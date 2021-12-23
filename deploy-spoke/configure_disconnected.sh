@@ -29,6 +29,8 @@ function icsp_mutate() {
 }
 
 function generate_mapping() {
+    echo ">>>> Loading Common file"
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
     echo ">>>> Creating OLM Manifests"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
     GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
@@ -39,7 +41,6 @@ function generate_mapping() {
 
 function recover_mapping() {
     MAP_FILENAME='mapping.txt'
-    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
     echo ">>>> Finding Map file for OLM Sync"
     if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]]; then
         echo ">>>> No mapping file found for OLM Sync"
