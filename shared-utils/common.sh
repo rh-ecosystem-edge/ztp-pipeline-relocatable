@@ -91,17 +91,27 @@ if [ ! -f "${SPOKES_FILE}" ]; then
     exit 1
 fi
 
+
+if [ -z ${KUBECONFIG+x} ]; then
+	echo "Please, provide a path for the hub's KUBECONFIG: It will be created if it doesn't exist"
+    exit 1
+fi
+
 if [[ ! -f "${KUBECONFIG}" && -f "/run/secrets/kubernetes.io/serviceaccount/token" ]]; then
     if [ -z "${KUBECONFIG+x}" ]; then
         export KUBECONFIG="${OUTPUTDIR}/kubeconfig"
     fi
-	echo "Kubeconfig file doesn't exist: creating one from token"
+    echo "Kubeconfig file doesn't exist: creating one from token"
     oc config set-credentials spokes-deployer --token=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
 elif [[ ! -f "${KUBECONFIG}" ]]; then
 	echo "Kubeconfig file doesn't exist"
+    exit 1
 fi
 
 export KUBECONFIG_HUB=${KUBECONFIG}
+
+echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${SPOKES_FILE})
 export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})

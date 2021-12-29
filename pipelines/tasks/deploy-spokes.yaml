@@ -23,6 +23,8 @@ spec:
       value: $(params.spokes-config)
     - name: OUTPUTDIR
       value: $(workspaces.ztp.path)
+    - name: KUBECONFIG
+      value: "$(workspaces.ztp.path)/build"
 
  steps:
 

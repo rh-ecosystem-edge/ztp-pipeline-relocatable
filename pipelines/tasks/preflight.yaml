@@ -19,6 +19,10 @@ spec:
   env:
     - name: WORKDIR
       value: "/ztp-pipeline"
+    - name: OUTDIR
+      value: $(workspaces.ztp.path)
+    - name: KUBECONFIG
+      value: "$(workspaces.ztp.path)/kubeconfig"
     - name: SPOKES_CONFIG
       value: $(params.spokes-config)
  steps:

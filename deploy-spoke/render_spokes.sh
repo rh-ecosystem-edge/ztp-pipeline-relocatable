@@ -186,6 +186,7 @@ EOF
         export CHANGE_SPOKE_MASTER_PUB_INT_MASK=24
         export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
         export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
+        export CHANGE_SPOKE_MASTER_MGMT_GW=$(yq eval ".config.nic_ext_gw" ${SPOKES_FILE})
 
         # Now process blocks for each master
         for master in 0 1 2; do
@@ -228,10 +229,11 @@ spec:
        ipv4:
          enabled: true
          dhcp: true
-         auto-dns: true
+         auto-dns: false
          auto-gateway: true
          auto-routes: true
        mtu: 1500
+       mac-address: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
      - name: $CHANGE_SPOKE_MASTER_PUB_INT
        type: ethernet
        state: up
@@ -246,11 +248,18 @@ spec:
              prefix-length: $CHANGE_SPOKE_MASTER_PUB_INT_MASK
        mtu: 1500
        mac-address: '$CHANGE_SPOKE_MASTER_PUB_INT_MAC'
+
+   dns-resolver:
+     config:
+      server:
+        - 192.168.1.239
+
    routes:
      config:
        - destination: $CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
+
  interfaces:
    - name: "$CHANGE_SPOKE_MASTER_MGMT_INT"
      macAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
