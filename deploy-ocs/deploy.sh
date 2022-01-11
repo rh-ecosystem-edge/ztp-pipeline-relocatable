@@ -73,7 +73,7 @@ if ! ./verify.sh; then
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
-        while [ "$timeout" -lt "60" ]; do
+        while [ "$timeout" -lt "120" ]; do
             echo KUBESPOKE=${SPOKE_KUBECONFIG}
             if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep localvolumes.local.storage.openshift.io | wc -l) -eq 1 ]]; then
                 ready=true
