@@ -98,7 +98,7 @@ if ! ./verify.sh; then
         timeout=0
         ready=false
         while [ "$timeout" -lt "60" ]; do
-            if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pv -o name | wc -l) -gt 3 ]]; then
+            if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pv -o name | wc -l) -ge 3 ]]; then
                 ready=true
                 break
             fi
