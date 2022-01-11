@@ -100,7 +100,7 @@ function dettach_cluster() {
     oc --kubeconfig=${KUBECONFIG_HUB} delete managedcluster ${cluster}
 }
 
-source ${WORKDIR}/shared-utils/common.sh 
+source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Deploying NNCP Config"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

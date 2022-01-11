@@ -1,21 +1,21 @@
 config:
   clusterimageset: openshift-v4.9.0
-  OC_OCP_VERSION: '4.9'
-  OC_OCP_TAG: '4.9.0-x86_64'
-  OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary
-  OC_ACM_VERSION: '2.4'
-  OC_OCS_VERSION: '4.8'
+  OC_OCP_VERSION: "4.9"
+  OC_OCP_TAG: "4.9.0-x86_64"
+  OC_RHCOS_RELEASE: "49.84.202110081407-0" # TODO automate it to get it automated using binary
+  OC_ACM_VERSION: "2.4"
+  OC_OCS_VERSION: "4.8"
 
 spokes:
   - spoke1-name:
-      metallb_ip: 192.168.150.200  # Not used for now, but maybe in the future
+      metallb_ip: 192.168.150.200 # Not used for now, but maybe in the future
       master0:
         nic_ext_dhcp: eno4 # ext_dhcp -> DHCP
         nic_int_static: eno5 # int_static -> Internal IP for cluster communication
         mac_ext_dhcp: "aa:ss:dd:ee:b0:10"
         mac_int_static: "aa:ss:dd:ee:b1:10"
         bmc_url: "<url bmc>"
-        bmc_user: "user-bmc"  #TODO  may be clear test and render with script
+        bmc_user: "user-bmc" #TODO  may be clear test and render with script
         bmc_pass: "user-pass" #TODO  may be clear test and render with script
         storage_disk:
           - sdb
