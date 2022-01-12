@@ -38,13 +38,13 @@ if ./verify.sh; then
     timeout=0
     ready=false
     sleep 240
-    while [ "${timeout}" -lt "60" ]; do
+    while [ "${timeout}" -lt "120" ]; do
         if [[ $(oc get pod -n open-cluster-management | grep -i running | wc -l) -eq $(oc get pod -n open-cluster-management | grep -v NAME | wc -l) ]]; then
             ready=true
             break
         fi
         sleep 5
-        timeout=$((timeout + 5))
+        timeout=$((timeout + 1))
     done
     if [ "$ready" == "false" ]; then
         echo "timeout waiting for ACM pods "
