@@ -138,7 +138,7 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh
-          systemctl restart firewalld NetworkManager libvirtd; firewall-cmd --complete-reload; kcli ssh root@test-ci-installer "sudo systemctl restart sushy"
+   #       systemctl restart firewalld NetworkManager libvirtd; firewall-cmd --complete-reload; kcli ssh root@test-ci-installer "sudo systemctl restart sushy"
 
 
   deploy-icsp-spokes-pre:
