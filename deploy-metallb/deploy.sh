@@ -26,6 +26,42 @@ function render_file() {
     fi
 }
 
+function verify_remote_pod() {
+    cluster=${1}
+    NS=${2}
+    KIND=${3}
+    NAME=${4}
+    STATUS=${5:-running}
+
+    echo ">>>> Verifying Spoke cluster: ${cluster}"
+    echo ">>>> Wait until ${KIND} ${NAME} is ready for ${cluster}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+    while [ "${timeout}" -lt "240" ]; do
+        if [[ ${DEBUG} == 'true' ]]; then
+            echo
+            echo "cluster: ${cluster}"
+            echo "NS: ${NS}"
+            echo "KIND: ${KIND}"
+            echo "NAME: ${NAME}"
+            echo "STATUS: ${STATUS}"
+            echo
+        fi
+
+        if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} -l ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
+            ready=true
+            break
+        fi
+        sleep 1
+        timeout=$((timeout + 1))
+    done
+
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for ${KIND} ${NAME}"
+        exit 1
+    fi
+}
 function verify_remote_resource() {
     cluster=${1}
     NS=${2}
@@ -39,7 +75,17 @@ function verify_remote_resource() {
     timeout=0
     ready=false
     while [ "${timeout}" -lt "240" ]; do
-        if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
+        if [[ ${DEBUG} == 'true' ]]; then
+            echo
+            echo "cluster: ${cluster}"
+            echo "NS: ${NS}"
+            echo "KIND: ${KIND}"
+            echo "NAME: ${NAME}"
+            echo "STATUS: ${STATUS}"
+            echo
+        fi
+
+        if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | egrep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
             break
         fi
@@ -71,7 +117,7 @@ function render_manifests() {
     done
 
     # Render MetalLB Manifests
-    export METALLB_IP="$(yq e ".spokes[$i].${spoke}.metallb_ip" ${SPOKES_FILE})"
+    export METALLB_IP="$(yq e ".spokes[\$i].${spoke}.metallb_ip" ${SPOKES_FILE})"
 
     if [[ -z ${METALLB_IP} ]]; then
         echo "You need to add the 'metallb_ip' field in your Spoke cluster definition"
@@ -94,7 +140,8 @@ function grab_master_ext_ips() {
     master=${SPOKE_NODE_NAME##*-}
     export MAC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
     ## HAY QUE PROBAR ESTO
-    export SPOKE_NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress=="${MAC_EXT_DHCP}")].ipV4Addresses[0]}")
+    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+    export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
 }
 
 function copy_files() {
@@ -119,7 +166,6 @@ function copy_files() {
 
     echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
     ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
-    echo "Done!"
 }
 
 function check_connectivity() {
@@ -145,6 +191,8 @@ function check_connectivity() {
 }
 
 source ${WORKDIR}/shared-utils/common.sh
+export DEBUG=false
+
 echo ">>>> Deploying NMState and MetalLB operators"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
@@ -156,7 +204,7 @@ fi
 index=0
 
 for spoke in ${ALLSPOKES}; do
-    echo ">>>> Starting the MetalLB process for Spoke: ${Spoke} in position ${index}"
+    echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
     echo ">> Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
     grab_master_ext_ips ${spoke}
@@ -165,7 +213,9 @@ for spoke in ${ALLSPOKES}; do
 
     # Remote working
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
-    copy_files "${files[@]}" "${SPOKE_NODE_IP}" "./manifests/"
+    for _file in ${files[@]}; do
+        copy_files "${_file}" "${SPOKE_NODE_IP}" "./manifests/"
+    done
     copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"
     copy_files "${SPOKE_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
 
@@ -175,33 +225,33 @@ for spoke in ${ALLSPOKES}; do
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
     sleep 10
 
-    verify_remote_resource ${spoke} "openshift-nmstate" "pod" "nmstate-operator"
+    verify_remote_pod ${spoke} "openshift-nmstate" "pod" "name=kubernetes-nmstate-operator"
     # This empty quotes is because we don't know the pod name for MetalLB
-    verify_remote_resource ${spoke} "metallb" "pod" " "
+    verify_remote_pod ${spoke} "metallb" "pod" "control-plane=controller-manager"
     # These empty quotes (down bellow) are just to verify the CRDs and we don't want a 'running'
-    verify_remote_resource ${spoke} "default" "crd" "nmstates.nmstate.io" " "
-    verify_remote_resource ${spoke} "default" "crd" "MetalLB" " "
+    verify_remote_resource ${spoke} "default" "crd" "nmstates.nmstate.io" "."
+    verify_remote_resource ${spoke} "default" "crd" "metallbs.metallb.io" "."
 
     echo ">>>> Deploying NMState Operand for ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
     sleep 2
     for dep in {nmstate-cert-manager,nmstate-webhook}; do
-        verify_remote_resource ${spoke} "openshift-nmstate" "dep" ${dep}
+        verify_remote_resource ${spoke} "openshift-nmstate" "deployment.apps" ${dep} "."
     done
 
     for master in 0 1 2; do
         NODENAME="${spoke}-nncp-kubeframe-spoke-${index}-master-${master}"
         # I've been forced to do that, don't blame me :(
         ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
-        verify_remote_resource ${spoke} "default" "nncp" "${NODENAME}" "Available"
+        verify_remote_resource ${spoke} "default" "nncp" "kubeframe-spoke-${index}-master-${master}-nncp" "Available"
     done
 
     echo ">>>> Deploying MetalLB API for ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-service.yaml"
     sleep 2
-    verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" " "
-    verify_remote_resource ${spoke} "metallb" "service" "metallb-api" " "
+    verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" "."
+    verify_remote_resource ${spoke} "openshift-kube-apiserver" "service" "metallb-api" "."
 
-    echo ">>>> Spoke ${Spoke} done"
+    echo ">>>> Spoke ${spoke} done"
     let index++
 done
