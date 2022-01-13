@@ -55,13 +55,13 @@ function verify_remote_resource() {
 
 function render_manifests() {
     # Files rendered will be stored in this array
-    declare -ga files=() 
+    declare -ga files=()
 
-    # Each call to this function affects to 1 Spoke at the same time and the ${index} is the number of the spoke 
+    # Each call to this function affects to 1 Spoke at the same time and the ${index} is the number of the spoke
     index=${1}
     echo "Rendering Manifests for Spoke ${index}"
 
-    # Render NNCP Manifests 
+    # Render NNCP Manifests
     for master in 0 1 2; do
         export NODENAME=kubeframe-spoke-${index}-master-${master}
         echo "Rendering NNCP for: ${NODENAME}"
@@ -73,7 +73,7 @@ function render_manifests() {
     # Render MetalLB Manifests
     export METALLB_IP="$(yq e ".spokes[$i].${spoke}.metallb_ip" ${SPOKES_FILE})"
 
-    if [[ -z ${METALLB_IP} ]];then
+    if [[ -z ${METALLB_IP} ]]; then
         echo "You need to add the 'metallb_ip' field in your Spoke cluster definition"
         exit 1
     fi
@@ -82,7 +82,7 @@ function render_manifests() {
     files+=(${OUTPUTDIR}/${spoke}-metallb-api.yaml)
     render_file manifests/metallb-service.yaml ${OUTPUTDIR}/${spoke}-metallb-service.yaml
     files+=(${OUTPUTDIR}/${spoke}-metallb-service.yaml)
-    echo "Rendering Done!" 
+    echo "Rendering Done!"
 }
 
 function grab_master_ext_ips() {
@@ -102,17 +102,17 @@ function copy_files() {
     dst_node=${2}
     dst_folder=${3}
 
-    if [[ -z "${src_files}" ]];then
+    if [[ -z ${src_files} ]]; then
         echo "Source files variable empty: ${src_files[@]}"
         exit 1
     fi
 
-    if [[ -z "${dst_node}" ]];then
+    if [[ -z ${dst_node} ]]; then
         echo "Destination IP variable empty: ${dst_node}"
         exit 1
     fi
 
-    if [[ -z "${dst_folder}" ]];then
+    if [[ -z ${dst_folder} ]]; then
         echo "Destination folder variable empty: ${dst_folder}"
         exit 1
     fi
@@ -126,12 +126,12 @@ function check_connectivity() {
     IP=${1}
     echo "Checking connectivity against: ${IP}"
 
-    if [[ -z ${IP} ]];then 
+    if [[ -z ${IP} ]]; then
         echo "ERROR: Variable \${IP} empty, this could means that the ARP does not match with the MAC address provided in the Spoke File ${SPOKES_FILE}"
         exit 1
     fi
 
-    ping ${IP} -c4 -W1 2>&1 > /dev/null
+    ping ${IP} -c4 -W1 2>&1 >/dev/null
     RC=${?}
 
     if [[ ${RC} -eq 0 ]]; then
@@ -148,15 +148,14 @@ source ${WORKDIR}/shared-utils/common.sh
 echo ">>>> Deploying NMState and MetalLB operators"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-if [[ -z "${ALLSPOKES}" ]]; then
+if [[ -z ${ALLSPOKES} ]]; then
     export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
 
-# This var reflects the spoke cluster you're working with 
+# This var reflects the spoke cluster you're working with
 index=0
 
-for spoke in ${ALLSPOKES}
-do
+for spoke in ${ALLSPOKES}; do
     echo ">>>> Starting the MetalLB process for Spoke: ${Spoke} in position ${index}"
     echo ">> Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
@@ -165,7 +164,7 @@ do
     render_manifests ${index}
 
     # Remote working
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube" 
+    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
     copy_files "${files[@]}" "${SPOKE_NODE_IP}" "./manifests/"
     copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"
     copy_files "${SPOKE_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"

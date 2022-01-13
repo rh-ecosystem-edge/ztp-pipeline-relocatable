@@ -24,6 +24,7 @@ env:
   DEPLOY_WORKER_DIR: deploy-worker
   DEPLOY_OCS_DIR: deploy-ocs
   DEPLOY_POLICY_DIR: deploy-policies
+  DEPLOY_METALLB_DIR: deploy-metallb
   FINISH_DEP_DIR: finish-deployment
   SHARED_DIR: shared-utils
 
@@ -72,6 +73,7 @@ jobs:
           ./olm-sync.sh 'hub'
           ./update-global-pullsecret.sh 'hub'
 
+
   deploy-acm:
     needs: deploy-disconnected-registry-hub       # run in parallel with the other jobs
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -105,17 +107,6 @@ jobs:
           ./deploy.sh
 
 
-  #deploy-policies:
-  #  needs: deploy-acm
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy policies
-  #      run: |
-  #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        cd ${{env.DEPLOY_POLICY_DIR}}
-  #        ./deploy.sh
-
-
   deploy-spokes:
     needs: [deploy-hub-config, deploy-icsp-hub]
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -128,7 +119,6 @@ jobs:
           ./deploy.sh
 
 
-
   verify-installation:
     needs: deploy-spokes
     runs-on: ${{github.event.inputs.RUNNER}}
@@ -138,7 +128,6 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh
-   #       systemctl restart firewalld NetworkManager libvirtd; firewall-cmd --complete-reload; kcli ssh root@test-ci-installer "sudo systemctl restart sushy"
 
 
   deploy-icsp-spokes-pre:
@@ -151,6 +140,15 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./configure_disconnected.sh 'spoke' 'pre'
 
+  deploy-metallb:
+    needs: deploy-icsp-spokes-pre
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy NMState and MetalLB
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_METALLB_DIR}}
+          ./deploy.sh
 
   #deploy-ocs:
   #  needs: deploy-icsp-spokes-pre
