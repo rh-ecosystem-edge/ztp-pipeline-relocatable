@@ -20,6 +20,8 @@ export OC_DIS_CATALOG=kubeframe-catalog
 export MARKET_NS=openshift-marketplace
 export KUBEFRAME_NS=kubeframe
 export OUTPUTDIR=${WORKDIR}/build
+export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
+export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
 
 [ -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
 

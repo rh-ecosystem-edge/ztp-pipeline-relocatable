@@ -1,8 +1,0 @@
-resources:
-  - kubeframe-placementbinding.yaml
-  - kubeframe-placementrules.yaml
-  - kubeframe-spoke-common.yaml
-  - kubeframe-spoke-metallb-pre.yaml
-  - kubeframe-spoke-metallb.yaml
-  - kubeframe-spoke-nmstate-pre.yaml
-  - kubeframe-spoke-nmstate.yaml
