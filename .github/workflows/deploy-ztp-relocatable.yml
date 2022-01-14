@@ -150,58 +150,58 @@ jobs:
           cd ${{env.DEPLOY_METALLB_DIR}}
           ./deploy.sh
 
-  #deploy-ocs:
-  #  needs: deploy-icsp-spokes-pre
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy OCS
-  #      run: |
-  #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        cd ${{env.DEPLOY_OCS_DIR}}
-  #        ./deploy.sh
-  #
-  #
-  #deploy-disconnected-registry-spokes:
-  #  needs: deploy-ocs        # run in parallel with the other jobs
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy Internal Disconnected Registry in each spoke
-  #      run: |
-  #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        cd ${{env.DEPLOY_REGISTRY_DIR}}
-  #        ./deploy.sh 'spoke'
-  #        ./ocp-sync.sh 'spoke'
-  #        ./olm-sync.sh 'spoke'
-  #        ./update-global-pullsecret.sh 'spoke'
-  #
-  #
-  #deploy-icsp-spokes-post:
-  #  needs: deploy-disconnected-registry-spokes
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy ICSP in all the spokes in the Post flow
-  #      run: |
-  #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        cd ${{env.DEPLOY_SPOKES_DIR}}
-  #        ./configure_disconnected.sh 'spoke' 'post'
-  #
-  #finish-deployment:
-  #  needs: deploy-icsp-spokes-post
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy NNCP and detach spoke clusters
-  #      run: |
-  #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        cd ${{env.FINISH_DEP_DIR}}
-  #        ./deploy.sh
-  #
-  #deploy-workers:
-  #  needs: finish-deployment
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy workers
-  #      run: |
-  #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        cd ${{env.DEPLOY_WORKER_DIR}}
-  #        ./render_worker.sh
-  #
+  deploy-ocs:
+    needs: deploy-icsp-spokes-pre
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy OCS
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_OCS_DIR}}
+          ./deploy.sh
+  
+  
+  deploy-disconnected-registry-spokes:
+    needs: deploy-ocs        # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy Internal Disconnected Registry in each spoke
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_REGISTRY_DIR}}
+          ./deploy.sh 'spoke'
+          ./ocp-sync.sh 'spoke'
+          ./olm-sync.sh 'spoke'
+          ./update-global-pullsecret.sh 'spoke'
+  
+  
+  deploy-icsp-spokes-post:
+    needs: deploy-disconnected-registry-spokes
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy ICSP in all the spokes in the Post flow
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_SPOKES_DIR}}
+          ./configure_disconnected.sh 'spoke' 'post'
+  
+  finish-deployment:
+    needs: deploy-icsp-spokes-post
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy NNCP and detach spoke clusters
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.FINISH_DEP_DIR}}
+          ./deploy.sh
+  
+  deploy-workers:
+    needs: finish-deployment
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy workers
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_WORKER_DIR}}
+          ./render_worker.sh
+  
