@@ -2,7 +2,7 @@
 apiVersion: metallb.io/v1alpha1
 kind: AddressPool
 metadata:
-  name: api-public-ip
+  name: $SVC_NAME
   namespace: metallb
 spec:
   protocol: layer2

@@ -39,15 +39,15 @@ function verify_remote_pod() {
     timeout=0
     ready=false
     while [ "${timeout}" -lt "240" ]; do
-        if [[ ${DEBUG} == 'true' ]]; then
-            echo
-            echo "cluster: ${cluster}"
-            echo "NS: ${NS}"
-            echo "KIND: ${KIND}"
-            echo "NAME: ${NAME}"
-            echo "STATUS: ${STATUS}"
-            echo
-        fi
+	if [[ ${DEBUG} == 'true' ]]; then
+	    echo 
+    	    echo "cluster: ${cluster}"
+    	    echo "NS: ${NS}"
+    	    echo "KIND: ${KIND}"
+    	    echo "NAME: ${NAME}"
+    	    echo "STATUS: ${STATUS}"
+	    echo
+	fi
 
         if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} -l ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
@@ -75,15 +75,15 @@ function verify_remote_resource() {
     timeout=0
     ready=false
     while [ "${timeout}" -lt "240" ]; do
-        if [[ ${DEBUG} == 'true' ]]; then
-            echo
-            echo "cluster: ${cluster}"
-            echo "NS: ${NS}"
-            echo "KIND: ${KIND}"
-            echo "NAME: ${NAME}"
-            echo "STATUS: ${STATUS}"
-            echo
-        fi
+	if [[ ${DEBUG} == 'true' ]]; then
+	    echo 
+    	    echo "cluster: ${cluster}"
+    	    echo "NS: ${NS}"
+    	    echo "KIND: ${KIND}"
+    	    echo "NAME: ${NAME}"
+    	    echo "STATUS: ${STATUS}"
+	    echo
+	fi
 
         if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | egrep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
@@ -117,18 +117,37 @@ function render_manifests() {
     done
 
     # Render MetalLB Manifests
-    export METALLB_IP="$(yq e ".spokes[\$i].${spoke}.metallb_ip" ${SPOKES_FILE})"
+    export METALLB_API_IP="$(yq e ".spokes[\$i].${spoke}.metallb_api_ip" ${SPOKES_FILE})"
+    export METALLB_INGRESS_IP="$(yq e ".spokes[\$i].${spoke}.metallb_ingress_ip" ${SPOKES_FILE})"
 
-    if [[ -z ${METALLB_IP} ]]; then
-        echo "You need to add the 'metallb_ip' field in your Spoke cluster definition"
+    if [[ -z ${METALLB_API_IP} ]]; then
+        echo "You need to add the 'metallb_api_ip' field in your Spoke cluster definition"
+        exit 1
+    fi
+
+    if [[ -z ${METALLB_INGRESS_IP} ]]; then
+        echo "You need to add the 'metallb_ingress_ip' field in your Spoke cluster definition"
         exit 1
     fi
     echo "Rendering MetalLB for: ${spoke}"
-    render_file manifests/metallb.yaml ${OUTPUTDIR}/${spoke}-metallb-api.yaml
+    # API First
+    export SVC_NAME='api-public-ip'
+    export METALLB_IP=${METALLB_API_IP}
+    render_file manifests/address_pool.yaml ${OUTPUTDIR}/${spoke}-metallb-api.yaml
     files+=(${OUTPUTDIR}/${spoke}-metallb-api.yaml)
-    render_file manifests/metallb-service.yaml ${OUTPUTDIR}/${spoke}-metallb-service.yaml
-    files+=(${OUTPUTDIR}/${spoke}-metallb-service.yaml)
+    render_file manifests/metallb-api-svc.yaml ${OUTPUTDIR}/${spoke}-metallb-api-svc.yaml
+    files+=(${OUTPUTDIR}/${spoke}-metallb-api-svc.yaml)
+
+    # Ingress First
+    export SVC_NAME='ingress-public-ip'
+    export METALLB_IP=${METALLB_INGRESS_IP}
+    render_file manifests/address_pool.yaml ${OUTPUTDIR}/${spoke}-metallb-ingress.yaml
+    files+=(${OUTPUTDIR}/${spoke}-metallb-ingress.yaml)
+    render_file manifests/metallb-ingress-svc.yaml ${OUTPUTDIR}/${spoke}-metallb-ingress-svc.yaml
+    files+=(${OUTPUTDIR}/${spoke}-metallb-ingress-svc.yaml)
     echo "Rendering Done!"
+
+    ############## ME HE QUEDADO AQUI
 }
 
 function grab_master_ext_ips() {
@@ -213,7 +232,8 @@ for spoke in ${ALLSPOKES}; do
 
     # Remote working
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
-    for _file in ${files[@]}; do
+    for _file in ${files[@]};
+    do
         copy_files "${_file}" "${SPOKE_NODE_IP}" "./manifests/"
     done
     copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"
@@ -246,7 +266,13 @@ for spoke in ${ALLSPOKES}; do
         verify_remote_resource ${spoke} "default" "nncp" "kubeframe-spoke-${index}-master-${master}-nncp" "Available"
     done
 
-    echo ">>>> Deploying MetalLB API for ${spoke}"
+    echo ">>>> Deploying MetalLB Operand for ${spoke}"
+    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
+    sleep 2
+    verify_remote_resource ${spoke} "metallb" "deployment.apps" "controller" "."
+    verify_remote_pod ${spoke} "metallb" "pod" "component=speaker"
+
+    echo ">>>> Deploying MetalLB AddressPools and Services for ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-service.yaml"
     sleep 2
     verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" "."
