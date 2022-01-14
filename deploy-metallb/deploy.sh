@@ -100,8 +100,10 @@ function verify_remote_resource() {
 }
 
 function patch_network() {
+    echo ">> Patching Network Policy Allowed CIRDs"
     export EXT_NET_CIRD="$(yq e ".spokes[\$i].${spoke}.external_network_cidr" ${SPOKES_FILE})"
     oc patch network cluster --type merge -p '{"spec":{"externalIP":{"policy":{"allowedCIDRs":['\"${EXT_NET_CIDR}\"']}}}}'
+    echo
 }
 
 
@@ -111,7 +113,7 @@ function render_manifests() {
 
     # Each call to this function affects to 1 Spoke at the same time and the ${index} is the number of the spoke
     index=${1}
-    echo "Rendering Manifests for Spoke ${index}"
+    echo ">> Rendering Manifests for Spoke ${index}"
 
     # Render NNCP Manifests
     for master in 0 1 2; do
@@ -135,7 +137,7 @@ function render_manifests() {
         echo "You need to add the 'metallb_ingress_ip' field in your Spoke cluster definition"
         exit 1
     fi
-    echo "Rendering MetalLB for: ${spoke}"
+    echo ">> Rendering MetalLB for: ${spoke}"
     # API First
     export SVC_NAME='api-public-ip'
     export METALLB_IP=${METALLB_API_IP}
@@ -151,9 +153,8 @@ function render_manifests() {
     files+=(${OUTPUTDIR}/${spoke}-metallb-ingress.yaml)
     render_file manifests/metallb-ingress-svc.yaml ${OUTPUTDIR}/${spoke}-metallb-ingress-svc.yaml
     files+=(${OUTPUTDIR}/${spoke}-metallb-ingress-svc.yaml)
-    echo "Rendering Done!"
-
-    ############## ME HE QUEDADO AQUI
+    echo ">> Rendering Done!"
+    echo
 }
 
 function grab_master_ext_ips() {
@@ -202,11 +203,12 @@ function check_external_access() {
         exit 1
     fi
     echo ">> external access with spoke ${cluster} Verified"
+    echo
 }
 
 function check_connectivity() {
     IP=${1}
-    echo "Checking connectivity against: ${IP}"
+    echo ">> Checking connectivity against: ${IP}"
 
     if [[ -z ${IP} ]]; then
         echo "ERROR: Variable \${IP} empty, this could means that the ARP does not match with the MAC address provided in the Spoke File ${SPOKES_FILE}"
@@ -224,6 +226,7 @@ function check_connectivity() {
         echo "ERROR: IP ${IP} Unreachable!"
         exit 1
     fi
+    echo
 }
 
 source ${WORKDIR}/shared-utils/common.sh
@@ -249,6 +252,7 @@ for spoke in ${ALLSPOKES}; do
     render_manifests ${index}
 
     # Remote working
+    echo ">> Copying files to the Spoke ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
     for _file in ${files[@]};
     do
@@ -256,12 +260,14 @@ for spoke in ${ALLSPOKES}; do
     done
     copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"
     copy_files "${SPOKE_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
+    echo
 
     echo ">> Deploying NMState and MetalLB for ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
     sleep 2
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
     sleep 10
+    echo
 
     verify_remote_pod ${spoke} "openshift-nmstate" "pod" "name=kubernetes-nmstate-operator"
     # This empty quotes is because we don't know the pod name for MetalLB
@@ -269,6 +275,7 @@ for spoke in ${ALLSPOKES}; do
     # These empty quotes (down bellow) are just to verify the CRDs and we don't want a 'running'
     verify_remote_resource ${spoke} "default" "crd" "nmstates.nmstate.io" "."
     verify_remote_resource ${spoke} "default" "crd" "metallbs.metallb.io" "."
+    echo
 
     echo ">>>> Deploying NMState Operand for ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
@@ -283,22 +290,24 @@ for spoke in ${ALLSPOKES}; do
         ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
         verify_remote_resource ${spoke} "default" "nncp" "kubeframe-spoke-${index}-master-${master}-nncp" "Available"
     done
+    echo
 
-    echo ">>>> Deploying MetalLB Operand for ${spoke}"
+    echo ">> Deploying MetalLB Operand for ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
     sleep 2
     verify_remote_resource ${spoke} "metallb" "deployment.apps" "controller" "."
     verify_remote_pod ${spoke} "metallb" "pod" "component=speaker"
 
-    echo ">>>> Deploying MetalLB AddressPools and Services for ${spoke}"
+    echo ">> Deploying MetalLB AddressPools and Services for ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-api-svc.yaml -f manifests/${spoke}-metallb-ingress-svc.yaml -f manifests/${spoke}-metallb-ingress.yaml"
+    echo
 
     sleep 2
     verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" "."
     verify_remote_resource ${spoke} "openshift-kube-apiserver" "service" "metallb-api" "."
     verify_remote_resource ${spoke} "metallb" "AddressPool" "ingress-public-ip" "."
     verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
-
+    echo
     check_external_access ${spoke}
 
     echo ">>>> Spoke ${spoke} finished!"
