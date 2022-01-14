@@ -99,6 +99,12 @@ function verify_remote_resource() {
     fi
 }
 
+function patch_network() {
+    export EXT_NET_CIRD="$(yq e ".spokes[\$i].${spoke}.external_network_cidr" ${SPOKES_FILE})"
+    oc patch network cluster --type merge -p '{"spec":{"externalIP":{"policy":{"allowedCIDRs":['\"${EXT_NET_CIDR}\"']}}}}'
+}
+
+
 function render_manifests() {
     # Files rendered will be stored in this array
     declare -ga files=()
@@ -187,6 +193,17 @@ function copy_files() {
     ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
 }
 
+function check_external_access() {
+    cluster=${1}
+    echo ">> Checking external access to the spoke ${cluster}"
+    oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
+    if [[ ${?} != 0 ]];then
+        echo "ERROR: You cannot access ${cluster} spoke cluster externally"
+        exit 1
+    fi
+    echo ">> external access with spoke ${cluster} Verified"
+}
+
 function check_connectivity() {
     IP=${1}
     echo "Checking connectivity against: ${IP}"
@@ -226,6 +243,7 @@ for spoke in ${ALLSPOKES}; do
     echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
     echo ">> Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
+    patch_network ${spoke}
     grab_master_ext_ips ${spoke}
     check_connectivity "${SPOKE_NODE_IP}"
     render_manifests ${index}
@@ -273,11 +291,16 @@ for spoke in ${ALLSPOKES}; do
     verify_remote_pod ${spoke} "metallb" "pod" "component=speaker"
 
     echo ">>>> Deploying MetalLB AddressPools and Services for ${spoke}"
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-service.yaml"
+    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-api-svc.yaml -f manifests/${spoke}-metallb-ingress-svc.yaml -f manifests/${spoke}-metallb-ingress.yaml"
+
     sleep 2
     verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" "."
     verify_remote_resource ${spoke} "openshift-kube-apiserver" "service" "metallb-api" "."
+    verify_remote_resource ${spoke} "metallb" "AddressPool" "ingress-public-ip" "."
+    verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
 
-    echo ">>>> Spoke ${spoke} done"
+    check_external_access ${spoke}
+
+    echo ">>>> Spoke ${spoke} finished!"
     let index++
 done
