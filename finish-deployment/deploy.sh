@@ -19,6 +19,6 @@ if [[ -z ${ALLSPOKES} ]]; then
 fi
 
 for spoke in ${ALLSPOKES}; do
-    echo ">>>> Detaching Spoke cluster: ${cluster}"
+    echo ">>>> Detaching Spoke cluster: ${spoke}"
     #dettach_cluster ${spoke}
 done
