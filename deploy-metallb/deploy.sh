@@ -101,7 +101,7 @@ function verify_remote_resource() {
 
 function patch_network() {
     echo ">> Patching Network Policy Allowed CIRDs"
-    export EXT_NET_CIRD="$(yq e ".spokes[\$i].${spoke}.external_network_cidr" ${SPOKES_FILE})"
+    export EXT_NET_CIDR="$(yq e ".spokes[\$i].${spoke}.external_network_cidr" ${SPOKES_FILE})"
     oc patch network cluster --type merge -p '{"spec":{"externalIP":{"policy":{"allowedCIDRs":['\"${EXT_NET_CIDR}\"']}}}}'
     echo
 }
