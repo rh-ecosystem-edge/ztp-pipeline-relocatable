@@ -284,6 +284,10 @@ for spoke in ${ALLSPOKES}; do
         verify_remote_resource ${spoke} "openshift-nmstate" "deployment.apps" ${dep} "."
     done
 
+    # Waiting a bit to avoid webhook readyness issue
+    # Internal error occurred: failed calling webhook "nodenetworkconfigurationpolicies-mutate.nmstate.io"
+    sleep 10
+
     for master in 0 1 2; do
         NODENAME="${spoke}-nncp-kubeframe-spoke-${index}-master-${master}"
         # I've been forced to do that, don't blame me :(
