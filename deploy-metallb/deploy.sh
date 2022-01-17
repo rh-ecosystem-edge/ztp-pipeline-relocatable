@@ -246,8 +246,8 @@ for spoke in ${ALLSPOKES}; do
     echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
     echo ">> Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
-    patch_network ${spoke}
     grab_master_ext_ips ${spoke}
+    patch_network ${spoke}
     check_connectivity "${SPOKE_NODE_IP}"
     render_manifests ${index}
 
