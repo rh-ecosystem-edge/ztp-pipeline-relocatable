@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -o errexit
+#set -o errexit
 set -o pipefail
 set -o nounset
 set -m
@@ -248,9 +248,10 @@ elif [[ ${MODE} == 'spoke' ]]; then
         # WC == 2 == SKIP / WC == 1 == Create ICSP
         if [[ ${STAGE} == 'pre' ]]; then
             # Check API
+            echo ">> Checking spoke API: ${STAGE}"
             RCAPI=$(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes)
             # If not API
-            if [[ -z "$(RCAPI)" ]];then
+            if [[ -z "${RCAPI}" ]];then
                 # Grab SPOKE IP
                 grab_master_ext_ips ${spoke}
                 check_connectivity "${SPOKE_NODE_IP}"
@@ -260,7 +261,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
                 copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/icsp-hub.yaml"
                 # Check ICSP
-                RCICSP=$(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true")
+                RCICSP=$(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-hub | wc -l || true")
                 OC_COMMAND="${SSH_COMMAND} core@${SPOKE_NODE_IP} oc"
                 MANIFESTS_PATH='manifests'
             else
@@ -274,7 +275,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
             else
                 # Spoke Sync from the Hub cluster as a Source
                 echo ">>>> Deploying ICSP for: ${spoke} using the Hub as a source"
-                ${OC_COMMAND} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+                JSON_STRING='[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+                ${OC_COMMAND} patch OperatorHub cluster --type json -p ${JSON_STRING} 
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/catalogsource-hub.yaml
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
