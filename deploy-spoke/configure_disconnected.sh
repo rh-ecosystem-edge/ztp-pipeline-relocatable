@@ -5,6 +5,66 @@ set -o pipefail
 set -o nounset
 set -m
 
+function copy_files() {
+    src_files=${1}
+    dst_node=${2}
+    dst_folder=${3}
+
+    if [[ -z ${src_files} ]]; then
+        echo "Source files variable empty: ${src_files[@]}"
+        exit 1
+    fi
+
+    if [[ -z ${dst_node} ]]; then
+        echo "Destination IP variable empty: ${dst_node}"
+        exit 1
+    fi
+
+    if [[ -z ${dst_folder} ]]; then
+        echo "Destination folder variable empty: ${dst_folder}"
+        exit 1
+    fi
+
+    echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
+    ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
+}
+
+function grab_master_ext_ips() {
+    spoke=${1}
+
+    ## Grab 1 master and 1 IP
+    agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
+    export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
+    master=${SPOKE_NODE_NAME##*-}
+    export MAC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+    ## HAY QUE PROBAR ESTO
+    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+    export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
+}
+
+function check_connectivity() {
+    IP=${1}
+    echo ">> Checking connectivity against: ${IP}"
+
+    if [[ -z ${IP} ]]; then
+        echo "ERROR: Variable \${IP} empty, this could means that the ARP does not match with the MAC address provided in the Spoke File ${SPOKES_FILE}"
+        exit 1
+    fi
+
+    ping ${IP} -c4 -W1 2>&1 >/dev/null
+    RC=${?}
+
+    if [[ ${RC} -eq 0 ]]; then
+        export CHECKED_IP='available'
+        echo "Connectivity validated!"
+    else
+        export CHECKED_IP='unreachable'
+        echo "ERROR: IP ${IP} Unreachable!"
+        exit 1
+    fi
+    echo
+}
+
 function extract_kubeconfig() {
     ## Put Hub Kubeconfig in a safe place
     echo ">>>> Extracting all Kubeconfig from Hub cluster"
@@ -183,20 +243,43 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         recover_mapping
+
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
-        RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
         if [[ ${STAGE} == 'pre' ]]; then
+            # Check API
+            RCAPI=$(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes)
+            # If not API
+            if [[ -z "$(RCAPI)" ]];then
+                # Grab SPOKE IP
+                grab_master_ext_ips ${spoke}
+                check_connectivity "${SPOKE_NODE_IP}"
+                # Execute commands and Copy files
+                ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+                copy_files "${TARGET_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
+                copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
+                copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/icsp-hub.yaml"
+                # Check ICSP
+                RCICSP=$(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true")
+                OC_COMMAND="${SSH_COMMAND} core@${SPOKE_NODE_IP} oc"
+                MANIFESTS_PATH='manifests'
+            else
+                RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
+                OC_COMMAND="oc --kubeconfig=${TARGET_KUBECONFIG}"
+                MANIFESTS_PATH="${OUTPUTDIR}"
+            fi
+
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo "Skipping ICSP creation as it already exists"
             else
                 # Spoke Sync from the Hub cluster as a Source
                 echo ">>>> Deploying ICSP for: ${spoke} using the Hub as a source"
-                oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-                oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
-                oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
+                ${OC_COMMAND} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+                ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/catalogsource-hub.yaml
+                ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
         elif [[ ${STAGE} == 'post' ]]; then
+            RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo ">>>> Waiting for old stuff deletion..."
             else
