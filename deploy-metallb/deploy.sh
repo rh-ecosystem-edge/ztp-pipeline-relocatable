@@ -317,3 +317,5 @@ for spoke in ${ALLSPOKES}; do
     echo ">>>> Spoke ${spoke} finished!"
     let index++
 done
+
+exit 0
