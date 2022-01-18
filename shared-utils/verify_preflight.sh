@@ -101,6 +101,16 @@ if [[ $(oc get pv | wc -l) -lt 3 ]]; then
     exit 6
 fi
 
+echo ">>>> Verify the DNS requirements"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+for spoke in ${ALLSPOKES}; do
+  grap_api_ingress ${spoke}
+  if [[ ${SPOKE_API_IP} == "" || ${SPOKE_INGRESS_IP} == "" || ${HUB_BASEDOMAIN} == "" ]] ; then
+    echo "Error: DNS Entry are not available for spoke ${spoke}"
+    exit 7
+  fi
+done
+
 echo ">>>> EOF"
 echo ">>>>>>>>"
 exit 0
