@@ -111,7 +111,7 @@ metadata:
   name: $CHANGE_SPOKE_NAME
   namespace: $CHANGE_SPOKE_NAME
 spec:
-  baseDomain: kubeframe.local
+  baseDomain: $CHANGE_BASEDOMAIN
   clusterName: $CHANGE_SPOKE_NAME
   controlPlaneConfig:
     servingCertificates: {}
