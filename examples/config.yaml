@@ -8,9 +8,10 @@ config:
 
 spokes:
   - spoke1-name:
-      metallb_api_ip: 192.168.150.201
-      metallb_ingress_ip: 192.168.150.200
-      external_network_cidr: 192.168.150.0/24
+      config:
+        metallb_api_ip: 192.168.150.201
+        metallb_ingress_ip: 192.168.150.200
+        external_network_cidr: 192.168.150.0/24
       master0:
         nic_ext_dhcp: eno4 # ext_dhcp -> DHCP
         nic_int_static: eno5 # int_static -> Internal IP for cluster communication

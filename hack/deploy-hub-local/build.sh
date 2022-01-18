@@ -97,15 +97,16 @@ EOF
 for spoke in $(seq 0 $((CLUSTERS - 1))); do
     cat <<EOF >>spokes.yaml
   - spoke${spoke}-cluster:
+      config:
+        metallb_api_ip: 192.168.150.201
+        metallb_ingress_ip: 192.168.150.200
+        external_network_cidr: 192.168.150.0/24
 EOF
     for master in 0 1 2; do
         # Stanza generation for each master
         MASTERUID=$(kcli info vm spoke${spoke}-m${master} | grep id | awk '{print $2}')
         cat <<EOF >>spokes.yaml
       master${master}:
-        metallb_api_ip: 192.168.150.201
-        metallb_ingress_ip: 192.168.150.200
-        external_network_cidr: 192.168.150.0/24
         nic_ext_dhcp: enp1s0
         nic_int_static: enp2s0
         mac_ext_dhcp: "ee:ee:ee:ee:${master}${spoke}:${master}e"
