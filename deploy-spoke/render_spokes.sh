@@ -65,6 +65,8 @@ create_spoke_definitions() {
         SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
         # Set vars
         export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
+        grab_api_ingress ${SPOKE_NAME}
+        export CHANGE_BASEDOMAIN=${OC_DOMAIN_HUB}
 
         # Generate the spoke definition yaml
         cat <<EOF >${OUTPUTDIR}/spoke-${i}-cluster.yaml

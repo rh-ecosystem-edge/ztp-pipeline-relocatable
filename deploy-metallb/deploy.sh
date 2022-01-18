@@ -99,14 +99,6 @@ function verify_remote_resource() {
     fi
 }
 
-function patch_network() {
-    echo ">> Patching Network Policy Allowed CIRDs"
-    export EXT_NET_CIDR="$(yq e ".spokes[\$i].${spoke}.config.external_network_cidr" ${SPOKES_FILE})"
-    ssh core@${SPOKE_NODE_IP} oc patch network cluster --type merge -p '{"spec":{"externalIP":{"policy":{"allowedCIDRs":['\"${EXT_NET_CIDR}\"']}}}}'
-    echo
-}
-
-
 function render_manifests() {
     # Files rendered will be stored in this array
     declare -ga files=()
@@ -125,8 +117,10 @@ function render_manifests() {
     done
 
     # Render MetalLB Manifests
-    export METALLB_API_IP="$(yq e ".spokes[\$i].${spoke}.config.metallb_api_ip" ${SPOKES_FILE})"
-    export METALLB_INGRESS_IP="$(yq e ".spokes[\$i].${spoke}.config.metallb_ingress_ip" ${SPOKES_FILE})"
+    grab_api_ingress ${spoke}
+
+    export METALLB_API_IP="${SPOKE_API_IP}"
+    export METALLB_INGRESS_IP="${SPOKE_INGRESS_IP}"
 
     if [[ -z ${METALLB_API_IP} ]]; then
         echo "You need to add the 'metallb_api_ip' field in your Spoke cluster definition"
@@ -247,7 +241,6 @@ for spoke in ${ALLSPOKES}; do
     echo ">> Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
     grab_master_ext_ips ${spoke}
-    patch_network ${spoke}
     check_connectivity "${SPOKE_NODE_IP}"
     render_manifests ${index}
 

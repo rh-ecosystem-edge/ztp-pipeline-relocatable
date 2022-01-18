@@ -5,6 +5,30 @@
 echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
+function grab_domain() {
+    echo ">> Getting the Domain from the Hub cluster"
+    export HUB_BASEDOMAIN=$(oc --kubeconfig=${KUBECONFIG_HUB} get ingresscontroller -n  openshift-ingress-operator default -o jsonpath='{.status.domain}' | cut -d . -f 3-)
+}
+
+function grab_hub_dns() {
+    echo ">> Getting the cluster's DNS"
+    export HUB_NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get $(oc --kubeconfig=${KUBECONFIG_HUB} get node -o name | head  -1) -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}')
+    export HUB_DNS=$($SSH_COMMAND core@${HUB_NODE_IP} "grep -v ${HUB_NODE_IP} /etc/resolv.conf | grep nameserver | cut -f2 -d\ ")
+}
+
+function grab_api_ingress() {
+    # Spoke Cluster Name using the Hub's domain as a base
+    cluster=${1}
+
+    grab_domain
+    grab_hub_dns
+    export SPOKE_API_NAME="api.${cluster}.${HUB_BASEDOMAIN}"
+    export SPOKE_API_IP="$(dig @${HUB_DNS} +short ${SPOKE_API_NAME})"
+    export SPOKE_INGRESS_NAME="apps.${cluster}.${HUB_BASEDOMAIN}"
+    export REGISTRY_URL="kubeframe-registry-kubeframe-registry"
+    export SPOKE_INGRESS_IP="$(dig @${HUB_DNS} +short ${REGISTRY_URL}.${SPOKE_INGRESS_NAME})"
+}
+
 # SPOKES_FILE variable must be exported in the environment
 if [ ! -f "${SPOKES_FILE}" ]; then
     echo "File ${SPOKES_FILE} does not exist"
