@@ -39,15 +39,15 @@ function verify_remote_pod() {
     timeout=0
     ready=false
     while [ "${timeout}" -lt "240" ]; do
-	if [[ ${DEBUG} == 'true' ]]; then
-	    echo 
-    	    echo "cluster: ${cluster}"
-    	    echo "NS: ${NS}"
-    	    echo "KIND: ${KIND}"
-    	    echo "NAME: ${NAME}"
-    	    echo "STATUS: ${STATUS}"
-	    echo
-	fi
+        if [[ ${DEBUG} == 'true' ]]; then
+            echo
+            echo "cluster: ${cluster}"
+            echo "NS: ${NS}"
+            echo "KIND: ${KIND}"
+            echo "NAME: ${NAME}"
+            echo "STATUS: ${STATUS}"
+            echo
+        fi
 
         if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} -l ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
@@ -75,15 +75,15 @@ function verify_remote_resource() {
     timeout=0
     ready=false
     while [ "${timeout}" -lt "240" ]; do
-	if [[ ${DEBUG} == 'true' ]]; then
-	    echo 
-    	    echo "cluster: ${cluster}"
-    	    echo "NS: ${NS}"
-    	    echo "KIND: ${KIND}"
-    	    echo "NAME: ${NAME}"
-    	    echo "STATUS: ${STATUS}"
-	    echo
-	fi
+        if [[ ${DEBUG} == 'true' ]]; then
+            echo
+            echo "cluster: ${cluster}"
+            echo "NS: ${NS}"
+            echo "KIND: ${KIND}"
+            echo "NAME: ${NAME}"
+            echo "STATUS: ${STATUS}"
+            echo
+        fi
 
         if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | egrep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
@@ -192,7 +192,7 @@ function check_external_access() {
     cluster=${1}
     echo ">> Checking external access to the spoke ${cluster}"
     oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
-    if [[ ${?} != 0 ]];then
+    if [[ ${?} != 0 ]]; then
         echo "ERROR: You cannot access ${cluster} spoke cluster externally"
         exit 1
     fi
@@ -247,8 +247,7 @@ for spoke in ${ALLSPOKES}; do
     # Remote working
     echo ">> Copying files to the Spoke ${spoke}"
     ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
-    for _file in ${files[@]};
-    do
+    for _file in ${files[@]}; do
         copy_files "${_file}" "${SPOKE_NODE_IP}" "./manifests/"
     done
     copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"

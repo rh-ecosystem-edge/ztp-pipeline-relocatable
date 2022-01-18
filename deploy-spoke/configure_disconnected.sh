@@ -251,7 +251,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
             echo ">> Checking spoke API: ${STAGE}"
             RCAPI=$(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes)
             # If not API
-            if [[ -z "${RCAPI}" ]];then
+            if [[ -z ${RCAPI} ]]; then
                 # Grab SPOKE IP
                 grab_master_ext_ips ${spoke}
                 check_connectivity "${SPOKE_NODE_IP}"
@@ -276,7 +276,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 # Spoke Sync from the Hub cluster as a Source
                 echo ">>>> Deploying ICSP for: ${spoke} using the Hub as a source"
                 JSON_STRING='[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-                ${OC_COMMAND} patch OperatorHub cluster --type json -p "\"${JSON_STRING}\"" 
+                ${OC_COMMAND} patch OperatorHub cluster --type json -p "\"${JSON_STRING}\""
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/catalogsource-hub.yaml
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
