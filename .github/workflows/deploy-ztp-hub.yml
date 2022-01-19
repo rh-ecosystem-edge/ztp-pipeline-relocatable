@@ -100,3 +100,13 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
           ./deploy.sh
+
+  save-hub-config:
+    needs: deploy-hub-config
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Save HUB configuraton
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          rsync -avr --progress --delete ${WORKDIR}/build/ /root/ztp-build-hub/
+
