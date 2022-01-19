@@ -1,4 +1,4 @@
-name: deploy-ztp-relocatable
+name: deploy-ztp-hub
 on:
   workflow_dispatch:
     inputs:
