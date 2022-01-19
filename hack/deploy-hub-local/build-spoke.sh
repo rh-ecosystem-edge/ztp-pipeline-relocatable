@@ -51,24 +51,20 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
             kcli create plan -k -f create-vm.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
 
         else
             echo "Metal3 + ipv4 + disconnected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            
         fi
     else
         echo "Metal3 + ipv6 + disconnected"
         t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-        kcli create plan --force --paramfile=lab_ipv6.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 
     fi
 else
     echo "Without Metal3 + ipv4 + connected"
-    kcli create kube openshift --force --paramfile lab-withoutMetal3.yml -P tag="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 fi
 
 # Spokes.yaml file generation
@@ -140,8 +136,6 @@ EOF
 
 done
 
-kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com -i 192.168.150.252
 kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
 kcli create dns -n bare-net api.spoke0-cluster.alklabs.com -i 192.168.150.201
 

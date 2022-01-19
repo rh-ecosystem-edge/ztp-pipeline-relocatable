@@ -53,8 +53,6 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
             kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
             kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-            kcli create plan -k -f create-vm.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
-
         else
             echo "Metal3 + ipv4 + disconnected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
@@ -94,56 +92,8 @@ cat <<EOF >>spokes.yaml
 spokes:
 EOF
 
-for spoke in $(seq 0 $((CLUSTERS - 1))); do
-    cat <<EOF >>spokes.yaml
-  - spoke${spoke}-cluster:
-EOF
-    for master in 0 1 2; do
-        # Stanza generation for each master
-        MASTERUID=$(kcli info vm spoke${spoke}-m${master} | grep id | awk '{print $2}')
-        cat <<EOF >>spokes.yaml
-      master${master}:
-        nic_ext_dhcp: enp1s0
-        nic_int_static: enp2s0
-        mac_ext_dhcp: "ee:ee:ee:ee:${master}${spoke}:${master}e"
-        mac_int_static: "aa:aa:aa:aa:${master}${spoke}:${master}a"
-        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
-        bmc_user: "amorgant"
-        bmc_pass: "alknopfler"
-        storage_disk:
-          - vda
-          - vdb
-          - vdc
-          - vdd
-EOF
-    done
-    
-    # Add the single worker
-    worker=0
-    WORKERUID=$(kcli info vm spoke${spoke}-w${worker} | grep id | awk '{print $2}')
-
-    cat <<EOF >>spokes.yaml
-      worker${worker}:
-        nic_ext_dhcp: enp1s0
-        nic_int_static: enp2s0
-        mac_ext_dhcp: "ee:ee:ee:${worker}${spoke}:${worker}${spoke}:${worker}e"
-        mac_int_static: "aa:aa:aa:${worker}${spoke}:${worker}${spoke}:${worker}a"
-        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
-        bmc_user: "amorgant"
-        bmc_pass: "alknopfler"
-        storage_disk:
-          - vda
-          - vdb
-          - vdc
-          - vdd
-EOF
-
-done
-
 kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net api.spoke0-cluster.alklabs.com -i 192.168.150.201
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
