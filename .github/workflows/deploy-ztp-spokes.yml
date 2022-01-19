@@ -49,7 +49,7 @@ jobs:
 
 
   deploy-spokes:
-    needs: [deploy-hub-config, deploy-icsp-hub]
+    needs: pre-flight
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Spokes
