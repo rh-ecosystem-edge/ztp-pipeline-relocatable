@@ -1,0 +1,102 @@
+name: deploy-ztp-relocatable
+on:
+  workflow_dispatch:
+    inputs:
+      KUBECONFIG:
+        description: 'Absolute path to KUBECONFIG file?'
+        required: true
+      SPOKES_FILE:
+        description: 'Absolute path to the Spokes YAML file?'
+        required: true
+      RUNNER:
+        description: 'GitHub Action Runner Tag'
+        required: true
+
+
+env:
+  KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
+  SPOKES_FILE: ${{github.event.inputs.SPOKES_FILE}}
+  DEPLOY_ACM_DIR: deploy-acm
+  DEPLOY_REGISTRY_DIR: deploy-disconnected-registry
+  DEPLOY_HTTPD_SERVER_DIR: deploy-httpd-server
+  DEPLOY_HUB_CONFIGS_DIR: deploy-hub-configs
+  DEPLOY_SPOKES_DIR: deploy-spoke
+  DEPLOY_WORKER_DIR: deploy-worker
+  DEPLOY_OCS_DIR: deploy-ocs
+  DEPLOY_POLICY_DIR: deploy-policies
+  DEPLOY_METALLB_DIR: deploy-metallb
+  FINISH_DEP_DIR: finish-deployment
+  SHARED_DIR: shared-utils
+
+
+jobs:
+  pre-flight:
+    # continue-on-error: true
+    runs-on: ${{github.event.inputs.RUNNER}}   #tag with your runner tag
+    steps:
+      - uses: actions/checkout@v2 # create a checkout (pull repository) in the runner working_dir (usually _work)
+      - run: git pull origin ${GITHUB_REF##*/}
+
+      - name: Verification
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.SHARED_DIR}}
+          ./verify_preflight.sh
+
+  deploy-httpd-server:
+    needs: pre-flight          # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    #TODO if env after verify-if-hub-exists is true then run the following steps
+    steps:
+      - name: Deploy Internal HTTPD Server
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_HTTPD_SERVER_DIR}}
+          ./deploy.sh
+
+
+  deploy-disconnected-registry-hub:
+    needs: pre-flight       # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy Internal Disconnected Registry
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_REGISTRY_DIR}}
+          ./deploy.sh 'hub'
+          ./ocp-sync.sh 'hub'
+          ./olm-sync.sh 'hub'
+          ./update-global-pullsecret.sh 'hub'
+
+
+  deploy-acm:
+    needs: deploy-disconnected-registry-hub       # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy RHACM with AI
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_ACM_DIR}}
+          ./deploy.sh
+
+
+  deploy-icsp-hub:
+    needs: [deploy-acm, deploy-disconnected-registry-hub, deploy-httpd-server]       # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy ICSP in the Hub
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_SPOKES_DIR}}
+          ./configure_disconnected.sh 'hub'
+
+
+  deploy-hub-config:
+    needs: [deploy-acm, deploy-disconnected-registry-hub, deploy-httpd-server]       # run in parallel with the other jobs
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy hub configuration
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_HUB_CONFIGS_DIR}}
+          ./deploy.sh

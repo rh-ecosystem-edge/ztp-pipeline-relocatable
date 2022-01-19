@@ -29,7 +29,22 @@ env:
 
 
 jobs:
+  pre-flight:
+    # continue-on-error: true
+    runs-on: ${{github.event.inputs.RUNNER}}   #tag with your runner tag
+    steps:
+      - uses: actions/checkout@v2 # create a checkout (pull repository) in the runner working_dir (usually _work)
+      - run: git pull origin ${GITHUB_REF##*/}
+
+      - name: Verification
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.SHARED_DIR}}
+          ./verify_preflight.sh
+
+
   deploy-spokes:
+    needs: [deploy-hub-config, deploy-icsp-hub]
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Spokes
@@ -38,7 +53,6 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./render_spokes.sh; sleep 3
           ./deploy.sh
-
 
 
   verify-installation:
@@ -51,16 +65,6 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./wait_for_spoke.sh
 
-  #deploy-workers:
-  #  needs: verify-installation
-  #  runs-on: ${{github.event.inputs.RUNNER}}
-  #  steps:
-  #    - name: Deploy workers
-  #      run: |
-  #        export WORKDIR=${GITHUB_WORKSPACE}
-  #        cd ${{env.DEPLOY_WORKER_DIR}}
-  #        ./render_worker.sh
-#
 
   deploy-icsp-spokes-pre:
     needs: verify-installation
@@ -72,9 +76,18 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./configure_disconnected.sh 'spoke' 'pre'
 
+  deploy-metallb:
+    needs: deploy-icsp-spokes-pre
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy NMState and MetalLB
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.DEPLOY_METALLB_DIR}}
+          ./deploy.sh
 
   deploy-ocs:
-    needs: deploy-icsp-spokes-pre
+    needs: deploy-metallb
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy OCS
@@ -108,18 +121,8 @@ jobs:
           cd ${{env.DEPLOY_SPOKES_DIR}}
           ./configure_disconnected.sh 'spoke' 'post'
 
-  finish-deployment:
-    needs: deploy-icsp-spokes-post
-    runs-on: ${{github.event.inputs.RUNNER}}
-    steps:
-      - name: Deploy NNCP and detach spoke clusters
-        run: |
-          export WORKDIR=${GITHUB_WORKSPACE}
-          cd ${{env.FINISH_DEP_DIR}}
-          ./deploy.sh
-
   deploy-workers:
-    needs: finish-deployment
+    needs: deploy-icsp-spokes-post
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy workers
@@ -127,3 +130,13 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_WORKER_DIR}}
           ./render_worker.sh
+
+  dettach_cluster:
+    needs: deploy-workers
+    runs-on: ${{github.event.inputs.RUNNER}}
+    steps:
+      - name: Deploy NNCP and detach spoke clusters
+        run: |
+          export WORKDIR=${GITHUB_WORKSPACE}
+          cd ${{env.FINISH_DEP_DIR}}
+          ./deploy.sh
