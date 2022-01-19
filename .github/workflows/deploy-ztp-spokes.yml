@@ -40,7 +40,7 @@ jobs:
       - name: Restore HUB configuraton
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
-          rsync -avr --progress --delete /root/ztp-build-hub/ ${WORKDIR}/build/ 
+          rsync -avr --progress --delete /root/ztp-build-hub/* ${WORKDIR}/build/ 
 
 
   pre-flight:
