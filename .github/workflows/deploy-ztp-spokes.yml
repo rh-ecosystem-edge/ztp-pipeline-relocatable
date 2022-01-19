@@ -120,7 +120,7 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'spoke'
-          if [[ ${{env.SYNC}} == 'yes' ]]; then
+          if [ "${{env.SYNC}}" == "yes" ]; then
             ./ocp-sync.sh 'spoke'
             ./olm-sync.sh 'spoke'
           else
