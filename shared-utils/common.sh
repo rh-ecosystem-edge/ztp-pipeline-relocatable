@@ -2,9 +2,6 @@
 # Description: Reads/sets environment variables for the scripts to run, parsing information from the configuration YAML defined in ${SPOKES_FILE}
 # SPOKES_FILE variable must be exported in the environment
 
-echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
 function extract_kubeconfig_common() {
     ## Extract the Spoke kubeconfig and put it on the shared folder
     cluster=${1}
@@ -75,7 +72,7 @@ export MARKET_NS=openshift-marketplace
 export KUBEFRAME_NS=kubeframe
 export OUTPUTDIR=${OUTPUTDIR:-$WORKDIR/build}
 
-[ -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
+[ ! -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
 
 if [ ! -z ${SPOKES_CONFIG+x} ]; then
     if [ -z "${SPOKES_FILE+x}" ]; then
@@ -121,7 +118,6 @@ export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
 export OC_DIS_CATALOG=kubeframe-catalog
 export MARKET_NS=openshift-marketplace
 export KUBEFRAME_NS=kubeframe
-export OUTPUTDIR=${WORKDIR}/build
 export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
 export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
 

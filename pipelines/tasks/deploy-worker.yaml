@@ -24,7 +24,7 @@ spec:
     - name: OUTPUTDIR
       value: $(workspaces.ztp.path)
     - name: KUBECONFIG
-      value: "$(workspaces.ztp.path)/build"
+      value: "$(workspaces.ztp.path)/kubeconfig"
 
  steps:
    - name: deploy-workers

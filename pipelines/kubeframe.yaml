@@ -52,6 +52,20 @@ spec:
     - name: ztp
       workspace: ztp
 
+  - name: ztp-deploy-metallb
+    taskRef:
+      name: ztp-deploy-metallb
+    params:
+    - name: metallbs-config
+      value: $(params.spokes-config)
+    - name: ztp-tag
+      value: $(params.ztp-tag)
+    runAfter:
+    - ztp-deploy-spoke
+    workspaces:
+    - name: ztp
+      workspace: ztp
+
   - name: ztp-deploy-worker
     taskRef:
       name: ztp-deploy-worker
@@ -61,7 +75,7 @@ spec:
     - name: ztp-tag
       value: $(params.ztp-tag)
     runAfter:
-    - ztp-deploy-spoke
+    - ztp-deploy-metallb
     workspaces:
     - name: ztp
       workspace: ztp
