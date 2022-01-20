@@ -18,7 +18,7 @@ spec:
       containers:
         - name: kubeframe-registry
           image: quay.io/jparrill/registry:2
-          imagePullPolicy: always
+          imagePullPolicy: Always
           ports:
             - name: registry
               containerPort: 5000
