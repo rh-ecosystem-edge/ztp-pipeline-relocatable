@@ -24,16 +24,21 @@ MODE=${1}
 SNAPSHOTFILE="mirror-snapshot.tgz"
 HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep httpd-server-route | awk '{print $2}')
 DOCKERPATH="/var/lib/registry/docker"
+HTTPDPATH="/usr/share/nginx/html"
 
 if [[ ${MODE} == 'hub' ]]; then
 
-    REGISTRY_POD=$(oc get pod -n ${REGISTRY} -l name=${REGISTRY} -oname|head -1|cut -d "/" -f2-)
-    HTTPD_POD=$(oc get pod -n default -oname |grep nginx|head -1|cut -d "/" -f2-)
+    REGISTRY_POD=$(oc get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
+    HTTPD_POD=$(oc get pod -n default -oname | grep nginx | head -1 | cut -d "/" -f2-)
 
     # Execute from node with the http and store in NGINX path
 
-    oc --kubeconfig=${KUBECONFIG_HUB} -n default rsh ${HTTPD_POD} "\"oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - -C ${DOCKERPATH} > /var/share/nginx/html/${SNAPSHOTFILE}"\"
-    
+    # Get local tarball from REGISTRY
+    oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - -C ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
+
+    # Upload local tarball to HTTPD
+    oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
+
 elif [[ ${MODE} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -50,11 +55,9 @@ elif [[ ${MODE} == 'spoke' ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
-                
+
         # Run on the target registry the command to download and uncompress the snapshot
         oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- "curl ${URL} | tar xvf - -C ${DOCKERPATH}"
-        
+
     done
 fi
-
-
