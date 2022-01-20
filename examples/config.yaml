@@ -56,7 +56,6 @@ spokes:
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
   - spoke2-name:
-      metallb_ip: 192.168.150.201
       master0:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
