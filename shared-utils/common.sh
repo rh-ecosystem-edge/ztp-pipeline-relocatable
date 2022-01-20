@@ -5,6 +5,46 @@
 echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
+function extract_kubeconfig_common() {
+    ## Extract the Spoke kubeconfig and put it on the shared folder
+    cluster=${1}
+
+    export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${cluster}
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${cluster} secret/${cluster}-admin-kubeconfig --to - >${SPOKE_KUBECONFIG}
+}
+
+function extract_kubeadmin_pass_common() {
+    ## Extract the Spoke kubeconfig and put it on the shared folder
+    cluster=${1}
+
+    export SPOKE_KUBEADMIN_PASS=${OUTPUTDIR}/${cluster}-kubeadmin-password
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${cluster} secret/${cluster}-admin-password --to - >${SPOKE_KUBEADMIN_PASS}
+}
+
+function copy_files_common() {
+    src_files=${1}
+    dst_node=${2}
+    dst_folder=${3}
+
+    if [[ -z ${src_files} ]]; then
+        echo "Source files variable empty: ${src_files[@]}"
+        exit 1
+    fi
+
+    if [[ -z ${dst_node} ]]; then
+        echo "Destination IP variable empty: ${dst_node}"
+        exit 1
+    fi
+
+    if [[ -z ${dst_folder} ]]; then
+        echo "Destination folder variable empty: ${dst_folder}"
+        exit 1
+    fi
+
+    echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
+    ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
+}
+
 function grab_domain() {
     echo ">> Getting the Domain from the Hub cluster"
     export HUB_BASEDOMAIN=$(oc --kubeconfig=${KUBECONFIG_HUB} get ingresscontroller -n openshift-ingress-operator default -o jsonpath='{.status.domain}' | cut -d . -f 3-)

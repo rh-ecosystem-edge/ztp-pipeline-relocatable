@@ -32,6 +32,7 @@ env:
   DEPLOY_METALLB_DIR: deploy-metallb
   FINISH_DEP_DIR: finish-deployment
   SHARED_DIR: shared-utils
+  RO_SPOKE_FOLDER: /root/ztp-build-hub/
 
 
 jobs:
@@ -56,7 +57,7 @@ jobs:
       - name: Restore HUB configuraton
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
-          rsync -avr --progress --delete /root/ztp-build-hub/* ${WORKDIR}/build/ 
+          rsync -avr --progress --delete ${RO_SPOKE_FOLDER}/* ${WORKDIR}/build/ 
 
   deploy-spokes:
     needs: pre-flight

@@ -27,6 +27,7 @@ env:
   DEPLOY_METALLB_DIR: deploy-metallb
   FINISH_DEP_DIR: finish-deployment
   SHARED_DIR: shared-utils
+  RO_SPOKE_FOLDER: /root/ztp-build-hub/
 
 
 jobs:
@@ -108,5 +109,5 @@ jobs:
       - name: Save HUB configuraton
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
-          rsync -avr --progress --delete ${WORKDIR}/build/ /root/ztp-build-hub/
+          rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}
 
