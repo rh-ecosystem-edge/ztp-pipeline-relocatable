@@ -32,7 +32,7 @@ if [[ ${MODE} == 'hub' ]]; then
 
     # Execute from node with the http and store in NGINX path
 
-    oc --kubeconfig=${KUBECONFIG_HUB} -n default rsh ${HTTPD_POD} "oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - -C ${DOCKERPATH} > /var/share/nginx/html/${SNAPSHOTFILE}"
+    oc --kubeconfig=${KUBECONFIG_HUB} -n default rsh ${HTTPD_POD} "\"oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - -C ${DOCKERPATH} > /var/share/nginx/html/${SNAPSHOTFILE}"\"
     
 elif [[ ${MODE} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
