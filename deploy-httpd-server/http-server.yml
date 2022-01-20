@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: httpd
   labels:
-    app: nginx
+    app: httpd
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx
+      app: httpd
   template:
     metadata:
       labels:
-        app: nginx
+        app: httpd
     spec:
       volumes:
         - name: httpd-pv-storage
           persistentVolumeClaim:
             claimName: httpd-pv-claim
       containers:
-        - name: nginx
+        - name: httpd
           resources:
             limits:
               cpu: "200m"
@@ -40,7 +40,7 @@ spec:
   # Uncomment the below line to create a Headless Service
   # clusterIP: None
   selector:
-    app: nginx
+    app: httpd
   ports:
   - protocol: TCP
     port: 80
@@ -61,7 +61,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   labels:
-    app: nginx
+    app: httpd
   name: httpd-server-route
   namespace: default
 spec:

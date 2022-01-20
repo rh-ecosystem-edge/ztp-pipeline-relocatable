@@ -22,7 +22,7 @@ if ./verify.sh; then
 
     # TODO: create on their proper NS
     oc apply -n ${HTTPD_NS} -f http-server.yml
-    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n ${HTTPD_NS} nginx
+    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n ${HTTPD_NS} httpd
 
     echo ">>>> Pre-load the images rhcos to be available"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -31,10 +31,10 @@ if ./verify.sh; then
     RHCOS_ROOTFS="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/latest/rhcos-live-rootfs.x86_64.img"
     BASE_ISO=$(basename $RHCOS_ISO)
     BASE_ROOTFS=$(basename $RHCOS_ROOTFS)
-    podname=$(oc get pod -n ${HTTPD_NS} | grep nginx | awk '{print $1}')
+    podname=$(oc get pod -n ${HTTPD_NS} | grep httpd | awk '{print $1}')
 
-    oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ISO} -o /usr/share/nginx/html/"${BASE_ISO}"
-    oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ROOTFS} -o /usr/share/nginx/html/"${BASE_ROOTFS}"
+    oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ISO} -o /usr/share/httpd/html/"${BASE_ISO}"
+    oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ROOTFS} -o /usr/share/httpd/html/"${BASE_ROOTFS}"
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi

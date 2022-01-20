@@ -29,9 +29,9 @@ REGISTRY_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n ${REGISTRY} -l name=
 
 if [[ ${MODE} == 'hub' ]]; then
 
-    HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep nginx | head -1 | cut -d "/" -f2-)
+    HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep httpd | head -1 | cut -d "/" -f2-)
 
-    # Execute from node with the http and store in NGINX path
+    # Execute from node with the http and store in httpd path
 
     # Get local tarball from REGISTRY
     oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
