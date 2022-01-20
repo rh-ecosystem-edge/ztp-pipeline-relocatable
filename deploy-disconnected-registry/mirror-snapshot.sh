@@ -24,12 +24,12 @@ MODE=${1}
 SNAPSHOTFILE="mirror-snapshot.tgz"
 HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep httpd-server-route | awk '{print $2}')
 DOCKERPATH="/var/lib/registry/docker"
-HTTPDPATH="/usr/share/nginx/html"
+HTTPDPATH="/var/www/html"
+REGISTRY_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
 
 if [[ ${MODE} == 'hub' ]]; then
 
-    REGISTRY_POD=$(oc get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
-    HTTPD_POD=$(oc get pod -n default -oname | grep nginx | head -1 | cut -d "/" -f2-)
+    HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep nginx | head -1 | cut -d "/" -f2-)
 
     # Execute from node with the http and store in NGINX path
 
@@ -51,7 +51,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         # Restore
         echo "spoke: ${spoke}"
         if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
+            extract_kubeconfig_common ${spoke}
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
