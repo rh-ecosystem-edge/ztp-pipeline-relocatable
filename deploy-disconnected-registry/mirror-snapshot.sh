@@ -34,7 +34,7 @@ if [[ ${MODE} == 'hub' ]]; then
     # Execute from node with the http and store in NGINX path
 
     # Get local tarball from REGISTRY
-    oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - -C ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
+    oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
 
     # Upload local tarball to HTTPD
     oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
