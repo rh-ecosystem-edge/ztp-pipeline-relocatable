@@ -68,6 +68,7 @@ jobs:
           ./ocp-sync.sh 'hub'
           ./olm-sync.sh 'hub'
           ./update-global-pullsecret.sh 'hub'
+          ./mirror-snapshot.sh 'hub'
 
 
   deploy-acm:

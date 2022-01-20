@@ -125,7 +125,7 @@ jobs:
             ./ocp-sync.sh 'spoke'
             ./olm-sync.sh 'spoke'
           else
-            ./deploy-copy-from-hub.sh
+            ./mirror-snapshot.sh 'spoke'
           fi
           ./update-global-pullsecret.sh 'spoke'    
 
