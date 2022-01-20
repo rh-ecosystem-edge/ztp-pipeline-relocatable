@@ -57,7 +57,7 @@ jobs:
       - name: Restore HUB configuraton
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
-          rsync -avr --progress --delete ${RO_SPOKE_FOLDER}/* ${WORKDIR}/build/ 
+          rsync -avr --progress --delete ${RO_SPOKE_FOLDER}/* ${WORKDIR}/build/
 
   deploy-spokes:
     needs: pre-flight
@@ -127,7 +127,7 @@ jobs:
           else
             ./mirror-snapshot.sh 'spoke'
           fi
-          ./update-global-pullsecret.sh 'spoke'    
+          ./update-global-pullsecret.sh 'spoke'
 
 
   deploy-icsp-spokes-post:

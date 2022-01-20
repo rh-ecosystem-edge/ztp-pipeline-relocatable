@@ -111,4 +111,3 @@ jobs:
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}
-

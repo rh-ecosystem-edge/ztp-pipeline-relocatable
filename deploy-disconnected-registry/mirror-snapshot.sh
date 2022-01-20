@@ -56,8 +56,14 @@ elif [[ ${MODE} == 'spoke' ]]; then
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
 
-        # Run on the target registry the command to download and uncompress the snapshot
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- "curl ${URL} | tar xvf - -C ${DOCKERPATH}"
+        # Run on the target registry the command to download the snapshot (wget comes within busybox)
+        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- wget -O /var/lib/registry/docker/patata.tgz ${URL}
+
+        # Uncompress from the / folder
+        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf -C / /var/lib/registry/docker/patata.tgz
+
+        # Cleanup downloaded file
+        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/docker/patata.tgz
 
     done
 fi

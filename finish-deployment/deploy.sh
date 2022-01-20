@@ -25,8 +25,7 @@ function save_files() {
     mkdir -p ${RO_SPOKE_FOLDER}/${cluster}
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${RO_SPOKE_FOLDER}/${cluster}
 
-    for node in $(oc get nodes -oname)
-    do
+    for node in $(oc get nodes -oname); do
         NODE_IP=$(oc get ${node} -o jsonpath='{.status.addresses[0].address}')
         ${SSH_COMMAND} core@${NODE_IP} "mkdir ${CLUSTER_DATA_FOLDER}"
         copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
