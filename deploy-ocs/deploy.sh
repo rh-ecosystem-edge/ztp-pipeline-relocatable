@@ -139,7 +139,7 @@ if ! ./verify.sh; then
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
-        while [ "$timeout" -lt "120" ]; do
+        while [ "$timeout" -lt "240" ]; do
             if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -eq $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | grep -v Completed | wc -l) ]]; then
                 ready=true
                 break
