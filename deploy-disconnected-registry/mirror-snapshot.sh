@@ -25,12 +25,12 @@ SNAPSHOTFILE="mirror-snapshot.tgz"
 HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep httpd-server-route | awk '{print $2}')
 DOCKERPATH="/var/lib/registry/docker"
 HTTPDPATH="/var/www/html"
-REGISTRY_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
+
 
 if [[ ${MODE} == 'hub' ]]; then
 
     HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep httpd | head -1 | cut -d "/" -f2-)
-
+    REGISTRY_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
     # Execute from node with the http and store in httpd path
 
     # Get local tarball from REGISTRY
@@ -55,7 +55,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
-
+        REGISTRY_POD=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
         # Run on the target registry the command to download the snapshot (wget comes within busybox)
         oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- wget -O /var/lib/registry/docker/patata.tgz ${URL}
 
