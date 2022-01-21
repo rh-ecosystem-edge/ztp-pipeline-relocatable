@@ -16,20 +16,50 @@ set -m
 # export KUBECONFIG=/root/admin.kubeconfig
 
 # Load common vars
-
-function check_spoke() {
+function check_cluster() {
     TIMEOUT=120
+    MODE=${1}
 
-    echo ">> Waiting for nodes to reconcile..."
-    sleep ${TIMEOUT}
+    echo ">> Checking MCP in: ${MODE}"
+    if [[ ${MODE} == 'hub' ]]; then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster=hub
+    elif [[ ${MODE} == 'spoke' ]]; then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${2}
+    fi
 
-    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name); do
-        KBLT_RDY=$(oc get ${node} -o jsonpath='{.status.conditions[?(@.reason=="KubeletReady")].status}')
+    echo ">> Waiting for the MCO to grab the new MachineConfig for the registry certificate..."
+    sleep 120
+
+    echo ">>>> Waiting for MCP Updated field on: ${MODE}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+    while [ "$timeout" -lt "240" ]; do
+        echo KUBECONFIG=${TARGET_KUBECONFIG}
+        if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get mcp master -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}') == 'True' ]]; then
+            ready=true
+            break
+        fi
+        echo "Waiting for MCP Updated field on"
+        sleep 5
+        timeout=$((timeout + 1))
+    done
+
+    if [ "$ready" == "false" ]; then
+        echo "Timeout waiting for MCP Updated field on: ${MODE}"
+        exit 1
+    fi
+
+    echo ">> Checking nodes for ${MODE}"
+    for node in $(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes -o name); do
+        KBLT_RDY=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ${node} -o jsonpath='{.status.conditions[?(@.reason=="KubeletReady")].status}')
         if [[ ${KBLT_RDY} != 'True' ]];then
             echo ">> Kubelet of node ${node} Not Ready, waiting ${TIMEOUT} secs"
             sleep ${TIMEOUT}
         else
-            echo ">> ${node} Verified"
+            echo ">> Mode: ${MODE} Node: ${node} Verified"
         fi
     done
 }
@@ -50,6 +80,7 @@ if [[ ${MODE} == 'hub' ]]; then
     HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep httpd | head -1 | cut -d "/" -f2-)
     REGISTRY_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
     # Execute from node with the http and store in httpd path
+    check_cluster ${MODE}
 
     # Get local tarball from REGISTRY
     oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
@@ -76,7 +107,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         REGISTRY_POD=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
 
-        check_spoke
+        check_cluster "${MODE}" "${spoke}"
 
         # Run on the target registry the command to download the snapshot (wget comes within busybox)
         oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}

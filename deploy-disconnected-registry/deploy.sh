@@ -40,6 +40,41 @@ function extract_kubeconfig() {
     oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
 }
 
+function check_mcp() {
+    MODE=${1}
+
+    echo Mode: ${MODE}
+    if [[ ${MODE} == 'hub' ]]; then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster=hub
+    elif [[ ${MODE} == 'spoke' ]]; then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${2}
+    fi
+    echo ">> Waiting for the MCO to grab the new MachineConfig for the certificate..."
+    sleep 120
+
+    echo ">>>> Waiting for MCP Updated field on: ${MODE}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+    while [ "$timeout" -lt "240" ]; do
+        echo KUBECONFIG=${TARGET_KUBECONFIG}
+        if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get mcp master -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}') == 'True' ]]; then
+            ready=true
+            break
+        fi
+        echo "Waiting for MCP Updated field on"
+        sleep 5
+        timeout=$((timeout + 1))
+    done
+
+    if [ "$ready" == "false" ]; then
+        echo "Timeout waiting for MCP Updated field on: ${MODE}"
+        exit 1
+    fi
+}
+
 function deploy_registry() {
 
     if [[ ${MODE} == 'hub' ]]; then
@@ -93,6 +128,7 @@ if [[ ${MODE} == 'hub' ]]; then
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
         render_file manifests/machine-config-certs.yaml ${MODE}
         # after machine config is applied, we need to wait for the registry and acm pods and deployments to be ready
+        check_mcp "${MODE}"
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
@@ -124,10 +160,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             # updated with machine config
             render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
-            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 10000 -n "${REGISTRY}" "${REGISTRY}"
-
+            check_mcp "${MODE}" "${spoke}"
         else
-
             echo ">>>> This step to deploy registry on Spoke: ${spoke} is not neccesary, everything looks ready"
         fi
     done
