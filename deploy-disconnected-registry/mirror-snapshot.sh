@@ -16,6 +16,24 @@ set -m
 # export KUBECONFIG=/root/admin.kubeconfig
 
 # Load common vars
+
+function check_spoke() {
+    TIMEOUT=120
+
+    echo ">> Waiting for nodes to reconcile..."
+    sleep ${TIMEOUT}
+
+    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name); do
+        KBLT_RDY=$(oc get ${node} -o jsonpath='{.status.conditions[?(@.reason=="KubeletReady")].status}')
+        if [[ ${KBLT_RDY} != 'True' ]];then
+            echo ">> Kubelet of node ${node} Not Ready, waiting ${TIMEOUT} secs"
+            sleep ${TIMEOUT}
+        else
+            echo ">> ${node} Verified"
+        fi
+    done
+}
+
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
 
@@ -55,7 +73,11 @@ elif [[ ${MODE} == 'spoke' ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
+
         REGISTRY_POD=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
+
+        check_spoke
+
         # Run on the target registry the command to download the snapshot (wget comes within busybox)
         oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}
 

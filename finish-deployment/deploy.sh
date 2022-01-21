@@ -25,8 +25,8 @@ function save_files() {
     mkdir -p ${RO_SPOKE_FOLDER}/${cluster}
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${RO_SPOKE_FOLDER}/${cluster}
 
-    for node in $(oc get nodes -oname); do
-        NODE_IP=$(oc get ${node} -o jsonpath='{.status.addresses[0].address}')
+    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname); do
+        NODE_IP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ${node} -o jsonpath='{.status.addresses[0].address}')
         ${SSH_COMMAND} core@${NODE_IP} "mkdir ${CLUSTER_DATA_FOLDER}"
         copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
         copy_files_common "${SPOKE_KUBEADMIN_PASS}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
@@ -54,6 +54,6 @@ fi
 for spoke in ${ALLSPOKES}; do
     echo ">> Cluster: ${spoke}"
     recover_spoke_files ${spoke}
-    dettach_cluster ${spoke}
-    clean_cluster ${spoke}
+    #dettach_cluster ${spoke}
+    #clean_cluster ${spoke}
 done
