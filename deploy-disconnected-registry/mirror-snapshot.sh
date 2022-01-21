@@ -57,13 +57,13 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
         REGISTRY_POD=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
         # Run on the target registry the command to download the snapshot (wget comes within busybox)
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- wget -O /var/lib/registry/docker/patata.tgz ${URL}
+        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- wget -O /var/lib/registry/ocatopic.tgz ${URL}
 
         # Uncompress from the / folder
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf -C / /var/lib/registry/docker/patata.tgz
+        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf -C / /var/lib/registry/ocatopic.tgz
 
         # Cleanup downloaded file
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/docker/patata.tgz
+        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
 
     done
 fi
