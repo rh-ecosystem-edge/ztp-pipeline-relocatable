@@ -17,6 +17,7 @@ if ./verify.sh; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
     sed -i "s/CHANGEME/${OC_RHCOS_RELEASE}/g" 04-agent-service-config.yml
+    sed -i "s/OC_OCP_VERSION/${OC_OCP_VERSION}/g" 04-agent-service-config.yml
     HTTPSERVICE=$(oc get routes -n default | grep httpd-server-route | awk '{print $2}')
     sed -i "s/HTTPD_SERVICE/${HTTPSERVICE}/g" 04-agent-service-config.yml
     pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d)
