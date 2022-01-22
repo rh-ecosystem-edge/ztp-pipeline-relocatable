@@ -1,0 +1,7 @@
+backend/envs
+backend/build
+backend/node_modules
+
+frontend/build
+frontend/node_modules
+
