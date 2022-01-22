@@ -33,6 +33,7 @@ if ./verify.sh; then
     BASE_ROOTFS=$(basename $RHCOS_ROOTFS)
     podname=$(oc get pod -n ${HTTPD_NS} | grep httpd | awk '{print $1}')
 
+    oc exec -n ${HTTPD_NS} ${podname} -- mkdir -p /var/www/html/"${OC_OCP_VERSION}"
     oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ISO} -o /var/www/html/"${OC_OCP_VERSION}"/"${BASE_ISO}"
     oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ROOTFS} -o /var/www/html/"${OC_OCP_VERSION}"/"${BASE_ROOTFS}"
 else
