@@ -1,0 +1,17 @@
+{
+  "name": "KubeFrame",
+  "version": "0.0.1",
+  "author": "Marek Libra <marek.libra@gmail.com>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "setup": "./setup.sh",
+    "clean": "concurrently 'cd frontend && yarn clean' 'cd backend && yarn clean' -n frontend,backend -c green,blue",
+    "postinstall": "concurrently 'cd frontend && yarn install' 'cd backend && yarn install' -n frontend,backend -c green,blue",
+    "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
+    "backend": "cd backend && source ./envs && yarn start",
+    "frontend": "cd frontend && yarn start"
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0"
+  }
+}
