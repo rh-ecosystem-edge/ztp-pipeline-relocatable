@@ -12,13 +12,18 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
-echo ">>>> Deploy all the manifests using kustomize"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+if ! ./verify.sh; then
+    echo ">>>> Deploy all the manifests using kustomize"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    
+    oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
+    
+    cd ${OUTPUTDIR}
+    oc apply -k .
 
-oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
-
-cd ${OUTPUTDIR}
-oc apply -k .
-
-echo ">>>>EOF"
-echo ">>>>>>>"
+    echo "Verifying again the clusterDeployment"
+    ./verify.sh
+else
+    echo ">> Cluster deployed, this step is not neccessary"
+    exit 0
+fi
