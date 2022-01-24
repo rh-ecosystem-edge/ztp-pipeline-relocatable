@@ -72,9 +72,8 @@ export function getBackendUrl() {
         return proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : undefined
     }
     */
-  console.log('--- process.env: ', process.env);
   // return process.env.REACT_APP_BACKEND_PATH || process.env.BACKEND_URL;
-  return '';
+  return "";
 }
 
 export function createResource<
@@ -134,8 +133,6 @@ export function getResource<Resource extends IResource>(
   }
 
   let url = getBackendUrl() + getResourceNameApiPath(resource);
-  // console.log('-- rewriting url ', url, ' to /ping')
-  // url = '/ping';
 
   let queryString = undefined;
 
@@ -390,7 +387,6 @@ export async function fetchRetry<T>(options: {
   while (true) {
     let response: Response | undefined;
     try {
-      console.log('--- about to fetch ', options.url);
       response = await fetch(options.url, {
         method: options.method ?? "GET",
         credentials: "include",
@@ -398,9 +394,8 @@ export async function fetchRetry<T>(options: {
         body: fetchBody,
         signal: options.signal,
         redirect: "manual",
-        mode: 'cors',
+        // mode: "cors",
       });
-      console.log('-- fetched')
     } catch (err) {
       if (options.signal.aborted) {
         throw new ResourceError(
@@ -410,7 +405,6 @@ export async function fetchRetry<T>(options: {
       }
 
       if (retries === 0) {
-        console.log('-- error: ', err);
         if (err instanceof Error) {
           if (typeof (err as any)?.code === "string") {
             switch ((err as any)?.code) {
@@ -516,9 +510,14 @@ export async function fetchRetry<T>(options: {
         case 302: // 302 is returned when token is valid but logged out
         case 401: // 401 is returned from the backend if no token cookie is on request
           if (!options.disableRedirectUnauthorizedLogin) {
+            console.info(
+              "API returned is Unauthorized response. Redirecting to login."
+            );
             if (process.env.NODE_ENV === "production") {
+              // TODO: verify that!!!
               window.location.reload();
             } else {
+              await new Promise((resolve) => setTimeout(resolve, 5000));
               window.location.href = `${getBackendUrl()}/login`;
             }
           }

@@ -1,8 +1,12 @@
 import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { getService } from "./resources/service";
+import WelcomePage from "./WelcomePage";
+
+// import logo from "./logo.svg";
+import "./App.css";
+import Redirect from "./Redirect";
 
 function App() {
   React.useEffect(() => {
@@ -17,6 +21,18 @@ function App() {
     doItAsync();
   }, []);
 
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login/*"
+          element={<Redirect to={`http://localhost:4000`} preservePathName />}
+        />
+        <Route path="*" element={<WelcomePage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+  /*
   return (
     <div className="App">
       <header className="App-header">
@@ -35,6 +51,7 @@ function App() {
       </header>
     </div>
   );
+  */
 }
 
 export default App;

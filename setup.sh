@@ -29,7 +29,7 @@ BACKEND_URL=http://localhost:4000
 echo export BACKEND_URL=$BACKEND_URL >> ./backend/envs
 echo export REACT_APP_BACKEND_PATH=${BACKEND_URL} >> ./backend/envs
 
-FRONTEND_URL=https://localhost:3000
+FRONTEND_URL=http://localhost:3000
 echo export FRONTEND_URL=$FRONTEND_URL >> ./backend/envs
 
 #SA_SECRET=$(oc get serviceaccounts -n open-cluster-management --selector=app=console-chart,component=serviceaccount -o json | jq -r '.items[0].secrets[] | select (.name | test("-token-")).name')

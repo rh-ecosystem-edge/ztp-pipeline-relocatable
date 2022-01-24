@@ -29,8 +29,7 @@ const proxyResponseHeaders = [
 
 export function proxy(req: Request, res: Response): void {
   const token = getToken(req);
-  logger.log("========= Proxy endpoint: ", req.url);
-  console.log('-- token: ', token)
+  logger.debug("Proxy endpoint: ", req.url);
   if (!token) return unauthorized(req, res);
 
   if (!process.env.CLUSTER_API_URL) {
