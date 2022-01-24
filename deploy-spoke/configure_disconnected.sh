@@ -173,22 +173,22 @@ function wait_for_mcp_ready() {
     fi
 
     export KUBECONF=${1}
-    export SPOKE=${2}
+    export CLUSTER=${2}
     export TIMEOUT=${3}
 
-    echo ">>>> Waiting for ${SPOKE} to be ready"
+    echo ">>>> Waiting for ${CLUSTER} to be ready"
     for i in $(seq 1 ${TIMEOUT}); do
-        echo ">>>> Showing nodes in Spoke"
+        echo ">>>> Showing nodes in cluster: ${CLUSTER}"
         oc --kubeconfig=${KUBECONF} get nodes
         if [[ $(oc --kubeconfig=${KUBECONF} get mcp master -o jsonpath={'.status.readyMachineCount'}) -eq 3 ]]; then
-            echo ">>>> MCP ${SPOKE} is ready"
+            echo ">>>> MCP ${CLUSTER} is ready"
             return 0
         fi
         sleep 10
         echo ">>>>"
     done
 
-    echo ">>>> MCP ${SPOKE} is not ready after ${TIMEOUT} seconds"
+    echo ">>>> MCP ${CLUSTER} is not ready after ${TIMEOUT} seconds"
     exit 1
 }
 
@@ -215,6 +215,7 @@ if [[ ${MODE} == 'hub' ]]; then
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
+    wait_for_mcp_ready ${TARGET_KUBECONFIG} 'hub' 240
 
 elif [[ ${MODE} == 'spoke' ]]; then
     # Validation

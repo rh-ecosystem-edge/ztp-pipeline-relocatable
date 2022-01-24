@@ -60,7 +60,7 @@ jobs:
           rsync -avr --progress --delete ${RO_SPOKE_FOLDER}/* ${WORKDIR}/build/
 
   deploy-spokes:
-    needs: pre-flight
+    needs: restore-hub-config
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Spokes

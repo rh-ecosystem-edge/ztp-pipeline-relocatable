@@ -57,7 +57,7 @@ jobs:
 
 
   deploy-disconnected-registry-hub:
-    needs: deploy-httpd-server       # run in parallel with the other jobs
+    needs: deploy-httpd-server
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Internal Disconnected Registry
@@ -72,7 +72,7 @@ jobs:
 
 
   deploy-acm:
-    needs: deploy-disconnected-registry-hub       # run in parallel with the other jobs
+    needs: deploy-disconnected-registry-hub
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy RHACM with AI
@@ -83,7 +83,7 @@ jobs:
 
 
   deploy-icsp-hub:
-    needs: [deploy-acm, deploy-disconnected-registry-hub]       # run in parallel with the other jobs
+    needs: deploy-acm
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy ICSP in the Hub
@@ -94,7 +94,7 @@ jobs:
 
 
   deploy-hub-config:
-    needs: [deploy-acm, deploy-disconnected-registry-hub]       # run in parallel with the other jobs
+    needs: deploy-icsp-hub
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy hub configuration
