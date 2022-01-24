@@ -10,6 +10,39 @@ function extract_kubeconfig() {
     oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${1} secret/${1}-admin-kubeconfig --to - >${SPOKE_KUBECONFIG}
 }
 
+function check_managedcluster() {
+    cluster=${1}
+    wait_time=${2}
+    condition=${3}
+    desired_status=${4}
+
+    timeout=0
+    ready=false
+
+    while [ "${timeout}" -lt "${wait_time}" ]
+    do
+    	if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}") == "${desired_status}" ]]; then
+    	    ready=true
+    	    break
+    	fi
+    	echo ">> Waiting for ManagedCluster"
+	    echo "Spoke: ${cluster}"
+	    echo "Condition: ${condition}"
+	    echo "Desired State: ${desired_status}"
+	    echo
+    	timeout=$((timeout + 10))
+    	sleep 10
+    done
+
+ if [ "$ready" == "false" ]; then
+     echo "Timeout waiting for Spoke ${cluster} on condition ${condition}"
+     echo "Expected: ${desired_status} Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}")"
+     exit 1
+ else
+     echo "ManagedCluster for ${cluster} condition: ${condition} verified"
+ fi
+}
+
 function render_file() {
     SOURCE_FILE=${1}
     if [[ $# -lt 1 ]]; then
@@ -235,6 +268,7 @@ fi
 
 # This var reflects the spoke cluster you're working with
 index=0
+wait_time=240
 
 for spoke in ${ALLSPOKES}; do
     echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
@@ -305,6 +339,11 @@ for spoke in ${ALLSPOKES}; do
     verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
     echo
     check_external_access ${spoke}
+
+    #echo "Check ManagedCluster for spoke: ${spoke}"
+    #check_managedcluster "${spoke}" "${wait_time}" "ManagedClusterConditionAvailable" "True"
+    #check_managedcluster "${spoke}" "${wait_time}" "ManagedClusterImportSucceeded" "True"
+    #check_managedcluster "${spoke}" "${wait_time}" "ManagedClusterJoined" "True"
 
     echo ">>>> Spoke ${spoke} finished!"
     let index++

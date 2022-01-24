@@ -69,39 +69,6 @@ function check_bmhs() {
     fi
 }
 
-function check_managedcluster() {
-    cluster=${1}
-    wait_time=${2}
-    condition=${3}
-    desired_status=${4}
-
-    timeout=0
-    ready=false
-
-    while [ "${timeout}" -lt "${wait_time}" ]
-    do
-    	if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}") == "${desired_status}" ]]; then
-    	    ready=true
-    	    break
-    	fi
-    	echo ">> Waiting for ManagedCluster"
-	echo "Spoke: ${cluster}"
-	echo "Condition: ${condition}"
-	echo "Desired State: ${desired_status}"
-	echo
-    	timeout=$((timeout + 30))
-    	sleep 30
-    done
-
- if [ "$ready" == "false" ]; then
-     echo "Timeout waiting for Spoke ${cluster} on condition ${condition}"
-     echo "Expected: ${desired_status} Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}")"
-     exit 1
- else
-     echo "ManagedCluster for ${cluster} condition: ${condition} verified"
- fi
-}
-
 wait_time=${1}
 
 if [[ $# -lt 1 ]]; then
@@ -119,9 +86,6 @@ for SPOKE in ${ALLSPOKES}; do
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     check_bmhs "${SPOKE}" "${wait_time}"
     check_aci "${SPOKE}" "${wait_time}" "True" 
-    check_managedcluster "${SPOKE}" "${wait_time}" "ManagedClusterConditionAvailable" "True"
-    check_managedcluster "${SPOKE}" "${wait_time}" "ManagedClusterImportSucceeded" "True"
-    check_managedcluster "${SPOKE}" "${wait_time}" "ManagedClusterJoined" "True"
     echo ">>>>EOF"
     echo ">>>>>>>"
 done
