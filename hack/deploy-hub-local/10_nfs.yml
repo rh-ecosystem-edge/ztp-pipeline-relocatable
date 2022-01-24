@@ -4,7 +4,7 @@ metadata:
   name: ${PV}
 spec:
   capacity:
-    storage: 100Gi
+    storage: 200Gi
   accessModes:
   - ${MODE}
   nfs:
