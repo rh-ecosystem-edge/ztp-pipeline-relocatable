@@ -103,20 +103,26 @@ function check_managedcluster() {
  fi
 }
 
+wait_time=${1}
+
+if [[ $# -lt 1 ]]; then
+    echo "Usage :"
+    echo "  $0 <Wait Time>"
+    exit 1
+fi
 
 if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
   
 for SPOKE in ${ALLSPOKES}; do
-    wait_time=240
     echo ">>>> Starting the validation until finish the installation"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    check_bmhs "${SPOKE}" "${wait_time}"
+    check_aci "${SPOKE}" "${wait_time}" "True" 
     check_managedcluster "${SPOKE}" "${wait_time}" "ManagedClusterConditionAvailable" "True"
     check_managedcluster "${SPOKE}" "${wait_time}" "ManagedClusterImportSucceeded" "True"
     check_managedcluster "${SPOKE}" "${wait_time}" "ManagedClusterJoined" "True"
-    check_bmhs "${SPOKE}" "${wait_time}"
-    check_aci "${SPOKE}" "${wait_time}" "True" 
     echo ">>>>EOF"
     echo ">>>>>>>"
 done

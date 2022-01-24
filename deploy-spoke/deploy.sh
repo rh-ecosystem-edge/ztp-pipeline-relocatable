@@ -12,7 +12,7 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
-if ! ./verify.sh; then
+if ! ./verify.sh 1; then
     echo ">>>> Deploy all the manifests using kustomize"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     
@@ -22,7 +22,8 @@ if ! ./verify.sh; then
     oc apply -k .
 
     echo "Verifying again the clusterDeployment"
-    ./verify.sh
+    # Waiting for 166 min to have the cluster deployed
+    ./verify.sh 10000
 else
     echo ">> Cluster deployed, this step is not neccessary"
     exit 0
