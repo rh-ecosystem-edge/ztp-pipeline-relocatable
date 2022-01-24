@@ -37,7 +37,7 @@ function check_managedcluster() {
  fi
 }
 
-function dettach_cluster() {
+function detach_cluster() {
     # Function to clean cluster from hub
     cluster=${1}
     echo ">> Dettaching Spoke ${cluster} cluster from Hub"
@@ -100,6 +100,6 @@ for spoke in ${ALLSPOKES}; do
     echo ">> Cluster: ${spoke}"
     check_cluster ${spoke}
     recover_spoke_files ${spoke}
-    dettach_cluster ${spoke}
+    detach_cluster ${spoke}
     clean_cluster ${spoke}
 done

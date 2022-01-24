@@ -138,7 +138,7 @@ jobs:
           cd ${{env.DEPLOY_WORKER_DIR}}
           ./render_worker.sh
 
-  dettach_cluster:
+  detach-cluster:
     needs: deploy-workers
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
