@@ -27,8 +27,8 @@ function check_aci() {
 	echo "Desired State: ${desired_status}"
 	echo
 
-    	timeout=$((timeout + 1))
-    	sleep 1
+    	timeout=$((timeout + 5))
+    	sleep 5
     done
 
     if [ "${ready}" == "false" ]; then
@@ -58,8 +58,8 @@ function check_bmhs() {
 	echo 'Desired State: provisioned'
 	echo
 
-    	timeout=$((timeout + 1))
-    	sleep 1
+    	timeout=$((timeout + 5))
+    	sleep 5
     done
 
     if [ "${ready}" == "false" ]; then
@@ -91,7 +91,7 @@ function check_managedcluster() {
 	echo "Desired State: ${desired_status}"
 	echo
     	sleep 5
-    	timeout=$((timeout + 1))
+    	timeout=$((timeout + 5))
     done
 
  if [ "$ready" == "false" ]; then
