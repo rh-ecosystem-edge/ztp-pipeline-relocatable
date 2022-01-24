@@ -151,6 +151,32 @@ EOF
 
 }
 
+function verify_worker() {
+
+    cluster=${1}
+    timeout=0
+    ready=false
+
+    echo ">>>> Waiting for Worker Agent: ${cluster}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    WORKER_AGENT=$(oc get agent -n ${cluster} ${cluster} --no-headers | grep worker | cut -f1 -d\ )
+    while [ "$timeout" -lt "600" ]; do
+        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${WORKER_AGENT} -o jsonpath='{.status.conditions[?(@.reason=="InstallationCompleted")].status}' ) == 'True' ]]; then
+            ready=true
+            break
+        fi
+        echo "Waiting for Worker's agent installation for spoke: ${cluster}"
+        sleep 5
+        timeout=$((timeout + 1))
+    done
+
+    if [ "$ready" == "false" ]; then
+        echo "Timeout waiting for Worker's agent installation for spoke: ${cluster}"
+        exit 1
+    fi
+
+}
+
 # Main code
 if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -158,4 +184,5 @@ fi
 
 for SPOKE in ${ALLSPOKES}; do
     create_worker_definitions ${SPOKE}
+    verify_worker ${SPOKE}
 done
