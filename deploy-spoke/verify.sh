@@ -53,7 +53,7 @@ function check_bmhs() {
     	    ready=true
     	    break
     	fi
-	echo ">> Waiting for BMH on spoke $(oc get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')"
+	echo ">> Waiting for BMH on spoke for each cluster node: $(oc get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')"
 	echo 'Desired State: provisioned'
 	echo
 
