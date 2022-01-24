@@ -113,7 +113,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}
 
         # Uncompress from the / folder
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf -C / /var/lib/registry/ocatopic.tgz
+        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf /var/lib/registry/ocatopic.tgz -C /
 
         # Cleanup downloaded file
         oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
