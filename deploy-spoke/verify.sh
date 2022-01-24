@@ -26,8 +26,8 @@ function check_aci() {
       echo "Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.debugInfo.stateInfo}')"
 	    echo "Desired State: Cluster is Installed"
 	    echo
-    	timeout=$((timeout + 5))
-    	sleep 5
+    	timeout=$((timeout + 30))
+    	sleep 30
     done
 
     if [ "${ready}" == "false" ]; then
@@ -57,8 +57,8 @@ function check_bmhs() {
 	echo 'Desired State: provisioned'
 	echo
 
-    	timeout=$((timeout + 5))
-    	sleep 5
+    	timeout=$((timeout + 30))
+    	sleep 30
     done
 
     if [ "${ready}" == "false" ]; then
@@ -89,8 +89,8 @@ function check_managedcluster() {
 	echo "Condition: ${condition}"
 	echo "Desired State: ${desired_status}"
 	echo
-    	sleep 5
-    	timeout=$((timeout + 5))
+    	timeout=$((timeout + 30))
+    	sleep 30
     done
 
  if [ "$ready" == "false" ]; then
