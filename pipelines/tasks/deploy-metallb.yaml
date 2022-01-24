@@ -35,12 +35,3 @@ spec:
       #!/usr/bin/env bash
       cd $WORKDIR/deploy-metallb
       ./deploy.sh
-
-   - name: wait-for-spoke
-     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
-     imagePullPolicy: Always
-     script: |
-      #!/usr/bin/env bash
-      cd $WORKDIR/deploy-spoke
-
-      ./wait_for_spoke.sh spoke1-name
