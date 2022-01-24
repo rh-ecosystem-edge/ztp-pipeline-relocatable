@@ -51,6 +51,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+            git pull
             kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
             kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
         else
