@@ -42,7 +42,7 @@ function check_cluster() {
             ready=true
             break
         fi
-        echo "Waiting for MCP Updated field on"
+        echo "Waiting for MCP Updated field on: ${MODE}"
         sleep 5
         timeout=$((timeout + 1))
     done
