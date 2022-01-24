@@ -71,7 +71,7 @@ jobs:
           ./deploy.sh
 
   deploy-icsp-spokes-pre:
-    needs: verify-installation
+    needs: deploy-spokes
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy ICSP in all the spokes in the Pre flow
