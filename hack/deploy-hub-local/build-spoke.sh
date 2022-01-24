@@ -96,7 +96,7 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
 EOF
     for master in 0 1 2; do
         # Stanza generation for each master
-        MASTERUID=$(kcli info vm spoke${spoke}-m${master} | grep id | awk '{print $2}')
+        MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} | grep id | awk '{print $2}')
         cat <<EOF >>spokes.yaml
       master${master}:
         nic_ext_dhcp: enp1s0
@@ -116,7 +116,7 @@ EOF
     
     # Add the single worker
     worker=0
-    WORKERUID=$(kcli info vm spoke${spoke}-w${worker} | grep id | awk '{print $2}')
+    WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} | grep id | awk '{print $2}')
 
     cat <<EOF >>spokes.yaml
       worker${worker}:
