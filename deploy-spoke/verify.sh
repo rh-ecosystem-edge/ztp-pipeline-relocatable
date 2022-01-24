@@ -22,12 +22,12 @@ function check_aci() {
     	    break
     	fi
     	echo ">> Waiting for ACI"
-	echo "Spoke: ${cluster}"
-    echo "Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.debugInfo.stateInfo}')"
-	echo "Desired State: Cluster is Installed"
-	echo
-    	timeout=$((timeout + 1))
-    	sleep 1
+	    echo "Spoke: ${cluster}"
+      echo "Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.debugInfo.stateInfo}')"
+	    echo "Desired State: Cluster is Installed"
+	    echo
+    	timeout=$((timeout + 5))
+    	sleep 5
     done
 
     if [ "${ready}" == "false" ]; then
