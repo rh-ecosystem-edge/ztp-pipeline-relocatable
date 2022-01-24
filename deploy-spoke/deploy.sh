@@ -23,7 +23,7 @@ if ! ./verify.sh 1; then
 
     echo "Verifying again the clusterDeployment"
     # Waiting for 166 min to have the cluster deployed
-    ./verify.sh 10000
+    ${WORKDIR}/${DEPLOY_SPOKES_DIR}/verify.sh 10000
 else
     echo ">> Cluster deployed, this step is not neccessary"
     exit 0
