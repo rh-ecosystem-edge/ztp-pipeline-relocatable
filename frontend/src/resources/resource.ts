@@ -1,5 +1,5 @@
-import { join } from "path";
 import { Metadata } from "./metadata";
+import { pathJoin } from "./utils";
 
 export interface IResourceDefinition {
   apiVersion: string;
@@ -49,20 +49,20 @@ export function getResourceApiPath(options: {
 
   let path: string;
   if (apiVersion?.includes("/")) {
-    path = join("/apis", apiVersion);
+    path = pathJoin("/apis", apiVersion);
   } else {
-    path = join("/api", apiVersion);
+    path = pathJoin("/api", apiVersion);
   }
 
   const namespace = options.metadata?.namespace;
   if (namespace) {
-    path = join(path, "namespaces", namespace);
+    path = pathJoin(path, "namespaces", namespace);
   }
 
   if (options.plural) {
-    path = join(path, options.plural);
+    path = pathJoin(path, options.plural);
   } else if (options.kind) {
-    path = join(
+    path = pathJoin(
       path,
       getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind })
     );
@@ -81,7 +81,7 @@ export function getResourceNameApiPath(options: {
 
   const name = options.metadata?.name;
   if (name) {
-    path = join(path, name);
+    path = pathJoin(path, name);
   }
 
   return path.replace(/\\/g, "/");

@@ -72,7 +72,9 @@ export function getBackendUrl() {
         return proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : undefined
     }
     */
-  return process.env.REACT_APP_BACKEND_PATH;
+  console.log('--- process.env: ', process.env);
+  // return process.env.REACT_APP_BACKEND_PATH || process.env.BACKEND_URL;
+  return '';
 }
 
 export function createResource<
@@ -132,6 +134,8 @@ export function getResource<Resource extends IResource>(
   }
 
   let url = getBackendUrl() + getResourceNameApiPath(resource);
+  // console.log('-- rewriting url ', url, ' to /ping')
+  // url = '/ping';
 
   let queryString = undefined;
 
@@ -386,6 +390,7 @@ export async function fetchRetry<T>(options: {
   while (true) {
     let response: Response | undefined;
     try {
+      console.log('--- about to fetch ', options.url);
       response = await fetch(options.url, {
         method: options.method ?? "GET",
         credentials: "include",
@@ -393,7 +398,9 @@ export async function fetchRetry<T>(options: {
         body: fetchBody,
         signal: options.signal,
         redirect: "manual",
+        mode: 'cors',
       });
+      console.log('-- fetched')
     } catch (err) {
       if (options.signal.aborted) {
         throw new ResourceError(
@@ -403,6 +410,7 @@ export async function fetchRetry<T>(options: {
       }
 
       if (retries === 0) {
+        console.log('-- error: ', err);
         if (err instanceof Error) {
           if (typeof (err as any)?.code === "string") {
             switch ((err as any)?.code) {

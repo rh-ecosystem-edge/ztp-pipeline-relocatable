@@ -24,8 +24,10 @@ echo export OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/envs
 OAUTH2_REDIRECT_URL=http://localhost:3000/login/callback
 echo export OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/envs
 
-BACKEND_URL=https://localhost:4000
+#TODO: HTTPS??
+BACKEND_URL=http://localhost:4000
 echo export BACKEND_URL=$BACKEND_URL >> ./backend/envs
+echo export REACT_APP_BACKEND_PATH=${BACKEND_URL} >> ./backend/envs
 
 FRONTEND_URL=https://localhost:3000
 echo export FRONTEND_URL=$FRONTEND_URL >> ./backend/envs
