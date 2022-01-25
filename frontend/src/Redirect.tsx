@@ -1,9 +1,12 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 
-const Redirect: React.FC<{ to: string; preservePathName?: boolean }> = ({ to, preservePathName }) => {
+const Redirect: React.FC<{ to: string; preservePathName?: boolean }> = ({
+  to,
+  preservePathName,
+}) => {
   const location = useLocation();
-  
+
   let url = to;
   if (preservePathName) {
     url += location.pathname;
@@ -12,7 +15,7 @@ const Redirect: React.FC<{ to: string; preservePathName?: boolean }> = ({ to, pr
     }
   }
 
-  console.info('Redirecting to: ', url)
+  console.info('Redirecting to: ', url);
   window.location.href = url;
   return <div />;
 };

@@ -1,10 +1,11 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import React from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import WelcomePage from "./WelcomePage";
+import WelcomePage from './WelcomePage';
 
 // import logo from "./logo.svg";
-import "./App.css";
-import Redirect from "./Redirect";
+import './App.css';
+import Redirect from './Redirect';
 
 function App() {
   return (

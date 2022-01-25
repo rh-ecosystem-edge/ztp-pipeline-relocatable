@@ -1,5 +1,5 @@
-import { Metadata } from "./metadata";
-import { pathJoin } from "./utils";
+import { Metadata } from './metadata';
+import { pathJoin } from './utils';
 
 export interface IResourceDefinition {
   apiVersion: string;
@@ -18,16 +18,16 @@ export interface ResourceList<Resource extends IResource> {
 }
 
 export function getResourcePlural(resourceDefinition: IResourceDefinition) {
-  return resourceDefinition.kind?.toLowerCase().endsWith("y")
-    ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + "ies"
-    : resourceDefinition.kind?.toLowerCase() + "s";
+  return resourceDefinition.kind?.toLowerCase().endsWith('y')
+    ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
+    : resourceDefinition.kind?.toLowerCase() + 's';
 }
 
 export function getResourceGroup(resourceDefinition: IResourceDefinition) {
-  if (resourceDefinition.apiVersion.includes("/")) {
-    return resourceDefinition.apiVersion.split("/")[0];
+  if (resourceDefinition.apiVersion.includes('/')) {
+    return resourceDefinition.apiVersion.split('/')[0];
   } else {
-    return "";
+    return '';
   }
 }
 
@@ -48,15 +48,15 @@ export function getResourceApiPath(options: {
   const { apiVersion } = options;
 
   let path: string;
-  if (apiVersion?.includes("/")) {
-    path = pathJoin("/apis", apiVersion);
+  if (apiVersion?.includes('/')) {
+    path = pathJoin('/apis', apiVersion);
   } else {
-    path = pathJoin("/api", apiVersion);
+    path = pathJoin('/api', apiVersion);
   }
 
   const namespace = options.metadata?.namespace;
   if (namespace) {
-    path = pathJoin(path, "namespaces", namespace);
+    path = pathJoin(path, 'namespaces', namespace);
   }
 
   if (options.plural) {
@@ -64,11 +64,11 @@ export function getResourceApiPath(options: {
   } else if (options.kind) {
     path = pathJoin(
       path,
-      getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind })
+      getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind }),
     );
   }
 
-  return path.replace(/\\/g, "/");
+  return path.replace(/\\/g, '/');
 }
 
 export function getResourceNameApiPath(options: {
@@ -84,5 +84,5 @@ export function getResourceNameApiPath(options: {
     path = pathJoin(path, name);
   }
 
-  return path.replace(/\\/g, "/");
+  return path.replace(/\\/g, '/');
 }
