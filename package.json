@@ -9,7 +9,9 @@
     "postinstall": "concurrently 'cd frontend && yarn install' 'cd backend && yarn install' -n frontend,backend -c green,blue",
     "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
     "backend": "cd backend && source ./envs && yarn start",
-    "frontend": "cd frontend && yarn start"
+    "frontend": "cd frontend && yarn start",
+    "lint": "cd frontend && yarn lint && cd ../backend && yarn lint",
+    "prettier": "concurrently 'cd frontend && yarn prettier'  'cd backend && yarn prettier' -n frontend,backend -c green,blue"
   },
   "devDependencies": {
     "concurrently": "^7.0.0"

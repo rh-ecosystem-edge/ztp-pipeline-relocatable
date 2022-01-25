@@ -101,8 +101,7 @@ export function logout(req: Request, res: Response): void {
   }
 
   const clientRequest = request(
-    
-      `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
+    `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
     {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
