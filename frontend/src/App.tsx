@@ -1,7 +1,5 @@
-import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-import { getService } from "./resources/service";
 import WelcomePage from "./WelcomePage";
 
 // import logo from "./logo.svg";
@@ -9,18 +7,6 @@ import "./App.css";
 import Redirect from "./Redirect";
 
 function App() {
-  React.useEffect(() => {
-    const doItAsync = async () => {
-      const service = await getService({
-        name: "router-internal-default",
-        namespace: "openshift-ingress",
-      }).promise;
-      console.log("--- Service: ", service);
-    };
-
-    doItAsync();
-  }, []);
-
   return (
     <BrowserRouter>
       <Routes>

@@ -517,7 +517,6 @@ export async function fetchRetry<T>(options: {
               // TODO: verify that!!!
               window.location.reload();
             } else {
-              await new Promise((resolve) => setTimeout(resolve, 5000));
               window.location.href = `${getBackendUrl()}/login`;
             }
           }
