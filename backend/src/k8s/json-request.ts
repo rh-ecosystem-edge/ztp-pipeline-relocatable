@@ -1,21 +1,17 @@
-import { constants } from "http2";
-import { Agent } from "https";
-import { HeadersInit } from "node-fetch";
-import { fetchRetry } from "./fetch-retry";
+import { constants } from 'http2';
+import { Agent } from 'https';
+import { HeadersInit } from 'node-fetch';
+import { fetchRetry } from './fetch-retry';
 
-const {
-  HTTP2_HEADER_CONTENT_TYPE,
-  HTTP2_HEADER_AUTHORIZATION,
-  HTTP2_HEADER_ACCEPT,
-} = constants;
+const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT } = constants;
 
 const agent = new Agent({ rejectUnauthorized: false });
 
 export function jsonRequest<T>(url: string, token?: string): Promise<T> {
-  const headers: HeadersInit = { [HTTP2_HEADER_ACCEPT]: "application/json" };
+  const headers: HeadersInit = { [HTTP2_HEADER_ACCEPT]: 'application/json' };
   if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`;
   return fetchRetry(url, { headers, agent, compress: true }).then(
-    (response) => response.json() as unknown as Promise<T>
+    (response) => response.json() as unknown as Promise<T>,
   );
 }
 
@@ -27,15 +23,15 @@ export interface PostResponse<T> {
 export function jsonPost<T = unknown>(
   url: string,
   body: unknown,
-  token?: string
+  token?: string,
 ): Promise<PostResponse<T>> {
   const headers: HeadersInit = {
-    [HTTP2_HEADER_ACCEPT]: "application/json",
-    [HTTP2_HEADER_CONTENT_TYPE]: "application/json",
+    [HTTP2_HEADER_ACCEPT]: 'application/json',
+    [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
   };
   if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`;
   return fetchRetry(url, {
-    method: "POST",
+    method: 'POST',
     headers,
     agent,
     body: JSON.stringify(body),

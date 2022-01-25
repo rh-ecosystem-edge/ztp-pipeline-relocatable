@@ -1,14 +1,9 @@
-import { Request, Response } from "express";
-import { constants, OutgoingHttpHeaders } from "http2";
-import { request, RequestOptions } from "https";
-import { pipeline } from "stream";
-import { URL } from "url";
-import {
-  notFound,
-  unauthorized,
-  getToken,
-  respondInternalServerError,
-} from "../k8s";
+import { Request, Response } from 'express';
+import { constants, OutgoingHttpHeaders } from 'http2';
+import { request, RequestOptions } from 'https';
+import { pipeline } from 'stream';
+import { URL } from 'url';
+import { notFound, unauthorized, getToken, respondInternalServerError } from '../k8s';
 
 const logger = console;
 
@@ -29,11 +24,11 @@ const proxyResponseHeaders = [
 
 export function proxy(req: Request, res: Response): void {
   const token = getToken(req);
-  logger.debug("Proxy endpoint: ", req.url);
+  logger.debug('Proxy endpoint: ', req.url);
   if (!token) return unauthorized(req, res);
 
   if (!process.env.CLUSTER_API_URL) {
-    logger.error("Missing CLUSTER_API_URL environment variable");
+    logger.error('Missing CLUSTER_API_URL environment variable');
     return respondInternalServerError(req, res);
   }
   const url = req.url;
@@ -59,18 +54,13 @@ export function proxy(req: Request, res: Response): void {
       if (!response) return notFound(req, res);
       const responseHeaders: OutgoingHttpHeaders = {};
       for (const header of proxyResponseHeaders) {
-        if (response.headers[header])
-          responseHeaders[header] = response.headers[header];
+        if (response.headers[header]) responseHeaders[header] = response.headers[header];
       }
       res.writeHead(response.statusCode ?? 500, responseHeaders);
-      pipeline(
-        response,
-        res as unknown as NodeJS.WritableStream,
-        () => logger.error
-      );
+      pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error);
     }),
     (err) => {
       if (err) logger.error(err);
-    }
+    },
   );
 }

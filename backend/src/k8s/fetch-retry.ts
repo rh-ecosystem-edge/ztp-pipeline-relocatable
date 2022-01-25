@@ -1,14 +1,14 @@
-import fetch, { RequestInfo, RequestInit, Response } from "node-fetch";
+import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
 
 export function fetchRetry(
   url: RequestInfo,
   init?: RequestInit,
-  retry?: number
+  retry?: number,
 ): Promise<Response> {
   let retries: number;
   switch (init?.method) {
     case undefined:
-    case "GET":
+    case 'GET':
       retries = retry ?? 4;
       break;
     default:
@@ -24,7 +24,7 @@ export function fetchRetry(
         switch (response.status) {
           case 429: // Too Many Requests
             {
-              const retryAfter = Number(response.headers.get("retry-after"));
+              const retryAfter = Number(response.headers.get('retry-after'));
               if (!Number.isInteger(retryAfter)) delay = retryAfter;
               setTimeout(fetchAttempt, delay);
             }
@@ -38,7 +38,7 @@ export function fetchRetry(
           case 522: // Connection timed out
           case 524: // A Timeout Occurred
             {
-              const retryAfter = Number(response.headers.get("retry-after"));
+              const retryAfter = Number(response.headers.get('retry-after'));
               if (!Number.isInteger(retryAfter)) delay = retryAfter;
               if (retries > 0) {
                 retries--;
@@ -56,9 +56,9 @@ export function fetchRetry(
         if (err instanceof Error) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
           switch ((err as any).code) {
-            case "ETIMEDOUT":
-            case "ECONNRESET":
-            case "ENOTFOUND":
+            case 'ETIMEDOUT':
+            case 'ECONNRESET':
+            case 'ENOTFOUND':
               if (retries > 0) {
                 retries--;
                 setTimeout(fetchAttempt, delay);
@@ -67,7 +67,7 @@ export function fetchRetry(
               }
               break;
             default:
-              if (err.message === "Network Error") {
+              if (err.message === 'Network Error') {
                 if (retries > 0) {
                   retries--;
                   setTimeout(fetchAttempt, delay);

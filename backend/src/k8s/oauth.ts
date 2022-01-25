@@ -1,17 +1,14 @@
-import { Request, Response } from "express";
-import { createHash } from "crypto";
-import { IncomingMessage } from "http";
-import { Agent, request } from "https";
-import {
-  encode as stringifyQuery,
-  parse as parseQueryString,
-} from "querystring";
+import { Request, Response } from 'express';
+import { createHash } from 'crypto';
+import { IncomingMessage } from 'http';
+import { Agent, request } from 'https';
+import { encode as stringifyQuery, parse as parseQueryString } from 'querystring';
 
-import { deleteCookie } from "./cookies";
-import { jsonRequest } from "./json-request";
-import { getToken } from "./token";
-import { redirect, respondInternalServerError, unauthorized } from "./respond";
-import { setDead } from "../endpoints/liveness";
+import { deleteCookie } from './cookies';
+import { jsonRequest } from './json-request';
+import { getToken } from './token';
+import { redirect, respondInternalServerError, unauthorized } from './respond';
+import { setDead } from '../endpoints/liveness';
 
 const logger = console;
 
@@ -21,16 +18,16 @@ let oauthInfoPromise: Promise<OAuthInfo>;
 export const getOauthInfoPromise = () => {
   if (oauthInfoPromise === undefined) {
     oauthInfoPromise = jsonRequest<OAuthInfo>(
-      `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
+      `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
     ).catch((err: Error) => {
       logger.error({
-        msg: "oauth-authorization-server error",
+        msg: 'oauth-authorization-server error',
         error: err.message,
       });
       setDead();
       return {
-        authorization_endpoint: "",
-        token_endpoint: "",
+        authorization_endpoint: '',
+        token_endpoint: '',
       };
     });
   }
@@ -38,45 +35,42 @@ export const getOauthInfoPromise = () => {
 };
 
 export const login = async (_: Request, res: Response): Promise<void> => {
-  logger.log("Login requested");
+  logger.log('Login requested');
   const oauthInfo = await getOauthInfoPromise();
   const queryString = stringifyQuery({
     response_type: `code`,
     client_id: process.env.OAUTH2_CLIENT_ID,
     redirect_uri: process.env.OAUTH2_REDIRECT_URL,
     scope: `user:full`,
-    state: "",
+    state: '',
   });
   return redirect(res, `${oauthInfo.authorization_endpoint}?${queryString}`);
 };
 
-export const loginCallback = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const loginCallback = async (req: Request, res: Response): Promise<void> => {
   const url = req.url;
-  logger.debug('Login callback')
-  if (url.includes("?")) {
+  logger.debug('Login callback');
+  if (url.includes('?')) {
     const oauthInfo = await getOauthInfoPromise();
-    const queryString = url.substr(url.indexOf("?") + 1);
+    const queryString = url.substr(url.indexOf('?') + 1);
     const query = parseQueryString(queryString);
     const code = query.code as string;
     // const state = query.state
     const requestQuery: Record<string, string> = {
       grant_type: `authorization_code`,
       code: code,
-      redirect_uri: process.env.OAUTH2_REDIRECT_URL || "",
-      client_id: process.env.OAUTH2_CLIENT_ID || "",
-      client_secret: process.env.OAUTH2_CLIENT_SECRET || "",
+      redirect_uri: process.env.OAUTH2_REDIRECT_URL || '',
+      client_id: process.env.OAUTH2_CLIENT_ID || '',
+      client_secret: process.env.OAUTH2_CLIENT_SECRET || '',
     };
     const requestQueryString = stringifyQuery(requestQuery);
     const body = await jsonRequest<{ access_token: string }>(
-      oauthInfo.token_endpoint + "?" + requestQueryString
+      oauthInfo.token_endpoint + '?' + requestQueryString,
     );
     if (body.access_token) {
       const headers = {
-        "Set-Cookie": `k8s-access-token-cookie=${body.access_token}; ${
-          process.env.NODE_ENV === "production" ? "Secure; " : ""
+        'Set-Cookie': `k8s-access-token-cookie=${body.access_token}; ${
+          process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
         } HttpOnly; Path=/`,
         location: process.env.FRONTEND_URL,
       };
@@ -95,30 +89,30 @@ export function logout(req: Request, res: Response): void {
   if (!token) return unauthorized(req, res);
 
   let tokenName = token;
-  const sha256Prefix = "sha256~";
+  const sha256Prefix = 'sha256~';
   if (tokenName.startsWith(sha256Prefix)) {
-    tokenName = `sha256~${createHash("sha256")
+    tokenName = `sha256~${createHash('sha256')
       .update(token.substring(sha256Prefix.length))
-      .digest("base64")
-      .replace(/=/g, "")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")}`;
+      .digest('base64')
+      .replace(/=/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')}`;
   }
 
   const clientRequest = request(
     process.env.CLUSTER_API_URL +
       `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
     {
-      method: "DELETE",
+      method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
       agent: new Agent({ rejectUnauthorized: false }),
     },
     (response: IncomingMessage) => {
-      deleteCookie(res, "acm-access-token-cookie");
+      deleteCookie(res, 'acm-access-token-cookie');
       res.writeHead(response.statusCode || 500).end();
-    }
+    },
   );
-  clientRequest.on("error", () => {
+  clientRequest.on('error', () => {
     respondInternalServerError(req, res);
   });
   clientRequest.end();
