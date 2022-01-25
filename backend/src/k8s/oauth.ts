@@ -4,11 +4,12 @@ import { IncomingMessage } from 'http';
 import { Agent, request } from 'https';
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring';
 
+import { setDead } from '../endpoints/liveness';
+import { getClusterApiUrl } from './utils';
 import { deleteCookie } from './cookies';
 import { jsonRequest } from './json-request';
 import { getToken } from './token';
 import { redirect, respondInternalServerError, unauthorized } from './respond';
-import { setDead } from '../endpoints/liveness';
 
 const logger = console;
 
@@ -18,7 +19,7 @@ let oauthInfoPromise: Promise<OAuthInfo>;
 export const getOauthInfoPromise = () => {
   if (oauthInfoPromise === undefined) {
     oauthInfoPromise = jsonRequest<OAuthInfo>(
-      `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`,
+      `${getClusterApiUrl()}/.well-known/oauth-authorization-server`,
     ).catch((err: Error) => {
       logger.error({
         msg: 'oauth-authorization-server error',
@@ -100,8 +101,8 @@ export function logout(req: Request, res: Response): void {
   }
 
   const clientRequest = request(
-    process.env.CLUSTER_API_URL +
-      `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
+    
+      `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
     {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },

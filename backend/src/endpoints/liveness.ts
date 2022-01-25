@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import { readFileSync } from 'fs';
 import { constants } from 'http2';
 import { Agent } from 'https';
-import { FetchError } from 'node-fetch';
+import { FetchError, Response as FetchResponse } from 'node-fetch';
 
 import { fetchRetry } from '../k8s/fetch-retry';
 import { respondInternalServerError, respondOK } from '../k8s/respond';
 import { getOauthInfoPromise } from '../k8s/oauth';
+import { getClusterApiUrl } from '../k8s/utils';
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants;
 const logger = console;
@@ -49,16 +50,16 @@ export function getServiceAcccountToken(): string {
 
 export async function apiServerPing(): Promise<void> {
   try {
-    const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
+    const response: FetchResponse = await fetchRetry(`${getClusterApiUrl()}/apis`, {
       headers: {
         [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${serviceAcccountToken}`,
       },
       agent,
     });
-    if (response.status !== 200) {
+    if (response?.status !== 200) {
       setDead();
     }
-    void response.blob();
+    void response?.blob();
   } catch (err) {
     if (err instanceof FetchError) {
       logger.error({ msg: 'kube api server ping failed', error: err.message });
@@ -68,7 +69,7 @@ export async function apiServerPing(): Promise<void> {
     } else if (err instanceof Error) {
       logger.error({ msg: 'api server ping failed', error: err.message });
     } else {
-      logger.error({ msg: 'api server ping failed', err: err as unknown });
+      logger.error({ msg: 'api server ping failed', err });
     }
   }
 }
