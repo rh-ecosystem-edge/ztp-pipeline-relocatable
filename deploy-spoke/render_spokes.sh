@@ -222,31 +222,21 @@ spec:
      - name: $CHANGE_SPOKE_MASTER_MGMT_INT
        type: ethernet
        state: up
-       ethernet:
-         auto-negotiation: true
-         duplex: full
-         speed: 10000
        ipv4:
          enabled: true
          dhcp: true
          auto-dns: true
          auto-gateway: true
          auto-routes: true
-       mtu: 1500
        mac-address: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
      - name: $CHANGE_SPOKE_MASTER_PUB_INT
        type: ethernet
        state: up
-       ethernet:
-         auto-negotiation: true
-         duplex: full
-         speed: 1000
        ipv4:
          enabled: true
          address:
            - ip: $CHANGE_SPOKE_MASTER_PUB_INT_IP
              prefix-length: $CHANGE_SPOKE_MASTER_PUB_INT_MASK
-       mtu: 1500
        mac-address: '$CHANGE_SPOKE_MASTER_PUB_INT_MAC'
 
    routes:
