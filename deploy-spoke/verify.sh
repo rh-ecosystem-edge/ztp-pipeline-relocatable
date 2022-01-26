@@ -14,20 +14,19 @@ function check_aci() {
     timeout=0
     ready=false
 
-    while [ "${timeout}" -lt "${wait_time}" ]
-    do
-	# Check state
-    	if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.conditions[?(@.type=="Completed")].status}') == "${desired_status}" ]]; then
-    	    ready=true
-    	    break
-    	fi
-    	echo ">> Waiting for ACI"
-	    echo "Spoke: ${cluster}"
-      echo "Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.debugInfo.stateInfo}')"
-	    echo "Desired State: Cluster is Installed"
-	    echo
-    	timeout=$((timeout + 30))
-    	sleep 30
+    while [ "${timeout}" -lt "${wait_time}" ]; do
+        # Check state
+        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.conditions[?(@.type=="Completed")].status}') == "${desired_status}" ]]; then
+            ready=true
+            break
+        fi
+        echo ">> Waiting for ACI"
+        echo "Spoke: ${cluster}"
+        echo "Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.debugInfo.stateInfo}')"
+        echo "Desired State: Cluster is Installed"
+        echo
+        timeout=$((timeout + 30))
+        sleep 30
     done
 
     if [ "${ready}" == "false" ]; then
@@ -45,20 +44,19 @@ function check_bmhs() {
     timeout=0
     ready=false
 
-    while [ "${timeout}" -lt "${wait_time}" ]
-    do
-	RCBMH=$(oc --kubeconfig=${KUBECONFIG_HUB} get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')
-	# Check state
-	if [[ $(echo ${RCBMH}| grep provisioned | wc -w) -eq 3 || $(echo ${RCBMH}| grep provisioned | wc -w) -eq 4 ]]; then
-    	    ready=true
-    	    break
-    	fi
-	echo ">> Waiting for BMH on spoke for each cluster node: $(oc get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')"
-	echo 'Desired State: provisioned'
-	echo
+    while [ "${timeout}" -lt "${wait_time}" ]; do
+        RCBMH=$(oc --kubeconfig=${KUBECONFIG_HUB} get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')
+        # Check state
+        if [[ $(echo ${RCBMH} | grep provisioned | wc -w) -eq 3 || $(echo ${RCBMH} | grep provisioned | wc -w) -eq 4 ]]; then
+            ready=true
+            break
+        fi
+        echo ">> Waiting for BMH on spoke for each cluster node: $(oc get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')"
+        echo 'Desired State: provisioned'
+        echo
 
-    	timeout=$((timeout + 30))
-    	sleep 30
+        timeout=$((timeout + 30))
+        sleep 30
     done
 
     if [ "${ready}" == "false" ]; then
@@ -80,12 +78,12 @@ fi
 if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
-  
+
 for SPOKE in ${ALLSPOKES}; do
     echo ">>>> Starting the validation until finish the installation"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     check_bmhs "${SPOKE}" "${wait_time}"
-    check_aci "${SPOKE}" "${wait_time}" "True" 
+    check_aci "${SPOKE}" "${wait_time}" "True"
     echo ">>>>EOF"
     echo ">>>>>>>"
 done

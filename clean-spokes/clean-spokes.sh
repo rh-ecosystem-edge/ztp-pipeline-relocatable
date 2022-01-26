@@ -9,7 +9,7 @@ source ${WORKDIR}/shared-utils/common.sh
 if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
-  
+
 for SPOKE in ${ALLSPOKES}; do
     echo ">>>> Cleaning the deployed Spokes clusters"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
