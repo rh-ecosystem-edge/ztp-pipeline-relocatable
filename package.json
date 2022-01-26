@@ -5,9 +5,10 @@
   "license": "Apache-2.0",
   "scripts": {
     "setup": "./setup.sh",
-    "clean": "concurrently 'cd frontend && yarn clean' 'cd backend && yarn clean' -n frontend,backend -c green,blue",
+    "clean": "(cd frontend && yarn clean) ; (cd backend && yarn clean)",
     "postinstall": "concurrently 'cd frontend && yarn install' 'cd backend && yarn install' -n frontend,backend -c green,blue",
     "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
+    "build": "concurrently 'cd frontend && yarn build' 'cd backend && yarn build' -n frontend,backend -c green,blue",
     "backend": "cd backend && source ./envs && yarn start",
     "frontend": "cd frontend && yarn start",
     "lint": "cd frontend && yarn lint && cd ../backend && yarn lint",
