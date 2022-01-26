@@ -13,28 +13,27 @@ function check_managedcluster() {
     timeout=0
     ready=false
 
-    while [ "${timeout}" -lt "${wait_time}" ]
-    do
-    	if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}") == "${desired_status}" ]]; then
-    	    ready=true
-    	    break
-    	fi
-    	echo ">> Waiting for ManagedCluster"
-	    echo "Spoke: ${cluster}"
-	    echo "Condition: ${condition}"
-	    echo "Desired State: ${desired_status}"
-	    echo
-    	timeout=$((timeout + 10))
-    	sleep 10
+    while [ "${timeout}" -lt "${wait_time}" ]; do
+        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}") == "${desired_status}" ]]; then
+            ready=true
+            break
+        fi
+        echo ">> Waiting for ManagedCluster"
+        echo "Spoke: ${cluster}"
+        echo "Condition: ${condition}"
+        echo "Desired State: ${desired_status}"
+        echo
+        timeout=$((timeout + 10))
+        sleep 10
     done
 
- if [ "$ready" == "false" ]; then
-     echo "Timeout waiting for Spoke ${cluster} on condition ${condition}"
-     echo "Expected: ${desired_status} Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}")"
-     exit 1
- else
-     echo "ManagedCluster for ${cluster} condition: ${condition} verified"
- fi
+    if [ "$ready" == "false" ]; then
+        echo "Timeout waiting for Spoke ${cluster} on condition ${condition}"
+        echo "Expected: ${desired_status} Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}")"
+        exit 1
+    else
+        echo "ManagedCluster for ${cluster} condition: ${condition} verified"
+    fi
 }
 
 function detach_cluster() {

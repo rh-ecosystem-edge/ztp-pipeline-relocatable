@@ -55,7 +55,7 @@ function check_cluster() {
     echo ">> Checking nodes for ${MODE}"
     for node in $(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes -o name); do
         KBLT_RDY=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ${node} -o jsonpath='{.status.conditions[?(@.reason=="KubeletReady")].status}')
-        if [[ ${KBLT_RDY} != 'True' ]];then
+        if [[ ${KBLT_RDY} != 'True' ]]; then
             echo ">> Kubelet of node ${node} Not Ready, waiting ${TIMEOUT} secs"
             sleep ${TIMEOUT}
         else
@@ -73,7 +73,6 @@ SNAPSHOTFILE="mirror-snapshot.tgz"
 HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep httpd-server-route | awk '{print $2}')
 DOCKERPATH="/var/lib/registry/docker"
 HTTPDPATH="/var/www/html"
-
 
 if [[ ${MODE} == 'hub' ]]; then
 

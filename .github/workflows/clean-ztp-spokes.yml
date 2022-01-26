@@ -22,7 +22,7 @@ jobs:
   clean-spokes:
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
-      - name: Clean Spokes 
+      - name: Clean Spokes
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.CLEAN_SPOKES}}
