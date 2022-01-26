@@ -19,8 +19,18 @@ function render_file() {
     fi
 
     DESTINATION_FILE=${2:-""}
+    ready=false
     if [[ ${DESTINATION_FILE} == "" ]]; then
-        envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+        for try in seq {0..10}
+        do
+            envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+            if [[ $? == 0 ]]; then
+                ready=true
+                break
+            fi
+            echo "Retrying the File Rendering (${try}/10): ${SOURCE_FILE}"
+            sleep 5
+        done
     else
         envsubst <${SOURCE_FILE} >${DESTINATION_FILE}
     fi
