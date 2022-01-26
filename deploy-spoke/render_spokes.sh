@@ -181,7 +181,7 @@ spec:
  nmStateConfigLabelSelector:
    matchLabels:
      nmstate_config_cluster_name: $CHANGE_SPOKE_NAME
- ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE}' 
+ ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE}'
  sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
 EOF
 
