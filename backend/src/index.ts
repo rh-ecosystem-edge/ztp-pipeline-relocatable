@@ -1,13 +1,15 @@
 import express from 'express';
 
 import { login, loginCallback, logout } from './k8s/oauth';
-import { ping, proxy } from './endpoints';
+import { liveness, ping, proxy, readiness } from './endpoints';
 
 const PORT = process.env.BACKEND_PORT || 3001;
 
 const app = express();
 
 app.get('/ping', ping);
+app.get(`/readinessProbe`, readiness)
+app.get(`/livenessProbe`, liveness)
 
 app.get(`/login`, login);
 app.get(`/login/callback`, loginCallback);
