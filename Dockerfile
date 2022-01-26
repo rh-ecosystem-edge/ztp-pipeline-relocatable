@@ -22,9 +22,10 @@ WORKDIR /app
 ENV NODE_ENV production
 
 COPY --from=builder /app/backend/build ./
+COPY --from=builder /app/backend/node_modules ./node_modules/
 COPY --from=builder /app/frontend/build ./client/
 
-EXPOSE 4000
+EXPOSE 3001
 USER 1001
 
 CMD ["node", "./index.js"]
