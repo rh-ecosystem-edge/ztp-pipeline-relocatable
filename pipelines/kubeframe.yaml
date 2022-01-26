@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: ztp-spoke-pipeline
+  name: kubeframe
 spec:
   description: pipeline to deploy kubeframe
   params:
@@ -56,7 +56,7 @@ spec:
     taskRef:
       name: ztp-deploy-metallb
     params:
-    - name: metallbs-config
+    - name: spokes-config
       value: $(params.spokes-config)
     - name: ztp-tag
       value: $(params.ztp-tag)
