@@ -28,7 +28,8 @@ if ./verify.sh; then
     CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
     echo -e "  ca-bundle.crt: |\n$(echo -n "${CABUNDLE}" | sed "s/^/    /")" >>01_Mirror_ConfigMap.yml
     cat registryconf.txt >>01_Mirror_ConfigMap.yml
-    NEWTAG=${LOCAL_REG}/ocp4/openshift4:${OC_OCP_TAG}
+    NEWTAG=${LOCAL_REG}/ocp4/openshift4:${OC_OCP_TAG}/
+    sed -i "s/CHANGE_SPOKE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
     sed -i "s%TAG_OCP_IMAGE_RELEASE%${NEWTAG}%g" 02-cluster_imageset.yml
 
     echo ">>>> Deploy hub configs"

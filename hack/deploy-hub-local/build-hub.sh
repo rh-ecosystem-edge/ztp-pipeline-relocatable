@@ -80,7 +80,7 @@ CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
 # Default configuration
 cat <<EOF >>spokes.yaml
 config:
-  clusterimageset: openshift-v4.9.13
+  clusterimageset: 'openshift-v4.9.13'
   OC_OCP_VERSION: '4.9'
   OC_OCP_TAG: '4.9.13-x86_64'
   OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary
