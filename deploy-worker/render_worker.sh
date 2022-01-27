@@ -161,13 +161,13 @@ function verify_worker() {
 
     echo ">>>> Waiting for Worker Agent: ${cluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} --no-headers | grep worker | cut -f1 -d\ )
     while [ "$timeout" -lt "600" ]; do
-        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${WORKER_AGENT} -o jsonpath='{.status.conditions[?(@.reason=="InstallationCompleted")].status}') == 'True' ]]; then
+        WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} --no-headers | grep worker | cut -f1 -d\ )
+        echo "Waiting for Worker's agent installation for spoke: ${cluster} - Agent: ${WORKER_AGENT}"
+        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${WORKER_AGENT} -o jsonpath='{.status.conditions[?(@.reason=="InstallationCompleted")].status}') == True ]]; then
             ready=true
             break
         fi
-        echo "Waiting for Worker's agent installation for spoke: ${cluster}"
         sleep 5
         timeout=$((timeout + 1))
     done
