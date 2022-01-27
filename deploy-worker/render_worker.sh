@@ -149,7 +149,7 @@ spec:
 EOF
 
     echo ">>>> Deploying BMH Worker for ${1}"
-    oc --kubeconfig=${OUTPUTDIR}/kubeconfig-hub apply -f ${OUTPUT}
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUT}
 
 }
 
