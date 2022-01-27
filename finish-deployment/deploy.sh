@@ -99,6 +99,6 @@ for spoke in ${ALLSPOKES}; do
     echo ">> Cluster: ${spoke}"
     check_cluster ${spoke}
     recover_spoke_files ${spoke}
-    detach_cluster ${spoke}
-    clean_cluster ${spoke}
+    #detach_cluster ${spoke}
+    #clean_cluster ${spoke}
 done
