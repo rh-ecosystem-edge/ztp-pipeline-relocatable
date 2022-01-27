@@ -97,7 +97,7 @@ echo ">>>> Verify the PV available"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get pv | wc -l) -lt 3 ]]; then
     #TODO verify the PV size  and if does not exists, create it from disk
-    echo "Error: Persisten volumes not available in the hub"
+    echo "Error: Persistent volumes not available in the hub"
     exit 6
 fi
 
