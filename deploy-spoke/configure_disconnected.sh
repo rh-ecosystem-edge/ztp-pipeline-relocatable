@@ -162,6 +162,37 @@ function icsp_maker() {
     done <${MAP_FILE}
 }
 
+function side_evict_error() {
+    echo ">> Looking for eviction errors"
+    pattern='SchedulingDisabled'
+    
+    conflicting_node="$(oc --kubeconfig=${TARGET_KUBECONFIG} get node --no-headers | grep ${pattern} | cut -f1 -d\ )"
+    
+    if [[ -z ${conflicting_node} ]]; then
+        echo "No masters on ${pattern}"
+    else
+        conflicting_daemon_pod=$(oc --kubeconfig=${TARGET_KUBECONFIG} get pod -n openshift-machine-config-operator -o wide --no-headers | grep daemon | grep ${conflicting_node} | cut -f1 -d\ )
+        log_entry="$(oc --kubeconfig=${TARGET_KUBECONFIG} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep evicting |tail -1 | grep pods)"
+        
+        if [[ -z ${log_entry} ]]; then
+            echo "No Conflicting LogEntry on ${conflicting_daemon_pod}"
+        else
+            echo ">> Conflicting LogEntry Found!!"
+            pod=$(echo ${log_entry##*pods/}|cut -d\" -f2)
+            conflicting_ns=$(oc --kubeconfig=${TARGET_KUBECONFIG} get pod -A | grep ${pod} | cut -f1 -d\ )
+            
+            echo ">> Clean Eviction triggered info: "
+            echo NODE: ${conflicting_node}
+            echo DAEMON: ${conflicting_daemon_pod}
+            echo NS: ${conflicting_ns}
+            echo LOG: ${log_entry}
+            echo POD: ${pod}
+            
+            oc --kubeconfig=${TARGET_KUBECONFIG} delete pod -n ${conflicting_ns} ${pod}
+        fi
+    fi
+}
+
 function wait_for_mcp_ready() {
     # This function waits for the MCP to be ready
     # It will wait for the MCP to be ready for the given number of seconds
@@ -184,7 +215,8 @@ function wait_for_mcp_ready() {
             echo ">>>> MCP ${CLUSTER} is ready"
             return 0
         fi
-        sleep 10
+        sleep 20
+        side_evict_error
         echo ">>>>"
     done
 
@@ -303,7 +335,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${spoke}.yaml
 
-                wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 240
+                wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 120
             fi
         fi
     done
