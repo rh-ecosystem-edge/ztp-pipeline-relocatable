@@ -25,7 +25,7 @@ COPY --from=builder /app/backend/build ./
 COPY --from=builder /app/backend/node_modules ./node_modules/
 COPY --from=builder /app/frontend/build ./client/
 
-EXPOSE 3001
+EXPOSE 3000
 USER 1001
 
 CMD ["node", "./index.js"]

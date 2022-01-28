@@ -405,11 +405,18 @@ export async function fetchRetry<T>(options: {
         if (status.status !== 'Success') {
           if (status.code === 401) {
             // 401 is returned from kubernetes in a Status object if token is not valid
+            console.info(
+              'API returned is Unauthorized response. Redirecting to login: ',
+              `${getBackendUrl()}/login`,
+            );
+            window.location.pathname = `${getBackendUrl()}/login`;
+            /*
             if (process.env.NODE_ENV === 'production') {
               window.location.reload();
             } else {
               window.location.href = `${getBackendUrl()}/login`;
             }
+            */
             throw new ResourceError(status.message as string, status.code as number);
           } else if (ResourceErrorCodes.includes(status.code as number)) {
             throw new ResourceError(status.message as string, status.code as number);
@@ -431,13 +438,21 @@ export async function fetchRetry<T>(options: {
         case 302: // 302 is returned when token is valid but logged out
         case 401: // 401 is returned from the backend if no token cookie is on request
           if (!options.disableRedirectUnauthorizedLogin) {
-            console.info('API returned is Unauthorized response. Redirecting to login.');
+            console.info(
+              'API returned is Unauthorized response. Redirecting to login: ',
+              `${getBackendUrl()}/login`,
+            );
+            // window.location.href = `${getBackendUrl()}/login`;
+            window.location.pathname = `${getBackendUrl()}/login`;
+
+            /*
             if (process.env.NODE_ENV === 'production') {
               // TODO: verify that!!!
               window.location.reload();
             } else {
               window.location.href = `${getBackendUrl()}/login`;
             }
+            */
           }
           throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized);
         case 404:

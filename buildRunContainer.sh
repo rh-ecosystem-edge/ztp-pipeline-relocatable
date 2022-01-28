@@ -2,8 +2,17 @@
 
 podman build . -f Dockerfile -t kubeframe:test
 
-# At runtime, expected to be in: /var/run/secrets/kubernetes.io/serviceaccount
-export TOKEN=`oc whoami -t`
-export CLUSTER_API_URL=`oc whoami --show-server=true`
-podman run -t -p 3001:3001/tcp --env CLUSTER_API_URL --env TOKEN kubeframe:test
+yarn setup
+source backend/envs
+export BACKEND_PORT=3000
+
+podman run -t -p 3000:3000/tcp \
+  --env BACKEND_PORT \
+  --env FRONTEND_URL \
+  --env CLUSTER_API_URL \
+  --env TOKEN \
+  --env OAUTH2_CLIENT_ID \
+  --env OAUTH2_CLIENT_SECRET \
+  --env OAUTH2_REDIRECT_URL \
+   kubeframe:test
 
