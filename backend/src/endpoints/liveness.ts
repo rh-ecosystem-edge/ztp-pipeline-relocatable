@@ -52,7 +52,7 @@ export async function apiServerPing(): Promise<void> {
   try {
     const response: FetchResponse = await fetchRetry(`${getClusterApiUrl()}/apis`, {
       headers: {
-        [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${serviceAcccountToken}`,
+        [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${getServiceAcccountToken()}`,
       },
       agent,
     });
