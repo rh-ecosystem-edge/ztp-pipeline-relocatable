@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o pipefail
 set -o nounset
@@ -21,8 +21,7 @@ function render_file() {
     DESTINATION_FILE=${2:-""}
     ready=false
     if [[ ${DESTINATION_FILE} == "" ]]; then
-        for try in seq {0..10}
-        do
+        for try in seq {0..10}; do
             envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
             if [[ $? == 0 ]]; then
                 ready=true

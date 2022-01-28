@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Description: Renders clusters YAML into different files for each spoke cluster
 
 set -o pipefail
