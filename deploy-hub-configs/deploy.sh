@@ -26,8 +26,8 @@ if ./verify.sh; then
     LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})" #TODO change it to use the global common variable importing here the source commons
     sed -i "s/CHANGEDOMAIN/${LOCAL_REG}/g" registryconf.txt
     CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
-    echo "  ca-bundle.crt: |" >> 01_Mirror_ConfigMap.yml
-    echo -n "${CABUNDLE}" | sed "s/^/    /" >> 01_Mirror_ConfigMap.yml
+    echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
+    echo -n "${CABUNDLE}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
     cat registryconf.txt >>01_Mirror_ConfigMap.yml
     NEWTAG=${LOCAL_REG}/ocp4/openshift4:${OC_OCP_TAG}/
     sed -i "s/CHANGE_SPOKE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
