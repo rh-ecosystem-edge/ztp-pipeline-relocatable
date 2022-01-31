@@ -44,13 +44,17 @@ if ./verify.sh; then
 
     oc patch hiveconfig hive --type merge -p '{"spec":{"targetNamespace":"hive","logLevel":"debug","featureGates":{"custom":{"enabled":["AlphaAgentInstallStrategy"]},"featureSet":"Custom"}}}'
 
-    echo ">>>> Wait for ACM and AI deployed successfully"
+    echo ">>>> Wait for ACM and Assisted services deployed"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
         echo "Waiting for Assisted installer to be ready..."
         sleep 5
     done
     ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
+    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-image-service
+
+    echo ">>>> Wait for ACM and AI deployed successfully
+
 
 else
     echo ">>>> This step is not neccesary, everything looks ready"
