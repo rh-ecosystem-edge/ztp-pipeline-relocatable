@@ -81,11 +81,16 @@ if [[ ${MODE} == 'hub' ]]; then
     # Execute from node with the http and store in httpd path
     check_cluster ${MODE}
 
-    # Get local tarball from REGISTRY
-    oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
+    echo ">> Mirroring the registry snapshot only if it does not exist previously"
+    if [[ ! -f /var/tmp/${SNAPSHOTFILE} ]]; then
+      # Get local tarball from REGISTRY
+      oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
 
-    # Upload local tarball to HTTPD
-    oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
+      # Upload local tarball to HTTPD
+      oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
+    else
+      echo ">> Mirroring the registry snapshot already exists"
+    fi
 
 elif [[ ${MODE} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
