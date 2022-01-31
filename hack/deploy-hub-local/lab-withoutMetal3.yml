@@ -2,6 +2,7 @@ cluster: qct11-ci
 master_memory: 18000
 domain: alklabs.com
 version: ci
+image: centos8stream
 tag: 4.8.0-0.ci-2021-03-24-043821
 numcpus: 16
 bootstrap_memory: 8192
