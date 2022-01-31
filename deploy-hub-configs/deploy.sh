@@ -2,6 +2,7 @@
 
 set -o pipefail
 set -o nounset
+set -x
 set -m
 
 # variables
