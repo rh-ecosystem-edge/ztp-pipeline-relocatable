@@ -53,7 +53,7 @@ if ./verify.sh; then
     ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
     ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-image-service
 
-    echo ">>>> Wait for ACM and AI deployed successfully
+    echo ">>>> Wait for ACM and AI deployed successfully"
 
 
 else
