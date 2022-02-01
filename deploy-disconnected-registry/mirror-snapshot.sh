@@ -83,14 +83,15 @@ if [[ ${MODE} == 'hub' ]]; then
 
     echo ">> Mirroring the registry snapshot only if it does not exist previously"
     if [[ ! -f /var/tmp/${SNAPSHOTFILE} ]]; then
-      # Get local tarball from REGISTRY
-      oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
-
-      # Upload local tarball to HTTPD
-      oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
-    else
-      echo ">> Mirroring the registry snapshot already exists"
+        echo ">> Create a tarball from registry is needed"
+        oc --kubeconfig=${KUBECONFIG_HUB} rsync ${REGISTRY_POD}:${DOCKERPATH}/${SNAPSHOTFILE} /var/tmp/${SNAPSHOTFILE}
+        # Get local tarball from REGISTRY
+        oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
     fi
+    # Upload local tarball to HTTPD
+    oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
+    echo ">> Mirroring the registry snapshot is done successfully"
+
 
 elif [[ ${MODE} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
