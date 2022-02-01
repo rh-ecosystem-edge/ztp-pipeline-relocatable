@@ -89,6 +89,7 @@ if [[ ${MODE} == 'hub' ]]; then
         oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
     fi
     # Upload local tarball to HTTPD
+    echo ">> Uploading the tarball to HTTPD"
     oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
     echo ">> Mirroring the registry snapshot is done successfully"
 
