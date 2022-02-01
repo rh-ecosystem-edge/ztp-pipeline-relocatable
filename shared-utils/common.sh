@@ -67,10 +67,17 @@ function grab_api_ingress() {
 }
 
 # SPOKES_FILE variable must be exported in the environment
+export KUBECONFIG_HUB=${KUBECONFIG}
+
+echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
 export OC_DIS_CATALOG=kubeframe-catalog
 export MARKET_NS=openshift-marketplace
 export KUBEFRAME_NS=kubeframe
 export OUTPUTDIR=${OUTPUTDIR:-$WORKDIR/build}
+export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
+export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
 
 [ ! -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
 
@@ -88,6 +95,12 @@ if [ ! -f "${SPOKES_FILE}" ]; then
     exit 1
 fi
 
+export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${SPOKES_FILE})
+export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})
+export OC_OCS_VERSION=$(yq eval ".config.OC_OCS_VERSION" ${SPOKES_FILE})
+export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${SPOKES_FILE})
+export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
+export CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
 
 if [ -z ${KUBECONFIG+x} ]; then
 	echo "Please, provide a path for the hub's KUBECONFIG: It will be created if it doesn't exist"
@@ -106,23 +119,8 @@ elif [[ ! -f "${KUBECONFIG}" ]]; then
 fi
 
 export KUBECONFIG_HUB=${KUBECONFIG}
-
-echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
-export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${SPOKES_FILE})
-export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})
-export OC_OCS_VERSION=$(yq eval ".config.OC_OCS_VERSION" ${SPOKES_FILE})
-export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${SPOKES_FILE})
-export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
-export CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
-export OC_DIS_CATALOG=kubeframe-catalog
-export MARKET_NS=openshift-marketplace
-export KUBEFRAME_NS=kubeframe
-export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
-export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
-
 export PULL_SECRET=${OUTPUTDIR}/pull-secret.json
+
 if [[ ! -f ${PULL_SECRET} ]]; then
     echo "Pull secret file ${PULL_SECRET} does not exist, grabbing from OpenShift"
     oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
