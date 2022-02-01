@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
@@ -8,7 +8,7 @@ set -m
 # variables
 # #########
 export DEPLOY_OCP_DIR="./"
-export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.0-x86_64"
+export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.13-x86_64"
 export OC_CLUSTER_NAME="test-ci"
 export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
@@ -51,6 +51,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+            git pull
             kcli create plan -k -f create-vm.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
 
         else
@@ -77,9 +78,9 @@ CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
 # Default configuration
 cat <<EOF >>spokes.yaml
 config:
-  clusterimageset: openshift-v4.9.0
+  clusterimageset: openshift-v4.9.13
   OC_OCP_VERSION: '4.9'
-  OC_OCP_TAG: '4.9.0-x86_64'
+  OC_OCP_TAG: '4.9.13-x86_64'
   OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary
   OC_ACM_VERSION: '2.4'
   OC_OCS_VERSION: '4.8'
@@ -96,7 +97,7 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
 EOF
     for master in 0 1 2; do
         # Stanza generation for each master
-        MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} | grep id | awk '{print $2}')
+        MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} -f id -v)
         cat <<EOF >>spokes.yaml
       master${master}:
         nic_ext_dhcp: enp1s0
@@ -116,7 +117,7 @@ EOF
     
     # Add the single worker
     worker=0
-    WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} | grep id | awk '{print $2}')
+    WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} -f id -v)
 
     cat <<EOF >>spokes.yaml
       worker${worker}:
@@ -138,6 +139,7 @@ done
 
 kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
 kcli create dns -n bare-net api.spoke0-cluster.alklabs.com -i 192.168.150.201
+kcli create dns -n bare-net api-int.spoke0-cluster.alklabs.com -i 192.168.150.201
 
 echo ">>>> EOF"
 echo ">>>>>>>>"

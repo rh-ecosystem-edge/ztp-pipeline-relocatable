@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
@@ -8,7 +8,7 @@ set -m
 # variables
 # #########
 export DEPLOY_OCP_DIR="./"
-export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.0-x86_64"
+export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.13-x86_64"
 export OC_CLUSTER_NAME="test-ci"
 export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
@@ -51,6 +51,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+            git pull
             kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
             kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
         else
@@ -79,9 +80,9 @@ CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
 # Default configuration
 cat <<EOF >>spokes.yaml
 config:
-  clusterimageset: openshift-v4.9.0
+  clusterimageset: 'openshift-v4.9.13'
   OC_OCP_VERSION: '4.9'
-  OC_OCP_TAG: '4.9.0-x86_64'
+  OC_OCP_TAG: '4.9.13-x86_64'
   OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary
   OC_ACM_VERSION: '2.4'
   OC_OCS_VERSION: '4.8'

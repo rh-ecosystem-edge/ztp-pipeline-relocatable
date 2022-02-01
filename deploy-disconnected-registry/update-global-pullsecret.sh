@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh

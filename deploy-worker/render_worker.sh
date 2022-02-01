@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Description: Renders workers YAML into different files for each spoke cluster
 
 set -o pipefail
@@ -49,14 +49,12 @@ create_worker_definitions() {
     # Master loop
     export CHANGE_SPOKE_WORKER_PUB_INT=$(yq eval ".spokes[${i}].${SPOKE_NAME}.worker${worker}.nic_int_static" ${SPOKES_FILE})
     export CHANGE_SPOKE_WORKER_MGMT_INT=$(yq eval ".spokes[${i}].${SPOKE_NAME}.worker${worker}.nic_ext_dhcp" ${SPOKES_FILE})
-
     export CHANGE_SPOKE_WORKER_PUB_INT_IP=192.168.7.13
-
+    export SPOKE_MASTER_0_INT_IP=192.168.7.10
     export CHANGE_SPOKE_WORKER_PUB_INT_MAC=$(yq eval ".spokes[${i}].${SPOKE_NAME}.worker${worker}.mac_int_static" ${SPOKES_FILE})
     export CHANGE_SPOKE_WORKER_BMC_USERNAME=$(yq eval ".spokes[${i}].${SPOKE_NAME}.worker${worker}.bmc_user" ${SPOKES_FILE} | base64)
     export CHANGE_SPOKE_WORKER_BMC_PASSWORD=$(yq eval ".spokes[${i}].${SPOKE_NAME}.worker${worker}.bmc_pass" ${SPOKES_FILE} | base64)
     export CHANGE_SPOKE_WORKER_BMC_URL=$(yq eval ".spokes[${i}].${SPOKE_NAME}.worker${worker}.bmc_url" ${SPOKES_FILE})
-
     export CHANGE_SPOKE_WORKER_MGMT_INT_MAC=$(yq eval ".spokes[${i}].${SPOKE_NAME}.worker${worker}.mac_ext_dhcp" ${SPOKES_FILE})
 
     # Now, write the template to disk
@@ -84,7 +82,7 @@ spec:
        ipv4:
          enabled: true
          dhcp: true
-         auto-dns: true
+         auto-dns: false
          auto-gateway: true
          auto-routes: true
        mtu: 1500
@@ -102,6 +100,10 @@ spec:
              prefix-length: $CHANGE_SPOKE_WORKER_PUB_INT_MASK
        mtu: 1500
        mac-address: '$CHANGE_SPOKE_WORKER_PUB_INT_MAC'
+   dns-resolver:
+     config:
+       server:
+         - $SPOKE_MASTER_0_INT_IP
    routes:
      config:
        - destination: $CHANGE_SPOKE_WORKER_PUB_INT_ROUTE_DEST
@@ -151,6 +153,31 @@ EOF
 
 }
 
+function verify_worker() {
+
+    cluster=${1}
+    timeout=0
+    ready=false
+
+    echo ">>>> Waiting for Worker Agent: ${cluster}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    while [ "$timeout" -lt "600" ]; do
+        WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} --no-headers | grep worker | cut -f1 -d\ )
+        echo "Waiting for Worker's agent installation for spoke: ${cluster} - Agent: ${WORKER_AGENT}"
+        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${WORKER_AGENT} -o jsonpath='{.status.conditions[?(@.reason=="InstallationCompleted")].status}') == True ]]; then
+            ready=true
+            break
+        fi
+        sleep 5
+        timeout=$((timeout + 1))
+    done
+
+    if [ "$ready" == "false" ]; then
+        echo "Timeout waiting for Worker's agent installation for spoke: ${cluster}"
+        exit 1
+    fi
+}
+
 # Main code
 if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -158,4 +185,5 @@ fi
 
 for SPOKE in ${ALLSPOKES}; do
     create_worker_definitions ${SPOKE}
+    verify_worker ${SPOKE}
 done

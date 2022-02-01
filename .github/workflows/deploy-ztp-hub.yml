@@ -11,9 +11,14 @@ on:
       RUNNER:
         description: 'GitHub Action Runner Tag'
         required: true
+      SYNC:
+        description: 'Force re-sync and mirror the Hub? (yes/no)'
+        default: no
+        required: false
 
 
 env:
+  SYNC: ${{github.event.inputs.SYNC}}
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
   SPOKES_FILE: ${{github.event.inputs.SPOKES_FILE}}
   DEPLOY_ACM_DIR: deploy-acm
@@ -57,7 +62,7 @@ jobs:
 
 
   deploy-disconnected-registry-hub:
-    needs: deploy-httpd-server       # run in parallel with the other jobs
+    needs: deploy-httpd-server
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy Internal Disconnected Registry
@@ -65,14 +70,18 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'hub'
-          ./ocp-sync.sh 'hub'
-          ./olm-sync.sh 'hub'
+          # TODO: assuming that the disconnected registry is already deployed and keeping contents.
+          if [ "${{env.SYNC}}" == "yes" ]; then
+            ./ocp-sync.sh 'hub'
+            ./olm-sync.sh 'hub'
+            rm -fr /var/tmp/mirror-snapshot.tgz
+          fi
           ./update-global-pullsecret.sh 'hub'
           ./mirror-snapshot.sh 'hub'
 
 
   deploy-acm:
-    needs: deploy-disconnected-registry-hub       # run in parallel with the other jobs
+    needs: deploy-disconnected-registry-hub
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy RHACM with AI
@@ -83,7 +92,7 @@ jobs:
 
 
   deploy-icsp-hub:
-    needs: [deploy-acm, deploy-disconnected-registry-hub]       # run in parallel with the other jobs
+    needs: deploy-acm
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy ICSP in the Hub
@@ -94,7 +103,7 @@ jobs:
 
 
   deploy-hub-config:
-    needs: [deploy-acm, deploy-disconnected-registry-hub]       # run in parallel with the other jobs
+    needs: deploy-icsp-hub
     runs-on: ${{github.event.inputs.RUNNER}}
     steps:
       - name: Deploy hub configuration

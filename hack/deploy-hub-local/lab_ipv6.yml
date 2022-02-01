@@ -1,4 +1,5 @@
 lab: true
+image: centos8stream
 provisioning_enable: false
 pool: default
 disconnected: true

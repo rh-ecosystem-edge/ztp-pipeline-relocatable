@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o pipefail
 set -o nounset
@@ -19,8 +19,17 @@ function render_file() {
     fi
 
     DESTINATION_FILE=${2:-""}
+    ready=false
     if [[ ${DESTINATION_FILE} == "" ]]; then
-        envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+        for try in seq {0..10}; do
+            envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+            if [[ $? == 0 ]]; then
+                ready=true
+                break
+            fi
+            echo "Retrying the File Rendering (${try}/10): ${SOURCE_FILE}"
+            sleep 5
+        done
     else
         envsubst <${SOURCE_FILE} >${DESTINATION_FILE}
     fi
@@ -235,6 +244,7 @@ fi
 
 # This var reflects the spoke cluster you're working with
 index=0
+wait_time=240
 
 for spoke in ${ALLSPOKES}; do
     echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
@@ -305,7 +315,6 @@ for spoke in ${ALLSPOKES}; do
     verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
     echo
     check_external_access ${spoke}
-
     echo ">>>> Spoke ${spoke} finished!"
     let index++
 done

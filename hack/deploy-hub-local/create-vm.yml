@@ -26,7 +26,7 @@ spoke{{ i }}-cluster-m{{ j }}:
 spoke{{ i }}-cluster-w0:
   uefi_legacy: true
   start: false
-  memory: 32000
+  memory: 16000
   numcpus: 12
   nets:
   - name: bare-net

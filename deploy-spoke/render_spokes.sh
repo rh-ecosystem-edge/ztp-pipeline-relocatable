@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Description: Renders clusters YAML into different files for each spoke cluster
 
 set -o pipefail
@@ -67,6 +67,8 @@ create_spoke_definitions() {
         export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
         grab_api_ingress ${SPOKE_NAME}
         export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
+        export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_SPOKE_API} ${SPOKE_API_NAME}" | base64)
+        export JSON_STRING_CFG_OVERRIDE='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
 
         # Generate the spoke definition yaml
         cat <<EOF >${OUTPUTDIR}/spoke-${i}-cluster.yaml
@@ -179,6 +181,7 @@ spec:
  nmStateConfigLabelSelector:
    matchLabels:
      nmstate_config_cluster_name: $CHANGE_SPOKE_NAME
+ ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE}'
  sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
 EOF
 

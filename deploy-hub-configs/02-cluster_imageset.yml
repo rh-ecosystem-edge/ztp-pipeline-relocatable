@@ -1,7 +1,7 @@
 apiVersion: hive.openshift.io/v1
 kind: ClusterImageSet
 metadata:
-  name: openshift-v4.9.0
+  name: CHANGE_SPOKE_CLUSTERIMAGESET
   namespace: open-cluster-management
 spec:
   releaseImage: TAG_OCP_IMAGE_RELEASE

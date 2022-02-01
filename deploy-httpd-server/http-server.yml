@@ -55,7 +55,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Gi
+      storage: 200Gi
 ---
 apiVersion: route.openshift.io/v1
 kind: Route

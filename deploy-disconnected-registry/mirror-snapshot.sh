@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o pipefail
 set -o nounset
@@ -55,7 +55,7 @@ function check_cluster() {
     echo ">> Checking nodes for ${MODE}"
     for node in $(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes -o name); do
         KBLT_RDY=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ${node} -o jsonpath='{.status.conditions[?(@.reason=="KubeletReady")].status}')
-        if [[ ${KBLT_RDY} != 'True' ]];then
+        if [[ ${KBLT_RDY} != 'True' ]]; then
             echo ">> Kubelet of node ${node} Not Ready, waiting ${TIMEOUT} secs"
             sleep ${TIMEOUT}
         else
@@ -74,7 +74,6 @@ HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep htt
 DOCKERPATH="/var/lib/registry/docker"
 HTTPDPATH="/var/www/html"
 
-
 if [[ ${MODE} == 'hub' ]]; then
 
     HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep httpd | head -1 | cut -d "/" -f2-)
@@ -82,11 +81,18 @@ if [[ ${MODE} == 'hub' ]]; then
     # Execute from node with the http and store in httpd path
     check_cluster ${MODE}
 
-    # Get local tarball from REGISTRY
-    oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
-
+    echo ">> Mirroring the registry snapshot only if it does not exist previously"
+    if [[ ! -f /var/tmp/${SNAPSHOTFILE} ]]; then
+        echo ">> Create a tarball from registry is needed"
+        oc --kubeconfig=${KUBECONFIG_HUB} rsync ${REGISTRY_POD}:${DOCKERPATH}/${SNAPSHOTFILE} /var/tmp/${SNAPSHOTFILE}
+        # Get local tarball from REGISTRY
+        oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
+    fi
     # Upload local tarball to HTTPD
+    echo ">> Uploading the tarball to HTTPD"
     oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
+    echo ">> Mirroring the registry snapshot is done successfully"
+
 
 elif [[ ${MODE} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Description: Reads/sets environment variables for the scripts to run, parsing information from the configuration YAML defined in ${SPOKES_FILE}
 # SPOKES_FILE variable must be exported in the environment
 
@@ -115,6 +115,7 @@ export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})
 export OC_OCS_VERSION=$(yq eval ".config.OC_OCS_VERSION" ${SPOKES_FILE})
 export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${SPOKES_FILE})
 export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
+export CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
 export OC_DIS_CATALOG=kubeframe-catalog
 export MARKET_NS=openshift-marketplace
 export KUBEFRAME_NS=kubeframe

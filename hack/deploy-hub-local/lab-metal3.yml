@@ -1,5 +1,6 @@
 lab: true
 version: ci
+image: centos8stream
 provisioning_enable: false
 disconnected: false
 virtual_protocol: redfish

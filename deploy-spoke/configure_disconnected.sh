@@ -162,6 +162,37 @@ function icsp_maker() {
     done <${MAP_FILE}
 }
 
+function side_evict_error() {
+    echo ">> Looking for eviction errors"
+    pattern='SchedulingDisabled'
+
+    conflicting_node="$(oc --kubeconfig=${TARGET_KUBECONFIG} get node --no-headers | grep ${pattern} | cut -f1 -d\ )"
+
+    if [[ -z ${conflicting_node} ]]; then
+        echo "No masters on ${pattern}"
+    else
+        conflicting_daemon_pod=$(oc --kubeconfig=${TARGET_KUBECONFIG} get pod -n openshift-machine-config-operator -o wide --no-headers | grep daemon | grep ${conflicting_node} | cut -f1 -d\ )
+        log_entry="$(oc --kubeconfig=${TARGET_KUBECONFIG} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep evicting | tail -1 | grep pods)"
+
+        if [[ -z ${log_entry} ]]; then
+            echo "No Conflicting LogEntry on ${conflicting_daemon_pod}"
+        else
+            echo ">> Conflicting LogEntry Found!!"
+            pod=$(echo ${log_entry##*pods/} | cut -d\" -f2)
+            conflicting_ns=$(oc --kubeconfig=${TARGET_KUBECONFIG} get pod -A | grep ${pod} | cut -f1 -d\ )
+
+            echo ">> Clean Eviction triggered info: "
+            echo NODE: ${conflicting_node}
+            echo DAEMON: ${conflicting_daemon_pod}
+            echo NS: ${conflicting_ns}
+            echo LOG: ${log_entry}
+            echo POD: ${pod}
+
+            oc --kubeconfig=${TARGET_KUBECONFIG} delete pod -n ${conflicting_ns} ${pod}
+        fi
+    fi
+}
+
 function wait_for_mcp_ready() {
     # This function waits for the MCP to be ready
     # It will wait for the MCP to be ready for the given number of seconds
@@ -173,22 +204,23 @@ function wait_for_mcp_ready() {
     fi
 
     export KUBECONF=${1}
-    export SPOKE=${2}
+    export CLUSTER=${2}
     export TIMEOUT=${3}
 
-    echo ">>>> Waiting for ${SPOKE} to be ready"
+    echo ">>>> Waiting for ${CLUSTER} to be ready"
     for i in $(seq 1 ${TIMEOUT}); do
-        echo ">>>> Showing nodes in Spoke"
+        echo ">>>> Showing nodes in cluster: ${CLUSTER}"
         oc --kubeconfig=${KUBECONF} get nodes
         if [[ $(oc --kubeconfig=${KUBECONF} get mcp master -o jsonpath={'.status.readyMachineCount'}) -eq 3 ]]; then
-            echo ">>>> MCP ${SPOKE} is ready"
+            echo ">>>> MCP ${CLUSTER} is ready"
             return 0
         fi
-        sleep 10
+        sleep 20
+        side_evict_error
         echo ">>>>"
     done
 
-    echo ">>>> MCP ${SPOKE} is not ready after ${TIMEOUT} seconds"
+    echo ">>>> MCP ${CLUSTER} is not ready after ${TIMEOUT} seconds"
     exit 1
 }
 
@@ -215,6 +247,7 @@ if [[ ${MODE} == 'hub' ]]; then
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
+    wait_for_mcp_ready ${TARGET_KUBECONFIG} 'hub' 240
 
 elif [[ ${MODE} == 'spoke' ]]; then
     # Validation
@@ -302,7 +335,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml
                 oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${spoke}.yaml
 
-                wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 240
+                wait_for_mcp_ready ${TARGET_KUBECONFIG} ${spoke} 120
             fi
         fi
     done

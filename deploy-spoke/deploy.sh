@@ -15,9 +15,9 @@ source ${WORKDIR}/shared-utils/common.sh
 if ! ./verify.sh 1; then
     echo ">>>> Deploy all the manifests using kustomize"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    
+
     oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
-    
+
     cd ${OUTPUTDIR}
     oc apply -k .
 
