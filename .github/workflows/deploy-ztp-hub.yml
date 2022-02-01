@@ -74,6 +74,7 @@ jobs:
           if [ "${{env.SYNC}}" == "yes" ]; then
             ./ocp-sync.sh 'hub'
             ./olm-sync.sh 'hub'
+            rm -fr /var/tmp/mirror-snapshot.tgz
           fi
           ./update-global-pullsecret.sh 'hub'
           ./mirror-snapshot.sh 'hub'
