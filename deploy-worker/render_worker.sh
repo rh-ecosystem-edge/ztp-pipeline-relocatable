@@ -176,6 +176,7 @@ function verify_worker() {
         echo "Timeout waiting for Worker's agent installation for spoke: ${cluster}"
         exit 1
     fi
+
 }
 
 # Main code

@@ -58,8 +58,8 @@ create_spoke_definitions() {
     export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
     export CHANGE_SPOKE_CLUSTER_NET_CIDR=10.128.0.0/14
     export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
-	export CHANGE_RSA_PUB_KEY=$(oc get cm -n kube-system cluster-config-v1 --template='{{ index .data "install-config" }}' | yq e ".sshKey" -)
-	#export CHANGE_SPOKE_DNS= # hub ip or name ???
+    export CHANGE_RSA_PUB_KEY=$(oc get cm -n kube-system cluster-config-v1 -o yaml | grep -A 1 sshKey | tail -1)
+    #export CHANGE_SPOKE_DNS= # hub ip or name ???
 
     while [ "${RESULT}" != "null" ]; do
         SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
@@ -189,7 +189,6 @@ EOF
         export CHANGE_SPOKE_MASTER_PUB_INT_MASK=24
         export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
         export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
-        export CHANGE_SPOKE_MASTER_MGMT_GW=$(yq eval ".config.nic_ext_gw" ${SPOKES_FILE})
 
         # Now process blocks for each master
         for master in 0 1 2; do
@@ -225,29 +224,36 @@ spec:
      - name: $CHANGE_SPOKE_MASTER_MGMT_INT
        type: ethernet
        state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 10000
        ipv4:
          enabled: true
          dhcp: true
          auto-dns: true
          auto-gateway: true
          auto-routes: true
-       mac-address: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
+       mtu: 1500
      - name: $CHANGE_SPOKE_MASTER_PUB_INT
        type: ethernet
        state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 1000
        ipv4:
          enabled: true
          address:
            - ip: $CHANGE_SPOKE_MASTER_PUB_INT_IP
              prefix-length: $CHANGE_SPOKE_MASTER_PUB_INT_MASK
+       mtu: 1500
        mac-address: '$CHANGE_SPOKE_MASTER_PUB_INT_MAC'
-
    routes:
      config:
        - destination: $CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
-
  interfaces:
    - name: "$CHANGE_SPOKE_MASTER_MGMT_INT"
      macAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
