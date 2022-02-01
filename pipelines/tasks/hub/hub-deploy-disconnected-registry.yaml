@@ -1,0 +1,83 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hub-deploy-disconnected-registry
+  annotations:
+    description: |
+      This task will deploy the Disconnected Internal registry.
+      Then will perform the OCP and OLM sync.
+      Update the Global PullSecret for every spoke with the proper credentials
+      and in the end create a Tarball to be shared with every spoke provisioned.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-tag
+      type: string
+      default: "latest"
+    - name: config-file-path
+      type: string
+      default: ""
+    - name: spokes-config
+      type: string
+      default: ""
+    - name: sync
+      type: string
+      default: "no"
+ stepTemplate:
+   env:
+     - name: WORKDIR
+       value: "/ztp-pipeline"
+     - name: SPOKES_CONFIG
+       value: $(params.spokes-config)
+     - name: KUBECONFIG
+       value: "$(workspaces.ztp.path)/kubeconfig"
+     - name: DEPLOY_REGISTRY_DIR
+       value: "deploy-disconnected-registry"
+     - name: SYNC
+       value: $(params.sync)
+
+ steps:
+   - name: deploy-disconnected-registry
+     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+     imagePullPolicy: Always
+     script: |
+       #!/usr/bin/bash
+
+       cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+       ./deploy.sh 'hub'
+
+   - name: mirror-olm-and-ocp
+     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+     imagePullPolicy: Always
+     script: |
+       #!/usr/bin/bash
+
+       cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+
+       if [ "${SYNC}" == "yes" ]; then
+         echo "Starting Image Mirroring of OCP and OLM Step"
+         ./ocp-sync.sh 'hub'
+         ./olm-sync.sh 'hub'
+         rm -fr /var/tmp/mirror-snapshot.tgz
+       else 
+         echo "Mirror OCP and OLM Step Avoided"
+       fi
+
+   - name: update-global-pullsecret
+     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+     imagePullPolicy: Always
+     script: |
+       #!/usr/bin/bash
+
+       cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+       ./update-global-pullsecret.sh 'hub'
+
+   - name: mirror-snapshot
+     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+     imagePullPolicy: Always
+     script: |
+       #!/usr/bin/bash
+
+       cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+       ./mirror-snapshot.sh 'hub'

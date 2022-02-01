@@ -1,0 +1,125 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: deploy-ztp-hub
+spec:
+  description: Tekton Pipeline to deploy Kubeframe Hub Cluster
+  params:
+    - name: ztp-tag
+      type: string
+      default: "latest"
+    - name: kubeconfig
+      type: string
+    - name: spokes-config
+      type: string
+    - name: sync
+      type: string
+      default: "no"
+  workspaces:
+    - name: ztp
+  tasks:
+
+  # Preflight
+  - name: pre-flight
+    taskRef:
+      name: common-pre-flight 
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-tag
+        value: $(params.ztp-tag)
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy HTTPD Server
+  - name: deploy-httpd-server
+    taskRef:
+      name: hub-deploy-httpd-server 
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-tag
+        value: $(params.ztp-tag)
+    runAfter:
+      - pre-flight
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Disconnected Registry + Sync
+  - name: deploy-disconnected-registry 
+    taskRef:
+      name: hub-deploy-disconnected-registry 
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-tag
+        value: $(params.ztp-tag)
+      - name: sync
+        value: $(params.sync)
+    runAfter:
+      - deploy-httpd-server
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+
+#- name: clone-ztp-conf
+#  taskRef:
+#    name: git-clone
+#    kind: ClusterTask
+#  workspaces:
+#  - name: output
+#    workspace: ztp
+#  params:
+#  - name: url
+#    value: $(params.spokes-config)
+
+#  - name: ztp-deploy-spoke
+#    taskRef:
+#      name: ztp-deploy-spoke
+#    params:
+#    - name: spokes-config
+#      value: $(params.spokes-config)
+#    - name: ztp-tag
+#      value: $(params.ztp-tag)
+#    runAfter:
+#    - pre-flight
+#    workspaces:
+#    - name: ztp
+#      workspace: ztp
+#
+#  - name: ztp-deploy-metallb
+#    taskRef:
+#      name: ztp-deploy-metallb
+#    params:
+#    - name: spokes-config
+#      value: $(params.spokes-config)
+#    - name: ztp-tag
+#      value: $(params.ztp-tag)
+#    runAfter:
+#    - ztp-deploy-spoke
+#    workspaces:
+#    - name: ztp
+#      workspace: ztp
+#
+#  - name: ztp-deploy-worker
+#    taskRef:
+#      name: ztp-deploy-worker
+#    params:
+#    - name: spokes-config
+#      value: $(params.spokes-config)
+#    - name: ztp-tag
+#      value: $(params.ztp-tag)
+#    runAfter:
+#    - ztp-deploy-metallb
+#    workspaces:
+#    - name: ztp
+#      workspace: ztp
