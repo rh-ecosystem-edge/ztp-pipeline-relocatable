@@ -11,9 +11,14 @@ on:
       RUNNER:
         description: 'GitHub Action Runner Tag'
         required: true
+      SYNC:
+        description: 'Force re-sync and mirror the Hub? (yes/no)'
+        default: no
+        required: false
 
 
 env:
+  SYNC: ${{github.event.inputs.SYNC}}
   KUBECONFIG: ${{github.event.inputs.KUBECONFIG}}
   SPOKES_FILE: ${{github.event.inputs.SPOKES_FILE}}
   DEPLOY_ACM_DIR: deploy-acm
@@ -65,8 +70,11 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'hub'
-          ./ocp-sync.sh 'hub'
-          ./olm-sync.sh 'hub'
+        #TODO: assuming that the disconnected registry is already deployed and keeping contents.
+          if [ "${{env.SYNC}}" == "yes" ]; then
+            ./ocp-sync.sh 'hub'
+            ./olm-sync.sh 'hub'
+          fi
           ./update-global-pullsecret.sh 'hub'
           ./mirror-snapshot.sh 'hub'
 
