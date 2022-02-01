@@ -70,7 +70,7 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'hub'
-        #TODO: assuming that the disconnected registry is already deployed and keeping contents.
+          # TODO: assuming that the disconnected registry is already deployed and keeping contents.
           if [ "${{env.SYNC}}" == "yes" ]; then
             ./ocp-sync.sh 'hub'
             ./olm-sync.sh 'hub'
