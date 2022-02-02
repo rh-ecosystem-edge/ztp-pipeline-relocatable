@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hub-deploy-hub-config
+  annotations:
+    description: |
+      This task will deploy Assisted Service on the Hub Cluster.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-tag
+      type: string
+      default: "latest"
+    - name: config-file-path
+      type: string
+      default: ""
+    - name: spokes-config
+      type: string
+      default: ""
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/ztp-pipeline"
+      - name: SPOKES_CONFIG
+        value: $(params.spokes-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_HUB_CONFIGS_DIR
+        value: "deploy-hub-configs"
+  steps:
+    - name: deploy-hub-config
+      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${DEPLOY_HUB_CONFIGS_DIR}
+        ./deploy.sh

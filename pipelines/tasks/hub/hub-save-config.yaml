@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hub-save-config
+  annotations:
+    description: |
+      This task will extract and save the Hub relevant files and save them for their use in later steps.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-tag
+      type: string
+      default: "latest"
+    - name: config-file-path
+      type: string
+      default: ""
+    - name: spokes-config
+      type: string
+      default: ""
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/ztp-pipeline"
+      - name: SPOKES_CONFIG
+        value: $(params.spokes-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: RO_SPOKE_FOLDER
+        value: "/root/ztp-build-hub/"
+  steps:
+    - name: save-hub-config
+      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+        # TODO: We need to mount a volume in the pod in order to have those files available among
+        # different steps.
+
+        rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}

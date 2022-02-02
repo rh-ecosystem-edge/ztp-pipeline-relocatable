@@ -70,56 +70,70 @@ spec:
       - name: ztp
         workspace: ztp
 
+  # Deploy RHACM
+  - name: deploy-acm 
+    taskRef:
+      name: hub-deploy-acm 
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-tag
+        value: $(params.ztp-tag)
+    runAfter:
+      - deploy-disconnected-registry 
+    workspaces:
+      - name: ztp
+        workspace: ztp
 
-#- name: clone-ztp-conf
-#  taskRef:
-#    name: git-clone
-#    kind: ClusterTask
-#  workspaces:
-#  - name: output
-#    workspace: ztp
-#  params:
-#  - name: url
-#    value: $(params.spokes-config)
+  # Deploy ICSP Hub
+  - name: deploy-icsp-hub
+    taskRef:
+      name: hub-deploy-icsp-hub
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-tag
+        value: $(params.ztp-tag)
+    runAfter:
+      - deploy-acm
+    workspaces:
+      - name: ztp
+        workspace: ztp
 
-#  - name: ztp-deploy-spoke
-#    taskRef:
-#      name: ztp-deploy-spoke
-#    params:
-#    - name: spokes-config
-#      value: $(params.spokes-config)
-#    - name: ztp-tag
-#      value: $(params.ztp-tag)
-#    runAfter:
-#    - pre-flight
-#    workspaces:
-#    - name: ztp
-#      workspace: ztp
-#
-#  - name: ztp-deploy-metallb
-#    taskRef:
-#      name: ztp-deploy-metallb
-#    params:
-#    - name: spokes-config
-#      value: $(params.spokes-config)
-#    - name: ztp-tag
-#      value: $(params.ztp-tag)
-#    runAfter:
-#    - ztp-deploy-spoke
-#    workspaces:
-#    - name: ztp
-#      workspace: ztp
-#
-#  - name: ztp-deploy-worker
-#    taskRef:
-#      name: ztp-deploy-worker
-#    params:
-#    - name: spokes-config
-#      value: $(params.spokes-config)
-#    - name: ztp-tag
-#      value: $(params.ztp-tag)
-#    runAfter:
-#    - ztp-deploy-metallb
-#    workspaces:
-#    - name: ztp
-#      workspace: ztp
+  # Deploy Hub Config
+  - name: deploy-hub-config
+    taskRef:
+      name: hub-deploy-hub-config
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-tag
+        value: $(params.ztp-tag)
+    runAfter:
+      - deploy-icsp-hub
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Save Hub Configuration
+  - name: save-hub-config
+    taskRef:
+      name: hub-save-config
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-tag
+        value: $(params.ztp-tag)
+    runAfter:
+      - deploy-hub-config
+    workspaces:
+      - name: ztp
+        workspace: ztp
