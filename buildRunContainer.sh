@@ -4,7 +4,10 @@ IMAGE=quay.io/mlibra/kubeframe:latest
 podman build . -f Dockerfile -t ${IMAGE}
 podman push ${IMAGE}
 
+exit 1
+
 # run locally
+# TODO: handle TLS cert
 yarn setup
 source backend/envs
 export BACKEND_PORT=3000

@@ -62,17 +62,17 @@ spec:
         - name: BACKEND_PORT
           value: "3000"
         - name: FRONTEND_URL
-          value: http://kubeframe.apps.mlibra-cim-04.redhat.com
+          value: https://kubeframe.apps.mlibra-cim-04.redhat.com
         - name: CLUSTER_API_URL
           value: https://kubernetes.default.svc:443
         - name: OAUTH2_CLIENT_ID
           value: "kubeframeoauth"
         - name: OAUTH2_REDIRECT_URL
-          value: "http://kubeframe.apps.mlibra-cim-04.redhat.com/login/callback"
+          value: "https://kubeframe.apps.mlibra-cim-04.redhat.com/login/callback"
         - name: OAUTH2_CLIENT_SECRET
           value: "kubeframeoauthsecret"
 #        - name: BACKEND_URL
-#          value: https://kubeframe.apps.mlibra-cim-04.redhat.com/kubeframe
+#          value: https://kubeframe.apps.mlibra-cim-04.redhat.com
         image: quay.io/mlibra/kubeframe:latest
         imagePullPolicy: Always
         livenessProbe:
@@ -80,7 +80,7 @@ spec:
           httpGet:
             path: /livenessProbe
             port: 3000
-            scheme: HTTP
+            scheme: HTTPS
           initialDelaySeconds: 10
           periodSeconds: 10
           successThreshold: 1
@@ -94,7 +94,7 @@ spec:
           httpGet:
             path: /readinessProbe
             port: 3000
-            scheme: HTTP
+            scheme: HTTPS
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
@@ -102,28 +102,26 @@ spec:
           requests:
             cpu: 3m
             memory: 40Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-#        volumeMounts:
-#        - mountPath: /app/certs
-#          name: console-chart-02358-console-certs
+#        securityContext:
+#          allowPrivilegeEscalation: false
+#          capabilities:
+#            drop:
+#            - ALL
+#          privileged: false
+#          readOnlyRootFilesystem: true
+#        terminationMessagePath: /dev/termination-log
+#        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /app/certs
+          name: kubeframe-ui-certs
 #        - mountPath: /app/config
-#          name: console-chart-02358-console-config
+#          name: kubeframe-ui-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:
         runAsNonRoot: true
-#      serviceAccount: kubeframe
-#      serviceAccountName: kubeframe
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 15
 #      tolerations:
 #      - effect: NoSchedule
 #        key: dedicated
@@ -131,12 +129,12 @@ spec:
 #      - effect: NoSchedule
 #        key: node-role.kubernetes.io/infra
 #        operator: Exists
-#      volumes:
-#      - name: console-chart-02358-console-certs
-#        secret:
-#          defaultMode: 420
-#          secretName: console-chart-02358-console-certs
+      volumes:
+      - name: kubeframe-ui-certs
+        secret:
+          defaultMode: 420
+          secretName: kubeframe-ui-certs
 #      - configMap:
 #          defaultMode: 420
-#          name: console-config
-#        name: console-chart-02358-console-config
+#          name: kubeframe-ui-config
+#        name: kubeframe-ui-config

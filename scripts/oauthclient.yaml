@@ -6,5 +6,5 @@ metadata:
     app: kubeframe-ui
   name: kubeframeoauth
 redirectURIs:
-- http://kubeframe.apps.mlibra-cim-04.redhat.com/login/callback
+- https://kubeframe.apps.mlibra-cim-04.redhat.com/login/callback
 secret: kubeframeoauthsecret

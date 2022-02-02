@@ -8,10 +8,11 @@ metadata:
 spec:
   host: kubeframe.apps.mlibra-cim-04.redhat.com
   port:
-    targetPort: http
- # tls:
- #   insecureEdgeTerminationPolicy: Redirect
- #   termination: reencrypt
+    targetPort: https
+  tls:
+    # insecureEdgeTerminationPolicy: Redirect
+    # termination: reencrypt
+    termination: passthrough
   to:
     kind: Service
     name: kubeframe-ui

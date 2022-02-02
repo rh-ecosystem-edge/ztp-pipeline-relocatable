@@ -1,4 +1,6 @@
 import express from 'express';
+import https from 'https';
+import fs from 'fs';
 
 import { login, loginCallback, logout } from './k8s/oauth';
 import { liveness, ping, proxy, readiness, SA_TOKEN_FILE, serve } from './endpoints';
@@ -30,16 +32,27 @@ const startUpCheck = () => {
   });
 
   if (!process.env.BACKEND_PORT) {
-    console.warn('Optional BACKEND_PORT environment variable is missing, using default: ', PORT)
+    console.warn('Optional BACKEND_PORT environment variable is missing, using default: ', PORT);
   }
 
   if (!process.env.TOKEN) {
-    console.warn('Optional TOKEN environment variable is missing, excpecting it in ', SA_TOKEN_FILE), '. Used for liveness probe.'
+    console.warn(
+      'Optional TOKEN environment variable is missing, excpecting it in ',
+      SA_TOKEN_FILE,
+    ),
+      '. Used for liveness probe.';
   }
 };
 
 const start = () => {
   startUpCheck();
+
+  const key = fs.readFileSync(process.env.TLS_KEY_FILE || '/app/certs/tls.key');
+  const cert = fs.readFileSync(process.env.TLS_CERT_FILE || '/app/certs/tls.crt');
+  const options = {
+    key: key,
+    cert: cert,
+  };
 
   const app = express();
 
@@ -55,8 +68,9 @@ const start = () => {
 
   app.get(`/*`, serve);
 
-  app.listen(PORT, () => {
-    logger.info(`Server listening on ${PORT}`);
+  const server = https.createServer(options, app);
+  server.listen(PORT, () => {
+    logger.info(`HTTPS server listening on ${PORT}`);
   });
 };
 
