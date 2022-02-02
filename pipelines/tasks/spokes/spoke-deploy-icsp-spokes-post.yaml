@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: spoke-deploy-icsp-spokes-post
+  annotations:
+    description: |
+      This task will deploy the ICSP on the spoke cluster to point to the disconnected registry deployed in the previous step.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-tag
+      type: string
+      default: "latest"
+    - name: config-file-path
+      type: string
+      default: ""
+    - name: spokes-config
+      type: string
+      default: ""
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/ztp-pipeline"
+      - name: SPOKES_CONFIG
+        value: $(params.spokes-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_SPOKES_DIR
+        value: "deploy-spoke"
+  steps:
+    - name: deploy-icsp-spokes-post
+      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
+        ./configure_disconnected.sh 'spoke' 'post'

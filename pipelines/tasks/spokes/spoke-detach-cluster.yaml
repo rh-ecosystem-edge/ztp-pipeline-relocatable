@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: spoke-detach-cluster
+  annotations:
+    description: |
+      This task will detach the Spoke Cluster from the Hub.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-tag
+      type: string
+      default: "latest"
+    - name: config-file-path
+      type: string
+      default: ""
+    - name: spokes-config
+      type: string
+      default: ""
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/ztp-pipeline"
+      - name: SPOKES_CONFIG
+        value: $(params.spokes-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: FINISH_DEP_DIR
+        value: "finish-deployment"
+  steps:
+    - name: detach-cluster
+      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${FINISH_DEP_DIR}
+        ./deploy.sh
