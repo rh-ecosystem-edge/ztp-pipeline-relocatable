@@ -6,3 +6,9 @@ export const getClusterApiUrl = () => {
   }
   return process.env.CLUSTER_API_URL || '';
 };
+
+export const logAllEnvVariables = () => {
+  Object.keys(process.env).forEach((key) => {
+    logger.log(`${key}: ${process.env[key]}`);
+  })
+}

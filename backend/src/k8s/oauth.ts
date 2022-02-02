@@ -8,7 +8,7 @@ import { setDead } from '../endpoints/liveness';
 import { getClusterApiUrl } from './utils';
 import { deleteCookie } from './cookies';
 import { jsonRequest } from './json-request';
-import { getToken } from './token';
+import { getToken, K8S_ACCESS_TOKEN_COOKIE } from './token';
 import { redirect, respondInternalServerError, unauthorized } from './respond';
 
 const logger = console;
@@ -51,6 +51,7 @@ export const login = async (_: Request, res: Response): Promise<void> => {
 export const loginCallback = async (req: Request, res: Response): Promise<void> => {
   const url = req.url;
   logger.debug('Login callback');
+
   if (url.includes('?')) {
     const oauthInfo = await getOauthInfoPromise();
     const queryString = url.substr(url.indexOf('?') + 1);
@@ -69,10 +70,17 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
       oauthInfo.token_endpoint + '?' + requestQueryString,
     );
     if (body.access_token) {
+      let attributes: string;
+      // if (process.env.NODE_ENV === 'production') {
+      if (process.env.FRONTEND_URL?.startsWith('https://')) {  
+        attributes = 'Secure; ';
+      } else {
+        logger.log('Setting HttpOnly cookie.');
+        attributes = 'HttpOnly; Path=/';
+      }
+
       const headers = {
-        'Set-Cookie': `k8s-access-token-cookie=${body.access_token}; ${
-          process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
-        } HttpOnly; Path=/`,
+        'Set-Cookie': `${K8S_ACCESS_TOKEN_COOKIE}=${body.access_token}; ${attributes}`,
         location: process.env.FRONTEND_URL,
       };
       res.writeHead(302, headers).end();

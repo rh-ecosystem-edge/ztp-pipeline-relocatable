@@ -15,6 +15,7 @@ const agent = new Agent({ rejectUnauthorized: false });
 let serviceAcccountToken: string;
 
 export let isLive = true;
+export const SA_TOKEN_FILE = '/var/run/secrets/kubernetes.io/serviceaccount/token';
 
 // The kubelet uses liveness probes to know when to restart a container.
 export async function liveness(req: Request, res: Response): Promise<void> {
@@ -34,9 +35,7 @@ export function setDead(): void {
 export function getServiceAcccountToken(): string {
   if (serviceAcccountToken === undefined) {
     try {
-      serviceAcccountToken = readFileSync(
-        '/var/run/secrets/kubernetes.io/serviceaccount/token',
-      ).toString();
+      serviceAcccountToken = readFileSync(SA_TOKEN_FILE).toString();
     } catch (err) {
       serviceAcccountToken = process.env.TOKEN || '';
       if (!serviceAcccountToken) {
