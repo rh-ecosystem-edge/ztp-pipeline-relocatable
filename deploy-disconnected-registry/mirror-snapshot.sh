@@ -64,6 +64,36 @@ function check_cluster() {
     done
 }
 
+# Duplicated from olm-sync.sh
+function create_cs() {
+    if [[ ${MODE} == 'hub' ]]; then
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
+    elif [[ ${MODE} == 'spoke' ]]; then
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-${spoke}.yaml
+    fi
+
+    cat >${CS_OUTFILE} <<EOF
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ${OC_DIS_CATALOG}
+  namespace: ${MARKET_NS}
+spec:
+  sourceType: grpc
+  image: ${OLM_DESTINATION_INDEX}
+  displayName: Disconnected Lab
+  publisher: disconnected-lab
+  updateStrategy:
+    registryPoll:
+      interval: 30m
+EOF
+
+    echo ""
+    echo "To apply the Red Hat Operators catalog mirror configuration to your cluster, do the following once per cluster:"
+    echo "oc apply -f ${CS_OUTFILE}"
+}
+
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
 
@@ -76,7 +106,6 @@ DOCKERPATH="/var/lib/registry/docker"
 HTTPDPATH="/var/www/html"
 
 if [[ ${MODE} == 'hub' ]]; then
-
     HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep httpd | head -1 | cut -d "/" -f2-)
     REGISTRY_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
     # Execute from node with the http and store in httpd path
@@ -114,6 +143,9 @@ if [[ ${MODE} == 'hub' ]]; then
         # Cleanup downloaded file
         oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
 
+        # Create catalog source for the hub
+        create_cs ${MODE}
+
         echo ">> Restoring registry tarball when not syncing it completed"
     fi
 
@@ -126,6 +158,9 @@ elif [[ ${MODE} == 'spoke' ]]; then
     URL="http://${HTTPSERVICE}/${SNAPSHOTFILE}"
 
     for spoke in ${ALLSPOKES}; do
+        # Restore hub vars in case we modified it as spoke
+        source ./common.sh hub
+
         # Restore
         echo "spoke: ${spoke}"
         if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
@@ -146,6 +181,9 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         # Cleanup downloaded file
         oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
+
+        source ./common.sh spoke
+        create_cs ${MODE}
 
     done
 fi

@@ -73,13 +73,13 @@ jobs:
 
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'hub'
+          ./update-global-pullsecret.sh 'hub'
           # TODO: assuming that the disconnected registry is already deployed and keeping contents.
           if [ "${SYNCORNOT}" == "yes" ]; then
             ./ocp-sync.sh 'hub'
             ./olm-sync.sh 'hub'
             rm -fr /var/tmp/mirror-snapshot.tgz
           fi
-          ./update-global-pullsecret.sh 'hub'
           ./mirror-snapshot.sh 'hub' ${SYNCORNOT}
 
 

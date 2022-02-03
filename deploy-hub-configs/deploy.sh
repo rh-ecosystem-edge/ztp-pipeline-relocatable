@@ -22,14 +22,14 @@ if ./verify.sh; then
     HTTPSERVICE=$(oc get routes -n default | grep httpd-server-route | awk '{print $2}')
     sed -i "s/HTTPD_SERVICE/${HTTPSERVICE}/g" 04-agent-service-config.yml
     pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d | jq -c)
-    echo -n "  .dockerconfigjson: "\'$pull\' >> 05-pullsecrethub.yml
+    echo -n "  .dockerconfigjson: "\'$pull\' >>05-pullsecrethub.yml
     REGISTRY=kubeframe-registry
     LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})" #TODO change it to use the global common variable importing here the source commons
     sed -i "s/CHANGEDOMAIN/${LOCAL_REG}/g" registryconf.txt
     CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
     echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
     echo -n "${CABUNDLE}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
-    echo "" >> 01_Mirror_ConfigMap.yml
+    echo "" >>01_Mirror_ConfigMap.yml
     cat registryconf.txt >>01_Mirror_ConfigMap.yml
     NEWTAG=${LOCAL_REG}/ocp4/openshift4:${OC_OCP_TAG}
     sed -i "s/CHANGE_SPOKE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
@@ -57,8 +57,8 @@ if ./verify.sh; then
 
     echo ">>>> Wait for ACM and AI deployed successfully"
 
-
 else
+
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
 
