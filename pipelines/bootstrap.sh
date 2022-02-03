@@ -11,13 +11,13 @@ source ${WORKDIR}/shared-utils/common.sh
 function deploy_pipeline() {
     echo ">>>> Deploying Kubeframe Pipelines and tasks"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -k .
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -k ${PIPELINES_DIR}/.
 }
 
 function deploy_openshift_pipelines() {
     echo ">>>> Deploy Openshift Pipelines"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${WORKDIR}/manifests/01-subscription.yaml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${PIPELINES_DIR}/manifests/01-subscription.yaml
     sleep 5
     
     echo ">>>> Waiting for: Openshift Pipelines"
@@ -38,6 +38,7 @@ function deploy_openshift_pipelines() {
     fi
 }
 
+export PIPELINES_DIR=${WORKDIR}/pipelines
 
 deploy_openshift_pipelines
 deploy_pipeline
