@@ -25,51 +25,51 @@ spec:
     - name: sync
       type: string
       default: "no"
- stepTemplate:
-   env:
-     - name: WORKDIR
-       value: "/ztp-pipeline"
-     - name: SPOKES_CONFIG
-       value: $(params.spokes-config)
-     - name: KUBECONFIG
-       value: "$(workspaces.ztp.path)/kubeconfig"
-     - name: DEPLOY_REGISTRY_DIR
-       value: "deploy-disconnected-registry"
-     - name: SYNC
-       value: $(params.sync)
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/ztp-pipeline"
+      - name: SPOKES_CONFIG
+        value: $(params.spokes-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_REGISTRY_DIR
+        value: "deploy-disconnected-registry"
+      - name: SYNC
+        value: $(params.sync)
 
- steps:
-   - name: deploy-disconnected-registry
-     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
-     imagePullPolicy: Always
-     script: |
-       #!/usr/bin/bash
+  steps:
+    - name: deploy-disconnected-registry
+      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
 
-       cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
-       ./deploy.sh 'spoke'
+        cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+        ./deploy.sh 'spoke'
 
-   - name: mirror-olm-and-ocp
-     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
-     imagePullPolicy: Always
-     script: |
-       #!/usr/bin/bash
+    - name: mirror-olm-and-ocp
+      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
 
-       cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+        cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
 
-       if [ "${SYNC}" == "yes" ]; then
-         echo "Starting Image Mirroring of OCP and OLM Step on the Spoke Cluster"
-         ./ocp-sync.sh 'spoke'
-         ./olm-sync.sh 'spoke'
-       else
-         echo "Mirror OCP and OLM Step Avoided, Using Tarball"
-         ./mirror-snapshot.sh 'spoke'
-       fi
+        if [ "${SYNC}" == "yes" ]; then
+          echo "Starting Image Mirroring of OCP and OLM Step on the Spoke Cluster"
+          ./ocp-sync.sh 'spoke'
+          ./olm-sync.sh 'spoke'
+        else
+          echo "Mirror OCP and OLM Step Avoided, Using Tarball"
+          ./mirror-snapshot.sh 'spoke'
+        fi
 
-   - name: update-global-pullsecret
-     image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
-     imagePullPolicy: Always
-     script: |
-       #!/usr/bin/bash
+    - name: update-global-pullsecret
+      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
 
-       cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
-       ./update-global-pullsecret.sh 'spoke'
+        cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+        ./update-global-pullsecret.sh 'spoke'
