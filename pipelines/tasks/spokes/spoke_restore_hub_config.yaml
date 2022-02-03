@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: spoke-restore-hub-config
-  namespace: spoke-deployer
   annotations:
     description: |
       This task will recover the data saved from teh Hub in the Hub Pipeline and put it on the pod to be consumed by the tasks

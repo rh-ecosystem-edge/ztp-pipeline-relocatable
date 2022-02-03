@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: spoke-deploy-metallb
-  namespace: spoke-deployer
   annotations:
     description: |
       This task will deploy MetalLB on the Spoke Cluster.

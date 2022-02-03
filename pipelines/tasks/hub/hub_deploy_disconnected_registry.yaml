@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: hub-deploy-disconnected-registry
-  namespace: spoke-deployer
   annotations:
     description: |
       This task will deploy the Disconnected Internal registry.

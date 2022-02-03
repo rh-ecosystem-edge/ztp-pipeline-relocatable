@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: spoke-deploy-icsp-spokes-post
-  namespace: spoke-deployer
   annotations:
     description: |
       This task will deploy the ICSP on the spoke cluster to point to the disconnected registry deployed in the previous step.

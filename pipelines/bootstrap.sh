@@ -8,9 +8,9 @@ set -m
 function create_permissions() {
     echo ">>>> Creating NS ${SPOKE_DEPLOYER_NS} and giving permissions to SA ${SPOKE_DEPLOYER_SA}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${SPOKE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f - || echo "NS: Done"
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} create sa ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f - || echo "SA: Done"
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f - || echo "Cluster Admin to SA: Done"
+    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${SPOKE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} create sa ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
     echo
 }
 
@@ -62,8 +62,8 @@ export BASEDIR=$(dirname "$0")
 export BRANCH='tekton-pipeline'
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export PIPELINES_DIR=${WORKDIR}/pipelines
-export SPOKE_DEPLOYER_NS='spoke-deployer'
-export SPOKE_DEPLOYER_SA='spoke-deployer'
+export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/tasks/kustomization.yaml")
+export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 export KUBECONFIG_HUB="${1}"
 
 create_permissions

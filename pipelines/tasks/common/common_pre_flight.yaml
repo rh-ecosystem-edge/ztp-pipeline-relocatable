@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: common-pre-flight
-  namespace: spoke-deployer
   annotations:
     description: |
       This task will execute a quick check of some pre-requirements, like binaries, files, etc...
