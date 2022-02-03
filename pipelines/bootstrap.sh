@@ -17,8 +17,8 @@ function deploy_pipeline() {
 function deploy_openshift_pipelines() {
     echo ">>>> Deploy Openshift Pipelines"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/01-subscription.yaml
-    sleep 60
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${WORKDIR}/manifests/01-subscription.yaml
+    sleep 5
     
     echo ">>>> Waiting for: Openshift Pipelines"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

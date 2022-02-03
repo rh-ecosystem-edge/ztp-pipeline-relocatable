@@ -1,5 +1,19 @@
-bases:
-  - tasks
 resources:
   - deploy-ztp-hub.yaml
   - deploy-ztp-spokes.yaml
+  - common/common-pre-flight.yaml
+  - hub/hub-deploy-acm.yaml
+  - hub/hub-deploy-disconnected-registry.yaml
+  - hub/hub-deploy-httpd-server.yaml
+  - hub/hub-deploy-hub-config.yaml
+  - hub/hub-deploy-icsp.yaml
+  - hub/hub-save-config.yaml
+  - spokes/spoke-deploy-disconnected-registry-spokes.yaml
+  - spokes/spoke-deploy-icsp-spokes-post.yaml
+  - spokes/spoke-deploy-icsp-spokes-pre.yaml
+  - spokes/spoke-deploy-metallb.yaml
+  - spokes/spoke-deploy-ocs.yaml
+  - spokes/spoke-deploy-spoke.yaml
+  - spokes/spoke-deploy-workers.yaml
+  - spokes/spoke-detach-cluster.yaml
+  - spokes/spoke-restore-hub-config.yaml
