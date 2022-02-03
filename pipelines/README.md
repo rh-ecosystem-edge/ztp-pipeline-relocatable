@@ -29,17 +29,23 @@ curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-reloc
 
 - This is the output:
 ```
->>>> Cloning Repository into your local folder"
+>>>> Creating NS spoke-deployer and giving permissions to SA spoke-deployer
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+namespace/spoke-deployer configured
+serviceaccount/spoke-deployer configured
+clusterrolebinding.rbac.authorization.k8s.io/cluster-admin-0 configured
+
+>>>> Cloning Repository into your local folder
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 Cloning into 'ztp-pipeline-relocatable'...
-remote: Enumerating objects: 3787, done.
-remote: Counting objects: 100% (1544/1544), done.
-remote: Compressing objects: 100% (938/938), done.
-remote: Total 3787 (delta 936), reused 1145 (delta 577), pack-reused 2243
-Receiving objects: 100% (3787/3787), 694.35 KiB | 7.71 MiB/s, done.
-Resolving deltas: 100% (2156/2156), done.
+remote: Enumerating objects: 3824, done.
+remote: Counting objects: 100% (1581/1581), done.
+remote: Compressing objects: 100% (963/963), done.
+remote: Total 3824 (delta 963), reused 1163 (delta 589), pack-reused 2243
+Receiving objects: 100% (3824/3824), 702.12 KiB | 8.46 MiB/s, done.
+Resolving deltas: 100% (2182/2182), done.
 
->>>> Deploy Openshift Pipelines
+>>>> Deploying Openshift Pipelines
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 subscription.operators.coreos.com/openshift-pipelines-operator-rh unchanged
 >>>> Waiting for: Openshift Pipelines
