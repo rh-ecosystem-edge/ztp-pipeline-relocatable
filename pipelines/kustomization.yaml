@@ -1,19 +1,19 @@
 resources:
   - deploy-ztp-hub.yaml
   - deploy-ztp-spokes.yaml
-  - common/common-pre-flight.yaml
-  - hub/hub-deploy-acm.yaml
-  - hub/hub-deploy-disconnected-registry.yaml
-  - hub/hub-deploy-httpd-server.yaml
-  - hub/hub-deploy-hub-config.yaml
-  - hub/hub-deploy-icsp.yaml
-  - hub/hub-save-config.yaml
-  - spokes/spoke-deploy-disconnected-registry-spokes.yaml
-  - spokes/spoke-deploy-icsp-spokes-post.yaml
-  - spokes/spoke-deploy-icsp-spokes-pre.yaml
-  - spokes/spoke-deploy-metallb.yaml
-  - spokes/spoke-deploy-ocs.yaml
-  - spokes/spoke-deploy-spoke.yaml
-  - spokes/spoke-deploy-workers.yaml
-  - spokes/spoke-detach-cluster.yaml
-  - spokes/spoke-restore-hub-config.yaml
+  - tasks/common/common-pre-flight.yaml
+  - tasks/hub/hub-deploy-acm.yaml
+  - tasks/hub/hub-deploy-disconnected-registry.yaml
+  - tasks/hub/hub-deploy-httpd-server.yaml
+  - tasks/hub/hub-deploy-hub-config.yaml
+  - tasks/hub/hub-deploy-icsp.yaml
+  - tasks/hub/hub-save-config.yaml
+  - tasks/spokes/spoke-deploy-disconnected-registry-spokes.yaml
+  - tasks/spokes/spoke-deploy-icsp-spokes-post.yaml
+  - tasks/spokes/spoke-deploy-icsp-spokes-pre.yaml
+  - tasks/spokes/spoke-deploy-metallb.yaml
+  - tasks/spokes/spoke-deploy-ocs.yaml
+  - tasks/spokes/spoke-deploy-spoke.yaml
+  - tasks/spokes/spoke-deploy-workers.yaml
+  - tasks/spokes/spoke-detach-cluster.yaml
+  - tasks/spokes/spoke-restore-hub-config.yaml
