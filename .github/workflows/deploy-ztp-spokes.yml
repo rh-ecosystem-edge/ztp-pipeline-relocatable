@@ -118,6 +118,8 @@ jobs:
           ./update-global-pullsecret.sh 'spoke'
 
 
+
+
   deploy-icsp-spokes-post:
     needs: deploy-disconnected-registry-spokes
     runs-on: ${{github.event.inputs.RUNNER}}
