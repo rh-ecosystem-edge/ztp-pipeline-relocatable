@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: hub-deploy-httpd-server 
+  namespace: spoke-deployer
   annotations:
     description: |
       This task will deploy the HTTPD server to host the RHCOS Images and the Images Tarball.

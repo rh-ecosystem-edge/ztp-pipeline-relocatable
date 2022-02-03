@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: spoke-detach-cluster
+  namespace: spoke-deployer
   annotations:
     description: |
       This task will detach the Spoke Cluster from the Hub.

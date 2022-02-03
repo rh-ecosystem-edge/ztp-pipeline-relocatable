@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: spoke-deploy-workers
+  namespace: spoke-deployer
   annotations:
     description: |
       This task will deploy the worker in the Spoke Cluster.

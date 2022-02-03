@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: spoke-deploy-spoke
+  namespace: spoke-deployer
   annotations:
     description: |
       This task will deploy the spokes based on the spokes.yaml file passed to the pipeline/task. 

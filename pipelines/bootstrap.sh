@@ -5,9 +5,20 @@ set -o nounset
 set -o errexit
 set -m
 
+function create_permissions() {
+    echo ">>>> Creating NS ${SPOKE_DEPLOYER_NS} and giving permissions to SA ${SPOKE_DEPLOYER_SA}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${SPOKE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f - || echo "NS: Done"
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} create sa ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f - || echo "SA: Done"
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f - || echo "Cluster Admin to SA: Done"
+    echo
+}
 
 function clone_ztp() {
+    echo ">>>> Cloning Repository into your local folder"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     git clone https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git -b ${BRANCH}
+    echo
 }
 
 function deploy_pipeline() {
@@ -17,7 +28,7 @@ function deploy_pipeline() {
 }
 
 function deploy_openshift_pipelines() {
-    echo ">>>> Deploy Openshift Pipelines"
+    echo ">>>> Deploying Openshift Pipelines"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${PIPELINES_DIR}/manifests/01-subscription.yaml
     sleep 5
@@ -50,8 +61,11 @@ export BASEDIR=$(dirname "$0")
 export BRANCH='tekton-pipeline'
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export PIPELINES_DIR=${WORKDIR}/pipelines
+export SPOKE_DEPLOYER_NS='spoke-deployer'
+export SPOKE_DEPLOYER_SA='spoke-deployer'
 export KUBECONFIG_HUB="${1}"
 
+create_permissions
 clone_ztp
 deploy_openshift_pipelines
 deploy_pipeline

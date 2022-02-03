@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: deploy-ztp-hub
+  namespace: spoke-deployer
 spec:
   description: Tekton Pipeline to deploy Kubeframe Hub Cluster
   params:

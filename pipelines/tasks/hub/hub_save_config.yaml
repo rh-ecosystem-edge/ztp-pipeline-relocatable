@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: hub-save-config
+  namespace: spoke-deployer
   annotations:
     description: |
       This task will extract and save the Hub relevant files and save them for their use in later steps.
