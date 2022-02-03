@@ -11,13 +11,12 @@ echo export NODE_ENV=development >> ./backend/envs
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`
 echo export CLUSTER_API_URL=$CLUSTER_API_URL >> ./backend/envs
 
-OAUTH2_CLIENT_ID=kubeframe-ui
+OAUTH2_CLIENT_ID=kubeframeoauth
 echo export OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >> ./backend/envs
 
 OAUTH2_CLIENT_SECRET=kubeframeoauthsecret
 echo export OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/envs
 
-#TODO: HTTPS??
 OAUTH2_REDIRECT_URL=https://localhost:3000/login/callback
 echo export OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/envs
 
@@ -39,5 +38,5 @@ echo export TOKEN=`oc whoami -t` >> ./backend/envs
 #echo TOKEN=$SA_TOKEN >> ./backend/envs
 
 REDIRECT_URIS=$(oc get OAuthClient $OAUTH2_CLIENT_ID -o json | jq -c "[.redirectURIs[], \"$OAUTH2_REDIRECT_URL\"] | unique")
-oc patch OAuthClient multicloudingress --type json -p "[{\"op\": \"add\", \"path\": \"/redirectURIs\", \"value\": ${REDIRECT_URIS}}]"
+oc patch OAuthClient $OAUTH2_CLIENT_ID --type json -p "[{\"op\": \"add\", \"path\": \"/redirectURIs\", \"value\": ${REDIRECT_URIS}}]"
 
