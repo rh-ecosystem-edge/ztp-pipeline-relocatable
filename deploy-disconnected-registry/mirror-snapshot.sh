@@ -106,6 +106,12 @@ DOCKERPATH="/var/lib/registry/docker"
 HTTPDPATH="/var/www/html"
 
 if [[ ${MODE} == 'hub' ]]; then
+    # We found that hub requires to update the kubeconfig which is done inside the olm-sync.sh so this would mean either to rerun the same function or reorg
+    # As this is only useful for CI/CD deployments to save on time syncing, we leave the code but force it to be a full resync until we've decided on the path
+    # to approach this
+    # TODO: Do not force mode for hub UNTIL we've sorted out the pull secret update done in the olm-sync
+    export SYNCORNOT='yes'
+
     HTTPD_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n default -oname | grep httpd | head -1 | cut -d "/" -f2-)
     REGISTRY_POD=$(oc --kubeconfig=${KUBECONFIG_HUB} get pod -n ${REGISTRY} -l name=${REGISTRY} -oname | head -1 | cut -d "/" -f2-)
     # Execute from node with the http and store in httpd path
