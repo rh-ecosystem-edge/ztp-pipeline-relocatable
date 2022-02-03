@@ -11,7 +11,7 @@ source ${WORKDIR}/shared-utils/common.sh
 function deploy_pipeline() {
     echo ">>>> Deploying Kubeframe Pipelines and tasks"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -k ${PIPELINES_DIR}/.
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -k ${PIPELINES_DIR}/tasks/.
 }
 
 function deploy_openshift_pipelines() {
