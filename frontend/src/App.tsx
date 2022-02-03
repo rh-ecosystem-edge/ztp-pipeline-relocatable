@@ -11,10 +11,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/login/*"
-          element={<Redirect to={`http://localhost:4000`} preservePathName />}
-        />
+        {process.env.REACT_APP_BACKEND_PATH && (
+          <Route
+            path="/login/*"
+            element={<Redirect to={process.env.REACT_APP_BACKEND_PATH} preservePathName />}
+          />
+        )}
         <Route path="*" element={<WelcomePage />} />
       </Routes>
     </BrowserRouter>

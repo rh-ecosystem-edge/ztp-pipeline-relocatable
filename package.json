@@ -8,6 +8,7 @@
     "clean": "(cd frontend && yarn clean) ; (cd backend && yarn clean)",
     "postinstall": "concurrently 'cd frontend && yarn install' 'cd backend && yarn install' -n frontend,backend -c green,blue",
     "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
+    "deployprod": "./deployProd.sh",
     "build": "concurrently 'cd frontend && yarn build' 'cd backend && yarn build' -n frontend,backend -c green,blue",
     "backend": "cd backend && source ./envs && yarn start",
     "frontend": "cd frontend && yarn start",

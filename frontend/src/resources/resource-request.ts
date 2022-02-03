@@ -68,8 +68,8 @@ export function getBackendUrl() {
         return proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : undefined
     }
     */
-  // return process.env.REACT_APP_BACKEND_PATH || process.env.BACKEND_URL;
-  return '';
+  return process.env.REACT_APP_BACKEND_PATH || ''; //process.env.BACKEND_URL;
+  // return '';
 }
 
 export function createResource<Resource extends IResource, ResultType = Resource>(
@@ -292,6 +292,16 @@ export function fetchDelete(url: string, signal: AbortSignal) {
   return fetchRetry<unknown>({ method: 'DELETE', url, signal });
 }
 
+const navigateToLogin = () => {
+  const url = `${getBackendUrl()}/login`;
+  console.info('API returned is Unauthorized response. Redirecting to login: ', url);
+  if (url.startsWith('http')) {
+    window.location.href = url;
+  } else {
+    window.location.pathname = url;
+  }
+};
+
 export async function fetchRetry<T>(options: {
   method?: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE';
   url: string;
@@ -405,11 +415,7 @@ export async function fetchRetry<T>(options: {
         if (status.status !== 'Success') {
           if (status.code === 401) {
             // 401 is returned from kubernetes in a Status object if token is not valid
-            console.info(
-              'API returned is Unauthorized response. Redirecting to login: ',
-              `${getBackendUrl()}/login`,
-            );
-            window.location.pathname = `${getBackendUrl()}/login`;
+            navigateToLogin();
             /*
             if (process.env.NODE_ENV === 'production') {
               window.location.reload();
@@ -438,12 +444,7 @@ export async function fetchRetry<T>(options: {
         case 302: // 302 is returned when token is valid but logged out
         case 401: // 401 is returned from the backend if no token cookie is on request
           if (!options.disableRedirectUnauthorizedLogin) {
-            console.info(
-              'API returned is Unauthorized response. Redirecting to login: ',
-              `${getBackendUrl()}/login`,
-            );
-            // window.location.href = `${getBackendUrl()}/login`;
-            window.location.pathname = `${getBackendUrl()}/login`;
+            navigateToLogin();
 
             /*
             if (process.env.NODE_ENV === 'production') {

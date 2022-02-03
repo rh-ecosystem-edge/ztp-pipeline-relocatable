@@ -24,7 +24,7 @@
     "prettier": "^2.5.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "HTTPS=true SSL_CRT_FILE=${TLS_CERT_FILE} SSL_KEY_FILE=${TLS_KEY_FILE} react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -33,7 +33,7 @@
     "lint:fix": "yarn lint --fix",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,md,scss,yaml,yml}'"
   },
-  "proxy": "http://localhost:4000",
+  "proxy": "https://localhost:4000",
   "browserslist": {
     "production": [
       ">0.2%",

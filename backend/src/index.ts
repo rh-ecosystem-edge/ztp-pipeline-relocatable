@@ -1,6 +1,7 @@
 import express from 'express';
 import https from 'https';
 import fs from 'fs';
+import cors from 'cors';
 
 import { login, loginCallback, logout } from './k8s/oauth';
 import { liveness, ping, proxy, readiness, SA_TOKEN_FILE, serve } from './endpoints';
@@ -31,6 +32,11 @@ const startUpCheck = () => {
     }
   });
 
+  console.debug(
+    'Additional optinal env variables: ',
+    'TLS_KEY_FILE, TLS_CERT_FILE, CORS, REACT_APP_BACKEND_PATH',
+  );
+
   if (!process.env.BACKEND_PORT) {
     console.warn('Optional BACKEND_PORT environment variable is missing, using default: ', PORT);
   }
@@ -55,6 +61,15 @@ const start = () => {
   };
 
   const app = express();
+
+  if (process.env.CORS) {
+    app.use(
+      cors({
+        origin: process.env.CORS,
+        credentials: true,
+      }),
+    );
+  }
 
   app.get('/ping', ping);
   app.get(`/readinessProbe`, readiness);
