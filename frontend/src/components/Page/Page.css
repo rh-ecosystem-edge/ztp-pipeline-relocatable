@@ -1,0 +1,30 @@
+.page-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  min-width: 768px;
+}
+
+.page-content {
+  background-color: white;
+  border-radius: 5px;
+  height: 450px;
+}
+
+.logo {
+ margin-top: 5px;
+ margin-left: 5px;
+}
+
+/*
+.logo-icon {
+  color: #EE0000;
+}
+
+.logo-text {
+
+  margin-top: 8px !important; 
+  color: white;
+}*/

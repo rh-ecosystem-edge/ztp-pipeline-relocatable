@@ -1,4 +1,5 @@
 import React from 'react';
+import { Page } from '../components';
 import { getService } from '../resources/service';
 
 const WelcomePage: React.FC = () => {
@@ -14,7 +15,7 @@ const WelcomePage: React.FC = () => {
     doItAsync();
   }, []);
 
-  return <div>Welcome!!!</div>;
+  return <Page>Foo Bar</Page>;
 };
 
 export default WelcomePage;
