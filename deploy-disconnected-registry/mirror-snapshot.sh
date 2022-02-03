@@ -136,24 +136,26 @@ if [[ ${MODE} == 'hub' ]]; then
     oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
     echo ">> Mirroring the registry snapshot is done successfully"
 
-    if [[ ${SYNCORNOT} == 'no' ]]; then
-        # We told flow not to sync and we've the tarball
-        echo ">> As we're not syncing, we need to repopulate the registry with existing tarball"
+    # Cannot be used until the CatalogSource issue mentioned above is addressed
 
-        # Run on the target registry the command to download the snapshot (wget comes within busybox)
-        oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}
+    # if [[ ${SYNCORNOT} == 'no' ]]; then
+    #     # We told flow not to sync and we've the tarball
+    #     echo ">> As we're not syncing, we need to repopulate the registry with existing tarball"
 
-        # Uncompress from the / folder
-        oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf /var/lib/registry/ocatopic.tgz -C /
+    #     # Run on the target registry the command to download the snapshot (wget comes within busybox)
+    #     oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}
 
-        # Cleanup downloaded file
-        oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
+    #     # Uncompress from the / folder
+    #     oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf /var/lib/registry/ocatopic.tgz -C /
 
-        # Create catalog source for the hub
-        create_cs ${MODE}
+    #     # Cleanup downloaded file
+    #     oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
 
-        echo ">> Restoring registry tarball when not syncing it completed"
-    fi
+    #     # Create catalog source for the hub
+    #     create_cs ${MODE}
+
+    #     echo ">> Restoring registry tarball when not syncing it completed"
+    # fi
 
 elif [[ ${MODE} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
