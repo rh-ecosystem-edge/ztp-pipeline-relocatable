@@ -5,8 +5,10 @@ set -o nounset
 set -o errexit
 set -m
 
-source ${WORKDIR}/shared-utils/common.sh
 
+function clone_ztp() {
+    git clone https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git -b ${BRANCH}
+}
 
 function deploy_pipeline() {
     echo ">>>> Deploying Kubeframe Pipelines and tasks"
@@ -38,7 +40,17 @@ function deploy_openshift_pipelines() {
     fi
 }
 
+export BASEDIR=$(dirname "$0")
+export BRANCH='tekton-pipeline'
+export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export PIPELINES_DIR=${WORKDIR}/pipelines
+export KUBECONFIG_HUB=${1}
 
+if [[ $# -lt 1 ]];then
+    echo "The first argument should be the Kubeconfig Location for your Hub Cluster"
+    exit 1
+fi
+
+clone_ztp
 deploy_openshift_pipelines
 deploy_pipeline
