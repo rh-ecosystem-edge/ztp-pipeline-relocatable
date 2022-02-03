@@ -1,0 +1,7 @@
+resources:
+  - hub_deploy_acm.yaml
+  - hub_deploy_disconnected_registry.yaml
+  - hub_deploy_httpd_server.yaml
+  - hub_deploy_hub_config.yaml
+  - hub_deploy_icsp.yaml
+  - hub_save_config.yaml

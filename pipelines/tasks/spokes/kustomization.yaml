@@ -1,0 +1,10 @@
+resources:
+  - spoke_deploy_disconnected_registry_spokes.yaml
+  - spoke_deploy_icsp_spokes_post.yaml
+  - spoke_deploy_icsp_spokes_pre.yaml
+  - spoke_deploy_metallb.yaml
+  - spoke_deploy_ocs.yaml
+  - spoke_deploy_spoke.yaml
+  - spoke_deploy_workers.yaml
+  - spoke_detach_cluster.yaml
+  - spoke_restore_hub_config.yaml
