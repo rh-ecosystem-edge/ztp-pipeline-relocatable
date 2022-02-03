@@ -44,7 +44,7 @@ export BASEDIR=$(dirname "$0")
 export BRANCH='tekton-pipeline'
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export PIPELINES_DIR=${WORKDIR}/pipelines
-export KUBECONFIG_HUB=${1}
+export KUBECONFIG_HUB="${1}"
 
 if [[ $# -lt 1 ]];then
     echo "The first argument should be the Kubeconfig Location for your Hub Cluster"
