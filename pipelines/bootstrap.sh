@@ -17,6 +17,7 @@ function create_permissions() {
 function clone_ztp() {
     echo ">>>> Cloning Repository into your local folder"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    rm -rf ${WORKDIR}
     git clone https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git -b ${BRANCH}
     echo
 }
