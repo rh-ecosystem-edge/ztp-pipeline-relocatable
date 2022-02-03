@@ -1,0 +1,5 @@
+bases:
+  - tasks
+resources:
+  - deploy-ztp-hub.yaml
+  - deploy-ztp-spokes.yaml

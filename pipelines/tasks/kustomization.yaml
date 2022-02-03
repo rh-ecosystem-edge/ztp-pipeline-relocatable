@@ -1,0 +1,4 @@
+bases:
+  - common
+  - hub
+  - spokes
