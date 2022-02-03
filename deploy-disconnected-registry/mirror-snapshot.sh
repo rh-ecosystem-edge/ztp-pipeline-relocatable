@@ -68,6 +68,7 @@ source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
 
 MODE=${1}
+SYNCORNOT=${2}
 
 SNAPSHOTFILE="mirror-snapshot.tgz"
 HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep httpd-server-route | awk '{print $2}')
@@ -83,16 +84,38 @@ if [[ ${MODE} == 'hub' ]]; then
 
     echo ">> Mirroring the registry snapshot only if it does not exist previously"
     if [[ ! -f /var/tmp/${SNAPSHOTFILE} ]]; then
+        # Tarball doesn't exist, force mirror creation as if we were syncing
         echo ">> Create a tarball from registry is needed"
+        export SYNCORNOT='yes'
+    fi
+
+    if [[ ${SYNCORNOT} == 'yes' ]]; then
+        # We told flow to sync or we faked it because we were missing the tarball
+        echo ">> Creating a new tarball from registry as we synced content or it was missing"
         oc --kubeconfig=${KUBECONFIG_HUB} rsync ${REGISTRY_POD}:${DOCKERPATH}/${SNAPSHOTFILE} /var/tmp/${SNAPSHOTFILE}
         # Get local tarball from REGISTRY
         oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
     fi
-    # Upload local tarball to HTTPD
+    # Upload local tarball to HTTPD (we always need to upload it as we're redeploying the HUB)
     echo ">> Uploading the tarball to HTTPD"
     oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
     echo ">> Mirroring the registry snapshot is done successfully"
 
+    if [[ ${SYNCORNOT} == 'no' ]]; then
+        # We told flow not to sync and we've the tarball
+        echo ">> As we're not syncing, we need to repopulate the registry with existing tarball"
+
+        # Run on the target registry the command to download the snapshot (wget comes within busybox)
+        oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}
+
+        # Uncompress from the / folder
+        oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf /var/lib/registry/ocatopic.tgz -C /
+
+        # Cleanup downloaded file
+        oc exec --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
+
+        echo ">> Restoring registry tarball when not syncing it completed"
+    fi
 
 elif [[ ${MODE} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then

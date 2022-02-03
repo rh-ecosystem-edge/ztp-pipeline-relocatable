@@ -68,16 +68,19 @@ jobs:
       - name: Deploy Internal Disconnected Registry
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
+          # Get if we're forcing or not sync
+          export SYNCORNOT=${{env.SYNC}}
+
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'hub'
           # TODO: assuming that the disconnected registry is already deployed and keeping contents.
-          if [ "${{env.SYNC}}" == "yes" ]; then
+          if [ "${SYNCORNOT}" == "yes" ]; then
             ./ocp-sync.sh 'hub'
             ./olm-sync.sh 'hub'
             rm -fr /var/tmp/mirror-snapshot.tgz
           fi
           ./update-global-pullsecret.sh 'hub'
-          ./mirror-snapshot.sh 'hub'
+          ./mirror-snapshot.sh 'hub' ${SYNCORNOT}
 
 
   deploy-acm:
