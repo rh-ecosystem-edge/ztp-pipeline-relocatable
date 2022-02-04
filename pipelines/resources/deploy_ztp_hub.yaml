@@ -4,10 +4,13 @@ metadata:
   name: deploy-ztp-hub
 spec:
   description: Tekton Pipeline to deploy Kubeframe Hub Cluster
-  resources:
-    - name: app-git
-      type: git
   params:
+    - name: git-url
+      type: string
+      default: "https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git"
+    - name: git-revision
+      type: string
+      default: "tekton-pipeline"
     - name: ztp-tag
       type: string
       default: "latest"
@@ -21,6 +24,17 @@ spec:
   workspaces:
     - name: ztp
   tasks:
+  - name: fetch-from-git
+    taskRef:
+      name: git-clone
+    params:
+      - name: url
+        value: $(params.git-url)
+      - name: revision
+        value: $(params.git-revision)
+    workspaces:
+      - name: ztp
+        workspace: ztp
 
   # Preflight
   - name: pre-flight
