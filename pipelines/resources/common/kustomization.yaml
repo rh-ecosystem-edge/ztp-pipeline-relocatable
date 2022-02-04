@@ -1,2 +1,3 @@
 resources:
-  - common_pre_flight.yaml
+  - common-pre-flight.yaml
+  - common-git-fetch.yaml
