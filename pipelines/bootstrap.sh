@@ -18,7 +18,7 @@ function clone_ztp() {
     echo ">>>> Cloning Repository into your local folder"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     rm -rf ${WORKDIR}
-    git clone https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git -b ${BRANCH}
+    git clone https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git -b ${BRANCH} ${WORKDIR}
     echo
 }
 
@@ -66,7 +66,7 @@ export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/tasks/kustomiz
 export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 export KUBECONFIG_HUB="${1}"
 
-create_permissions
 clone_ztp
+create_permissions
 deploy_openshift_pipelines
 deploy_pipeline
