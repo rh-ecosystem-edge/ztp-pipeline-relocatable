@@ -5,11 +5,12 @@
   transform: translate(-50%, -50%);
   width: 80%;
   min-width: 768px;
+  max-width: 1024px; /* TODO */
 }
 
 .page-content {
   background-color: white;
-  border-radius: 5px;
+  /* border-radius: 5px; */
   height: 450px;
 }
 
@@ -17,14 +18,3 @@
  margin-top: 5px;
  margin-left: 5px;
 }
-
-/*
-.logo-icon {
-  color: #EE0000;
-}
-
-.logo-text {
-
-  margin-top: 8px !important; 
-  color: white;
-}*/

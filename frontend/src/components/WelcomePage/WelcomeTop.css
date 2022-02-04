@@ -1,0 +1,15 @@
+.welcome-top {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.welcome-top__kube {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+  width: 188px; /* 18% */
+  position: relative;
+  top: -32px;
+}

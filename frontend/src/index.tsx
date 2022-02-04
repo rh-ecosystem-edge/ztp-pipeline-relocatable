@@ -2,11 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
-// import reportWebVitals from './reportWebVitals';
 import { getBackendUrl } from './resources';
 
-// import './index.css';
-// import '@patternfly/patternfly/patternfly.css';
+import './index.css';
 import '@patternfly/react-core/dist/styles/base.css';
 
 ReactDOM.render(
