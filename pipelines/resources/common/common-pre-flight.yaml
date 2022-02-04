@@ -35,5 +35,6 @@ spec:
       script: |
         #!/usr/bin/bash
 
+        mkdir -p ${WORKDIR}/build
         cd ${WORKDIR}/${SHARED_DIR}
         ./verify_preflight.sh
