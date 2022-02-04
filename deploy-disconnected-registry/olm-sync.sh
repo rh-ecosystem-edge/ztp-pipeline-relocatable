@@ -90,7 +90,7 @@ function mirror() {
         check_registry ${DESTINATION_REGISTRY}
     elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        echo ">>>> Checking Source Registry: ${DESTINATION_REGISTRY}"
+        echo ">>>> Checking Source Registry: ${SOURCE_REGISTRY}"
         check_registry ${SOURCE_REGISTRY}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
         check_registry ${DESTINATION_REGISTRY}
@@ -98,8 +98,10 @@ function mirror() {
 
     echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
     podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
     echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
     podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
 
     if [ ! -f ~/.docker/config.json ]; then
         echo "ERROR: missing ~/.docker/config.json config"
