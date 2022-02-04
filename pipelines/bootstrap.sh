@@ -42,11 +42,11 @@ function check_resource() {
     timeout=0
     ready=false
     while [ "$timeout" -lt "240" ]; do
-        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} -n ${NAMESPACE} get ${RESOURCE} ${RESOURCE_NAME} -o jsonpath="{.status.conditions[?(@.type=="${TYPE_STATUS}")].status}") == 'True' ]]; then
+        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} -n ${NAMESPACE} get ${RESOURCE} ${RESOURCE_NAME} -o jsonpath="{.status.conditions[?(@.type==\"${TYPE_STATUS}\")].status}") == 'True' ]]; then
             ready=true
             break
         fi
-        echo "Waiting for ${RESOURCE}-${RESOURCE_NAME} to change the status to ${TYPE_STATUS}"
+        echo "Waiting for ${RESOURCE} ${RESOURCE_NAME} to change the status to ${TYPE_STATUS}"
         sleep 20
         timeout=$((timeout + 1))
     done
