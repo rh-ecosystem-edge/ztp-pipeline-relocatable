@@ -4,6 +4,9 @@ metadata:
   name: deploy-ztp-hub
 spec:
   description: Tekton Pipeline to deploy Kubeframe Hub Cluster
+  resources:
+    - name: app-git
+      type: git
   params:
     - name: ztp-tag
       type: string

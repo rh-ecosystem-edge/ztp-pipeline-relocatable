@@ -1,0 +1,13 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: ztp-pipeline-relocatable-git 
+spec:
+  type: git
+  params:
+  - name: url
+    value: https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git
+  - name: revision
+    value: config
+  - name: sslVerify
+    value: "false"

@@ -27,7 +27,7 @@ spec:
       - name: SPOKES_CONFIG
         value: $(params.spokes-config)
       - name: SHARED_DIR
-        value: $(params.spokes-config)
+        value: "shared-utils"
   steps:
     - name: hub-common-pre-flight 
       image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"

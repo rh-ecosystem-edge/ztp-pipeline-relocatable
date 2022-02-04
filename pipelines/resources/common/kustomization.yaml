@@ -1,2 +1,3 @@
 resources:
+  - common_git.yaml
   - common_pre_flight.yaml

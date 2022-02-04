@@ -88,9 +88,9 @@ function clone_ztp() {
 }
 
 function deploy_pipeline() {
-    echo ">>>> Deploying Kubeframe Pipelines and tasks"
+    echo ">>>> Deploying Kubeframe Pipelines Resources"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -k ${PIPELINES_DIR}/tasks/.
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -k ${PIPELINES_DIR}/resources/.
 }
 
 function deploy_openshift_pipelines() {
@@ -117,7 +117,7 @@ export PIPELINES_DIR=${WORKDIR}/pipelines
 
 get_tkn
 clone_ztp
-export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/tasks/kustomization.yaml")
+export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
 export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 
 create_permissions
