@@ -5,6 +5,19 @@ set -o nounset
 set -o errexit
 set -m
 
+function get_tkn() {
+    URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64-0.21.0.tar.gz"
+    BIN_FOLDER="${HOME}/bin"
+
+    echo ">>>> Downloading TKN Client into: ${BIN_FOLDER}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    mkdir -P ${BIN_FOLDER}
+    wget ${URL} -O "${BIN_FOLDER}/tkn.tar.gz"
+    tar xvzf "${BIN_FOLDER}/tkn.tar.gz" -C "${BIN_FOLDER}"
+    chmod 755 ${BIN_FOLDER}/tkn
+    rm -rf "${BIN_FOLDER}/LICENSE"
+}
+
 function check_resource() {
     # 1 - Resource type: "deployment"
     # 2 - Resource name: "openshift-pipelines-operator"
@@ -102,6 +115,7 @@ export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${1}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
 
+get_tkn
 clone_ztp
 export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/tasks/kustomization.yaml")
 export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
