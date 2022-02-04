@@ -1,8 +1,9 @@
 import React from 'react';
-import { Page } from '..';
+import { Page } from '../Page';
 import { ContentTwoRows } from '../ContentTwoRows';
 import { getService } from '../../resources/service';
 import { WelcomeTop } from './WelcomeTop';
+import { WelcomeBottom } from './WelcomeBottom';
 
 export const WelcomePage: React.FC = () => {
   React.useEffect(() => {
@@ -17,13 +18,10 @@ export const WelcomePage: React.FC = () => {
     doItAsync();
   }, []);
 
-  const top = <WelcomeTop />;
-  const bottom = <div>BAR</div>;
-
   return (
     <Page>
       {/* <ContentTwoCols left={left} right={right} /> */}
-      <ContentTwoRows top={top} bottom={bottom} />
+      <ContentTwoRows top={<WelcomeTop />} bottom={<WelcomeBottom />} />
     </Page>
   );
 };

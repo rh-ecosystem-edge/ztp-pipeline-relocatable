@@ -10,8 +10,8 @@
 
 .page-content {
   background-color: white;
-  /* border-radius: 5px; */
-  height: 450px;
+  border-radius: 2px;
+  height: 540px;
 }
 
 .logo {
