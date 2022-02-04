@@ -47,6 +47,8 @@ spec:
         value: $(params.kubeconfig)
       - name: ztp-tag
         value: $(params.ztp-tag)
+    runAfter:
+      - fetch-from-git
     workspaces:
       - name: ztp
         workspace: ztp
