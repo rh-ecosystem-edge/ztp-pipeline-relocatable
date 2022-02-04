@@ -11,10 +11,17 @@ function App() {
     <BrowserRouter>
       <Routes>
         {process.env.REACT_APP_BACKEND_PATH && (
-          <Route
-            path="/login/*"
-            element={<Redirect to={process.env.REACT_APP_BACKEND_PATH} preservePathName />}
-          />
+          <>
+            <Route
+              path="/login/*"
+              element={<Redirect to={process.env.REACT_APP_BACKEND_PATH} preservePathName />}
+            />
+            {/* TODO: Implement landing page after logout */}
+            <Route
+              path="/logout/*"
+              element={<Redirect to={process.env.REACT_APP_BACKEND_PATH} preservePathName />}
+            />
+          </>
         )}
         <Route path="/" element={<WelcomePage />} />
         <Route path="/wizard" element={<WelcomePage />} />

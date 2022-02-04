@@ -14,7 +14,15 @@
   height: 540px;
 }
 
-.logo {
- margin-top: 5px;
- margin-left: 5px;
+.page-header {
+  margin-top: var(--pf-global--spacer--xl);
+  margin-bottom: var(--pf-global--spacer--sm);
+  margin-left: var(--pf-global--spacer--lg);
+  margin-right: var(--pf-global--spacer--lg);
+}
+
+.page-header-middle {
+  margin: auto;
+  width: 10rem;
+  padding: 10px;
 }
