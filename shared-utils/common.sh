@@ -79,7 +79,7 @@ export OUTPUTDIR=${OUTPUTDIR:-$WORKDIR/build}
 export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
 export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
 
-[ ! -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
+[ -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
 
 if [ ! -z ${SPOKES_CONFIG+x} ]; then
     if [ -z "${SPOKES_FILE+x}" ]; then
