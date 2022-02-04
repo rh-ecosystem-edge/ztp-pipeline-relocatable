@@ -61,12 +61,13 @@ fi
 export BASEDIR=$(dirname "$0")
 export BRANCH='tekton-pipeline'
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
-export PIPELINES_DIR=${WORKDIR}/pipelines
-export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/tasks/kustomization.yaml")
-export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 export KUBECONFIG_HUB="${1}"
+export PIPELINES_DIR=${WORKDIR}/pipelines
 
 clone_ztp
+export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/tasks/kustomization.yaml")
+export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
+
 create_permissions
 deploy_openshift_pipelines
 deploy_pipeline
