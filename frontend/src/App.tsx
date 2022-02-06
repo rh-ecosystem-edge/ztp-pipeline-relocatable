@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import { WelcomePage, SubnetPage } from './components';
+import { Wizard } from './components/Wizard';
 import Redirect from './Redirect';
 
 import './App.css';
@@ -23,11 +23,8 @@ function App() {
             />
           </>
         )}
-        <Route path="/" element={<WelcomePage />} />
-        <Route path="/wizard" element={<WelcomePage />} />
-        <Route path="/wizard/welcome" element={<WelcomePage />} />
-
-        <Route path="/wizard/subnet" element={<SubnetPage />} />
+        <Route path="/wizard/*" element={<Wizard />} />
+        <Route path="*" element={<Redirect to="/wizard/welcome" />} />
       </Routes>
     </BrowserRouter>
   );
