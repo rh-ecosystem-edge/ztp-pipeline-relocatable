@@ -8,7 +8,7 @@ export const SubnetPage: React.FC = () => {
     <Page>
       <ContentThreeRows
         top={<div>Top</div>}
-        middle={<div>middle</div>}
+        middle={<div>TODO: https://marvelapp.com/prototype/hfd719b/screen/84707949/handoff</div>}
         bottom={<div>bottom</div>}
       />
     </Page>
