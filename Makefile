@@ -1,5 +1,7 @@
-IMAGE=quay.io/jparrill/ztp-pipeline
-TAG=latest
+IMAGE := quay.io/jparrill/ztp-pipeline
+TAG := latest
+
+.PHONY: build push
 
 all: build push
 
