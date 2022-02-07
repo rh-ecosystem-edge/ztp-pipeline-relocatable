@@ -11,7 +11,7 @@ function get_tkn() {
 
     echo ">>>> Downloading TKN Client into: ${BIN_FOLDER}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    mkdir -P ${BIN_FOLDER}
+    mkdir -p ${BIN_FOLDER}
     wget ${URL} -O "${BIN_FOLDER}/tkn.tar.gz"
     tar xvzf "${BIN_FOLDER}/tkn.tar.gz" -C "${BIN_FOLDER}"
     chmod 755 ${BIN_FOLDER}/tkn
