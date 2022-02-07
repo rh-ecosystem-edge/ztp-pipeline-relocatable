@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: hub-deploy-icsp-hub
+  name: hub-save-config
   annotations:
     description: |
-      This task will deploy RHACM on the Hub Cluster.
+      This task will extract and save the Hub relevant files and save them for their use in later steps.
 spec:
   workspaces:
     - name: ztp
@@ -12,7 +12,7 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/jparrill/ztp-pipeline:latest"
-    - name: config-file-path
+    - name: kubeconfig
       type: string
       default: ""
     - name: spokes-config
@@ -26,14 +26,15 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_SPOKES_DIR
-        value: "deploy-spoke"
+      - name: RO_SPOKE_FOLDER
+        value: "/root/ztp-build-hub/"
   steps:
-    - name: deploy-icsp-hub
+    - name: save-hub-config
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
+        # TODO: We need to mount a volume in the pod in order to have those files available among
+        # different steps.
 
-        cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
-        ./configure_disconnected.sh 'hub'
+        rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}

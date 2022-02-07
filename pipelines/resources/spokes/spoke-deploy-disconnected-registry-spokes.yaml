@@ -16,7 +16,7 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/jparrill/ztp-pipeline:latest"
-    - name: config-file-path
+    - name: kubeconfig
       type: string
       default: ""
     - name: spokes-config

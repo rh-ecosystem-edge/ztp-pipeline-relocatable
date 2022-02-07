@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: hub-save-config
+  name: spoke-restore-hub-config
   annotations:
     description: |
-      This task will extract and save the Hub relevant files and save them for their use in later steps.
+      This task will recover the data saved from teh Hub in the Hub Pipeline and put it on the pod to be consumed by the tasks
 spec:
   workspaces:
     - name: ztp
@@ -12,7 +12,7 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/jparrill/ztp-pipeline:latest"
-    - name: config-file-path
+    - name: kubeconfig
       type: string
       default: ""
     - name: spokes-config
@@ -29,12 +29,12 @@ spec:
       - name: RO_SPOKE_FOLDER
         value: "/root/ztp-build-hub/"
   steps:
-    - name: save-hub-config
+    - name: restore-hub-config
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
         # TODO: We need to mount a volume in the pod in order to have those files available among
-        # different steps.
+        # different steps, in the spoke should be RO.
 
-        rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}
+        rsync -avr --progress --delete ${RO_SPOKE_FOLDER}/* ${WORKDIR}/build/ 

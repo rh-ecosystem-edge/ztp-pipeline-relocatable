@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: hub-deploy-hub-config
+  name: spoke-deploy-workers
   annotations:
     description: |
-      This task will deploy Assisted Service on the Hub Cluster.
+      This task will deploy the worker in the Spoke Cluster.
 spec:
   workspaces:
     - name: ztp
@@ -12,7 +12,7 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/jparrill/ztp-pipeline:latest"
-    - name: config-file-path
+    - name: kubeconfig
       type: string
       default: ""
     - name: spokes-config
@@ -26,14 +26,14 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_HUB_CONFIGS_DIR
-        value: "deploy-hub-configs"
+      - name: DEPLOY_WORKER_DIR
+        value: "deploy-worker"
   steps:
-    - name: deploy-hub-config
+    - name: deploy-worker
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_HUB_CONFIGS_DIR}
-        ./deploy.sh
+        cd ${WORKDIR}/${DEPLOY_WORKER_DIR}
+        ./render_worker.sh

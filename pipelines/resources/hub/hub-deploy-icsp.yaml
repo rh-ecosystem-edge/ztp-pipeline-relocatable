@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-restore-hub-config
+  name: hub-deploy-icsp-hub
   annotations:
     description: |
-      This task will recover the data saved from teh Hub in the Hub Pipeline and put it on the pod to be consumed by the tasks
+      This task will deploy RHACM on the Hub Cluster.
 spec:
   workspaces:
     - name: ztp
@@ -12,7 +12,7 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/jparrill/ztp-pipeline:latest"
-    - name: config-file-path
+    - name: kubeconfig
       type: string
       default: ""
     - name: spokes-config
@@ -26,15 +26,14 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: RO_SPOKE_FOLDER
-        value: "/root/ztp-build-hub/"
+      - name: DEPLOY_SPOKES_DIR
+        value: "deploy-spoke"
   steps:
-    - name: restore-hub-config
+    - name: deploy-icsp-hub
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
-        # TODO: We need to mount a volume in the pod in order to have those files available among
-        # different steps, in the spoke should be RO.
 
-        rsync -avr --progress --delete ${RO_SPOKE_FOLDER}/* ${WORKDIR}/build/ 
+        cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
+        ./configure_disconnected.sh 'hub'
