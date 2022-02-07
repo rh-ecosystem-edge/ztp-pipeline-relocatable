@@ -75,27 +75,58 @@ function check_mcp() {
     fi
 }
 
+function check_ocs_ready(){
+    echo ">>>> Waiting for OCS Cluster Ready"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+    while [ "$timeout" -lt "240" ]; do
+        if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
+            ready=true
+            break
+        fi
+        sleep 5
+        timeout=$((timeout + 5))
+    done
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for OCS deployment to be ready..."
+        exit 1
+    fi
+}
+
 function deploy_registry() {
 
     if [[ ${MODE} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster=hub
+        echo ">>>> Deploy internal registry: ${REGISTRY} - Namespace: (${cluster})"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        # TODO: Render variables instead being static
+        oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
+        htpasswd -bBc ${AUTH_SECRET} ${REG_US} ${REG_PASS}
+        oc -n ${REGISTRY} create secret generic ${SECRET} --from-file=${AUTH_SECRET} -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
+        oc -n ${REGISTRY} create configmap registry-conf --from-file=config.yml -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/deployment.yaml
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
     elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         cluster=${2}
+        echo ">>>> Deploy internal Quay Registry: ${REGISTRY} - Namespace: (${cluster})"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        # TODO: Render variables instead being static
+        # check if ocs is ready before deploying registry
+        check_ocs_ready
+        oc create -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
+        sleep 30  #TODO wait for quay operator to be ready
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
+        sleep 100 #TODO wait for quay cr to be ready
+        # TODO create user pass with curl @pablo
     fi
 
-    echo ">>>> Deploy internal registry: ${REGISTRY} Namespace (${cluster})"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    # TODO: Render variables instead being static
-    oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
-    htpasswd -bBc ${AUTH_SECRET} ${REG_US} ${REG_PASS}
-    oc -n ${REGISTRY} create secret generic ${SECRET} --from-file=${AUTH_SECRET} -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
-    oc -n ${REGISTRY} create configmap registry-conf --from-file=config.yml -o yaml --dry-run=client | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
-    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/deployment.yaml
-    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
-    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
-    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
+
 }
 
 function trust_internal_registry() {
