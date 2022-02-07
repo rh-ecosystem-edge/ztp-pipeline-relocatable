@@ -13,7 +13,7 @@ spec:
       default: "tekton-pipeline"
     - name: ztp-container-image
       type: string
-      default: "latest"
+      default: "quay.io/jparrill/ztp-pipeline:latest"
     - name: kubeconfig
       type: string
     - name: spokes-config
