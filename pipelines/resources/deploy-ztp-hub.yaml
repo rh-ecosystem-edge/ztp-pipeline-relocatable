@@ -71,25 +71,25 @@ spec:
       - name: ztp
         workspace: ztp
 
-          #  # Deploy Disconnected Registry + Sync
-          #  - name: deploy-disconnected-registry 
-          #    taskRef:
-          #      name: hub-deploy-disconnected-registry 
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #      - name: sync
-          #        value: $(params.sync)
-          #    runAfter:
-          #      - deploy-httpd-server
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
-          #
+  # Deploy Disconnected Registry + Sync
+  - name: deploy-disconnected-registry 
+    taskRef:
+      name: hub-deploy-disconnected-registry 
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: sync
+        value: $(params.sync)
+    runAfter:
+      - deploy-httpd-server
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
           #  # Deploy RHACM
           #  - name: deploy-acm 
           #    taskRef:
