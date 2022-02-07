@@ -5,7 +5,7 @@ metadata:
 spec:
   description: pipeline to deploy kubeframe
   params:
-  - name: ztp-tag
+  - name: ztp-container-image
     type: string
     default: "latest"
   - name: spokes-config
@@ -32,8 +32,8 @@ spec:
     params:
     - name: spokes-config
       value: $(params.spokes-config)
-    - name: ztp-tag
-      value: $(params.ztp-tag)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
     workspaces:
     - name: ztp
       workspace: ztp
@@ -44,8 +44,8 @@ spec:
     params:
     - name: spokes-config
       value: $(params.spokes-config)
-    - name: ztp-tag
-      value: $(params.ztp-tag)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
     runAfter:
     - pre-flight
     workspaces:
@@ -58,8 +58,8 @@ spec:
     params:
     - name: spokes-config
       value: $(params.spokes-config)
-    - name: ztp-tag
-      value: $(params.ztp-tag)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
     runAfter:
     - ztp-deploy-spoke
     workspaces:
@@ -72,8 +72,8 @@ spec:
     params:
     - name: spokes-config
       value: $(params.spokes-config)
-    - name: ztp-tag
-      value: $(params.ztp-tag)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
     runAfter:
     - ztp-deploy-metallb
     workspaces:

@@ -11,7 +11,7 @@ spec:
     - name: git-revision
       type: string
       default: "tekton-pipeline"
-    - name: ztp-tag
+    - name: ztp-container-image
       type: string
       default: "latest"
     - name: kubeconfig
@@ -45,8 +45,8 @@ spec:
         value: $(params.spokes-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
-      - name: ztp-tag
-        value: $(params.ztp-tag)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
     runAfter:
       - fetch-from-git
     workspaces:
@@ -62,8 +62,8 @@ spec:
         value: $(params.spokes-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
-      - name: ztp-tag
-        value: $(params.ztp-tag)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
     runAfter:
       - pre-flight
     workspaces:
@@ -79,8 +79,8 @@ spec:
         value: $(params.spokes-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
-      - name: ztp-tag
-        value: $(params.ztp-tag)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
       - name: sync
         value: $(params.sync)
     runAfter:
@@ -98,8 +98,8 @@ spec:
         value: $(params.spokes-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
-      - name: ztp-tag
-        value: $(params.ztp-tag)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
     runAfter:
       - deploy-disconnected-registry 
     workspaces:
@@ -115,8 +115,8 @@ spec:
         value: $(params.spokes-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
-      - name: ztp-tag
-        value: $(params.ztp-tag)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
     runAfter:
       - deploy-acm
     workspaces:
@@ -132,8 +132,8 @@ spec:
         value: $(params.spokes-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
-      - name: ztp-tag
-        value: $(params.ztp-tag)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
     runAfter:
       - deploy-icsp-hub
     workspaces:
@@ -149,8 +149,8 @@ spec:
         value: $(params.spokes-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
-      - name: ztp-tag
-        value: $(params.ztp-tag)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
     runAfter:
       - deploy-hub-config
     workspaces:
