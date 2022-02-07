@@ -46,7 +46,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./deploy.sh 'hub'
 
     - name: mirror-olm-and-ocp
@@ -55,7 +55,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
 
         if [ "${SYNC}" == "yes" ]; then
           echo "Starting Image Mirroring of OCP and OLM Step"
@@ -72,7 +72,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./update-global-pullsecret.sh 'hub'
 
     - name: mirror-snapshot
@@ -81,5 +81,5 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./mirror-snapshot.sh 'hub'
