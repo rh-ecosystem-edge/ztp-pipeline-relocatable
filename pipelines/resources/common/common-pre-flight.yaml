@@ -21,7 +21,7 @@ spec:
   stepTemplate:
     env:
       - name: WORKDIR
-        value: "/ztp-pipeline"
+        value: "/workspace/ztp"
       - name: KUBECONFIG
         value: $(params.kubeconfig)
       - name: SPOKES_CONFIG
