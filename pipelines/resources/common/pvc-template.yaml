@@ -1,4 +1,6 @@
 ---
+metadata:
+  name: ztp-pvc
 spec:
   accessModes:
     - ReadWriteOnce
