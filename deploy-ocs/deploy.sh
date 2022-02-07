@@ -140,7 +140,7 @@ if ! ./verify.sh; then
         timeout=0
         ready=false
         while [ "$timeout" -lt "240" ]; do
-            if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -eq $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | grep -v Completed | wc -l) ]]; then
+            if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} storagecluster -ojsonpath='{.items[*].status.phase}' == "Ready" ]]; then
                 ready=true
                 break
             fi
@@ -148,7 +148,7 @@ if ! ./verify.sh; then
             timeout=$((timeout + 5))
         done
         if [ "$ready" == "false" ]; then
-            echo "timeout waiting for OCS pods..."
+            echo "timeout waiting for OCS deployment..."
             exit 1
         fi
     done
