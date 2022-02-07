@@ -28,6 +28,8 @@ spec:
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_OCS_DIR
         value: "deploy-ocs"
+      - name: SHARED_DIR
+        value: "shared-utils"
   steps:
     - name: deploy-ocs
       image: "$(params.ztp-container-image)"

@@ -23,6 +23,7 @@ spec:
       default: "no"
   workspaces:
     - name: ztp
+  # Code Download into the PV
   tasks:
   - name: fetch-from-git
     taskRef:

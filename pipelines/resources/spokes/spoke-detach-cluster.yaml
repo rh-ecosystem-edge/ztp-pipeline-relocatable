@@ -28,6 +28,8 @@ spec:
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: FINISH_DEP_DIR
         value: "finish-deployment"
+      - name: SHARED_DIR
+        value: "shared-utils"
   steps:
     - name: detach-cluster
       image: "$(params.ztp-container-image)"

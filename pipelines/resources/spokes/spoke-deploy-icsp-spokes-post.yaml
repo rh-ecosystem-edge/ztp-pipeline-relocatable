@@ -28,6 +28,8 @@ spec:
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_SPOKES_DIR
         value: "deploy-spoke"
+      - name: SHARED_DIR
+        value: "shared-utils"
   steps:
     - name: deploy-icsp-spokes-post
       image: "$(params.ztp-container-image)"

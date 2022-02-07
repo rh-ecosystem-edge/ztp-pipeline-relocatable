@@ -28,6 +28,8 @@ spec:
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_HTTPD_SERVER_DIR
         value: "deploy-httpd-server"
+      - name: SHARED_DIR
+        value: "shared-utils"
   steps:
     - name: hub-deploy-httpd-server
       image: "$(params.ztp-container-image)"

@@ -37,6 +37,8 @@ spec:
         value: "deploy-disconnected-registry"
       - name: SYNC
         value: $(params.sync)
+      - name: SHARED_DIR
+        value: "shared-utils"
 
   steps:
     - name: deploy-disconnected-registry
