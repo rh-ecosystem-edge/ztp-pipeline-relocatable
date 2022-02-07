@@ -140,7 +140,7 @@ if ! ./verify.sh; then
         timeout=0
         ready=false
         while [ "$timeout" -lt "240" ]; do
-            if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} storagecluster -ojsonpath='{.items[*].status.phase}' == "Ready" ]]; then
+            if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
                 ready=true
                 break
             fi
