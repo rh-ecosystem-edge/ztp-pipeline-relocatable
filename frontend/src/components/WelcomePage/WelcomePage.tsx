@@ -1,7 +1,9 @@
 import React from 'react';
+
 import { Page } from '../Page';
 import { ContentTwoRows } from '../ContentTwoRows';
 import { getService } from '../../resources/service';
+
 import { WelcomeTop } from './WelcomeTop';
 import { WelcomeBottom } from './WelcomeBottom';
 

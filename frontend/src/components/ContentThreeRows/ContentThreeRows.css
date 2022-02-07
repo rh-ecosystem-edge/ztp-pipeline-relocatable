@@ -4,4 +4,8 @@
 
 .content-three-rows__bottom {
   height: 15%;
+
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }

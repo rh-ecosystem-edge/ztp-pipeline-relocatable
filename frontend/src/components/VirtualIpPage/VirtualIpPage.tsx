@@ -6,16 +6,16 @@ import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
 
-export const SubnetPage: React.FC = () => {
+export const VirtualIpPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
-  React.useEffect(() => setActiveStep('subnet'), [setActiveStep]);
+  React.useEffect(() => setActiveStep('virtualip'));
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
         middle={<div>TODO: https://marvelapp.com/prototype/hfd719b/screen/84707949/handoff</div>}
-        bottom={<WizardFooter back={undefined} next="virtualip" />}
+        bottom={<WizardFooter back="subnet" next="domain" />}
       />
     </Page>
   );
