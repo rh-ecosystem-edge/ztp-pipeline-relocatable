@@ -6,5 +6,5 @@ all: build push
 build:
 	podman build -t ${IMAGE}:${TAG} .
 
-push:
+push: build
 	podman push ${IMAGE}:${TAG}
