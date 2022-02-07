@@ -69,8 +69,8 @@ function grab_api_ingress() {
 # SPOKES_FILE variable must be exported in the environment
 export KUBECONFIG_HUB=${KUBECONFIG}
 
-echo ">>>> Grabbing info from configuration yaml at ${SPOKES_FILE}"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ">>>> Grabbing info from Spokes File"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 export OC_DIS_CATALOG=kubeframe-catalog
 export MARKET_NS=openshift-marketplace
