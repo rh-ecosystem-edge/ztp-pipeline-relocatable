@@ -9,9 +9,9 @@ spec:
   workspaces:
     - name: ztp
   params:
-    - name: ztp-tag
+    - name: ztp-container-image
       type: string
-      default: "latest"
+      default: "quay.io/jparrill/ztp-pipeline:latest"
     - name: config-file-path
       type: string
       default: ""
@@ -30,7 +30,7 @@ spec:
         value: "finish-deployment"
   steps:
     - name: detach-cluster
-      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash

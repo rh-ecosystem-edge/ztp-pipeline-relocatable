@@ -12,9 +12,9 @@ spec:
   workspaces:
     - name: ztp
   params:
-    - name: ztp-tag
+    - name: ztp-container-image 
       type: string
-      default: "latest"
+      default: "quay.io/jparrill/ztp-pipeline:latest"
     - name: config-file-path
       type: string
       default: ""
@@ -39,7 +39,7 @@ spec:
 
   steps:
     - name: deploy-disconnected-registry
-      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
@@ -48,7 +48,7 @@ spec:
         ./deploy.sh 'hub'
 
     - name: mirror-olm-and-ocp
-      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
@@ -65,7 +65,7 @@ spec:
         fi
 
     - name: update-global-pullsecret
-      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
@@ -74,7 +74,7 @@ spec:
         ./update-global-pullsecret.sh 'hub'
 
     - name: mirror-snapshot
-      image: "quay.io/flaper87/ztp-pipeline:$(params.ztp-tag)"
+      image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
