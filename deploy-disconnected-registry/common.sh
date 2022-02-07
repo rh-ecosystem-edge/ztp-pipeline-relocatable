@@ -23,6 +23,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 export REGISTRY=kubeframe-registry
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
+export QUAY_MANIFESTS=quay-manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
