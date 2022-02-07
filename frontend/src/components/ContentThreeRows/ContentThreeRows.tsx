@@ -10,7 +10,9 @@ export const ContentThreeRows: React.FC<{
 }> = ({ top, middle, bottom }) => (
   <Stack hasGutter>
     <StackItem className="content-three-rows__top">{top}</StackItem>
-    <StackItem isFilled>{middle}</StackItem>
+    <StackItem isFilled className="content-three-rows__middle">
+      {middle}
+    </StackItem>
     <StackItem className="content-three-rows__bottom">{bottom}</StackItem>
   </Stack>
 );

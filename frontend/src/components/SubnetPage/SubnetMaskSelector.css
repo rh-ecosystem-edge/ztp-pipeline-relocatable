@@ -1,0 +1,6 @@
+.mask-number {
+  width: 2rem;
+  text-align: center;
+  margin-left: var(--pf-global--spacer--xs);
+  margin-right: var(--pf-global--spacer--xs);
+}

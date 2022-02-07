@@ -5,6 +5,7 @@ import { ContentThreeRows } from '../ContentThreeRows';
 import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
+import { SubnetMaskSelector } from './SubnetMaskSelector';
 
 export const SubnetPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
@@ -14,7 +15,7 @@ export const SubnetPage: React.FC = () => {
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
-        middle={<div>TODO: https://marvelapp.com/prototype/hfd719b/screen/84707949/handoff</div>}
+        middle={<SubnetMaskSelector />}
         bottom={<WizardFooter back={undefined} next="virtualip" />}
       />
     </Page>
