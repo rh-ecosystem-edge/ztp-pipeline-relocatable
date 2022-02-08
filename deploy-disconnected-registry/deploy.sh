@@ -152,8 +152,10 @@ function deploy_registry() {
         # Create the registry Quay CR
         echo ">> Creating the registry Quay CR"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
+        sleep 60 # wait for the firsts pods and deployment
         echo ">> Waiting for the registry Quay CR to be ready"
         for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep kubeframe-registry |cut -d '/' -f 2); do
+            echo ">> waiting for deployment ${dep} in Quay operator to be ready"
             ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
         done
 
