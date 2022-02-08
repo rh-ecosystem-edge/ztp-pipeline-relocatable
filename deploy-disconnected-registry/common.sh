@@ -66,7 +66,7 @@ elif [[ ${1} == "spoke" ]]; then
         echo "HUB: ${KUBECONFIG_HUB}"
         echo "SPOKE: ${SPOKE_KUBECONFIG}"
         ## Common
-        export DESTINATION_REGISTRY="$(oc --kubeconfig=${SPOKE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        export DESTINATION_REGISTRY="$(oc --kubeconfig=${SPOKE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
         ## OCP Sync vars
         export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers $(yq eval ".config.clusterimageset" ${SPOKES_FILE}) -o jsonpath={.spec.releaseImage})"
         ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
