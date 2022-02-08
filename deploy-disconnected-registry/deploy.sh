@@ -75,7 +75,7 @@ function check_mcp() {
     fi
 }
 
-function check_ocs_ready(){
+function check_ocs_ready() {
     echo ">>>> Waiting for OCS Cluster Ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
@@ -120,12 +120,19 @@ function deploy_registry() {
         check_ocs_ready
         oc create -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
-        sleep 30  #TODO wait for quay operator to be ready
+        sleep 30 #TODO wait for quay operator to be ready
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
         sleep 100 #TODO wait for quay cr to be ready
-        # TODO create user pass with curl @pablo
-    fi
 
+        # TODO create user pass with curl @pablo
+
+        # Get URL for api
+        HOST=$(oc get route --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} kubeframe-registry-quay -o json | jq '.status.ingress[].host')
+        APIURL="https://${HOST}/api/v1/user/initialize"
+
+        # Call quay API to enable the dummy user
+        curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy", "email": "quayadmin@example.com", "access_token": true}'
+    fi
 
 }
 
