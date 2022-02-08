@@ -68,8 +68,6 @@ jobs:
       - name: Deploy Internal Disconnected Registry
         run: |
           export WORKDIR=${GITHUB_WORKSPACE}
-          # Get if we're forcing or not sync
-          export SYNCORNOT=${{env.SYNC}}
 
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'hub'
@@ -84,7 +82,7 @@ jobs:
           ./ocp-sync.sh 'hub'
           ./olm-sync.sh 'hub'
           ./update-global-pullsecret.sh 'hub'
-          ./mirror-snapshot.sh 'hub' ${SYNCORNOT}
+          ./mirror-snapshot.sh 'hub'
 
 
   deploy-acm:
