@@ -166,8 +166,9 @@ function deploy_registry() {
         check_route_ready
 
         # Get URL for api
-        echo ">>>>>>>>>>> https://${DESTINATION_REGISTRY}/api/v1/user/initialize "
-        APIURL="https://${DESTINATION_REGISTRY}/api/v1/user/initialize"
+        ROUTE="$(oc --kubeconfig=${TARGET_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
+        echo ">>>>>>>>>>> https://${ROUTE}/api/v1/user/initialize "
+        APIURL="https://${ROUTE}/api/v1/user/initialize"
 
         # Call quay API to enable the dummy user
         echo ">> Calling quay API to enable the user"
