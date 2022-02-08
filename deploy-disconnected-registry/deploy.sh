@@ -166,6 +166,7 @@ function deploy_registry() {
         check_route_ready
 
         # Get URL for api
+        echo ">>>>>>>>>>> https://${DESTINATION_REGISTRY}/api/v1/user/initialize "
         APIURL="https://${DESTINATION_REGISTRY}/api/v1/user/initialize"
 
         # Call quay API to enable the dummy user
