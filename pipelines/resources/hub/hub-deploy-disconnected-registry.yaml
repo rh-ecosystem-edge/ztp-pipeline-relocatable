@@ -52,6 +52,12 @@ spec:
     - name: mirror-olm-and-ocp
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
+      securityContext:
+        privileged: false
+        runAsUser: 0
+      volumeMounts: 
+      - mountPath: /var/lib/containers
+        name: lib-containers
       script: |
         #!/usr/bin/bash
 
@@ -83,3 +89,8 @@ spec:
 
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./mirror-snapshot.sh 'hub'
+
+  volumes:
+  - name: lib-containers
+    emptyDir: {}
+
