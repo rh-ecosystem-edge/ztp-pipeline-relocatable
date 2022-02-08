@@ -131,6 +131,7 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
     elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        export KUBECONFIG=${SPOKE_KUBECONFIG}
         source ./common.sh ${1}
         cluster=${2}
         echo ">>>> Deploy internal Quay Registry: ${REGISTRY} - Namespace: (${cluster})"
@@ -172,6 +173,7 @@ function deploy_registry() {
         # Call quay API to enable the dummy user
         echo ">> Calling quay API to enable the user"
         curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy", "email": "quayadmin@example.com", "access_token": true}'
+        export KUBECONFIG=${KUBECONFIG_HUB}
     fi
 
 }
