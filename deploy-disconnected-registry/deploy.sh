@@ -138,16 +138,17 @@ function deploy_registry() {
         # check if ocs is ready before deploying registry
         check_ocs_ready
 
-        # Create the config for the registry
-        echo ">> Creating the config for the registry"
-        oc create -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
-
         # Create the registry deployment and wait for it
         echo ">> Creating the registry deployment"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
         QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n quay get deployment -o name | grep quay-operator |cut -d '/' -f 2)
         echo ">> Waiting for the registry deployment to be ready"
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${QUAY_OPERATOR}"
+
+        # Create the config for the registry
+        echo ">> Creating the config for the registry"
+        oc create -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
+
 
         # Create the registry Quay CR
         echo ">> Creating the registry Quay CR"
