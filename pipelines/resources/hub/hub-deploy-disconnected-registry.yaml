@@ -53,7 +53,7 @@ spec:
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       securityContext:
-        privileged: true
+        privileged: false 
         runAsUser: 0
       volumeMounts: 
       - mountPath: /var/lib/containers
