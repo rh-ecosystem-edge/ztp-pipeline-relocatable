@@ -4,6 +4,37 @@ set -o pipefail
 set -o nounset
 set -m
 
+function trust_internal_registry() {
+
+    if [[ $# -lt 1 ]]; then
+        echo "Usage :"
+        echo "  trust_internal_registry hub|spoke <spoke name>"
+        exit 1
+    fi
+
+    MODE=${1}
+    spoke=${2}
+
+    if [[ ${MODE} == 'hub' ]]; then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster="hub"
+    elif [[ ${MODE} == 'spoke' ]]; then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${spoke}
+    fi
+
+    echo ">>>> Trusting internal registry"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    ## Update trusted CA from Helper
+    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
+    export CA_CERT_DATA=$(oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt"
+
+    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}" #update for the hub/hypervisor
+    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${cluster}.crt" #update for the hub/hypervisor
+    update-ca-trust extract
+}
+
 if [[ $# -lt 1 ]]; then
     echo "Usage :"
     echo '  $1: hub|spoke'
