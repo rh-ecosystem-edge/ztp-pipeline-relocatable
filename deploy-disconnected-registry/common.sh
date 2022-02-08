@@ -34,7 +34,7 @@ export OCP_RELEASE=${OC_OCP_VERSION}
 export OCP_RELEASE_FULL=${OCP_RELEASE}.0
 # TODO: Change static passwords by dynamic ones
 export REG_US=dummy
-export REG_PASS=dummy
+export REG_PASS=dummy123
 
 if [[ ${1} == "hub" ]]; then
     echo ">>>> Get the registry cert and update pull secret for: ${1}"
