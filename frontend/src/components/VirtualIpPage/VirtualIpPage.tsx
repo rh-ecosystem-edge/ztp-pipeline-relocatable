@@ -6,6 +6,9 @@ import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
 
+import { VirtualIpSelector } from './VirtualIpSelector';
+
+// TODO: https://marvelapp.com/prototype/hfd719b/screen/84707949/handoff
 export const VirtualIpPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('virtualip'));
@@ -14,7 +17,7 @@ export const VirtualIpPage: React.FC = () => {
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
-        middle={<div>TODO: https://marvelapp.com/prototype/hfd719b/screen/84707949/handoff</div>}
+        middle={<VirtualIpSelector />}
         bottom={<WizardFooter back="subnet" next="domain" />}
       />
     </Page>

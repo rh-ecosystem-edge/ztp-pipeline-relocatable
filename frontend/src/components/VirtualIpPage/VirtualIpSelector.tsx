@@ -3,17 +3,17 @@ import { Stack, StackItem, Title } from '@patternfly/react-core';
 
 import { IpSelector } from '../IpSelector';
 
-export const SubnetMaskSelector: React.FC = () => {
-  const [mask, setMask] = React.useState('            ');
+export const VirtualIpSelector: React.FC = () => {
+  const [ip, setIp] = React.useState('            ');
 
   return (
     <Stack className="wizard-content" hasGutter>
       <StackItem>
-        <Title headingLevel="h1">Subnet mask</Title>
+        <Title headingLevel="h1">Virtual IP</Title>
       </StackItem>
-      <StackItem>What is your subnet mask address?</StackItem>
+      <StackItem>What is your virtual IP address?</StackItem>
       <StackItem isFilled>
-        <IpSelector address={mask} setAddress={setMask} />
+        <IpSelector address={ip} setAddress={setIp} />
       </StackItem>
     </Stack>
   );

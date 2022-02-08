@@ -5,6 +5,8 @@ import { WelcomePage, SubnetPage, VirtualIpPage } from '../../components';
 import Redirect from '../../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
 
+import './Wizard.css';
+
 export const Wizard: React.FC = () => {
   return (
     <WizardProgressContextProvider>

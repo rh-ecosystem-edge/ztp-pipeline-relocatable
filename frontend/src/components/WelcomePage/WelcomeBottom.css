@@ -4,8 +4,8 @@
 
 .welcome-bottom h1 {
   padding-top: 3rem;
-  /* padding-bottom: 1rem; */
 }
+
 .welcome-bottom:last-child {
   padding-bottom: 3rem;
 }
