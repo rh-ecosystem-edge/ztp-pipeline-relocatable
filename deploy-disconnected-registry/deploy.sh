@@ -139,26 +139,33 @@ function deploy_registry() {
         check_ocs_ready
 
         # Create the config for the registry
+        echo ">> Creating the config for the registry"
         oc create -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
 
         # Create the registry deployment and wait for it
+        echo ">> Creating the registry deployment"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
         QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n quay get deployment -o name | grep quay-operator |cut -d '/' -f 2)
+        echo ">> Waiting for the registry deployment to be ready"
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${QUAY_OPERATOR}"
 
         # Create the registry Quay CR
+        echo ">> Creating the registry Quay CR"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
+        echo ">> Waiting for the registry Quay CR to be ready"
         for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep kubeframe-registry |cut -d '/' -f 2); do
             ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
         done
 
         # wait for route to be ready
+        echo ">> Waiting for the registry route to be ready"
         check_route_ready
 
         # Get URL for api
         APIURL="https://${DESTINATION_REGISTRY}/api/v1/user/initialize"
 
         # Call quay API to enable the dummy user
+        echo ">> Calling quay API to enable the user"
         curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy", "email": "quayadmin@example.com", "access_token": true}'
     fi
 
