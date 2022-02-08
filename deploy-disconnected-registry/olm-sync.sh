@@ -119,9 +119,9 @@ function mirror() {
     fi
 
     echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
-    podman login --storage-driver=vfs ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
     echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
-    podman login --storage-driver=vfs ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
 
     if [ ! -f ~/.docker/config.json ]; then
         echo "ERROR: missing ~/.docker/config.json config"

@@ -78,6 +78,7 @@ export KUBEFRAME_NS=kubeframe
 export OUTPUTDIR=${OUTPUTDIR:-$WORKDIR/build}
 export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
 export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
+export PODMAN_LOGIN_CMD='podman login --storage-driver=vfs --tls-verify=false'
 
 [ -d ${OUTPUTDIR} ] || mkdir -p ${OUTPUTDIR}
 
