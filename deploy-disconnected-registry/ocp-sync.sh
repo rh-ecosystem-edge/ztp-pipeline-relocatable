@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -o pipefail
+set -x
 set -o nounset
 set -m
 
