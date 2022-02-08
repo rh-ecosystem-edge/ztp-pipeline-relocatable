@@ -122,6 +122,12 @@ function mirror() {
 
     # Mirror redhat-operator index image
     echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
+
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    #######
     opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
 
     echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
