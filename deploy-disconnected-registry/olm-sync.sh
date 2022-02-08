@@ -68,6 +68,28 @@ function prepare_env() {
     fi
 }
 
+function trust_internal_registry() {
+
+    if [[ ${MODE} == 'hub' ]]; then
+        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster="hub"
+    elif [[ ${MODE} == 'spoke' ]]; then
+        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${spoke}
+    fi
+
+    echo ">>>> Trusting internal registry"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    ## Update trusted CA from Helper
+    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
+    export CA_CERT_DATA=$(oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt"
+
+    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}" #update for the hub/hypervisor
+    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${cluster}.crt" #update for the hub/hypervisor
+    update-ca-trust extract
+}
+
 function check_registry() {
     REG=${1}
 
@@ -154,6 +176,8 @@ MODE=${1}
 if [[ ${MODE} == 'hub' ]]; then
     prepare_env ${MODE}
     create_cs ${MODE}
+    trust_internal_registry ${MODE} 
+
     if ! ./verify_olm_sync.sh ${MODE}; then
         mirror ${MODE}
     else
@@ -173,6 +197,7 @@ elif [[ ${1} == "spoke" ]]; then
         fi
         prepare_env ${MODE}
         create_cs ${MODE}
+        trust_internal_registry ${MODE} ${spoke}
         if ! ./verify_olm_sync.sh ${MODE}; then
             mirror ${MODE}
         else
