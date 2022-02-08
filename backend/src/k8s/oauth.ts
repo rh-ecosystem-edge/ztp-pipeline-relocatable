@@ -72,7 +72,7 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
     if (body.access_token) {
       let attributes: string;
       // if (process.env.NODE_ENV === 'production') {
-      if (process.env.FRONTEND_URL?.startsWith('https://')) {  
+      if (process.env.FRONTEND_URL?.startsWith('https://')) {
         attributes = 'Secure; Path=/';
       } else {
         logger.log('Setting HttpOnly cookie.');

@@ -9,6 +9,6 @@ export const getClusterApiUrl = () => {
 
 export const logAllEnvVariables = () => {
   Object.keys(process.env).forEach((key) => {
-    logger.log(`${key}: ${process.env[key]}`);
-  })
-}
+    logger.log(`${key}: ${process.env[key] || ''}`);
+  });
+};
