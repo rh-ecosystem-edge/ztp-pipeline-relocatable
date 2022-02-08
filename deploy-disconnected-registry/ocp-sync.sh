@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -o pipefail
-set -x
 set -o nounset
 set -m
 
@@ -26,8 +25,10 @@ function mirror_ocp() {
 
     if [[ ${MODE} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster="hub"
     elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${spoke}
     fi
 
     echo ">>>> Mirror Openshift Version"
@@ -40,8 +41,8 @@ function mirror_ocp() {
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo
-    echo DEBUG: "oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${OCP_DESTINATION_INDEX} --to=${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
-    oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
+    echo DEBUG: "oc --kubeconfig=${TARGET_KUBECONFIG} adm --certificate-authority=${WORKDIR}/build/internal-registry-${cluster}.crt release mirror -a ${PULL_SECRET} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${OCP_DESTINATION_INDEX} --to=${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
+    oc --kubeconfig=${TARGET_KUBECONFIG} adm --certificate-authority=${WORKDIR}/build/internal-registry-${cluster}.crt release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
 }
 
 MODE=${1}
@@ -55,7 +56,7 @@ if [[ ${MODE} == 'hub' ]]; then
 
         export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
         podman login --tls-verify=false ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
-        mirror_ocp ${MODE}
+        mirror_ocp ${MODE} 'hub'
     else
         echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
     fi
@@ -83,7 +84,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
             ## Logging into the Source and Destination registries
             podman login --tls-verify=false ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
             podman login --tls-verify=false ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-            mirror_ocp ${MODE}
+            mirror_ocp ${MODE} ${spoke}
         else
             echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
         fi

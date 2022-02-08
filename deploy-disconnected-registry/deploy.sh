@@ -116,6 +116,7 @@ function trust_internal_registry() {
     export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt"
 
     echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}" #update for the hub/hypervisor
+    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${cluster}.crt" #update for the hub/hypervisor
     update-ca-trust extract
 
 }
