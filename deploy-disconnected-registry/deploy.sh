@@ -143,7 +143,7 @@ function deploy_registry() {
         # Create the registry deployment and wait for it
         echo ">> Creating the registry deployment"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
-        QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n quay get deployment -o name | grep quay-operator |cut -d '/' -f 2)
+        QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n quay get deployment -o name | grep quay-operator | cut -d '/' -f 2)
         echo ">> Waiting for the registry deployment to be ready"
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${QUAY_OPERATOR}"
 
@@ -151,13 +151,12 @@ function deploy_registry() {
         echo ">> Creating the config for the registry"
         oc create --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
 
-
         # Create the registry Quay CR
         echo ">> Creating the registry Quay CR"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
         sleep 120 # wait for the firsts pods and deployment
         echo ">> Waiting for the registry Quay CR to be ready"
-        for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} |cut -d '/' -f 2 | xargs echo); do
+        for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo); do
             echo ">> waiting for deployment ${dep} in Quay operator to be ready"
             ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
         done
@@ -172,7 +171,7 @@ function deploy_registry() {
 
         # Call quay API to enable the dummy user
         echo ">> Calling quay API to enable the user"
-        curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy", "email": "quayadmin@example.com", "access_token": true}'
+        curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}'
         export KUBECONFIG=${KUBECONFIG_HUB}
     fi
 
