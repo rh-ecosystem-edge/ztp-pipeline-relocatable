@@ -13,14 +13,13 @@ function trust_internal_registry() {
     fi
 
     MODE=${1}
-    spoke=${2}
 
     if [[ ${MODE} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster="hub"
     elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        cluster=${spoke}
+        cluster=${2}
     fi
 
     echo ">>>> Trusting internal registry"
