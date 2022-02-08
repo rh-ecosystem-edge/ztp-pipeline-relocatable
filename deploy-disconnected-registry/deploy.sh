@@ -86,7 +86,7 @@ function check_ocs_ready() {
             break
         fi
         sleep 5
-        timeout=$((timeout + 5))
+        timeout=$((timeout + 1))
     done
     if [ "$ready" == "false" ]; then
         echo "timeout waiting for OCS deployment to be ready..."
@@ -105,7 +105,7 @@ function check_route_ready() {
             break
         fi
         sleep 5
-        timeout=$((timeout + 5))
+        timeout=$((timeout + 1))
     done
     if [ "$ready" == "false" ]; then
         echo "timeout waiting for Registry route t to be ready..."
