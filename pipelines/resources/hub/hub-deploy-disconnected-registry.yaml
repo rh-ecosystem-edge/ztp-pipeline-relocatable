@@ -49,7 +49,7 @@ spec:
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./deploy.sh 'hub'
 
-    - name: mirror-olm-and-ocp
+    - name: mirror-ocp
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       securityContext:
@@ -64,12 +64,32 @@ spec:
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
 
         if [ "${SYNC}" == "yes" ]; then
-          echo "Starting Image Mirroring of OCP and OLM Step"
+          echo "Starting Openshift Image Mirroring"
           ./ocp-sync.sh 'hub'
+        else 
+          echo "Mirror OCP Step Avoided"
+        fi
+
+    - name: mirror-olm
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      securityContext:
+        privileged: false 
+        runAsUser: 0
+      volumeMounts: 
+      - mountPath: /var/lib/containers
+        name: lib-containers
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+
+        if [ "${SYNC}" == "yes" ]; then
+          echo "Starting OLM Catalog Image Mirroring Step"
           ./olm-sync.sh 'hub'
           rm -fr /var/tmp/mirror-snapshot.tgz
         else 
-          echo "Mirror OCP and OLM Step Avoided"
+          echo "Mirror OLM Step Avoided"
         fi
 
     - name: update-global-pullsecret
