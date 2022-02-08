@@ -20,4 +20,5 @@ RUN cd /tmp && \
     curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl >/usr/bin/kubectl && \
     chmod u+x /usr/bin/kubectl
 
-RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext && dnf clean all
+
+RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs && dnf clean all
