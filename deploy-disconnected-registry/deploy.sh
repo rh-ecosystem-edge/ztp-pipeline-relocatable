@@ -94,6 +94,25 @@ function check_ocs_ready() {
     fi
 }
 
+function check_route_ready() {
+    echo ">>>> Waiting for registry route Ready"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+    while [ "$timeout" -lt "240" ]; do
+        if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -eq 3 ]]; then
+            ready=true
+            break
+        fi
+        sleep 5
+        timeout=$((timeout + 5))
+    done
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for Registry route t to be ready..."
+        exit 1
+    fi
+}
+
 function deploy_registry() {
 
     if [[ ${MODE} == 'hub' ]]; then
@@ -118,17 +137,26 @@ function deploy_registry() {
         # TODO: Render variables instead being static
         # check if ocs is ready before deploying registry
         check_ocs_ready
-        oc create -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
-        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
-        sleep 30 #TODO wait for quay operator to be ready
-        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
-        sleep 100 #TODO wait for quay cr to be ready
 
-        # TODO create user pass with curl @pablo
+        # Create the config for the registry
+        oc create -n ${REGISTRY} secret generic --from-file config.yaml=${QUAY_MANIFESTS}/config.yaml config-bundle-secret
+
+        # Create the registry deployment and wait for it
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
+        QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n quay get deployment -o name | grep quay-operator |cut -d '/' -f 2)
+        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${QUAY_OPERATOR}"
+
+        # Create the registry Quay CR
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
+        for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep kubeframe-registry |cut -d '/' -f 2); do
+            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+        done
+
+        # wait for route to be ready
+        check_route_ready
 
         # Get URL for api
-        HOST=$(oc get route --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} kubeframe-registry-quay -o json | jq '.status.ingress[].host')
-        APIURL="https://${HOST}/api/v1/user/initialize"
+        APIURL="https://${DESTINATION_REGISTRY}/api/v1/user/initialize"
 
         # Call quay API to enable the dummy user
         curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy", "email": "quayadmin@example.com", "access_token": true}'
