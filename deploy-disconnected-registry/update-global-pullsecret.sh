@@ -44,7 +44,7 @@ MODE=${1}
 if [[ ${MODE} == 'hub' ]]; then
 
     prepare_env ${MODE}
-    podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    podman login --storage-driver=vfs ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
     oc --kubeconfig=${KUBECONFIG_HUB} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${PULL_SECRET}
 
 elif [[ ${1} == "spoke" ]]; then
