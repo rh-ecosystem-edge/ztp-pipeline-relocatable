@@ -240,6 +240,7 @@ if [[ ${MODE} == 'hub' ]]; then
         exit 1
     fi
 
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
     echo ">>>> Creating ICSP for: Hub"
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
     trust_internal_registry ${MODE}
@@ -276,6 +277,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
 
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
         trust_internal_registry ${MODE} ${spoke}
         recover_mapping
 
