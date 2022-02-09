@@ -4,6 +4,34 @@ set -o pipefail
 set -o nounset
 set -m
 
+function create_cs() {
+    if [[ ${MODE} == 'hub' ]]; then
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
+        cluster="hub"
+    elif [[ ${MODE} == 'spoke' ]]; then
+        cluster=${2}
+        CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
+    fi
+
+    cat >${CS_OUTFILE} <<EOF
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ${OC_DIS_CATALOG}
+  namespace: ${MARKET_NS}
+spec:
+  sourceType: grpc
+  image: ${OLM_DESTINATION_INDEX}
+  displayName: Disconnected Lab
+  publisher: disconnected-lab
+  updateStrategy:
+    registryPoll:
+      interval: 30m
+EOF
+    echo
+}
+
 function trust_internal_registry() {
 
     if [[ $# -lt 1 ]]; then

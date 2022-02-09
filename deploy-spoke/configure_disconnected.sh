@@ -95,7 +95,7 @@ function generate_mapping() {
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
     GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
     echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
-    unalias cp || echo "Unaliased cp: Done!"
+    unalias cp >>/dev/null || echo "Unaliased cp: Done!"
     cp -f ${OUTPUTDIR}/olm-manifests/mapping.txt ${OUTPUTDIR}/mapping.txt
 }
 
@@ -247,6 +247,10 @@ if [[ ${MODE} == 'hub' ]]; then
     recover_mapping
     icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+    if [[ ! -f ${OUTPUTDIR}/catalogsource-${MODE}.yaml ]];then
+        echo "CatalogSource File does not exists, generating a new one..."
+        create_cs ${MODE}
+    fi 
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
     wait_for_mcp_ready ${TARGET_KUBECONFIG} 'hub' 240
@@ -278,6 +282,10 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+        if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]];then
+            echo "CatalogSource File does not exists, generating a new one..."
+            create_cs ${MODE} ${spoke}
+        fi 
         trust_internal_registry ${MODE} ${spoke}
         recover_mapping
 

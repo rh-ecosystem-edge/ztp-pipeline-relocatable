@@ -15,35 +15,6 @@ function extract_kubeconfig() {
     oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${SPOKE_KUBECONFIG}
 }
 
-function create_cs() {
-    if [[ ${MODE} == 'hub' ]]; then
-        CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
-    elif [[ ${MODE} == 'spoke' ]]; then
-        CS_OUTFILE=${OUTPUTDIR}/catalogsource-${spoke}.yaml
-    fi
-
-    cat >${CS_OUTFILE} <<EOF
-
-apiVersion: operators.coreos.com/v1alpha1
-kind: CatalogSource
-metadata:
-  name: ${OC_DIS_CATALOG}
-  namespace: ${MARKET_NS}
-spec:
-  sourceType: grpc
-  image: ${OLM_DESTINATION_INDEX}
-  displayName: Disconnected Lab
-  publisher: disconnected-lab
-  updateStrategy:
-    registryPoll:
-      interval: 30m
-EOF
-
-    echo ""
-    echo "To apply the Red Hat Operators catalog mirror configuration to your cluster, do the following once per cluster:"
-    echo "oc apply -f ${CS_OUTFILE}"
-}
-
 function prepare_env() {
     ## Load Env
     source ./common.sh ${1}
@@ -204,7 +175,7 @@ elif [[ ${1} == "spoke" ]]; then
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
         prepare_env ${MODE}
-        create_cs ${MODE}
+        create_cs ${MODE} ${spoke}
         trust_internal_registry ${MODE} ${spoke}
         if ! ./verify_olm_sync.sh ${MODE}; then
             mirror ${MODE}
