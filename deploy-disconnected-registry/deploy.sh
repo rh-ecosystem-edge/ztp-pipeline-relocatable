@@ -172,7 +172,23 @@ function deploy_registry() {
 
         # Call quay API to enable the dummy user
         echo ">> Calling quay API to enable the user"
-        curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}'
+        RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}')
+
+        # Show result on screen
+        echo ${RESULT}
+
+        # example
+        # {"access_token":"IL5BWPR55M1QCGOQHR0SWL7DNUONHQS6B3396XJB","email":"quayadmin@example.com","encrypted_password":"+62XmVm+yt3LyXfwt5YuXtqW4Hgu1h7GmmNjobSrIB0/REqjSKNVaLYaIMcxoioY","username":"dummy"}
+
+        TOKEN=$(echo ${RESULT} | jq -r '.access_token')
+        echo ">> Token from result is: ${TOKEN}"
+
+        echo ">> Creating organizations for mirror to succeed"
+        APIURL="https://${ROUTE}/api/v1/organization/"
+        for organization in ocp4 olm; do
+            echo ">> Creating organization ${organization}"
+            curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"redhatorg@redhat.com\"}"
+        done
         export KUBECONFIG=${KUBECONFIG_HUB}
     fi
 
@@ -238,8 +254,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
             LIST_DEP=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo)
             echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
             for dep in $LIST_DEP; do
-                  echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-                  ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+                echo ">> waiting for deployment ${dep} in Quay operator to be ready"
+                ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
             done
 
             # updated with machine config
@@ -249,8 +265,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             echo ">> Waiting for the registry Quay CR to be ready after updating the MCP"
             for dep in $LIST_DEP; do
-                  echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-                  ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+                echo ">> waiting for deployment ${dep} in Quay operator to be ready"
+                ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
             done
             export KUBECONFIG=${KUBECONFIG_HUB}
 
