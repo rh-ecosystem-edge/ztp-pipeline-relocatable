@@ -49,6 +49,8 @@ spec:
         value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
+    runAfter:
+      - fetch-from-git 
     workspaces:
       - name: ztp
         workspace: ztp
