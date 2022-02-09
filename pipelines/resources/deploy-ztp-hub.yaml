@@ -124,23 +124,23 @@ spec:
       - name: ztp
         workspace: ztp
 
-          #  # Deploy Hub Config
-          #  - name: deploy-hub-config
-          #    taskRef:
-          #      name: hub-deploy-hub-config
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #    runAfter:
-          #      - deploy-icsp-hub
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
-          #
+  # Deploy Hub Config
+  - name: deploy-hub-config
+    taskRef:
+      name: hub-deploy-hub-config
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-icsp-hub
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
           #  # Save Hub Configuration
           #  - name: save-hub-config
           #    taskRef:
