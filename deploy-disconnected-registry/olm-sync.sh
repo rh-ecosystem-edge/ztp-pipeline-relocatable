@@ -75,7 +75,7 @@ function mirror() {
     if [ ! -f ~/.docker/config.json ]; then
         echo "ERROR: missing ~/.docker/config.json config"
         echo "Creating file"
-        unalias cp || echo "Unaliased cp: Done!"
+        unalias cp &>/dev/null || echo "Unaliased cp: Done!"
         mkdir -p ~/.docker/
         cp -rf ${PULL_SECRET} ~/.docker/config.json
     fi
