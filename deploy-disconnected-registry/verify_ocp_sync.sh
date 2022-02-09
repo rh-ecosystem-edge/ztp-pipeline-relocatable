@@ -22,7 +22,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
 fi
 
 ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
-if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} adm release info "${DESTINATION_REGISTRY}"/"${OCP_DESTINATION_REGISTRY_IMAGE_NS}":"${OCP_RELEASE_FULL}"-x86_64 --registry-config="${PULL_SECRET}" | wc -l) -gt 1 ]]; then ## line 1 == error line. If found image should show more information (>1 line)
+if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} adm release info "${DESTINATION_REGISTRY}"/"${OCP_DESTINATION_REGISTRY_IMAGE_NS}":"${OC_OCP_TAG}" --registry-config="${PULL_SECRET}" | wc -l) -gt 1 ]]; then ## line 1 == error line. If found image should show more information (>1 line)
     #Everyting is ready
     exit 0
 fi

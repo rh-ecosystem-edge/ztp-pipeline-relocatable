@@ -39,7 +39,7 @@ spec:
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MIRROR_MODE
-        value: "skopeo"
+        value: "all"
 
   steps:
     - name: deploy-disconnected-registry
