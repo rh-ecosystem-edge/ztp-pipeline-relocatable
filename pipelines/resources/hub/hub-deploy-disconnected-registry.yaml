@@ -103,14 +103,14 @@ spec:
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./update-global-pullsecret.sh 'hub'
 
-    - name: mirror-snapshot
-      image: "$(params.ztp-container-image)"
-      imagePullPolicy: Always
-      script: |
-        #!/usr/bin/bash
+        #- name: mirror-snapshot
+        #  image: "$(params.ztp-container-image)"
+        #  imagePullPolicy: Always
+        #  script: |
+        #    #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-        ./mirror-snapshot.sh 'hub'
+        #    cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+        #    ./mirror-snapshot.sh 'hub'
 
   volumes:
   - name: lib-containers
