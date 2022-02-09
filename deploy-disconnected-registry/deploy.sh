@@ -188,7 +188,7 @@ function deploy_registry() {
         APIURL="https://${ROUTE}/api/v1/organization/"
         for organization in ocp4 olm; do
             echo ">> Creating organization ${organization}"
-            curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"redhatorg@redhat.com\"}"
+            curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"${organization}@redhat.com\"}"
         done
         export KUBECONFIG=${KUBECONFIG_HUB}
     fi
