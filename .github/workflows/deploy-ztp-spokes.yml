@@ -109,12 +109,14 @@ jobs:
           export WORKDIR=${GITHUB_WORKSPACE}
           cd ${{env.DEPLOY_REGISTRY_DIR}}
           ./deploy.sh 'spoke'
-          if [ "${{env.SYNC}}" == "yes" ]; then
-            ./ocp-sync.sh 'spoke'
-            ./olm-sync.sh 'spoke'
-          else
-            ./mirror-snapshot.sh 'spoke'
-          fi
+          # if [ "${{env.SYNC}}" == "yes" ]; then
+          #   ./ocp-sync.sh 'spoke'
+          #   ./olm-sync.sh 'spoke'
+          # else
+          #   ./mirror-snapshot.sh 'spoke'
+          # fi
+          ./ocp-sync.sh 'spoke'
+          ./olm-sync.sh 'spoke'
           ./update-global-pullsecret.sh 'spoke'
 
 
