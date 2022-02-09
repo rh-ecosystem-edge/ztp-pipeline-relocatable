@@ -16,6 +16,7 @@ for SPOKE in ${ALLSPOKES}; do
     echo Spoke: ${SPOKE}
     oc --kubeconfig=${KUBECONFIG_HUB} delete managedcluster ${SPOKE}
     oc --kubeconfig=${KUBECONFIG_HUB} delete ns ${SPOKE}
+    sleep 60
     kcli delete vm ${SPOKE}-m0 ${SPOKE}-m1 ${SPOKE}-m2 ${SPOKE}-w0 -y
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 done
