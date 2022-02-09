@@ -2,6 +2,8 @@
 # Description: Reads/sets environment variables for the scripts to run, parsing information from the configuration YAML defined in ${SPOKES_FILE}
 # SPOKES_FILE variable must be exported in the environment
 
+set -x
+
 function extract_kubeconfig_common() {
     ## Extract the Spoke kubeconfig and put it on the shared folder
     cluster=${1}
