@@ -235,12 +235,25 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
             export KUBECONFIG=${SPOKE_KUBECONFIG}
-            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 10000 -n "${REGISTRY}" "${REGISTRY}"
-            export KUBECONFIG=${KUBECONFIG_HUB}
+            LIST_DEP=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo)
+            echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
+            for dep in $LIST_DEP; do
+                  echo ">> waiting for deployment ${dep} in Quay operator to be ready"
+                  ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+            done
 
             # updated with machine config
+            echo ">> Updating machine config certs"
             render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
             check_mcp "${MODE}" "${spoke}"
+
+            echo ">> Waiting for the registry Quay CR to be ready after updating the MCP"
+            for dep in $LIST_DEP; do
+                  echo ">> waiting for deployment ${dep} in Quay operator to be ready"
+                  ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+            done
+            export KUBECONFIG=${KUBECONFIG_HUB}
+
         else
             echo ">>>> This step to deploy registry on Spoke: ${spoke} is not neccesary, everything looks ready"
         fi
