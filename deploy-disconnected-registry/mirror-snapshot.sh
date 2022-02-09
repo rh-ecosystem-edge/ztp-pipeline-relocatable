@@ -125,16 +125,20 @@ if [[ ${MODE} == 'hub' ]]; then
     fi
 
     if [[ ${SYNCORNOT} == 'yes' ]]; then
+        # TODO: Review TAR logic in the code
+        echo ">> Tar is commented out until mirror is sorted out"
         # We told flow to sync or we faked it because we were missing the tarball
-        echo ">> Creating a new tarball from registry as we synced content or it was missing"
-        oc --kubeconfig=${KUBECONFIG_HUB} rsync ${REGISTRY_POD}:${DOCKERPATH}/${SNAPSHOTFILE} /var/tmp/${SNAPSHOTFILE}
+        # echo ">> Creating a new tarball from registry as we synced content or it was missing"
+        # oc --kubeconfig=${KUBECONFIG_HUB} rsync ${REGISTRY_POD}:${DOCKERPATH}/${SNAPSHOTFILE} /var/tmp/${SNAPSHOTFILE}
         # Get local tarball from REGISTRY
-        oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
+        # oc --kubeconfig=${KUBECONFIG_HUB} exec -i -n ${REGISTRY} ${REGISTRY_POD} -- tar czf - ${DOCKERPATH} >/var/tmp/${SNAPSHOTFILE}
     fi
     # Upload local tarball to HTTPD (we always need to upload it as we're redeploying the HUB)
-    echo ">> Uploading the tarball to HTTPD"
-    oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
-    echo ">> Mirroring the registry snapshot is done successfully"
+
+    # TODO: Review TAR logic in the code
+    # echo ">> Uploading the tarball to HTTPD"
+    # oc --kubeconfig=${KUBECONFIG_HUB} -n default cp /var/tmp/${SNAPSHOTFILE} ${HTTPD_POD}:${HTTPDPATH}/${SNAPSHOTFILE}
+    # echo ">> Mirroring the registry snapshot is done successfully"
 
     # Cannot be used until the CatalogSource issue mentioned above is addressed
 
@@ -181,14 +185,15 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         check_cluster "${MODE}" "${spoke}"
 
-        # Run on the target registry the command to download the snapshot (wget comes within busybox)
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}
+        # TODO: Review TAR logic in the code
+        # # Run on the target registry the command to download the snapshot (wget comes within busybox)
+        # oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- curl -o /var/lib/registry/ocatopic.tgz ${URL}
 
-        # Uncompress from the / folder
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf /var/lib/registry/ocatopic.tgz -C /
+        # # Uncompress from the / folder
+        # oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- tar xvzf /var/lib/registry/ocatopic.tgz -C /
 
-        # Cleanup downloaded file
-        oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
+        # # Cleanup downloaded file
+        # oc exec --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} ${REGISTRY_POD} -- rm -fv /var/lib/registry/ocatopic.tgz
 
         source ./common.sh spoke
         create_cs ${MODE}
