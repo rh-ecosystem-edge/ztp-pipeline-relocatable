@@ -99,7 +99,6 @@ source ./common.sh hub
 
 MODE=${1}
 
-
 SNAPSHOTFILE="mirror-snapshot.tgz"
 HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep httpd-server-route | awk '{print $2}')
 DOCKERPATH="/var/lib/registry/docker"
