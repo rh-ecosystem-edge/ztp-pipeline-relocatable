@@ -106,24 +106,24 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
-          #
-          #  # Deploy ICSP Hub
-          #  - name: deploy-icsp-hub
-          #    taskRef:
-          #      name: hub-deploy-icsp-hub
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #    runAfter:
-          #      - deploy-acm
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
-          #
+
+  # Deploy ICSP Hub
+  - name: deploy-icsp-hub
+    taskRef:
+      name: hub-deploy-icsp-hub
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-acm
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
           #  # Deploy Hub Config
           #  - name: deploy-hub-config
           #    taskRef:
