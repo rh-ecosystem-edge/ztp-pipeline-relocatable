@@ -4,6 +4,35 @@
 
 set -x
 
+function generate_rsa_spoke() {
+
+    if [[ ${#} -lt 1 ]]; then
+        echo "Error generating RSA key pair, Give me the Spoke Name"
+        exit 1
+    fi
+
+    spoke=${1}
+    export SPOKE_SAFE_FOLDER="${OUTPUTDIR}/build/${spoke}"
+    mkdir -p ${SPOKE_SAFE_FOLDER} 
+    export RSA_KEY_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key"
+    export RSA_PUB_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key.pub"
+
+    if [[ ! -f ${RSA_KEY_FILE} ]];then
+        echo "RSA Key for Spoke Cluster ${spoke} Not Found, creating one in ${SPOKE_SAFE_FOLDER} folder"
+        ssh-keygen -b 4096 -t rsa -f ${RSA_KEY_FILE} -q -N ""
+        echo "Verifying RSA Keys generated..."
+        if [[ ! -f ${RSA_KEY_FILE} || ! -f ${RSA_PUB_FILE} ]];then
+            echo "RSA Private or Public key not found"
+            exit 1
+        else
+            echo "RSA Key-pair verified!"
+        fi
+    else
+        echo "RSA Key for Spoke Cluster ${spoke} Found, check this folder: ${SPOKE_SAFE_FOLDER}"
+    fi
+
+}
+
 function extract_kubeconfig_common() {
     ## Extract the Spoke kubeconfig and put it on the shared folder
     cluster=${1}
@@ -52,7 +81,7 @@ function grab_domain() {
 function grab_hub_dns() {
     echo ">> Getting the cluster's DNS"
     export HUB_NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get $(oc --kubeconfig=${KUBECONFIG_HUB} get node -o name | head -1) -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}')
-    export HUB_DNS=$($SSH_COMMAND core@${HUB_NODE_IP} "grep -v ${HUB_NODE_IP} /etc/resolv.conf | grep nameserver | cut -f2 -d\ ")
+    #export HUB_DNS=$($SSH_COMMAND core@${HUB_NODE_IP} "grep -v ${HUB_NODE_IP} /etc/resolv.conf | grep nameserver | cut -f2 -d\ ")
 }
 
 function grab_api_ingress() {
@@ -62,10 +91,10 @@ function grab_api_ingress() {
     grab_domain
     grab_hub_dns
     export SPOKE_API_NAME="api.${cluster}.${HUB_BASEDOMAIN}"
-    export SPOKE_API_IP="$(dig @${HUB_DNS} +short ${SPOKE_API_NAME})"
+    export SPOKE_API_IP="$(dig @${HUB_NODE_IP} +short ${SPOKE_API_NAME})"
     export SPOKE_INGRESS_NAME="apps.${cluster}.${HUB_BASEDOMAIN}"
     export REGISTRY_URL="kubeframe-registry-kubeframe-registry"
-    export SPOKE_INGRESS_IP="$(dig @${HUB_DNS} +short ${REGISTRY_URL}.${SPOKE_INGRESS_NAME})"
+    export SPOKE_INGRESS_IP="$(dig @${HUB_NODE_IP} +short ${REGISTRY_URL}.${SPOKE_INGRESS_NAME})"
 }
 
 # SPOKES_FILE variable must be exported in the environment
