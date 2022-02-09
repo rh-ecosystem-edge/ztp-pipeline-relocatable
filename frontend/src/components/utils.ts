@@ -1,5 +1,8 @@
 import { IpSelectorValidationType } from './IpSelector/types';
 import { SingleIpDigitProps } from './SingleIpDigit';
+import { WizardStateType } from './Wizard/types';
+
+const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
 
 export const addIpDots = (addressWithoutDots: string): string => {
   if (addressWithoutDots?.length === 12) {
@@ -66,4 +69,11 @@ export const ipAddressValidator = (addr: string, isMask: boolean): IpSelectorVal
   }
 
   return validation;
+};
+
+export const domainValidator = (domain: string): WizardStateType['domainValidation'] => {
+  if (domain.match(DNS_NAME_REGEX)) {
+    return ''; // passed
+  }
+  return "Valid domain wasn't provided";
 };

@@ -1,0 +1,7 @@
+.domain-item {
+  width: 30rem;
+}
+
+.validation-failed-text {
+  color: var(--pf-global--danger-color--100);
+}

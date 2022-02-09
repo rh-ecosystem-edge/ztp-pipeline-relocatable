@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { IpSelectorValidationType } from '../IpSelector';
-import { ipAddressValidator } from '../utils';
+import { domainValidator, ipAddressValidator } from '../utils';
 
 import { WizardStateType } from './types';
 
@@ -32,6 +32,14 @@ export const useWizardState = (): WizardStateType => {
     [setIp],
   );
 
+  const [domain, setDomain] = React.useState<string>('');
+  const [domainValidation, setDomainValidation] =
+    React.useState<WizardStateType['domainValidation']>();
+  const handleSetDomain = React.useCallback((newDomain: string) => {
+    setDomainValidation(domainValidator(newDomain));
+    setDomain(newDomain);
+  }, []);
+
   return {
     mask,
     maskValidation,
@@ -40,5 +48,9 @@ export const useWizardState = (): WizardStateType => {
     ip,
     ipValidation,
     handleSetIp,
+
+    domain,
+    domainValidation,
+    handleSetDomain,
   };
 };

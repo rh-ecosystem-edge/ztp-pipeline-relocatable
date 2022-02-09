@@ -8,4 +8,8 @@ export type WizardStateType = {
   ip: string; // 12 characters
   ipValidation: IpSelectorValidationType;
   handleSetIp: (newIp: string) => void;
+
+  domain: string;
+  handleSetDomain: (newDomain: string) => void;
+  domainValidation?: string; // just a message or empty
 };
