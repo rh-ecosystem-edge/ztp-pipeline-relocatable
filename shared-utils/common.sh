@@ -76,6 +76,7 @@ export OC_DIS_CATALOG=kubeframe-catalog
 export MARKET_NS=openshift-marketplace
 export KUBEFRAME_NS=kubeframe
 export OUTPUTDIR=${OUTPUTDIR:-$WORKDIR/build}
+export MIRROR_MODE=${MIRROR_MODE:-all}
 export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'
 export SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q'
 export PODMAN_LOGIN_CMD='podman login --storage-driver=vfs --tls-verify=false'

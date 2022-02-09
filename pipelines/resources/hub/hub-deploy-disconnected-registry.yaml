@@ -38,6 +38,8 @@ spec:
         value: $(params.sync)
       - name: SHARED_DIR
         value: "shared-utils"
+      - name: MIRROR_MODE
+        value: "skopeo"
 
   steps:
     - name: deploy-disconnected-registry

@@ -118,7 +118,20 @@ function mirror() {
     echo "Destination Registry: ${DESTINATION_REGISTRY}"
     echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
+    echo "Mirror Mode: ${MIRROR_MODE}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+
+    if [[ ${MIRROR_MODE} == 'auto' ]];then
+        mirror_auto
+    elif [[ ${MIRROR_MODE} == 'skopeo' ]];then
+        mirror_skopeo
+    elif [[ ${MIRROR_MODE} == 'all' ]];then
+        mirror_auto
+        mirror_skopeo
+    fi
+}
+
+function mirror_auto() {
 
     # Mirror redhat-operator index image
     echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
@@ -136,6 +149,9 @@ function mirror() {
     echo ">>>> Trying to push OLM images to Internal Registry"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
     GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}
+}
+
+function mirror_skopeo() {
 
     # Patch to avoid issues on mirroring
     PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
@@ -144,6 +160,7 @@ function mirror() {
             echo
             echo "Package: ${package}"
             skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+            sleep 1
         done
     done
 
@@ -152,6 +169,7 @@ function mirror() {
         echo "Image: ${image}"
         echo "skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}"
         skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
+        sleep 1
     done
 }
 
