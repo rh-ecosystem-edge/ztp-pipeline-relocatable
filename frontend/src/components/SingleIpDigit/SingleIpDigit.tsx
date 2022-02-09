@@ -1,24 +1,17 @@
 import React from 'react';
 import { TextInput } from '@patternfly/react-core';
 
+import { IpDigitIndex, SingleIpDigitProps } from './types';
+
 import './SingleIpDigit.css';
 
-export type IpDigitIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
-
-type SingleIpDigitProps = {
-  position: IpDigitIndex;
-  focus: IpDigitIndex;
-  address: string;
-  setAddress: (newAddress: string) => void;
-  setFocus: (newPosition: IpDigitIndex) => void;
-};
-
-export const IpDigit: React.FC<SingleIpDigitProps> = ({
+export const SingleIpDigit: React.FC<SingleIpDigitProps> = ({
   position,
   focus,
   address,
   setAddress,
   setFocus,
+  validated,
 }) => {
   const input = React.createRef<HTMLInputElement>();
 
@@ -35,6 +28,7 @@ export const IpDigit: React.FC<SingleIpDigitProps> = ({
         const num = parseInt(val);
         if (num >= 0 && num <= 9) {
           const newMask = address.substring(0, position) + num + address.substring(position + 1);
+
           setAddress(newMask);
           if (position < 11) {
             setFocus((position + 1) as IpDigitIndex);
@@ -52,12 +46,20 @@ export const IpDigit: React.FC<SingleIpDigitProps> = ({
     }
   }, [focus, position, input]);
 
+  let clzName = 'single-ip-digit';
+  if (validated === 'success') {
+    clzName += ' single-ip-digit-success';
+  } else if (validated === 'error') {
+    clzName += ' single-ip-digit-error';
+  }
+
   return (
     <TextInput
       ref={input}
-      className="single-ip-digit"
+      className={clzName}
       value={address[position]}
       type="text"
+      // validated={validated} Do not use this, we need simplified functionality here ...
       onChange={onChange}
       aria-label={`IP digit, position ${position + 1}`}
     />

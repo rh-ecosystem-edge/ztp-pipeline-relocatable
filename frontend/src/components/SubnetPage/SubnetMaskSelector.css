@@ -1,0 +1,3 @@
+.address-validation-failed {
+  color: var(--pf-global--danger-color--100);
+}

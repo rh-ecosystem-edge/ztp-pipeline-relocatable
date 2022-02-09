@@ -1,102 +1,39 @@
 import React from 'react';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { global_danger_color_100 as dangerColor } from '@patternfly/react-tokens';
 
-import { IpDigit, IpDigitIndex } from '../SingleIpDigit';
+import { SingleIpDigit, IpDigitIndex, SingleIpDigitProps } from '../SingleIpDigit';
+import { IpSelectorValidationType } from './types';
+
+import './IpSelector.css';
 
 export const IpSelector: React.FC<{
   address: string;
-  setAddress: (newAddress: string) => void;
-}> = ({ address, setAddress }) => {
+  setAddress: SingleIpDigitProps['setAddress'];
+  validation: IpSelectorValidationType;
+}> = ({ address, setAddress, validation }) => {
   const [focus, setFocus] = React.useState<IpDigitIndex>(0);
+  const validated = validation.digits || [];
 
   return (
     <>
-      <IpDigit
-        position={0}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={1}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={2}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      .
-      <IpDigit
-        position={3}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={4}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={5}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      .
-      <IpDigit
-        position={6}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={7}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={8}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      .
-      <IpDigit
-        position={9}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={10}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
-      <IpDigit
-        position={11}
-        address={address}
-        setAddress={setAddress}
-        focus={focus}
-        setFocus={setFocus}
-      />
+      {([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as IpDigitIndex[]).map((position) => (
+        <>
+          {position > 0 && position % 3 === 0 && <>.</>}
+          <SingleIpDigit
+            key={position}
+            position={position}
+            address={address}
+            setAddress={setAddress}
+            focus={focus}
+            setFocus={setFocus}
+            validated={validated[position]}
+          />
+        </>
+      ))}
+      {!validation.valid && (
+        <ExclamationCircleIcon color={dangerColor.value} className="validation-icon" />
+      )}
     </>
   );
 };
