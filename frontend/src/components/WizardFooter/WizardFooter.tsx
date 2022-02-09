@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, ButtonVariant } from '@patternfly/react-core';
+import { useNavigate } from 'react-router-dom';
 
 import { WizardStepType } from '../WizardProgress';
 
@@ -11,13 +12,17 @@ type WizardFooterProps = {
 };
 
 // TODO: add final step
-export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next }) => (
-  <div className="wizard-footer">
-    <Button component="a" href={`/wizard/${back || 'welcome'}`} variant={ButtonVariant.link}>
-      Go back
-    </Button>
-    <Button component="a" href={`/wizard/${next}`} variant={ButtonVariant.primary}>
-      Continue
-    </Button>
-  </div>
-);
+export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="wizard-footer">
+      <Button variant={ButtonVariant.link} onClick={() => navigate(`/wizard/${back || 'welcome'}`)}>
+        Go back
+      </Button>
+      <Button variant={ButtonVariant.primary} onClick={() => navigate(`/wizard/${next}`)}>
+        Continue
+      </Button>
+    </div>
+  );
+};

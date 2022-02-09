@@ -18,7 +18,7 @@ export const IpSelector: React.FC<{
   return (
     <>
       {([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as IpDigitIndex[]).map((position) => (
-        <>
+        <React.Fragment key={position}>
           {position > 0 && position % 3 === 0 && <>.</>}
           <SingleIpDigit
             key={position}
@@ -29,7 +29,7 @@ export const IpSelector: React.FC<{
             setFocus={setFocus}
             validated={validated[position]}
           />
-        </>
+        </React.Fragment>
       ))}
       {!validation.valid && (
         <ExclamationCircleIcon color={dangerColor.value} className="validation-icon" />

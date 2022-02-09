@@ -5,11 +5,15 @@ import { WelcomePage, SubnetPage, VirtualIpPage } from '../../components';
 import Redirect from '../../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
 
+import { useWizardState } from './wizardState';
+
 import './Wizard.css';
 
 export const Wizard: React.FC = () => {
+  const wizardState = useWizardState();
+
   return (
-    <WizardProgressContextProvider>
+    <WizardProgressContextProvider state={wizardState}>
       <Routes>
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/subnet" element={<SubnetPage />} />

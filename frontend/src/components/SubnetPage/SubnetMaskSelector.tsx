@@ -1,25 +1,15 @@
 import React from 'react';
 import { Stack, StackItem, Title } from '@patternfly/react-core';
 
-import { IpSelector, IpSelectorValidationType } from '../IpSelector';
-import { ipAddressValidator } from '../utils';
+import { IpSelector } from '../IpSelector';
+import { useWizardProgressContext } from '../WizardProgress';
 
 import './SubnetMaskSelector.css';
 
 export const SubnetMaskSelector: React.FC = () => {
-  const [mask, setMask] = React.useState('            ');
-  const [validation, setValidation] = React.useState<IpSelectorValidationType>({
-    valid: true,
-    digits: [],
-  });
-
-  const handleSetMask = React.useCallback(
-    (newMask: string) => {
-      setValidation(ipAddressValidator(newMask, true));
-      setMask(newMask);
-    },
-    [setMask],
-  );
+  const {
+    state: { mask, handleSetMask, maskValidation: validation },
+  } = useWizardProgressContext();
 
   return (
     <Stack className="wizard-content" hasGutter>

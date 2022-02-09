@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProgressStepProps } from '@patternfly/react-core';
+import { WizardStateType } from '../Wizard/types';
 
 type WizardProgressStep = Pick<ProgressStepProps, 'isCurrent' | 'variant'>;
 export type WizardStepType = 'subnet' | 'virtualip' | 'domain' | 'sshkey';
@@ -13,8 +14,9 @@ export type WizardProgressSteps = {
 
 export type WizardProgressContextData = {
   steps: WizardProgressSteps;
-
   setActiveStep: (step: WizardStepType) => void;
+
+  state: WizardStateType;
 };
 
 const WIZARD_STEP_INDEXES: { [key in WizardStepType]: number } = {
@@ -28,7 +30,8 @@ const WizardProgressContext = React.createContext<WizardProgressContextData | nu
 
 export const WizardProgressContextProvider: React.FC<{
   children: React.ReactNode;
-}> = ({ children }) => {
+  state: WizardStateType;
+}> = ({ state, children }) => {
   const [steps, setSteps] = React.useState<WizardProgressSteps>({
     subnet: {
       isCurrent: true,
@@ -51,6 +54,7 @@ export const WizardProgressContextProvider: React.FC<{
   const value: WizardProgressContextData = React.useMemo(
     () => ({
       steps,
+      state,
 
       setActiveStep: (step: WizardStepType) => {
         if (!steps[step].isCurrent) {
@@ -73,7 +77,7 @@ export const WizardProgressContextProvider: React.FC<{
         }
       },
     }),
-    [steps, setSteps],
+    [steps, setSteps, state],
   );
 
   return <WizardProgressContext.Provider value={value}>{children}</WizardProgressContext.Provider>;
