@@ -242,6 +242,7 @@ if [[ ${MODE} == 'hub' ]]; then
 
     echo ">>>> Creating ICSP for: Hub"
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+    trust_internal_registry ${MODE}
     recover_mapping
     icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
@@ -275,6 +276,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
 
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        trust_internal_registry ${MODE} ${spoke}
         recover_mapping
 
         # Logic
