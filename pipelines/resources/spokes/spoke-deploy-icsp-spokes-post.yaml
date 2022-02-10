@@ -28,6 +28,8 @@ spec:
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_SPOKES_DIR
         value: "deploy-spoke"
+      - name: DEPLOY_REGISTRY_DIR
+        value: "deploy-disconnected-registry"
       - name: SHARED_DIR
         value: "shared-utils"
   steps:
