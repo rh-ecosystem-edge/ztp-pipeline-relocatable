@@ -58,8 +58,14 @@ function check_mcp() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
+    echo KUBECONFIG=${TARGET_KUBECONFIG}
     while [ "$timeout" -lt "240" ]; do
-        echo KUBECONFIG=${TARGET_KUBECONFIG}
+        echo "Nodes:"
+        oc --kubeconfig=${TARGET_KUBECONFIG} get nodes
+        echo
+        echo "MCP:"
+        oc --kubeconfig=${TARGET_KUBECONFIG} get mcp
+        echo
         if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get mcp master -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}') == 'True' ]]; then
             ready=true
             break

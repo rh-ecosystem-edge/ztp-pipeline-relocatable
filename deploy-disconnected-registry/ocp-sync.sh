@@ -78,6 +78,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         # Loading variables here in purpose
         source ./common.sh ${MODE}
+        # Here we need to trust on both registries
+        trust_internal_registry 'hub'
         trust_internal_registry ${MODE} ${spoke}
 
         if ! ./verify_ocp_sync.sh ${MODE}; then
