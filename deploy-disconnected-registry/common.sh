@@ -50,7 +50,7 @@ function trust_internal_registry() {
         cluster=${2}
     fi
 
-    echo ">>>> Trusting internal registry"
+    echo ">>>> Trusting internal registry: ${MODE}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo ">> Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">> Mode: ${MODE}"
@@ -66,6 +66,7 @@ function trust_internal_registry() {
     echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${cluster}.crt" #update for the hub/hypervisor
     update-ca-trust extract
     echo ">> Done!"
+    echo
 }
 
 if [[ $# -lt 1 ]]; then
