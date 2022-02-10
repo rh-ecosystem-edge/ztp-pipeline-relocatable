@@ -106,40 +106,40 @@ spec:
       - name: ztp
         workspace: ztp
 
-          #  # Deploy MetalLB
-          #  - name: deploy-metallb
-          #    taskRef:
-          #      name: spoke-deploy-metallb
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #    runAfter:
-          #      - deploy-icsp-spokes-pre
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
-          #
-          #  # Deploy OCS 
-          #  - name: deploy-ocs
-          #    taskRef:
-          #      name: spoke-deploy-ocs
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #    runAfter:
-          #      - deploy-metallb
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
-          #
+  # Deploy MetalLB
+  - name: deploy-metallb
+    taskRef:
+      name: spoke-deploy-metallb
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-icsp-spokes-pre
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy OCS 
+  - name: deploy-ocs
+    taskRef:
+      name: spoke-deploy-ocs
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-metallb
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
           #  # Deploy Disconnected Registry
           #  - name: deploy-disconnected-registry
           #    taskRef:
