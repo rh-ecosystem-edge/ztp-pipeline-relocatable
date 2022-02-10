@@ -81,7 +81,9 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             ## Logging into the Source and Destination registries
             podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+            podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
             podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+            podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
             mirror_ocp ${MODE}
         else
             echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"

@@ -23,6 +23,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 export REGISTRY=kubeframe-registry
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
+export QUAY_MANIFESTS=quay-manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
@@ -33,7 +34,7 @@ export OCP_RELEASE=${OC_OCP_VERSION}
 export OCP_RELEASE_FULL=${OCP_RELEASE}.0
 # TODO: Change static passwords by dynamic ones
 export REG_US=dummy
-export REG_PASS=dummy
+export REG_PASS=dummy123
 
 if [[ ${1} == "hub" ]]; then
     echo ">>>> Get the registry cert and update pull secret for: ${1}"
@@ -65,7 +66,7 @@ elif [[ ${1} == "spoke" ]]; then
         echo "HUB: ${KUBECONFIG_HUB}"
         echo "SPOKE: ${SPOKE_KUBECONFIG}"
         ## Common
-        export DESTINATION_REGISTRY="$(oc --kubeconfig=${SPOKE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        export DESTINATION_REGISTRY="$(oc --kubeconfig=${SPOKE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
         ## OCP Sync vars
         export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers $(yq eval ".config.clusterimageset" ${SPOKES_FILE}) -o jsonpath={.spec.releaseImage})"
         ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1

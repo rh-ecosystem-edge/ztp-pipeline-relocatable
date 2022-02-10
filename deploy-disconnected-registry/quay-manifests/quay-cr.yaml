@@ -1,0 +1,22 @@
+apiVersion: quay.redhat.com/v1
+kind: QuayRegistry
+metadata:
+  name: kubeframe-registry
+  namespace: kubeframe-registry
+spec:
+  configBundleSecret: config-bundle-secret
+  components:
+    - managed: true
+      kind: postgres
+    - managed: true
+      kind: route
+    - managed: true
+      kind: tls
+    - managed: true
+      kind: objectstorage
+    - managed: true
+      kind: clair
+    - managed: true
+      kind: redis
+    - managed: true
+      kind: horizontalpodautoscaler

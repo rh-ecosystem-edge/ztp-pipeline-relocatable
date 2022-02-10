@@ -139,13 +139,13 @@ if ! ./verify.sh; then
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
-        while [ "$timeout" -lt "240" ]; do
-            if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
+        while [ "$timeout" -lt "1000" ]; do
+            if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
                 ready=true
                 break
             fi
             sleep 5
-            timeout=$((timeout + 5))
+            timeout=$((timeout + 1))
         done
         if [ "$ready" == "false" ]; then
             echo "timeout waiting for OCS deployment..."

@@ -98,7 +98,6 @@ source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
 
 MODE=${1}
-SYNCORNOT=${2}
 
 SNAPSHOTFILE="mirror-snapshot.tgz"
 HTTPSERVICE=$(oc --kubeconfig=${KUBECONFIG_HUB} get routes -n default | grep httpd-server-route | awk '{print $2}')

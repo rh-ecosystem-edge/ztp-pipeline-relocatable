@@ -14,8 +14,9 @@ for SPOKE in ${ALLSPOKES}; do
     echo ">>>> Cleaning the deployed Spokes clusters"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo Spoke: ${SPOKE}
-    oc delete managedcluster ${SPOKE}
-    oc delete ns ${SPOKE}
+    oc --kubeconfig=${KUBECONFIG_HUB} delete managedcluster ${SPOKE}
+    oc --kubeconfig=${KUBECONFIG_HUB} delete ns ${SPOKE}
+    sleep 60
     kcli delete vm ${SPOKE}-m0 ${SPOKE}-m1 ${SPOKE}-m2 ${SPOKE}-w0 -y
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 done
