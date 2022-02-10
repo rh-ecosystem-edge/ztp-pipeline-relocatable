@@ -40,12 +40,12 @@ function trust_internal_registry() {
         exit 1
     fi
 
-    MODE=${1}
+    _MODE=${1}
 
-    if [[ ${MODE} == 'hub' ]]; then
+    if [[ ${_MODE} == 'hub' ]]; then
         local TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         local cluster="hub"
-    elif [[ ${MODE} == 'spoke' ]]; then
+    elif [[ ${_MODE} == 'spoke' ]]; then
         local TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         local cluster=${2}
     fi
