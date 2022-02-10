@@ -58,8 +58,14 @@ function check_mcp() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
+    echo KUBECONFIG=${TARGET_KUBECONFIG}
     while [ "$timeout" -lt "240" ]; do
-        echo KUBECONFIG=${TARGET_KUBECONFIG}
+        echo "Nodes:"
+        oc --kubeconfig=${TARGET_KUBECONFIG} get nodes
+        echo
+        echo "MCP:"
+        oc --kubeconfig=${TARGET_KUBECONFIG} get mcp
+        echo
         if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get mcp master -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}') == 'True' ]]; then
             ready=true
             break
@@ -192,28 +198,6 @@ function deploy_registry() {
         done
         export KUBECONFIG=${KUBECONFIG_HUB}
     fi
-
-}
-
-function trust_internal_registry() {
-
-    if [[ ${MODE} == 'hub' ]]; then
-        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-        cluster="hub"
-    elif [[ ${MODE} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        cluster=${spoke}
-    fi
-
-    echo ">>>> Trusting internal registry"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    ## Update trusted CA from Helper
-    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
-    export CA_CERT_DATA=$(oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
-    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt"
-
-    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}" #update for the hub/hypervisor
-    update-ca-trust extract
 
 }
 

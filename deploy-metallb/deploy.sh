@@ -58,7 +58,7 @@ function verify_remote_pod() {
             echo
         fi
 
-        if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} -l ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
+        if [[ $(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} -l ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
             break
         fi
@@ -94,7 +94,7 @@ function verify_remote_resource() {
             echo
         fi
 
-        if [[ $(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | egrep -i "${STATUS}" | wc -l") -ge 1 ]]; then
+        if [[ $(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | egrep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
             break
         fi
@@ -194,7 +194,7 @@ function copy_files() {
     fi
 
     echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
-    ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} ${src_files[@]} core@${dst_node}:${dst_folder}
 }
 
 function check_external_access() {
@@ -251,12 +251,13 @@ for spoke in ${ALLSPOKES}; do
     echo ">> Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
     grab_master_ext_ips ${spoke}
+    recover_spoke_rsa ${spoke}
     check_connectivity "${SPOKE_NODE_IP}"
     render_manifests ${index}
 
     # Remote working
     echo ">> Copying files to the Spoke ${spoke}"
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
     for _file in ${files[@]}; do
         copy_files "${_file}" "${SPOKE_NODE_IP}" "./manifests/"
     done
@@ -265,9 +266,9 @@ for spoke in ${ALLSPOKES}; do
     echo
 
     echo ">> Deploying NMState and MetalLB for ${spoke}"
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
     sleep 2
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
     sleep 10
     echo
 
@@ -280,7 +281,7 @@ for spoke in ${ALLSPOKES}; do
     echo
 
     echo ">>>> Deploying NMState Operand for ${spoke}"
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
     sleep 2
     for dep in {nmstate-cert-manager,nmstate-webhook}; do
         verify_remote_resource ${spoke} "openshift-nmstate" "deployment.apps" ${dep} "."
@@ -293,19 +294,19 @@ for spoke in ${ALLSPOKES}; do
     for master in 0 1 2; do
         NODENAME="${spoke}-nncp-kubeframe-spoke-${index}-master-${master}"
         # I've been forced to do that, don't blame me :(
-        ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
         verify_remote_resource ${spoke} "default" "nncp" "kubeframe-spoke-${index}-master-${master}-nncp" "Available"
     done
     echo
 
     echo ">> Deploying MetalLB Operand for ${spoke}"
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
     sleep 2
     verify_remote_resource ${spoke} "metallb" "deployment.apps" "controller" "."
     verify_remote_pod ${spoke} "metallb" "pod" "component=speaker"
 
     echo ">> Deploying MetalLB AddressPools and Services for ${spoke}"
-    ${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-api-svc.yaml -f manifests/${spoke}-metallb-ingress-svc.yaml -f manifests/${spoke}-metallb-ingress.yaml"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-api-svc.yaml -f manifests/${spoke}-metallb-ingress-svc.yaml -f manifests/${spoke}-metallb-ingress.yaml"
     echo
 
     sleep 2

@@ -26,7 +26,7 @@ function copy_files() {
     fi
 
     echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
-    ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} ${src_files[@]} core@${dst_node}:${dst_folder}
 }
 
 function grab_master_ext_ips() {
@@ -90,12 +90,14 @@ function icsp_mutate() {
 
 function generate_mapping() {
     echo ">>>> Loading Common file"
-    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+    ## Not fully sure but we create the base mapping file using the hub definition and then, when it makes sense we mutate it changing the destination registry
+    #source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
     echo ">>>> Creating OLM Manifests"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
     GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
     echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
-    unalias cp || echo "Unaliased cp: Done!"
+    unalias cp &>/dev/null || echo "Unaliased cp: Done!"
     cp -f ${OUTPUTDIR}/olm-manifests/mapping.txt ${OUTPUTDIR}/mapping.txt
 }
 
@@ -242,9 +244,15 @@ if [[ ${MODE} == 'hub' ]]; then
 
     echo ">>>> Creating ICSP for: Hub"
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+    # Recover mapping calls the source over the common.sh file under deploy-disconnected
+    trust_internal_registry ${MODE}
     recover_mapping
     icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+    if [[ ! -f ${OUTPUTDIR}/catalogsource-${MODE}.yaml ]]; then
+        echo "CatalogSource File does not exists, generating a new one..."
+        create_cs ${MODE}
+    fi
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
     oc --kubeconfig=${TARGET_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-hub.yaml
     wait_for_mcp_ready ${TARGET_KUBECONFIG} 'hub' 240
@@ -267,21 +275,38 @@ elif [[ ${MODE} == 'spoke' ]]; then
     fi
 
     for spoke in ${ALLSPOKES}; do
-        # Get Spoke Kubeconfig
-        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
-        else
-            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
-        fi
-
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        recover_mapping
-
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
         if [[ ${STAGE} == 'pre' ]]; then
+            ### WARNING: yes is 'hub' mode the first time you wanna deploy the CatalogSources because at this point we dont have Spoke API yet, so becareful changing this flow.
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
+
+            # Get Spoke Kubeconfig
+            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
+                extract_kubeconfig ${spoke}
+            else
+                export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            fi
+
+            trust_internal_registry 'hub'
+            recover_mapping
+
+            if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
+                echo "CatalogSource Hub File does not exists, generating a new one..."
+                create_cs 'hub'
+            fi
+
+            if [[ ! -f ${OUTPUTDIR}/icsp-hub.yaml ]]; then
+                echo "ICSP Hub File does not exists, generating a new one..."
+                icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
+            fi
+            recover_spoke_rsa ${spoke}
+
+            # In this stage the spoke's registry does not exist, so we need to trust the Hub's ingress cert
             # Check API
+            TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
             echo ">> Checking spoke API: ${STAGE}"
+            echo ">> Kubeconfig: ${TARGET_KUBECONFIG}"
             RCAPI=$(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes)
             # If not API
             if [[ -z ${RCAPI} ]]; then
@@ -289,13 +314,13 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 grab_master_ext_ips ${spoke}
                 check_connectivity "${SPOKE_NODE_IP}"
                 # Execute commands and Copy files
-                ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
                 copy_files "${TARGET_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
                 copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
                 copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/icsp-hub.yaml"
                 # Check ICSP
-                RCICSP=$(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-hub | wc -l || true")
-                OC_COMMAND="${SSH_COMMAND} core@${SPOKE_NODE_IP} oc"
+                RCICSP=$(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-hub | wc -l || true")
+                OC_COMMAND="${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} oc"
                 MANIFESTS_PATH='manifests'
             else
                 RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
@@ -314,6 +339,25 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
         elif [[ ${STAGE} == 'post' ]]; then
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+
+            # Get Spoke Kubeconfig
+            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
+                extract_kubeconfig ${spoke}
+            else
+                export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            fi
+
+            TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+
+            trust_internal_registry ${MODE} ${spoke}
+            if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]]; then
+                echo "CatalogSource File does not exists, generating a new one..."
+                create_cs ${MODE} ${spoke}
+            fi
+            recover_mapping
+            recover_spoke_rsa ${spoke}
+
             RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo ">>>> Waiting for old stuff deletion..."
