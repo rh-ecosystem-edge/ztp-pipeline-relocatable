@@ -11,10 +11,10 @@ on:
       RUNNER:
         description: 'GitHub Action Runner Tag'
         required: true
-      SYNC:
-        description: 'Force re-sync and mirror the Spokes? (yes/no)'
-        default: no
-        required: false
+      # SYNC:
+      #   description: 'Force re-sync and mirror the Spokes? (yes/no)'
+      #   default: no
+      #   required: false
 
 
 env:
