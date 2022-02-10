@@ -130,42 +130,22 @@ function mirror() {
 
         echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
         GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
-    done
 
-    # Use parallel mirroring
-    for pkg in ${SOURCE_PACKAGES}; do
         echo ">>>> Trying to push OLM images to Internal Registry"
         echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100"
-        touch ${OUTPUTDIR}/${pkg}.log
-        tail -f ${OUTPUTDIR}/${pkg}.log | grep "error:" | tee -a ${OUTPUTDIR}/${pkg}-error.log &
-        GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 | tee ${OUTPUTDIR}/${pkg}.log && export ${pkg}_finished=true || export ${pkg}_finished=false &
-    done
 
-    # We need to now review all packages to see if they have finished or not, so that we go back to sequential execution
-    for pkg in ${SOURCE_PACKAGES}; do
-        timeout=0
-        while [ "$timeout" -lt "240" ]; do
-            myvar=$(set | grep ${pkg}_finished | wc -l)
-            if [[ ${myvar} -lt 0 ]]; then
-                echo "Waiting for ${pkg} job to finish"
-                sleep 5
-                timeout=$((timeout + 1))
-            else
-                # The variable has a value either true or false, so we can exit this check loop
-                break
-            fi
-        done
+        GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 | tee -a ${OUTPUTDIR}/$package-error.log
     done
-
-    echo ">> Packages that have failed START"
-    cat ${OUTPUTDIR}/${pkg}-error.log
-    echo ">> Packages that have failed END"
 
     # error: unable to push manifest to kubeframe-registry-quay-kubeframe-registry.apps.spoke0-cluster.alklabs.com/olm/rhceph-rhceph-4-rhel8: manifest invalid: manifest invalid
-    FAILEDPACKAGES=$(cat ${OUTPUTDIR}/${pkg}-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sort -u | xargs echo)
+    FAILEDPACKAGES=$(cat ${OUTPUTDIR}/$package-error.log | grep "error:" | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sort -u | xargs echo)
+
+    echo ">> Packages that have failed START"
+    echo ${FAILEDPACKAGES}
+    echo ">> Packages that have failed END"
 
     # Patch to avoid issues on mirroring
-    #PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
+    # PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
     for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
         for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
             for pkg in ${FAILEDPACKAGES}; do
