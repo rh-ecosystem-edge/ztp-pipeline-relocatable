@@ -245,8 +245,8 @@ if [[ ${MODE} == 'hub' ]]; then
     echo ">>>> Creating ICSP for: Hub"
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
     # Recover mapping calls the source over the common.sh file under deploy-disconnected
-    recover_mapping
     trust_internal_registry ${MODE}
+    recover_mapping
     icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${TARGET_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
     if [[ ! -f ${OUTPUTDIR}/catalogsource-${MODE}.yaml ]];then
@@ -275,29 +275,24 @@ elif [[ ${MODE} == 'spoke' ]]; then
     fi
 
     for spoke in ${ALLSPOKES}; do
-        ### WARNING: yes is 'hub' mode the first time you wanna deploy the CatalogSources because at this point we dont have Spoke API yet, so becareful changing this flow.
-        source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
-
-        # Get Spoke Kubeconfig
-        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
-        else
-            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
-        fi
-
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]];then
-            echo "CatalogSource File does not exists, generating a new one..."
-            create_cs ${MODE} ${spoke}
-        fi 
-        recover_mapping
-        recover_spoke_rsa ${spoke}
-
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
         if [[ ${STAGE} == 'pre' ]]; then
-            # In this stage the spoke's registry does not exist, so we need to trust the Hub's ingress cert
+            ### WARNING: yes is 'hub' mode the first time you wanna deploy the CatalogSources because at this point we dont have Spoke API yet, so becareful changing this flow.
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
+
+            # Get Spoke Kubeconfig
+            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
+                extract_kubeconfig ${spoke}
+            else
+                export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            fi
+
+            TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
             trust_internal_registry 'hub'
+            recover_spoke_rsa ${spoke}
+
+            # In this stage the spoke's registry does not exist, so we need to trust the Hub's ingress cert
             # Check API
             echo ">> Checking spoke API: ${STAGE}"
             RCAPI=$(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes)
@@ -332,7 +327,25 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
         elif [[ ${STAGE} == 'post' ]]; then
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+
+            # Get Spoke Kubeconfig
+            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
+                extract_kubeconfig ${spoke}
+            else
+                export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            fi
+
+            TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+
             trust_internal_registry ${MODE} ${spoke}
+            if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]];then
+                echo "CatalogSource File does not exists, generating a new one..."
+                create_cs ${MODE} ${spoke}
+            fi 
+            recover_mapping
+            recover_spoke_rsa ${spoke}
+
             RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo ">>>> Waiting for old stuff deletion..."
