@@ -290,6 +290,17 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
             trust_internal_registry 'hub'
+            recover_mapping
+
+            if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]];then
+                echo "CatalogSource Hub File does not exists, generating a new one..."
+                create_cs 'hub'
+            fi 
+
+            if [[ ! -f ${OUTPUTDIR}/icsp-hub.yaml ]];then
+                echo "ICSP Hub File does not exists, generating a new one..."
+                icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
+            fi 
             recover_spoke_rsa ${spoke}
 
             # In this stage the spoke's registry does not exist, so we need to trust the Hub's ingress cert
