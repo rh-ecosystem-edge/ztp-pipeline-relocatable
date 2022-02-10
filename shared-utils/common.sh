@@ -12,7 +12,7 @@ function generate_rsa_spoke() {
     fi
 
     spoke=${1}
-    export SPOKE_SAFE_FOLDER="${OUTPUTDIR}/build/${spoke}"
+    export SPOKE_SAFE_FOLDER="${OUTPUTDIR}/${spoke}"
     mkdir -p ${SPOKE_SAFE_FOLDER} 
     export RSA_KEY_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key"
     export RSA_PUB_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key.pub"
