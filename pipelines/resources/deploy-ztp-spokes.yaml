@@ -89,23 +89,23 @@ spec:
       - name: ztp
         workspace: ztp
 
-          #  # Deploy ICSP Spokes Pre
-          #  - name: deploy-icsp-spokes-pre
-          #    taskRef:
-          #      name: spoke-deploy-icsp-spokes-pre
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #    runAfter:
-          #      - deploy-spokes
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
-          #
+  # Deploy ICSP Spokes Pre
+  - name: deploy-icsp-spokes-pre
+    taskRef:
+      name: spoke-deploy-icsp-spokes-pre
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-spokes
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
           #  # Deploy MetalLB
           #  - name: deploy-metallb
           #    taskRef:

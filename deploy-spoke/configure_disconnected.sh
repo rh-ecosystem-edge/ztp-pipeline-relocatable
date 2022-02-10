@@ -26,7 +26,7 @@ function copy_files() {
     fi
 
     echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
-    ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} ${src_files[@]} core@${dst_node}:${dst_folder}
 }
 
 function grab_master_ext_ips() {
@@ -288,6 +288,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi 
         trust_internal_registry ${MODE} ${spoke}
         recover_mapping
+        recover_spoke_rsa ${spoke}
 
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
@@ -301,13 +302,13 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 grab_master_ext_ips ${spoke}
                 check_connectivity "${SPOKE_NODE_IP}"
                 # Execute commands and Copy files
-                ${SSH_COMMAND} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
                 copy_files "${TARGET_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
                 copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
                 copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/icsp-hub.yaml"
                 # Check ICSP
-                RCICSP=$(${SSH_COMMAND} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-hub | wc -l || true")
-                OC_COMMAND="${SSH_COMMAND} core@${SPOKE_NODE_IP} oc"
+                RCICSP=$(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-hub | wc -l || true")
+                OC_COMMAND="${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} oc"
                 MANIFESTS_PATH='manifests'
             else
                 RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)

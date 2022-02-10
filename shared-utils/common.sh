@@ -4,6 +4,27 @@
 
 #set -x
 
+function recover_spoke_rsa() {
+
+    if [[ ${#} -lt 1 ]]; then
+        echo "Error accessing RSA key pair, Give me the Spoke Name"
+        exit 1
+    fi
+
+    spoke=${1}
+    export SPOKE_SAFE_FOLDER="${OUTPUTDIR}/${spoke}"
+    export RSA_KEY_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key"
+    export RSA_PUB_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key.pub"
+
+    if [[ ! -f ${RSA_KEY_FILE} ]];then
+        echo "RSA Key for Spoke Cluster ${spoke} Not Found"
+        exit 1
+    else
+        echo "RSA Key-pair recovered!"
+    fi
+
+}
+
 function generate_rsa_spoke() {
 
     if [[ ${#} -lt 1 ]]; then
@@ -69,8 +90,13 @@ function copy_files_common() {
         exit 1
     fi
 
+    if [[ -z ${RSA_KEY_FILE} ]]; then
+        echo "RSA Key not defined: ${RSA_KEY_FILE}"
+        exit 1
+    fi
+
     echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
-    ${SCP_COMMAND} ${src_files[@]} core@${dst_node}:${dst_folder}
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} ${src_files[@]} core@${dst_node}:${dst_folder}
 }
 
 function grab_domain() {
