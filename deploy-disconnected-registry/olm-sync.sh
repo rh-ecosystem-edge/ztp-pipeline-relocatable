@@ -176,6 +176,7 @@ elif [[ ${1} == "spoke" ]]; then
         fi
         prepare_env ${MODE}
         create_cs ${MODE} ${spoke}
+        trust_internal_registry 'hub'
         trust_internal_registry ${MODE} ${spoke}
         if ! ./verify_olm_sync.sh ${MODE}; then
             mirror ${MODE}
