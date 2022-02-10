@@ -286,13 +286,13 @@ elif [[ ${MODE} == 'spoke' ]]; then
             echo "CatalogSource File does not exists, generating a new one..."
             create_cs ${MODE} ${spoke}
         fi 
-        trust_internal_registry ${MODE} ${spoke}
         recover_mapping
         recover_spoke_rsa ${spoke}
 
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
         if [[ ${STAGE} == 'pre' ]]; then
+            trust_internal_registry 'hub'
             # Check API
             echo ">> Checking spoke API: ${STAGE}"
             RCAPI=$(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes)
@@ -327,6 +327,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
         elif [[ ${STAGE} == 'post' ]]; then
+            trust_internal_registry ${MODE} ${spoke}
             RCICSP=$(oc --kubeconfig=${TARGET_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo ">>>> Waiting for old stuff deletion..."
