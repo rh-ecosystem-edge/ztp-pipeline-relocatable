@@ -52,6 +52,9 @@ function trust_internal_registry() {
 
     echo ">>>> Trusting internal registry"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo ">> Kubeconfig: ${TARGET_KUBECONFIG}"
+    echo ">> MODE: ${MODE}"
+    echo ">> Cluster: ${cluster}"
     ## Update trusted CA from Helper
     #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
     export CA_CERT_DATA=$(oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
@@ -60,6 +63,7 @@ function trust_internal_registry() {
     echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}" #update for the hub/hypervisor
     echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${cluster}.crt" #update for the hub/hypervisor
     update-ca-trust extract
+    echo ">> Done!"
 }
 
 if [[ $# -lt 1 ]]; then
