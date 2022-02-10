@@ -1,0 +1,9 @@
+bases:
+  - common
+  - hub
+  - spokes
+resources:
+  - deploy-ztp-hub.yaml
+  - deploy-ztp-spokes.yaml
+
+namespace: spoke-deployer
