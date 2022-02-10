@@ -21,4 +21,4 @@ RUN cd /tmp && \
     chmod u+x /usr/bin/kubectl
 
 
-RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs && dnf clean all
+RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils && dnf clean all
