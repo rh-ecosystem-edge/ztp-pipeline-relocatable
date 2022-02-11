@@ -173,7 +173,7 @@ elif [[ ${1} == "spoke" ]]; then
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
         prepare_env 'spoke' 
-        create_cs 'spoke'
+        create_cs 'spoke' ${spoke}
         trust_internal_registry 'hub'
         trust_internal_registry 'spoke' ${spoke}
         if ! ./verify_olm_sync.sh 'spoke'; then
