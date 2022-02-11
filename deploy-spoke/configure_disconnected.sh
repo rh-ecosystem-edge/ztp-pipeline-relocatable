@@ -91,7 +91,6 @@ function icsp_mutate() {
 function generate_mapping() {
     echo ">>>> Loading Common file"
     ## Not fully sure but we create the base mapping file using the hub definition and then, when it makes sense we mutate it changing the destination registry
-    #source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
     source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
     echo ">>>> Creating OLM Manifests"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
@@ -234,9 +233,7 @@ function wait_for_mcp_ready() {
 source ${WORKDIR}/shared-utils/common.sh
 export MAP_FILENAME='mapping.txt'
 
-MODE=${1}
-
-if [[ ${MODE} == 'hub' ]]; then
+if [[ ${1} == 'hub' ]]; then
     # Validation
     if [[ $# -lt 1 ]]; then
         echo "Usage :"
@@ -247,19 +244,19 @@ if [[ ${MODE} == 'hub' ]]; then
     echo ">>>> Creating ICSP for: Hub"
     source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
     # Recover mapping calls the source over the common.sh file under deploy-disconnected
-    trust_internal_registry ${MODE}
+    trust_internal_registry 'hub'
     recover_mapping
     icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${KUBECONFIG_HUB} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-    if [[ ! -f ${OUTPUTDIR}/catalogsource-${MODE}.yaml ]]; then
+    if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
         echo "CatalogSource File does not exists, generating a new one..."
-        create_cs ${MODE}
+        create_cs 'hub'
     fi
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/icsp-hub.yaml
     wait_for_mcp_ready ${KUBECONFIG_HUB} 'hub' 240
 
-elif [[ ${MODE} == 'spoke' ]]; then
+elif [[ ${1} == 'spoke' ]]; then
     # Validation
     if [[ $# -lt 2 ]]; then
         echo "Usage :"
@@ -339,7 +336,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
         elif [[ ${STAGE} == 'post' ]]; then
-            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'spoke'
 
             # Get Spoke Kubeconfig
             if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
@@ -349,10 +346,10 @@ elif [[ ${MODE} == 'spoke' ]]; then
             fi
 
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
-            trust_internal_registry ${MODE} ${spoke}
+            trust_internal_registry 'spoke' ${spoke}
             if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]]; then
                 echo "CatalogSource File does not exists, generating a new one..."
-                create_cs ${MODE} ${spoke}
+                create_cs 'spoke' ${spoke}
             fi
             recover_mapping
             recover_spoke_rsa ${spoke}
@@ -363,7 +360,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
             else
                 echo ">>>> Creating ICSP for: ${spoke}"
                 # Use the Spoke's registry as a source
-                source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
+                source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'spoke'
                 icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
                 icsp_maker ${SPOKE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
 

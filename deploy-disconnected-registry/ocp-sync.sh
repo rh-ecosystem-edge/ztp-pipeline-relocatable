@@ -45,8 +45,6 @@ function mirror_ocp() {
     oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
 }
 
-MODE=${1}
-
 if [[ ${1} == 'hub' ]]; then
     # Loading variables here in purpose
     source ./common.sh 'hub'

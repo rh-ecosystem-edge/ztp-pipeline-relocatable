@@ -51,7 +51,7 @@ function trust_internal_registry() {
         clus=${2}
     fi
 
-    echo ">>>> Trusting internal registry: ${MODE}"
+    echo ">>>> Trusting internal registry: ${1}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo ">> Kubeconfig: ${KBKNFG}"
     echo ">> Mode: ${1}"

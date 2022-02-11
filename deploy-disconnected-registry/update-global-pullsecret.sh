@@ -39,11 +39,9 @@ function prepare_env() {
     fi
 }
 
-MODE=${1}
+if [[ ${1} == 'hub' ]]; then
 
-if [[ ${MODE} == 'hub' ]]; then
-
-    prepare_env ${MODE}
+    prepare_env 'hub'
     ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
     oc --kubeconfig=${KUBECONFIG_HUB} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${PULL_SECRET}
 
@@ -59,9 +57,9 @@ elif [[ ${1} == "spoke" ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
-        source ./common.sh ${MODE}
+        source ./common.sh 'spoke'
 
-        prepare_env ${MODE}
+        prepare_env 'spoke'
         ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
         ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
         oc --kubeconfig=${SPOKE_KUBECONFIG} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${PULL_SECRET}

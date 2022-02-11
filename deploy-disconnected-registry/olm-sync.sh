@@ -53,13 +53,12 @@ function check_registry() {
 }
 
 function mirror() {
-    MODE=${1}
     # Check for credentials for OPM
-    if [[ ${MODE} == 'hub' ]]; then
+    if [[ ${1} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
         check_registry ${DESTINATION_REGISTRY}
-    elif [[ ${MODE} == 'spoke' ]]; then
+    elif [[ ${1} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         echo ">>>> Checking Source Registry: ${SOURCE_REGISTRY}"
         check_registry ${SOURCE_REGISTRY}
@@ -152,9 +151,7 @@ function mirror_skopeo() {
     done
 }
 
-MODE=${1}
-
-if [[ ${MODE} == 'hub' ]]; then
+if [[ ${1} == 'hub' ]]; then
     prepare_env 'hub'
     create_cs 'hub'
     trust_internal_registry 'hub' 
