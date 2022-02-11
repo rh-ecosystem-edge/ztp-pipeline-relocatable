@@ -12,8 +12,8 @@ function create_cs() {
         local CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
         local cluster="hub"
     elif [[ ${mode} == 'spoke' ]]; then
-        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
         local cluster=${2}
+        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
     fi
 
     cat >${CS_OUTFILE} <<EOF
