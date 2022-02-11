@@ -59,7 +59,7 @@ if [[ ${1} == 'hub' ]]; then
         ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
         mirror_ocp 'hub' 'hub'
     else
-        echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
+        echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"
     fi
 
 elif [[ ${1} == 'spoke' ]]; then
@@ -93,7 +93,7 @@ elif [[ ${1} == 'spoke' ]]; then
             ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
             mirror_ocp 'spoke' ${spoke}
         else
-            echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
+            echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"
         fi
     done
 fi

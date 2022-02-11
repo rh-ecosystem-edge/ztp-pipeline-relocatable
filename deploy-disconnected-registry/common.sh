@@ -43,30 +43,28 @@ function trust_internal_registry() {
         exit 1
     fi
 
-    _MODE=${1}
-
-    if [[ ${_MODE} == 'hub' ]]; then
-        local TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-        local cluster="hub"
-    elif [[ ${_MODE} == 'spoke' ]]; then
-        local TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        local cluster=${2}
+    if [[ ${1} == 'hub' ]]; then
+        KBKNFG=${KUBECONFIG_HUB}
+        clus="hub"
+    elif [[ ${1} == 'spoke' ]]; then
+        KBKNFG=${SPOKE_KUBECONFIG}
+        clus=${2}
     fi
 
     echo ">>>> Trusting internal registry: ${MODE}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo ">> Kubeconfig: ${TARGET_KUBECONFIG}"
-    echo ">> Mode: $_{MODE}"
-    echo ">> Cluster: ${cluster}"
+    echo ">> Kubeconfig: ${KBKNFG}"
+    echo ">> Mode: ${1}"
+    echo ">> Cluster: ${clus}"
     ## Update trusted CA from Helper
     #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
-    export CA_CERT_DATA=$(oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
-    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt"
+    export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
     echo ">> Cert: ${PATH_CA_CERT}"
-    ## Update trusted CA from Helper
 
-    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"                                   #update for the hub/hypervisor
-    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${cluster}.crt" #update for the hub/hypervisor
+    ## Update trusted CA from Helper
+    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
+    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${clus}.crt"
     update-ca-trust extract
     echo ">> Done!"
     echo
