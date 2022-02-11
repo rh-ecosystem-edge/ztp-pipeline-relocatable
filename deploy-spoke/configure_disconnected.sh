@@ -89,7 +89,6 @@ function icsp_mutate() {
 }
 
 function generate_mapping() {
-    KUBE=${1}
     echo ">>>> Loading Common file"
     ## Not fully sure but we create the base mapping file using the hub definition and then, when it makes sense we mutate it changing the destination registry
     #source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh ${MODE}
