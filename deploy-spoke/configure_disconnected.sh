@@ -244,6 +244,7 @@ if [[ ${MODE} == 'hub' ]]; then
 
     echo ">>>> Creating ICSP for: Hub"
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
     # Recover mapping calls the source over the common.sh file under deploy-disconnected
     trust_internal_registry ${MODE}
     recover_mapping
@@ -288,6 +289,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
             fi
 
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
             trust_internal_registry 'hub'
             recover_mapping
 
@@ -350,6 +352,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
 
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
             trust_internal_registry ${MODE} ${spoke}
             if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]]; then
                 echo "CatalogSource File does not exists, generating a new one..."
