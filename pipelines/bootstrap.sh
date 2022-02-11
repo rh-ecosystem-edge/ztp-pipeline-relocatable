@@ -9,13 +9,17 @@ function get_tkn() {
     URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64-0.21.0.tar.gz"
     BIN_FOLDER="${HOME}/bin"
 
-    echo ">>>> Downloading TKN Client into: ${BIN_FOLDER}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    mkdir -p ${BIN_FOLDER}
-    wget ${URL} -O "${BIN_FOLDER}/tkn.tar.gz"
-    tar xvzf "${BIN_FOLDER}/tkn.tar.gz" -C "${BIN_FOLDER}"
-    chmod 755 ${BIN_FOLDER}/tkn
-    rm -rf "${BIN_FOLDER}/LICENSE"
+    if [[ -z $(command -v tkn) ]];then
+        echo ">>>> Downloading TKN Client into: ${BIN_FOLDER}"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        mkdir -p ${BIN_FOLDER}
+        wget ${URL} -O "${BIN_FOLDER}/tkn.tar.gz"
+        tar xvzf "${BIN_FOLDER}/tkn.tar.gz" -C "${BIN_FOLDER}"
+        chmod 755 ${BIN_FOLDER}/tkn
+        rm -rf "${BIN_FOLDER}/LICENSE"
+    else
+        echo ">>>> Binary tkn already installed!"
+    fi
 }
 
 function check_resource() {
@@ -98,7 +102,7 @@ function deploy_openshift_pipelines() {
     echo ">>>> Deploying Openshift Pipelines"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${PIPELINES_DIR}/manifests/01-subscription.yaml
-    sleep 10
+    sleep 30
 
     check_resource "deployment" "openshift-pipelines-operator" "Available" "openshift-operators"
     check_resource "deployment" "tekton-operator-webhook" "Available" "openshift-operators"
