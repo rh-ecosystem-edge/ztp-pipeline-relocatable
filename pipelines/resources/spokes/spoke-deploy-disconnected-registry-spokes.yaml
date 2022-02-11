@@ -60,7 +60,6 @@ spec:
         #!/usr/bin/bash
 
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-
         echo "Starting Openshift Image Mirroring"
         ./ocp-sync.sh 'spoke'
 

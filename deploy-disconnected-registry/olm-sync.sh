@@ -100,7 +100,10 @@ function mirror() {
         mirror_skopeo
     elif [[ ${MIRROR_MODE} == 'all' ]]; then
         mirror_auto
-        mirror_skopeo
+        if [[ $? != 0 ]];then
+            mirror_auto
+        fi
+        #mirror_skopeo
     fi
 }
 
@@ -135,10 +138,10 @@ function mirror_skopeo() {
             skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
             if [[ ${?} != 0 ]]; then
                 echo "Error on Image Copy, retrying after 5 seconds..."
-                sleep 5
+                sleep 10
                 skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
             fi
-            # sleep 1
+            sleep 1
         done
     done
 
