@@ -1,0 +1,81 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: kubeframe
+spec:
+  description: pipeline to deploy kubeframe
+  params:
+  - name: ztp-container-image
+    type: string
+    default: "latest"
+  - name: spokes-config
+    type: string
+    default: ""
+  workspaces:
+  - name: ztp
+  tasks:
+
+    #- name: clone-ztp-conf
+    #  taskRef:
+    #    name: git-clone
+    #    kind: ClusterTask
+    #  workspaces:
+    #  - name: output
+    #    workspace: ztp
+    #  params:
+    #  - name: url
+    #    value: $(params.spokes-config)
+
+  - name: pre-flight
+    taskRef:
+      name: pre-flight
+    params:
+    - name: spokes-config
+      value: $(params.spokes-config)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
+    workspaces:
+    - name: ztp
+      workspace: ztp
+
+  - name: ztp-deploy-spoke
+    taskRef:
+      name: ztp-deploy-spoke
+    params:
+    - name: spokes-config
+      value: $(params.spokes-config)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
+    runAfter:
+    - pre-flight
+    workspaces:
+    - name: ztp
+      workspace: ztp
+
+  - name: ztp-deploy-metallb
+    taskRef:
+      name: ztp-deploy-metallb
+    params:
+    - name: spokes-config
+      value: $(params.spokes-config)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
+    runAfter:
+    - ztp-deploy-spoke
+    workspaces:
+    - name: ztp
+      workspace: ztp
+
+  - name: ztp-deploy-worker
+    taskRef:
+      name: ztp-deploy-worker
+    params:
+    - name: spokes-config
+      value: $(params.spokes-config)
+    - name: ztp-container-image
+      value: $(params.ztp-container-image)
+    runAfter:
+    - ztp-deploy-metallb
+    workspaces:
+    - name: ztp
+      workspace: ztp

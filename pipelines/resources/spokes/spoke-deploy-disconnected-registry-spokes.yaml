@@ -1,0 +1,109 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: spoke-deploy-disconnected-registry-spokes
+  annotations:
+    description: |
+      This task will deploy the Disconnected Internal registry.
+      Then will perform the OCP and OLM sync, based on the SYNC parameter.
+      If this sync parameter is YES, allows the spoke to sync with RedHat Registry for OCP and OLM.
+      If this sync parameter is NO, it will download the Tarball from the HTTPD server created on the Hub pipeline.
+      Update the Global PullSecret for every spoke with the proper credentials.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/jparrill/ztp-pipeline:latest"
+    - name: kubeconfig
+      type: string
+      default: ""
+    - name: spokes-config
+      type: string
+      default: ""
+    - name: sync
+      type: string
+      default: "no"
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp"
+      - name: SPOKES_CONFIG
+        value: $(params.spokes-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_REGISTRY_DIR
+        value: "deploy-disconnected-registry"
+      - name: SYNC
+        value: $(params.sync)
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MIRROR_MODE
+        value: "all"
+
+  steps:
+    - name: deploy-disconnected-registry
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+        ./deploy.sh 'spoke'
+
+    - name: mirror-ocp
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      securityContext:
+        privileged: false
+        runAsUser: 0
+      volumeMounts:
+      - mountPath: /var/lib/containers
+        name: lib-containers
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+
+        if [ "${SYNC}" == "yes" ]; then
+          echo "Starting Openshift Image Mirroring"
+          ./ocp-sync.sh 'spoke'
+        else
+          echo "Mirror OCP Step Avoided"
+        fi
+
+    - name: mirror-olm
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      securityContext:
+        privileged: false
+        runAsUser: 0
+      volumeMounts:
+      - mountPath: /var/lib/containers
+        name: lib-containers
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+
+        if [ "${SYNC}" == "yes" ]; then
+          echo "Starting OLM Catalog Image Mirroring Step"
+          ./olm-sync.sh 'spoke'
+          rm -fr /var/tmp/mirror-snapshot.tgz
+        else
+          echo "Mirror OLM Step Avoided"
+        fi
+
+    - name: update-global-pullsecret
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+        ./update-global-pullsecret.sh 'spoke'
+
+  volumes:
+  - name: lib-containers
+    emptyDir: {}

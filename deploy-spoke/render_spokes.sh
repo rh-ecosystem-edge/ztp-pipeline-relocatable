@@ -58,11 +58,13 @@ create_spoke_definitions() {
     export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23
     export CHANGE_SPOKE_CLUSTER_NET_CIDR=10.128.0.0/14
     export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
-    export CHANGE_RSA_PUB_KEY=$(oc get cm -n kube-system cluster-config-v1 -o yaml | grep -A 1 sshKey | tail -1)
-    #export CHANGE_SPOKE_DNS= # hub ip or name ???
+    export CHANGE_RSA_HUB_PUB_KEY=$(oc get cm -n kube-system cluster-config-v1 -o yaml | grep -A 1 sshKey | tail -1)
 
     while [ "${RESULT}" != "null" ]; do
         SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
+        generate_rsa_spoke ${SPOKE_NAME}
+        export CHANGE_RSA_PUB_KEY=$(cat ${RSA_PUB_FILE})
+        export CHANGE_RSA_PRV_KEY=$(cat ${RSA_KEY_FILE})
         # Set vars
         export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
         grab_api_ingress ${SPOKE_NAME}

@@ -25,8 +25,10 @@ function mirror_ocp() {
 
     if [[ ${MODE} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
+        cluster=${2}
     elif [[ ${MODE} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+        cluster=${2}
     fi
 
     echo ">>>> Mirror Openshift Version"
@@ -48,13 +50,14 @@ MODE=${1}
 if [[ ${MODE} == 'hub' ]]; then
     # Loading variables here in purpose
     source ./common.sh ${MODE}
+    trust_internal_registry ${MODE}
 
     if ! ./verify_ocp_sync.sh ${MODE}; then
         oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
         export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-        podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
-        mirror_ocp ${MODE}
+        ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
+        mirror_ocp ${MODE} 'hub'
     else
         echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
     fi
@@ -75,16 +78,20 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
         # Loading variables here in purpose
         source ./common.sh ${MODE}
+        # Here we need to trust on both registries
+        trust_internal_registry 'hub'
+        trust_internal_registry ${MODE} ${spoke}
+
         if ! ./verify_ocp_sync.sh ${MODE}; then
 
             oc --kubeconfig=${SPOKE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
             ## Logging into the Source and Destination registries
-            podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-            podman login ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
-            podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-            podman login ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
-            mirror_ocp ${MODE}
+            ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+            ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+            ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+            ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+            mirror_ocp ${MODE} ${spoke}
         else
             echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
         fi
