@@ -155,11 +155,11 @@ function mirror_skopeo() {
 MODE=${1}
 
 if [[ ${MODE} == 'hub' ]]; then
-    prepare_env ${MODE}
-    create_cs ${MODE}
-    trust_internal_registry ${MODE}
-    if ! ./verify_olm_sync.sh ${MODE}; then
-        mirror ${MODE}
+    prepare_env 'hub'
+    create_cs 'hub'
+    trust_internal_registry 'hub' 
+    if ! ./verify_olm_sync.sh 'hub'; then
+        mirror 'hub' 
     else
         echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
     fi
@@ -175,12 +175,12 @@ elif [[ ${1} == "spoke" ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
-        prepare_env ${MODE}
-        create_cs ${MODE}
+        prepare_env 'spoke' 
+        create_cs 'spoke'
         trust_internal_registry 'hub'
-        trust_internal_registry ${MODE} ${spoke}
-        if ! ./verify_olm_sync.sh ${MODE}; then
-            mirror ${MODE}
+        trust_internal_registry 'spoke' ${spoke}
+        if ! ./verify_olm_sync.sh 'spoke'; then
+            mirror 'spoke'
         else
             echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
         fi
