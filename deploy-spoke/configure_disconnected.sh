@@ -289,6 +289,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
                 export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
             fi
 
+            TARGET_KUBECONFIG=${KUBECONFIG_HUB}
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
             trust_internal_registry 'hub'
             recover_mapping
@@ -306,7 +307,6 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             # In this stage the spoke's registry does not exist, so we need to trust the Hub's ingress cert
             # Check API
-            TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
             echo ">> Checking spoke API: ${STAGE}"
             echo ">> Kubeconfig: ${TARGET_KUBECONFIG}"
             RCAPI=$(oc --kubeconfig=${TARGET_KUBECONFIG} get nodes)
