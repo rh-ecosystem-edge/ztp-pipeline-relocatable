@@ -100,9 +100,7 @@ function mirror() {
         mirror_skopeo
     elif [[ ${MIRROR_MODE} == 'all' ]]; then
         mirror_auto
-        if [[ $? != 0 ]];then
-            mirror_auto
-        fi
+        mirror_auto
         #mirror_skopeo
     fi
 }
