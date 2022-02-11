@@ -335,8 +335,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
             else
                 # Spoke Sync from the Hub cluster as a Source
                 echo ">>>> Deploying ICSP for: ${spoke} using the Hub as a source"
-                JSON_STRING='[{"op": "add", "path": "\/spec\/disableAllDefaultSources", "value": true}]'
-                ${OC_COMMAND} patch OperatorHub cluster --type json -p "\"${JSON_STRING}\""
+                ${OC_COMMAND} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "\/spec\/disableAllDefaultSources", "value": true}]'
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/catalogsource-hub.yaml
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
