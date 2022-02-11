@@ -1,14 +1,14 @@
-# ZTP Using Openshift Pipelines
+# ZTP Using OpenShift Pipelines
 
 ## Prereqs
 
-- You need at least a hub cluster deployed and functional and an accesible Kubeconfig file
+- You need at least a hub cluster deployed and functional and an accessible Kubeconfig file
 - The clsuter should be IPv4/Connected
 - An Spokes file (you can create one using [this](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/blob/tekton-pipeline/examples/config.yaml) as a sample.
 
 ## Quickstart
 
-- First you need to execute the script using curl command
+- First, you need to execute the script using curl command
 
 ## Clarifications
 
@@ -73,7 +73,7 @@ task.tekton.dev/spoke-restore-hub-config configured
 ```
 
 This script will deploy Openshift-Pipelines and enable the Tasks and Pipelines into your Hub cluster.
-Then you can continue the flow using the Command Line or the UI.
+Then you can continue the flow using the commandline or the UI.
 
 ### Hub Pipeline
 
@@ -83,6 +83,5 @@ Now you need to have in mind the arguments for the Pipeline:
 
 - KUBECONFIG=
 - SPOKES_FILE=
-- SYNC='yes|no'
 
 ### Spoke Pipeline

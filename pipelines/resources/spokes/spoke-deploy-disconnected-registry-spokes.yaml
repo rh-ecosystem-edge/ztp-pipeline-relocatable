@@ -6,8 +6,6 @@ metadata:
     description: |
       This task will deploy the Disconnected Internal registry.
       Then will perform the OCP and OLM sync, based on the SYNC parameter.
-      If this sync parameter is YES, allows the spoke to sync with RedHat Registry for OCP and OLM.
-      If this sync parameter is NO, it will download the Tarball from the HTTPD server created on the Hub pipeline.
       Update the Global PullSecret for every spoke with the proper credentials.
 spec:
   workspaces:
