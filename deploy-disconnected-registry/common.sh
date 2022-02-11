@@ -5,12 +5,15 @@ set -o nounset
 set -m
 
 function create_cs() {
-    if [[ ${MODE} == 'hub' ]]; then
-        CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
-        cluster="hub"
-    elif [[ ${MODE} == 'spoke' ]]; then
-        cluster=${2}
-        CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
+
+    local mode=${1}
+
+    if [[ ${mode} == 'hub' ]]; then
+        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
+        local cluster="hub"
+    elif [[ ${mode} == 'spoke' ]]; then
+        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
+        local cluster=${2}
     fi
 
     cat >${CS_OUTFILE} <<EOF
