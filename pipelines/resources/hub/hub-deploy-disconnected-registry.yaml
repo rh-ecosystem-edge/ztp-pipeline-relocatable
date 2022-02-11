@@ -21,9 +21,6 @@ spec:
     - name: spokes-config
       type: string
       default: ""
-    - name: sync
-      type: string
-      default: "no"
   stepTemplate:
     env:
       - name: WORKDIR
@@ -34,8 +31,6 @@ spec:
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_REGISTRY_DIR
         value: "deploy-disconnected-registry"
-      - name: SYNC
-        value: $(params.sync)
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MIRROR_MODE
@@ -64,13 +59,8 @@ spec:
         #!/usr/bin/bash
 
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-
-        if [ "${SYNC}" == "yes" ]; then
-          echo "Starting Openshift Image Mirroring"
-          ./ocp-sync.sh 'hub'
-        else
-          echo "Mirror OCP Step Avoided"
-        fi
+        echo "Starting Openshift Image Mirroring"
+        ./ocp-sync.sh 'hub'
 
     - name: mirror-olm
       image: "$(params.ztp-container-image)"
@@ -84,15 +74,8 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-
-        if [ "${SYNC}" == "yes" ]; then
-          echo "Starting OLM Catalog Image Mirroring Step"
-          ./olm-sync.sh 'hub'
-          rm -fr /var/tmp/mirror-snapshot.tgz
-        else
-          echo "Mirror OLM Step Avoided"
-        fi
+        echo "Starting OLM Catalog Image Mirroring Step"
+        ./olm-sync.sh 'hub'
 
     - name: update-global-pullsecret
       image: "$(params.ztp-container-image)"
@@ -102,15 +85,6 @@ spec:
 
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./update-global-pullsecret.sh 'hub'
-
-        #- name: mirror-snapshot
-        #  image: "$(params.ztp-container-image)"
-        #  imagePullPolicy: Always
-        #  script: |
-        #    #!/usr/bin/bash
-
-        #    cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-        #    ./mirror-snapshot.sh 'hub'
 
   volumes:
   - name: lib-containers
