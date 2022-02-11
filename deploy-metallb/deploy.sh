@@ -316,6 +316,8 @@ for spoke in ${ALLSPOKES}; do
     verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
     echo
     check_external_access ${spoke}
+    echo 'Patch external CatalogSources'
+    oc --kubeconfig=${SPOKE_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
     echo ">>>> Spoke ${spoke} finished!"
     let index++
 done
