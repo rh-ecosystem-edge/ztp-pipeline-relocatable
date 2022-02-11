@@ -56,7 +56,7 @@ function trust_internal_registry() {
     echo ">>>> Trusting internal registry: ${MODE}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo ">> Kubeconfig: ${TARGET_KUBECONFIG}"
-    echo ">> Mode: ${MODE}"
+    echo ">> Mode: $_{MODE}"
     echo ">> Cluster: ${cluster}"
     ## Update trusted CA from Helper
     #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
