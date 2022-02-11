@@ -13,11 +13,9 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh hub
 
-MODE=${1}
-
-if [[ ${MODE} == 'hub' ]]; then
+if [[ ${1} == 'hub' ]]; then
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-elif [[ ${MODE} == 'spoke' ]]; then
+elif [[ ${1} == 'spoke' ]]; then
     TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
 fi
 

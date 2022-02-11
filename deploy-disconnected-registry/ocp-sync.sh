@@ -23,10 +23,10 @@ function extract_kubeconfig() {
 
 function mirror_ocp() {
 
-    if [[ ${MODE} == 'hub' ]]; then
+    if [[ ${1} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster=${2}
-    elif [[ ${MODE} == 'spoke' ]]; then
+    elif [[ ${1} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         cluster=${2}
     fi
@@ -47,22 +47,22 @@ function mirror_ocp() {
 
 MODE=${1}
 
-if [[ ${MODE} == 'hub' ]]; then
+if [[ ${1} == 'hub' ]]; then
     # Loading variables here in purpose
-    source ./common.sh ${MODE}
-    trust_internal_registry ${MODE}
+    source ./common.sh 'hub'
+    trust_internal_registry 'hub'
 
-    if ! ./verify_ocp_sync.sh ${MODE}; then
+    if ! ./verify_ocp_sync.sh 'hub'; then
         oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
         export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
         ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
-        mirror_ocp ${MODE} 'hub'
+        mirror_ocp 'hub' 'hub'
     else
         echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
     fi
 
-elif [[ ${MODE} == 'spoke' ]]; then
+elif [[ ${1} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
     fi
@@ -77,12 +77,12 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
 
         # Loading variables here in purpose
-        source ./common.sh ${MODE}
+        source ./common.sh 'spoke'
         # Here we need to trust on both registries
         trust_internal_registry 'hub'
-        trust_internal_registry ${MODE} ${spoke}
+        trust_internal_registry 'spoke' ${spoke}
 
-        if ! ./verify_ocp_sync.sh ${MODE}; then
+        if ! ./verify_ocp_sync.sh 'spoke'; then
 
             oc --kubeconfig=${SPOKE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
@@ -91,7 +91,7 @@ elif [[ ${MODE} == 'spoke' ]]; then
             ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
             ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
             ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
-            mirror_ocp ${MODE} ${spoke}
+            mirror_ocp 'spoke' ${spoke}
         else
             echo ">>>> This step to mirror ocp is not neccesary, everything looks ready"
         fi
