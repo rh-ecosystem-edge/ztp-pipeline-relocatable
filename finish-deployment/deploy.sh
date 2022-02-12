@@ -54,14 +54,12 @@ function save_files() {
     cluster=${1}
     CLUSTER_DATA_FOLDER="~/cluster_access_data"
 
-    mkdir -p ${RO_SPOKE_FOLDER}/${cluster}
-    cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${RO_SPOKE_FOLDER}/${cluster}
+    cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
     for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname); do
         NODE_IP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ${node} -o jsonpath='{.status.addresses[0].address}')
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "mkdir ${CLUSTER_DATA_FOLDER}"
-        copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
-        copy_files_common "${SPOKE_KUBEADMIN_PASS}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
+        copy_files_common "${SPOKE_SAFE_FOLDER}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
     done
 }
 
