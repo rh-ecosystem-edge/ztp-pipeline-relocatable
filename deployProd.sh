@@ -1,21 +1,24 @@
 #!/bin/bash
+export IMAGE=${IMAGE:-"quay.io\\/mlibra\\/kubeframe:latest"}
+export ROUTE_HOST=${ROUTE_HOST:-"kubeframe.apps.mlibra-cim-04.redhat.com"}
+export NAMESPACE=${NAMESPACE:-"kubeframe-ui"}
 
-oc new-project kubeframe-ui
-
-set -ex
+export APP_URL=https:\\/\\/${ROUTE_HOST}
 
 cd scripts
 
-# TODO: make this optional
-#./createTlsSecret.sh
+# Let following silently fail if the project already exists
+oc new-project kubeframe-ui
 
-export IMAGE=quay.io\\/mlibra\\/kubeframe:latest
-export ROUTE_HOST=kubeframe.apps.mlibra-cim-04.redhat.com
-export APP_URL=https:\\/\\/${ROUTE_HOST}
-export NAMESPACE=kubeframe-ui
+echo Parameters:
+set -ex
+echo ${IMAGE}
+echo ${ROUTE_HOST}
+echo ${NAMESPACE}
+echo ${APP_URL}
 
-# TODO: parametrize following resources, i.e. for cluster address
-#oc apply -f deployment.yaml
+./createTlsSecret.sh
+
 cat deployment.yaml | \
   sed "s/___NAMESPACE___/${NAMESPACE}/g" | \
   sed "s/___IMAGE___/${IMAGE}/g" | \
