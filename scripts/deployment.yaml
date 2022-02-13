@@ -1,10 +1,11 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: kubeframe-ui
   name: kubeframe-ui
-  namespace: kubeframe-ui
+  namespace: ___NAMESPACE___
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -62,18 +63,16 @@ spec:
         - name: BACKEND_PORT
           value: "3000"
         - name: FRONTEND_URL
-          value: https://kubeframe.apps.mlibra-cim-04.redhat.com
+          value: "___APP_URL___"
         - name: CLUSTER_API_URL
           value: https://kubernetes.default.svc:443
         - name: OAUTH2_CLIENT_ID
           value: "kubeframeoauth"
         - name: OAUTH2_REDIRECT_URL
-          value: "https://kubeframe.apps.mlibra-cim-04.redhat.com/login/callback"
+          value: "___APP_URL___/login/callback"
         - name: OAUTH2_CLIENT_SECRET
           value: "kubeframeoauthsecret"
-#        - name: BACKEND_URL
-#          value: https://kubeframe.apps.mlibra-cim-04.redhat.com
-        image: quay.io/mlibra/kubeframe:latest
+        image: ___IMAGE___
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 1
@@ -102,39 +101,71 @@ spec:
           requests:
             cpu: 3m
             memory: 40Mi
-#        securityContext:
-#          allowPrivilegeEscalation: false
-#          capabilities:
-#            drop:
-#            - ALL
-#          privileged: false
-#          readOnlyRootFilesystem: true
-#        terminationMessagePath: /dev/termination-log
-#        terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /app/certs
           name: kubeframe-ui-certs
-#        - mountPath: /app/config
-#          name: kubeframe-ui-config
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext:
         runAsNonRoot: true
       terminationGracePeriodSeconds: 15
-#      tolerations:
-#      - effect: NoSchedule
-#        key: dedicated
-#        operator: Exists
-#      - effect: NoSchedule
-#        key: node-role.kubernetes.io/infra
-#        operator: Exists
       volumes:
       - name: kubeframe-ui-certs
         secret:
           defaultMode: 420
           secretName: kubeframe-ui-certs
-#      - configMap:
-#          defaultMode: 420
-#          name: kubeframe-ui-config
-#        name: kubeframe-ui-config
+
+---
+apiVersion: oauth.openshift.io/v1
+grantMethod: auto
+kind: OAuthClient
+metadata:
+  labels:
+    app: kubeframe-ui
+  name: kubeframeoauth
+redirectURIs:
+- ___APP_URL___/login/callback
+secret: kubeframeoauthsecret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kubeframe-ui
+  name: kubeframe-ui
+  namespace: ___NAMESPACE___
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: https
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: kubeframe-ui
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: kubeframe-ui
+  name: kubeframe-ui
+  namespace: ___NAMESPACE___
+spec:
+  host: ___ROUTE_HOST___
+  port:
+    targetPort: https
+  tls:
+    # insecureEdgeTerminationPolicy: Redirect
+    # termination: reencrypt
+    termination: passthrough
+  to:
+    kind: Service
+    name: kubeframe-ui
+  wildcardPolicy: None
+
+
