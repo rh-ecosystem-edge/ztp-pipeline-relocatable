@@ -3,7 +3,8 @@ import { ProgressStepProps } from '@patternfly/react-core';
 import { WizardStateType } from '../Wizard/types';
 
 type WizardProgressStep = Pick<ProgressStepProps, 'isCurrent' | 'variant'>;
-export type WizardStepType = 'subnet' | 'virtualip' | 'domain' | 'sshkey';
+export type WizardProgressStepType = 'subnet' | 'virtualip' | 'domain' | 'sshkey'; // those displayed in the top-level progress
+export type WizardStepType = WizardProgressStepType | 'persist';
 
 export type WizardProgressSteps = {
   subnet: WizardProgressStep;
@@ -14,12 +15,12 @@ export type WizardProgressSteps = {
 
 export type WizardProgressContextData = {
   steps: WizardProgressSteps;
-  setActiveStep: (step: WizardStepType) => void;
+  setActiveStep: (step: WizardProgressStepType) => void;
 
   state: WizardStateType;
 };
 
-const WIZARD_STEP_INDEXES: { [key in WizardStepType]: number } = {
+const WIZARD_STEP_INDEXES: { [key in WizardProgressStepType]: number } = {
   subnet: 0,
   virtualip: 1,
   domain: 2,
@@ -56,12 +57,12 @@ export const WizardProgressContextProvider: React.FC<{
       steps,
       state,
 
-      setActiveStep: (step: WizardStepType) => {
+      setActiveStep: (step: WizardProgressStepType) => {
         if (!steps[step].isCurrent) {
           const newSteps = { ...steps };
           const stepIdx = WIZARD_STEP_INDEXES[step];
 
-          (Object.keys(newSteps) as WizardStepType[]).forEach((key) => {
+          (Object.keys(newSteps) as WizardProgressStepType[]).forEach((key) => {
             newSteps[key].isCurrent = step === key;
 
             const idx = WIZARD_STEP_INDEXES[key];

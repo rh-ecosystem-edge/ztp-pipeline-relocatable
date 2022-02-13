@@ -2,9 +2,9 @@ import React from 'react';
 import { FormGroup, Stack, StackItem, TextInput, Title } from '@patternfly/react-core';
 
 import { useWizardProgressContext } from '../WizardProgress';
+import { OptionalBadge } from '../Badge';
 
 import './DomainSelector.css';
-import { OptionalBadge } from '../Badge';
 
 const fieldId = 'input-domain';
 

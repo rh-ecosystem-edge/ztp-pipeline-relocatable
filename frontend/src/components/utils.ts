@@ -3,6 +3,8 @@ import { SingleIpDigitProps } from './SingleIpDigit';
 import { WizardStateType } from './Wizard/types';
 
 const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
+const SSH_PUBLIC_KEY_REGEX =
+  /^(ssh-rsa|ssh-ed25519|ecdsa-[-a-z0-9]*) AAAA[0-9A-Za-z+/]+[=]{0,3}( .+)?$/;
 
 export const addIpDots = (addressWithoutDots: string): string => {
   if (addressWithoutDots?.length === 12) {
@@ -76,4 +78,12 @@ export const domainValidator = (domain: string): WizardStateType['domainValidati
     return ''; // passed
   }
   return "Valid domain wasn't provided";
+};
+
+export const sshPubKeyValidator = (key: string): WizardStateType['sshPubKeyValidation'] => {
+  if (!key || key.match(SSH_PUBLIC_KEY_REGEX)) {
+    return ''; // passed
+  }
+
+  return "Valid public SSH key wasn't provided";
 };

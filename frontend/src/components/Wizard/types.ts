@@ -12,4 +12,8 @@ export type WizardStateType = {
   domain: string;
   handleSetDomain: (newDomain: string) => void;
   domainValidation?: string; // just a message or empty
+
+  sshPubKey?: string;
+  handleSetSshPubKey: (newKey: string | File) => void;
+  sshPubKeyValidation?: string;
 };

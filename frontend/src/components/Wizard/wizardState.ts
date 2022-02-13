@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { IpSelectorValidationType } from '../IpSelector';
-import { domainValidator, ipAddressValidator } from '../utils';
+import { domainValidator, ipAddressValidator, sshPubKeyValidator } from '../utils';
 
 import { WizardStateType } from './types';
 
@@ -40,6 +40,15 @@ export const useWizardState = (): WizardStateType => {
     setDomain(newDomain);
   }, []);
 
+  const [sshPubKey, setSshPubKey] = React.useState<string>('');
+  const [sshPubKeyValidation, setSshPubKeyValidation] =
+    React.useState<WizardStateType['sshPubKeyValidation']>();
+  const handleSetSshPubKey = React.useCallback((newKey: string | File) => {
+    const keyString = newKey as string;
+    setSshPubKeyValidation(sshPubKeyValidator(keyString));
+    setSshPubKey(keyString);
+  }, []);
+
   return {
     mask,
     maskValidation,
@@ -52,5 +61,9 @@ export const useWizardState = (): WizardStateType => {
     domain,
     domainValidation,
     handleSetDomain,
+
+    sshPubKey,
+    handleSetSshPubKey,
+    sshPubKeyValidation,
   };
 };

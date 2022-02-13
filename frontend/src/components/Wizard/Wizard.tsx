@@ -8,6 +8,7 @@ import { WizardProgressContextProvider } from '../WizardProgress';
 import { useWizardState } from './wizardState';
 
 import './Wizard.css';
+import { SshPublicKeyPage } from '../SshPublicKeyPage';
 
 export const Wizard: React.FC = () => {
   const wizardState = useWizardState();
@@ -19,6 +20,8 @@ export const Wizard: React.FC = () => {
         <Route path="/subnet" element={<SubnetPage />} />
         <Route path="/virtualip" element={<VirtualIpPage />} />
         <Route path="/domain" element={<DomainPage />} />
+        <Route path="/sshkey" element={<SshPublicKeyPage />} />
+        <Route path="/persist" element={/*<PersistPage />*/ <WelcomePage />} />
         <Route path="*" element={<Redirect to="/wizard/welcome" />} />
       </Routes>
     </WizardProgressContextProvider>
