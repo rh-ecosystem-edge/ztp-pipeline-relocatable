@@ -13,32 +13,48 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
-echo ">>>> Download jq, oc, kubectl and set bash completion"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-curl -Ls https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 >/usr/bin/jq
-chmod u+x /usr/bin/jq
+echo ">>>> Verify jq"
+echo ">>>>>>>>>>>>>>"
 
-if [ ! -d "/root/bin" ]; then
-    mkdir -p /root/bin
-    export PATH="${PATH}:/root/bin"
+if ! (command -v jq &>/dev/null); then
+    curl -Ls https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 >/usr/bin/jq
+    chmod u+x /usr/bin/jq
+    
+    if [ ! -d "/root/bin" ]; then
+        mkdir -p /root/bin
+        export PATH="${PATH}:/root/bin"
+    fi
 fi
 
-cd /root/bin
-curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz >oc.tar.gz
-tar zxf oc.tar.gz
-rm -rf oc.tar.gz
-mv oc /usr/bin
-chmod +x /usr/bin/oc
+echo ">>>> Verify oc"
+echo ">>>>>>>>>>>>>>"
 
-cd /root/bin
-curl -k -s https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz >opm.tar.gz
-tar zxf opm.tar.gz
-rm -rf opm.tar.gz
-mv opm /usr/bin
-chmod +x /usr/bin/opm
+if ! (command -v oc &>/dev/null); then
+    cd /root/bin
+    curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz >oc.tar.gz
+    tar zxf oc.tar.gz
+    rm -rf oc.tar.gz
+    mv oc /usr/bin
+    chmod +x /usr/bin/oc
+fi
 
-curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl >/usr/bin/kubectl
-chmod u+x /usr/bin/kubectl
+echo ">>>> Verify opm"
+echo ">>>>>>>>>>>>>>>"
+if ! (command -v opm &>/dev/null); then
+    cd /root/bin
+    curl -k -s https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz >opm.tar.gz
+    tar zxf opm.tar.gz
+    rm -rf opm.tar.gz
+    mv opm /usr/bin
+    chmod +x /usr/bin/opm
+fi
+
+echo ">>>> Verify kubectl"
+echo ">>>>>>>>>>>>>>>>>>>"
+if ! (command -v kubectl &>/dev/null); then
+    curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl >/usr/bin/kubectl
+    chmod u+x /usr/bin/kubectl
+fi
 
 oc completion bash >>/etc/bash_completion.d/oc_completion
 
