@@ -23,5 +23,13 @@ else
     exit 50
 fi
 
+if [[ $(oc get multiclusterhub -n open-cluster-management --no-headers | wc -l) -eq 0 ]]; then
+    #Open-Cluster-Management namespace exists but not the MulticlsuterHub, Launching creation step .
+    exit 0
+else
+    #Some pods are failing...Stop pipe to solve it  #TODO this scenario we should remove the subscription and destroy everything and relaunch again
+    exit 50
+fi
+
 echo ">>>>EOF"
 echo ">>>>>>>"
