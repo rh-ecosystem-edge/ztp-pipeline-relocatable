@@ -10,7 +10,7 @@ spec:
       default: "https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git"
     - name: git-revision
       type: string
-      default: "tekton-pipeline"
+      default: "main"
     - name: ztp-container-image
       type: string
       default: "quay.io/jparrill/ztp-pipeline:latest"

@@ -114,7 +114,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 export BASEDIR=$(dirname "$0")
-export BRANCH='tekton'
+export BRANCH='main'
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${1}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
