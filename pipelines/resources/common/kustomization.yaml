@@ -1,0 +1,4 @@
+resources:
+  - common-pre-flight.yaml
+  - common-git-fetch.yaml
+  - pvc-template.yaml

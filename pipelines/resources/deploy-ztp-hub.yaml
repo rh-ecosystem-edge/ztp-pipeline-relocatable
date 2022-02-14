@@ -1,0 +1,155 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: deploy-ztp-hub
+spec:
+  description: Tekton Pipeline to deploy Kubeframe Hub Cluster
+  params:
+    - name: git-url
+      type: string
+      default: "https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git"
+    - name: git-revision
+      type: string
+      default: "main"
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/jparrill/ztp-pipeline:latest"
+    - name: kubeconfig
+      type: string
+    - name: spokes-config
+      type: string
+  workspaces:
+    - name: ztp
+  tasks:
+
+  # Git Pull
+  - name: fetch-from-git
+    taskRef:
+      name: git-clone
+    params:
+      - name: url
+        value: $(params.git-url)
+      - name: revision
+        value: $(params.git-revision)
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Preflight
+  - name: pre-flight
+    taskRef:
+      name: common-pre-flight
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - fetch-from-git
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy HTTPD Server
+  - name: deploy-httpd-server
+    taskRef:
+      name: hub-deploy-httpd-server
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - pre-flight
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Disconnected Registry + Sync
+  - name: deploy-disconnected-registry
+    taskRef:
+      name: hub-deploy-disconnected-registry
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-httpd-server
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy RHACM
+  - name: deploy-acm
+    taskRef:
+      name: hub-deploy-acm
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-disconnected-registry
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy ICSP Hub
+  - name: deploy-icsp-hub
+    taskRef:
+      name: hub-deploy-icsp-hub
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-acm
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Hub Config
+  - name: deploy-hub-config
+    taskRef:
+      name: hub-deploy-hub-config
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-icsp-hub
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+          #  # Save Hub Configuration
+          #  - name: save-hub-config
+          #    taskRef:
+          #      name: hub-save-config
+          #    params:
+          #      - name: spokes-config
+          #        value: $(params.spokes-config)
+          #      - name: kubeconfig
+          #        value: $(params.kubeconfig)
+          #      - name: ztp-container-image
+          #        value: $(params.ztp-container-image)
+          #    runAfter:
+          #      - deploy-hub-config
+          #    workspaces:
+          #      - name: ztp
+          #        workspace: ztp

@@ -11,16 +11,15 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
-MODE=${1}
-source ./common.sh ${MODE}
+source ./common.sh ${1}
 
-if [[ ${MODE} == 'hub' ]]; then
-    TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-elif [[ ${MODE} == 'spoke' ]]; then
-    TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+if [[ ${1} == 'hub' ]]; then
+    TG_KUBECONFIG=${KUBECONFIG_HUB}
+elif [[ ${1} == 'spoke' ]]; then
+    TG_KUBECONFIG=${SPOKE_KUBECONFIG}
 fi
 
-if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TARGET_KUBECONFIG} get -n kubeframe-registry deployment kubeframe-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
+if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TG_KUBECONFIG} get -n kubeframe-registry deployment kubeframe-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
     #namespace or resources does not exist. Launching the step to create it...
     exit 1
 fi

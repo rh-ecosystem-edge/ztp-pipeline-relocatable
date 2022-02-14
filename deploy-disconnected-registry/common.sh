@@ -4,6 +4,72 @@ set -o pipefail
 set -o nounset
 set -m
 
+function create_cs() {
+
+    local mode=${1}
+
+    if [[ ${mode} == 'hub' ]]; then
+        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
+        local cluster="hub"
+    elif [[ ${mode} == 'spoke' ]]; then
+        local cluster=${2}
+        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
+    fi
+
+    cat >${CS_OUTFILE} <<EOF
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ${OC_DIS_CATALOG}
+  namespace: ${MARKET_NS}
+spec:
+  sourceType: grpc
+  image: ${OLM_DESTINATION_INDEX}
+  displayName: Disconnected Lab
+  publisher: disconnected-lab
+  updateStrategy:
+    registryPoll:
+      interval: 30m
+EOF
+    echo
+}
+
+function trust_internal_registry() {
+
+    if [[ $# -lt 1 ]]; then
+        echo "Usage :"
+        echo "  trust_internal_registry hub|spoke <spoke name>"
+        exit 1
+    fi
+
+    if [[ ${1} == 'hub' ]]; then
+        KBKNFG=${KUBECONFIG_HUB}
+        clus="hub"
+    elif [[ ${1} == 'spoke' ]]; then
+        KBKNFG=${SPOKE_KUBECONFIG}
+        clus=${2}
+    fi
+
+    echo ">>>> Trusting internal registry: ${1}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo ">> Kubeconfig: ${KBKNFG}"
+    echo ">> Mode: ${1}"
+    echo ">> Cluster: ${clus}"
+    ## Update trusted CA from Helper
+    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
+    export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
+    echo ">> Cert: ${PATH_CA_CERT}"
+
+    ## Update trusted CA from Helper
+    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
+    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${clus}.crt"
+    update-ca-trust extract
+    echo ">> Done!"
+    echo
+}
+
 if [[ $# -lt 1 ]]; then
     echo "Usage :"
     echo '  $1: hub|spoke'

@@ -13,20 +13,18 @@ source ./common.sh ${1}
 
 function render_file() {
     SOURCE_FILE=${1}
-    MODE=${2}
     if [[ $# -lt 2 ]]; then
         echo "Usage :"
         echo "  $0 <SOURCE FILE> <MODE> [<SPOKE_NAME>]"
         exit 1
     fi
-    if [[ ${MODE} == 'hub' ]]; then
-        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-        cluster=hub
-    elif [[ ${MODE} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    if [[ ${2} == 'hub' ]]; then
+        cluster='hub'
+        envsubst <${SOURCE_FILE} | oc --kubeconfig=${KUBECONFIG_HUB} apply -f -
+    elif [[ ${2} == 'spoke' ]]; then
         cluster=${3}
+        envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
     fi
-    envsubst <${SOURCE_FILE} | oc --kubeconfig=${TARGET_KUBECONFIG} apply -f -
 }
 
 function extract_kubeconfig() {
@@ -41,36 +39,41 @@ function extract_kubeconfig() {
 }
 
 function check_mcp() {
-    MODE=${1}
 
-    echo Mode: ${MODE}
-    if [[ ${MODE} == 'hub' ]]; then
+    echo Mode: ${1}
+    if [[ ${1} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster=hub
-    elif [[ ${MODE} == 'spoke' ]]; then
+    elif [[ ${1} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         cluster=${2}
     fi
     echo ">> Waiting for the MCO to grab the new MachineConfig for the certificate..."
     sleep 120
 
-    echo ">>>> Waiting for MCP Updated field on: ${MODE}"
+    echo ">>>> Waiting for MCP Updated field on: ${1}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
+    echo KUBECONFIG=${TARGET_KUBECONFIG}
     while [ "$timeout" -lt "240" ]; do
-        echo KUBECONFIG=${TARGET_KUBECONFIG}
+        echo "Nodes:"
+        oc --kubeconfig=${TARGET_KUBECONFIG} get nodes
+        echo
+        echo "MCP:"
+        oc --kubeconfig=${TARGET_KUBECONFIG} get mcp
+        echo
         if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get mcp master -o jsonpath='{.status.conditions[?(@.type=="Updated")].status}') == 'True' ]]; then
             ready=true
             break
         fi
-        echo "Waiting for MCP Updated field on: ${MODE}"
+        echo "Waiting for MCP Updated field on: ${1}"
         sleep 5
         timeout=$((timeout + 1))
     done
 
     if [ "$ready" == "false" ]; then
-        echo "Timeout waiting for MCP Updated field on: ${MODE}"
+        echo "Timeout waiting for MCP Updated field on: ${1}"
         exit 1
     fi
 }
@@ -115,7 +118,7 @@ function check_route_ready() {
 
 function deploy_registry() {
 
-    if [[ ${MODE} == 'hub' ]]; then
+    if [[ ${1} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster=hub
         echo ">>>> Deploy internal registry: ${REGISTRY} - Namespace: (${cluster})"
@@ -129,7 +132,7 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
-    elif [[ ${MODE} == 'spoke' ]]; then
+    elif [[ ${1} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
         export KUBECONFIG=${SPOKE_KUBECONFIG}
         source ./common.sh ${1}
@@ -195,42 +198,19 @@ function deploy_registry() {
 
 }
 
-function trust_internal_registry() {
-
-    if [[ ${MODE} == 'hub' ]]; then
-        TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-        cluster="hub"
-    elif [[ ${MODE} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        cluster=${spoke}
-    fi
-
-    echo ">>>> Trusting internal registry"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    ## Update trusted CA from Helper
-    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
-    export CA_CERT_DATA=$(oc --kubeconfig=${TARGET_KUBECONFIG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
-    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${cluster}.crt"
-
-    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}" #update for the hub/hypervisor
-    update-ca-trust extract
-
-}
-
-MODE=${1}
-if [[ ${MODE} == 'hub' ]]; then
-    if ! ./verify.sh "${MODE}"; then
-        deploy_registry ${MODE}
-        trust_internal_registry ${MODE}
+if [[ ${1} == 'hub' ]]; then
+    if ! ./verify.sh 'hub'; then
+        deploy_registry 'hub' 
+        trust_internal_registry 'hub' 
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
-        render_file manifests/machine-config-certs.yaml ${MODE}
+        render_file manifests/machine-config-certs.yaml 'hub'
         # after machine config is applied, we need to wait for the registry and acm pods and deployments to be ready
-        check_mcp "${MODE}"
+        check_mcp 'hub'
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
     fi
-elif [[ ${MODE} == 'spoke' ]]; then
+elif [[ ${1} == 'spoke' ]]; then
 
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -246,9 +226,9 @@ elif [[ ${MODE} == 'spoke' ]]; then
         fi
 
         # Verify step
-        if ! ./verify.sh "${MODE}"; then
-            deploy_registry ${MODE} ${spoke}
-            trust_internal_registry ${MODE} ${spoke}
+        if ! ./verify.sh 'spoke'; then
+            deploy_registry 'spoke' ${spoke}
+            trust_internal_registry 'spoke' ${spoke}
 
             # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
             export KUBECONFIG=${SPOKE_KUBECONFIG}
@@ -261,8 +241,8 @@ elif [[ ${MODE} == 'spoke' ]]; then
 
             # updated with machine config
             echo ">> Updating machine config certs"
-            render_file manifests/machine-config-certs.yaml ${MODE} ${spoke}
-            check_mcp "${MODE}" "${spoke}"
+            render_file manifests/machine-config-certs.yaml 'spoke' ${spoke}
+            check_mcp 'spoke' "${spoke}"
 
             echo ">> Waiting for the registry Quay CR to be ready after updating the MCP"
             for dep in $LIST_DEP; do
