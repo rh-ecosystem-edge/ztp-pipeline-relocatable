@@ -12,7 +12,10 @@ function recover_spoke_rsa() {
     fi
 
     spoke=${1}
-    export SPOKE_SAFE_FOLDER="${OUTPUTDIR}/${spoke}"
+    if [[ -z "${WORKDIR}" ]];then
+        WORKDIR=${OUTPUTDIR}/..
+    fi
+    export SPOKE_SAFE_FOLDER="${WORKDIR}/${spoke}"
     export RSA_KEY_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key"
     export RSA_PUB_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key.pub"
 
