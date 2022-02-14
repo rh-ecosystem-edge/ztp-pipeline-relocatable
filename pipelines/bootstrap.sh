@@ -9,7 +9,7 @@ function get_tkn() {
     URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64-0.21.0.tar.gz"
     BIN_FOLDER="${HOME}/bin"
 
-    if [[ -z $(command -v tkn) ]];then
+    if ! (command -v tkn &>/dev/null); then
         echo ">>>> Downloading TKN Client into: ${BIN_FOLDER}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         mkdir -p ${BIN_FOLDER}
