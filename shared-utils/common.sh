@@ -33,7 +33,12 @@ function generate_rsa_spoke() {
     fi
 
     spoke=${1}
-    export SPOKE_SAFE_FOLDER="${OUTPUTDIR}/${spoke}"
+
+    if [[ -z "${WORKDIR}" ]];then
+        WORKDIR=${OUTPUTDIR}/..
+    fi
+
+    export SPOKE_SAFE_FOLDER="${WORKDIR}/${spoke}"
     mkdir -p ${SPOKE_SAFE_FOLDER}
     export RSA_KEY_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key"
     export RSA_PUB_FILE="${SPOKE_SAFE_FOLDER}/${spoke}-rsa.key.pub"
@@ -41,12 +46,12 @@ function generate_rsa_spoke() {
     if [[ ! -f ${RSA_KEY_FILE} ]]; then
         echo "RSA Key for Spoke Cluster ${spoke} Not Found, creating one in ${SPOKE_SAFE_FOLDER} folder"
         ssh-keygen -b 4096 -t rsa -f ${RSA_KEY_FILE} -q -N ""
-        echo "Verifying RSA Keys generated..."
+        echo "Checking RSA Keys generated..."
         if [[ ! -f ${RSA_KEY_FILE} || ! -f ${RSA_PUB_FILE} ]]; then
             echo "RSA Private or Public key not found"
             exit 1
         else
-            echo "RSA Key-pair verified!"
+            echo "RSA Key-pair Found!"
         fi
     else
         echo "RSA Key for Spoke Cluster ${spoke} Found, check this folder: ${SPOKE_SAFE_FOLDER}"
