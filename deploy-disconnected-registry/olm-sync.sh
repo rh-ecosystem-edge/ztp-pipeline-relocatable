@@ -119,26 +119,40 @@ function mirror_auto() {
     echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
     GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
 
+    # Mirror redhat-operator packages
     echo ">>>> Trying to push OLM images to Internal Registry"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
-    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100
+    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 2>&1 | tee ${OUTPUTDIR}/mirror.log
+
+    cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
+
 }
 
 function mirror_skopeo() {
     # Patch to avoid issues on mirroring
+    FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sort -u | xargs echo)
+
+    echo ">> Packages that have failed START"
+    echo ${FAILEDPACKAGES}
+    echo ">> Packages that have failed END"
+
     PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
     for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
         for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
-            echo
-            echo "Package: ${package}"
-            echo "DEBUG: skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
-            skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-            if [[ ${?} != 0 ]]; then
-                echo "Error on Image Copy, retrying after 5 seconds..."
-                sleep 10
-                skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-            fi
-            sleep 1
+            for pkg in ${FAILEDPACKAGES}; do
+                if [[ $(echo ${package} | grep -q ${pkg}) ]]; then
+                    echo
+                    echo "Package: ${package}"
+                    echo "DEBUG: skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
+                    skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                    if [[ ${?} != 0 ]]; then
+                        echo "Error on Image Copy, retrying after 5 seconds..."
+                        sleep 10
+                        skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                    fi
+                    sleep 1
+                fi
+            done
         done
     done
 
@@ -154,9 +168,9 @@ function mirror_skopeo() {
 if [[ ${1} == 'hub' ]]; then
     prepare_env 'hub'
     create_cs 'hub'
-    trust_internal_registry 'hub' 
+    trust_internal_registry 'hub'
     if ! ./verify_olm_sync.sh 'hub'; then
-        mirror 'hub' 
+        mirror 'hub'
     else
         echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
     fi
@@ -172,7 +186,7 @@ elif [[ ${1} == "spoke" ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
-        prepare_env 'spoke' 
+        prepare_env 'spoke'
         create_cs 'spoke' ${spoke}
         trust_internal_registry 'hub'
         trust_internal_registry 'spoke' ${spoke}
