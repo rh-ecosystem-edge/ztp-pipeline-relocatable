@@ -26,7 +26,7 @@ if ./verify.sh; then
     oc apply -f 02-operatorgroup.yml
     sleep 2
     oc apply -f 03-subscription.yml
-    sleep 60
+    sleep 240
 
     echo ">>>> Deploy ACM cr manifest"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
