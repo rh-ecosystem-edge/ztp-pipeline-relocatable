@@ -5,3 +5,12 @@
 .validation-failed-text {
   color: var(--pf-global--danger-color--100);
 }
+
+.domain-selector__example {
+  font-family: "Liberation Mono";
+}
+
+.domain-selector__example-domain {
+  color: var(--pf-global--primary-color--100);
+  font-weight: bold;
+}

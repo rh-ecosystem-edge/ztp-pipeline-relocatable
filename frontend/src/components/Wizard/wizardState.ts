@@ -6,30 +6,30 @@ import { domainValidator, ipAddressValidator, sshPubKeyValidator } from '../util
 import { WizardStateType } from './types';
 
 export const useWizardState = (): WizardStateType => {
-  const [mask, setMask] = React.useState('            ');
-  const [maskValidation, setMaskValidation] = React.useState<IpSelectorValidationType>({
+  const [apiaddr, setApiaddr] = React.useState('            '); // TODO: set default here
+  const [apiaddrValidation, setApiaddrValidation] = React.useState<IpSelectorValidationType>({
     valid: true,
     digits: [],
   });
-  const handleSetMask = React.useCallback(
-    (newMask: string) => {
-      setMaskValidation(ipAddressValidator(newMask, true));
-      setMask(newMask);
+  const handleSetApiaddr = React.useCallback(
+    (newApiaddr: string) => {
+      setApiaddrValidation(ipAddressValidator(newApiaddr, true));
+      setApiaddr(newApiaddr);
     },
-    [setMask],
+    [setApiaddr],
   );
 
-  const [ip, setIp] = React.useState('            ');
-  const [ipValidation, setIpValidation] = React.useState<IpSelectorValidationType>({
+  const [ingressIp, setIngressIp] = React.useState('            ');
+  const [ingressIpValidation, setIngressIpValidation] = React.useState<IpSelectorValidationType>({
     valid: true,
     digits: [],
   });
-  const handleSetIp = React.useCallback(
+  const handleSetIngressIp = React.useCallback(
     (newIp: string) => {
-      setIpValidation(ipAddressValidator(newIp, false));
-      setIp(newIp);
+      setIngressIpValidation(ipAddressValidator(newIp, false));
+      setIngressIp(newIp);
     },
-    [setIp],
+    [setIngressIp],
   );
 
   const [domain, setDomain] = React.useState<string>('');
@@ -50,13 +50,13 @@ export const useWizardState = (): WizardStateType => {
   }, []);
 
   return {
-    mask,
-    maskValidation,
-    handleSetMask,
+    apiaddr,
+    apiaddrValidation,
+    handleSetApiaddr,
 
-    ip,
-    ipValidation,
-    handleSetIp,
+    ingressIp,
+    ingressIpValidation,
+    handleSetIngressIp,
 
     domain,
     domainValidation,

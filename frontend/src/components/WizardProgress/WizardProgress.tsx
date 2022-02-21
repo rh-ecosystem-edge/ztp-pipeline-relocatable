@@ -12,20 +12,20 @@ export const WizardProgress: React.FC = () => {
     <ProgressStepper isCenterAligned className="wizard-progress">
       <ProgressStep
         // description=""
-        id="subnet"
-        titleId="subnet-title"
-        aria-label="Subnet step"
-        {...steps.subnet}
+        id="apiaddr"
+        titleId="apiaddr-title"
+        aria-label="API step"
+        {...steps.apiaddr}
       >
-        Subnet
+        API
       </ProgressStep>
       <ProgressStep
-        id="virtualip"
-        titleId="virtualip-title"
-        aria-label="Virtual IP step"
-        {...steps.virtualip}
+        id="ingressip"
+        titleId="ingressip-title"
+        aria-label="Ingress step"
+        {...steps.ingressip}
       >
-        Virtual IP
+        Ingress
       </ProgressStep>
       <ProgressStep id="domain" titleId="domain-title" aria-label="Domain step" {...steps.domain}>
         Domain

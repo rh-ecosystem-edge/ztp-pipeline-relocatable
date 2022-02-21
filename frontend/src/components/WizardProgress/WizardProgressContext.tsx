@@ -3,12 +3,12 @@ import { ProgressStepProps } from '@patternfly/react-core';
 import { WizardStateType } from '../Wizard/types';
 
 type WizardProgressStep = Pick<ProgressStepProps, 'isCurrent' | 'variant'>;
-export type WizardProgressStepType = 'subnet' | 'virtualip' | 'domain' | 'sshkey'; // those displayed in the top-level progress
+export type WizardProgressStepType = 'apiaddr' | 'ingressip' | 'domain' | 'sshkey'; // those displayed in the top-level progress
 export type WizardStepType = WizardProgressStepType | 'persist';
 
 export type WizardProgressSteps = {
-  subnet: WizardProgressStep;
-  virtualip: WizardProgressStep;
+  apiaddr: WizardProgressStep;
+  ingressip: WizardProgressStep;
   domain: WizardProgressStep;
   sshkey: WizardProgressStep;
 };
@@ -21,8 +21,8 @@ export type WizardProgressContextData = {
 };
 
 const WIZARD_STEP_INDEXES: { [key in WizardProgressStepType]: number } = {
-  subnet: 0,
-  virtualip: 1,
+  apiaddr: 0,
+  ingressip: 1,
   domain: 2,
   sshkey: 3,
 };
@@ -34,11 +34,11 @@ export const WizardProgressContextProvider: React.FC<{
   state: WizardStateType;
 }> = ({ state, children }) => {
   const [steps, setSteps] = React.useState<WizardProgressSteps>({
-    subnet: {
+    apiaddr: {
       isCurrent: true,
       variant: 'info',
     },
-    virtualip: {
+    ingressip: {
       isCurrent: false,
       variant: 'pending',
     },

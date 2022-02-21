@@ -1,14 +1,14 @@
 import React from 'react';
 import { Routes, Route } from 'react-router';
 
-import { WelcomePage, SubnetPage, VirtualIpPage, DomainPage } from '../../components';
+import { WelcomePage, ApiAddressPage, IngressIpPage, DomainPage } from '../../components';
 import Redirect from '../../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
+import { SshPublicKeyPage } from '../SshPublicKeyPage';
 
 import { useWizardState } from './wizardState';
 
 import './Wizard.css';
-import { SshPublicKeyPage } from '../SshPublicKeyPage';
 
 export const Wizard: React.FC = () => {
   const wizardState = useWizardState();
@@ -17,8 +17,8 @@ export const Wizard: React.FC = () => {
     <WizardProgressContextProvider state={wizardState}>
       <Routes>
         <Route path="/welcome" element={<WelcomePage />} />
-        <Route path="/subnet" element={<SubnetPage />} />
-        <Route path="/virtualip" element={<VirtualIpPage />} />
+        <Route path="/apiaddr" element={<ApiAddressPage />} />
+        <Route path="/ingressip" element={<IngressIpPage />} />
         <Route path="/domain" element={<DomainPage />} />
         <Route path="/sshkey" element={<SshPublicKeyPage />} />
         <Route path="/persist" element={/*<PersistPage />*/ <WelcomePage />} />

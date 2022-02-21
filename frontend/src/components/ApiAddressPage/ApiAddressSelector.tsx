@@ -3,22 +3,25 @@ import { Stack, StackItem, Title } from '@patternfly/react-core';
 
 import { IpSelector } from '../IpSelector';
 import { useWizardProgressContext } from '../WizardProgress';
+import { RequiredBadge } from '../Badge';
 
-import './SubnetMaskSelector.css';
+import './ApiAddressSelector.css';
 
-export const SubnetMaskSelector: React.FC = () => {
+export const ApiAddressSelector: React.FC = () => {
   const {
-    state: { mask, handleSetMask, maskValidation: validation },
+    state: { apiaddr, handleSetApiaddr, apiaddrValidation: validation },
   } = useWizardProgressContext();
 
   return (
     <Stack className="wizard-content" hasGutter>
       <StackItem>
-        <Title headingLevel="h1">Subnet mask</Title>
+        <Title headingLevel="h1">
+          What is your API address? <RequiredBadge />
+        </Title>
       </StackItem>
-      <StackItem>What is your subnet mask address?</StackItem>
+      <StackItem>Assign the IP address that will be used for API traffic.</StackItem>
       <StackItem>
-        <IpSelector address={mask} setAddress={handleSetMask} validation={validation} />
+        <IpSelector address={apiaddr} setAddress={handleSetApiaddr} validation={validation} />
       </StackItem>
       <StackItem isFilled>
         {!validation.valid && (

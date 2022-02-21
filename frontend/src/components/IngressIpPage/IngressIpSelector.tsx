@@ -3,20 +3,26 @@ import { Stack, StackItem, Title } from '@patternfly/react-core';
 
 import { IpSelector } from '../IpSelector';
 import { useWizardProgressContext } from '../WizardProgress';
+import { RequiredBadge } from '../Badge';
 
-export const VirtualIpSelector: React.FC = () => {
+export const IngressIpSelector: React.FC = () => {
   const {
-    state: { ip, handleSetIp, ipValidation: validation },
+    state: { ingressIp, handleSetIngressIp, ingressIpValidation: validation },
   } = useWizardProgressContext();
 
   return (
     <Stack className="wizard-content" hasGutter>
       <StackItem>
-        <Title headingLevel="h1">Virtual IP</Title>
+        <Title headingLevel="h1">
+          What's your ingress address? <RequiredBadge />
+        </Title>
       </StackItem>
-      <StackItem>What is your virtual IP address?</StackItem>
       <StackItem>
-        <IpSelector address={ip} setAddress={handleSetIp} validation={validation} />
+        Assign the IP address that will be used for new routes and traffic managed by the ingress
+        controller.
+      </StackItem>
+      <StackItem>
+        <IpSelector address={ingressIp} setAddress={handleSetIngressIp} validation={validation} />
       </StackItem>
       <StackItem isFilled>
         {!validation.valid && (

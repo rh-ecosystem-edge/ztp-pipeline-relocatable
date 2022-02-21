@@ -16,7 +16,7 @@ export const DomainPage: React.FC = () => {
       <ContentThreeRows
         top={<WizardProgress />}
         middle={<DomainSelector />}
-        bottom={<WizardFooter back="virtualip" next="sshkey" />}
+        bottom={<WizardFooter back="ingressip" next="sshkey" />}
       />
     </Page>
   );

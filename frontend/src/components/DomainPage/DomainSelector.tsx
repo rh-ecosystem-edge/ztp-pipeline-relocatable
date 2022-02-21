@@ -16,12 +16,12 @@ export const DomainSelector: React.FC = () => {
   return (
     <Stack className="wizard-content" hasGutter>
       <StackItem>
-        <Title headingLevel="h1">Domain</Title>
+        <Title headingLevel="h1">Do you want to use a custom domain?</Title>
       </StackItem>
       <StackItem>
-        Would you like to set up local domain? <OptionalBadge />
+        Create unique URLs for your KubeFrame, such as device setup and console. <OptionalBadge />
       </StackItem>
-      <StackItem isFilled className="domain-item">
+      <StackItem className="domain-item">
         <FormGroup
           fieldId={fieldId}
           helperTextInvalid={
@@ -37,6 +37,15 @@ export const DomainSelector: React.FC = () => {
             onChange={handleSetDomain}
           />
         </FormGroup>
+      </StackItem>
+      <StackItem isFilled>
+        <div className="domain-selector__example">
+          Setup URL: https://setup.<span className="domain-selector__example-domain">{domain}</span>
+        </div>
+        <div className="domain-selector__example">
+          Console URL: https://console.
+          <span className="domain-selector__example-domain">{domain}</span>
+        </div>
       </StackItem>
     </Stack>
   );

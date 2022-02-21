@@ -1,4 +1,4 @@
 export * from './WelcomePage';
-export * from './SubnetPage';
-export * from './VirtualIpPage';
+export * from './ApiAddressPage';
+export * from './IngressIpPage';
 export * from './DomainPage';

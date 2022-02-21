@@ -10,7 +10,7 @@ export const WelcomeBottom: React.FC = () => (
     </StackItem>
     <StackItem isFilled>To set up the configuration of your KubeFrame, click Continue.</StackItem>
     <StackItem>
-      <Button component="a" href="/wizard/subnet" variant={ButtonVariant.primary}>
+      <Button component="a" href="/wizard/apiaddr" variant={ButtonVariant.primary}>
         Continue
       </Button>
     </StackItem>

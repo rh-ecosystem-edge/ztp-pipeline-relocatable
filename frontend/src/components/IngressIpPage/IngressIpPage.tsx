@@ -5,18 +5,20 @@ import { ContentThreeRows } from '../ContentThreeRows';
 import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
-import { SubnetMaskSelector } from './SubnetMaskSelector';
 
-export const SubnetPage: React.FC = () => {
+import { IngressIpSelector } from './IngressIpSelector';
+
+// TODO: https://marvelapp.com/prototype/hfd719b/screen/84707949/handoff
+export const IngressIpPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
-  React.useEffect(() => setActiveStep('subnet'), [setActiveStep]);
+  React.useEffect(() => setActiveStep('ingressip'));
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
-        middle={<SubnetMaskSelector />}
-        bottom={<WizardFooter back={undefined} next="virtualip" />}
+        middle={<IngressIpSelector />}
+        bottom={<WizardFooter back="apiaddr" next="domain" />}
       />
     </Page>
   );
