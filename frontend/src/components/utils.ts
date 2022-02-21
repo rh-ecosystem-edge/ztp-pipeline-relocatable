@@ -107,6 +107,5 @@ export const passwordValidator = (pwd = ''): WizardStateType['password'] => {
   }
 
   // TODO(mlibra): add more conditions here
-
-  return "Valid username wasn't provided";
+  return ''; // passed
 };

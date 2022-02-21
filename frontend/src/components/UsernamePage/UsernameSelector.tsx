@@ -6,7 +6,7 @@ import { RequiredBadge } from '../Badge';
 
 import './UsernameSelector.css';
 
-const fieldId = 'input-domain';
+const fieldId = 'input-username';
 
 export const UsernameSelector: React.FC = () => {
   const {
