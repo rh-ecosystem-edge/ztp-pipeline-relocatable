@@ -5,6 +5,7 @@ import { WizardStateType } from './Wizard/types';
 const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
 const SSH_PUBLIC_KEY_REGEX =
   /^(ssh-rsa|ssh-ed25519|ecdsa-[-a-z0-9]*) AAAA[0-9A-Za-z+/]+[=]{0,3}( .+)?$/;
+const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
 
 export const addIpDots = (addressWithoutDots: string): string => {
   if (addressWithoutDots?.length === 12) {
@@ -86,4 +87,26 @@ export const sshPubKeyValidator = (key: string): WizardStateType['sshPubKeyValid
   }
 
   return "Valid public SSH key wasn't provided";
+};
+
+export const usernameValidator = (username = ''): WizardStateType['username'] => {
+  if (username.length >= 54) {
+    return 'Valid username can not be longer than 54 characters.';
+  }
+
+  if (!username || username.match(USERNAME_REGEX)) {
+    return ''; // passed
+  }
+
+  return "Valid username wasn't provided";
+};
+
+export const passwordValidator = (pwd = ''): WizardStateType['password'] => {
+  if (pwd.length <= 8) {
+    return 'Valid password can not be shorter then 8 symbols';
+  }
+
+  // TODO(mlibra): add more conditions here
+
+  return "Valid username wasn't provided";
 };

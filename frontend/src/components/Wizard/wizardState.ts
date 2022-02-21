@@ -1,11 +1,37 @@
 import React from 'react';
 
 import { IpSelectorValidationType } from '../IpSelector';
-import { domainValidator, ipAddressValidator, sshPubKeyValidator } from '../utils';
+import {
+  domainValidator,
+  ipAddressValidator,
+  passwordValidator,
+  sshPubKeyValidator,
+  usernameValidator,
+} from '../utils';
 
 import { WizardStateType } from './types';
 
 export const useWizardState = (): WizardStateType => {
+  const [username, setUsername] = React.useState('');
+  const [usernameValidation, setUsernameValidation] = React.useState<string>('');
+  const handleSetUsername = React.useCallback(
+    (newVal: string) => {
+      setUsernameValidation(usernameValidator(newVal));
+      setUsername(newVal);
+    },
+    [setUsername],
+  );
+
+  const [password, setPassword] = React.useState('');
+  const [passwordValidation, setPasswordValidation] = React.useState<string>('');
+  const handleSetPassword = React.useCallback(
+    (newVal: string) => {
+      setPasswordValidation(passwordValidator(newVal));
+      setPassword(newVal);
+    },
+    [setPassword],
+  );
+
   const [apiaddr, setApiaddr] = React.useState('            '); // TODO: set default here
   const [apiaddrValidation, setApiaddrValidation] = React.useState<IpSelectorValidationType>({
     valid: true,
@@ -50,6 +76,14 @@ export const useWizardState = (): WizardStateType => {
   }, []);
 
   return {
+    username,
+    usernameValidation,
+    handleSetUsername,
+
+    password,
+    passwordValidation,
+    handleSetPassword,
+
     apiaddr,
     apiaddrValidation,
     handleSetApiaddr,

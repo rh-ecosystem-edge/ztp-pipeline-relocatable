@@ -3,10 +3,18 @@ import { ProgressStepProps } from '@patternfly/react-core';
 import { WizardStateType } from '../Wizard/types';
 
 type WizardProgressStep = Pick<ProgressStepProps, 'isCurrent' | 'variant'>;
-export type WizardProgressStepType = 'apiaddr' | 'ingressip' | 'domain' | 'sshkey'; // those displayed in the top-level progress
+export type WizardProgressStepType =
+  | 'username'
+  | 'password'
+  | 'apiaddr'
+  | 'ingressip'
+  | 'domain'
+  | 'sshkey'; // those displayed in the top-level progress
 export type WizardStepType = WizardProgressStepType | 'persist';
 
 export type WizardProgressSteps = {
+  username: WizardProgressStep;
+  password: WizardProgressStep;
   apiaddr: WizardProgressStep;
   ingressip: WizardProgressStep;
   domain: WizardProgressStep;
@@ -21,10 +29,12 @@ export type WizardProgressContextData = {
 };
 
 const WIZARD_STEP_INDEXES: { [key in WizardProgressStepType]: number } = {
-  apiaddr: 0,
-  ingressip: 1,
-  domain: 2,
-  sshkey: 3,
+  username: 0,
+  password: 1,
+  apiaddr: 2,
+  ingressip: 3,
+  domain: 4,
+  sshkey: 5,
 };
 
 const WizardProgressContext = React.createContext<WizardProgressContextData | null>(null);
@@ -34,9 +44,17 @@ export const WizardProgressContextProvider: React.FC<{
   state: WizardStateType;
 }> = ({ state, children }) => {
   const [steps, setSteps] = React.useState<WizardProgressSteps>({
-    apiaddr: {
+    username: {
       isCurrent: true,
       variant: 'info',
+    },
+    password: {
+      isCurrent: false,
+      variant: 'pending',
+    },
+    apiaddr: {
+      isCurrent: false,
+      variant: 'pending',
     },
     ingressip: {
       isCurrent: false,

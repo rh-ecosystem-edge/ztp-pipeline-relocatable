@@ -12,11 +12,22 @@ export const WizardProgress: React.FC = () => {
     <ProgressStepper isCenterAligned className="wizard-progress">
       <ProgressStep
         // description=""
-        id="apiaddr"
-        titleId="apiaddr-title"
-        aria-label="API step"
-        {...steps.apiaddr}
+        id="username"
+        titleId="username-title"
+        aria-label="Username step"
+        {...steps.username}
       >
+        Username
+      </ProgressStep>
+      <ProgressStep
+        id="password"
+        titleId="password-title"
+        aria-label="Password step"
+        {...steps.password}
+      >
+        Password
+      </ProgressStep>
+      <ProgressStep id="apiaddr" titleId="apiaddr-title" aria-label="API step" {...steps.apiaddr}>
         API
       </ProgressStep>
       <ProgressStep

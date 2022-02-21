@@ -5,18 +5,18 @@ import { ContentThreeRows } from '../ContentThreeRows';
 import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
-import { ApiAddressSelector } from './ApiAddressSelector';
+import { PasswordSelector } from './PasswordSelector';
 
-export const ApiAddressPage: React.FC = () => {
+export const PasswordPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
-  React.useEffect(() => setActiveStep('apiaddr'), [setActiveStep]);
+  React.useEffect(() => setActiveStep('password'), [setActiveStep]);
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
-        middle={<ApiAddressSelector />}
-        bottom={<WizardFooter back="password" next="ingressip" />}
+        middle={<PasswordSelector />}
+        bottom={<WizardFooter back="username" next="apiaddr" />}
       />
     </Page>
   );
