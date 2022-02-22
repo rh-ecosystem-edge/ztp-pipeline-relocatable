@@ -9,10 +9,11 @@ import './WizardFooter.css';
 type WizardFooterProps = {
   back?: WizardStepType;
   next: WizardStepType;
+  isNextEnabled?: () => boolean;
 };
 
 // TODO: add final step
-export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next }) => {
+export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next, isNextEnabled }) => {
   const navigate = useNavigate();
 
   return (
@@ -20,7 +21,11 @@ export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next }) => {
       <Button variant={ButtonVariant.link} onClick={() => navigate(`/wizard/${back || 'welcome'}`)}>
         Go back
       </Button>
-      <Button variant={ButtonVariant.primary} onClick={() => navigate(`/wizard/${next}`)}>
+      <Button
+        variant={ButtonVariant.primary}
+        onClick={() => navigate(`/wizard/${next}`)}
+        isDisabled={isNextEnabled && !isNextEnabled()}
+      >
         Continue
       </Button>
     </div>

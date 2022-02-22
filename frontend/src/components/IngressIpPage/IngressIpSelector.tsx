@@ -1,7 +1,6 @@
 import React from 'react';
 import { Stack, StackItem, Title } from '@patternfly/react-core';
 
-import { IpSelector } from '../IpSelector';
 import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
 import { IpTripletsSelector } from '../IpTripletsSelector';

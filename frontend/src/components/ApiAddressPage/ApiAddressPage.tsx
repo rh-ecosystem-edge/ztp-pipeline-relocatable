@@ -10,13 +10,24 @@ import { ApiAddressSelector } from './ApiAddressSelector';
 export const ApiAddressPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('apiaddr'), [setActiveStep]);
+  const {
+    state: { apiaddr, apiaddrValidation },
+  } = useWizardProgressContext();
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
         middle={<ApiAddressSelector />}
-        bottom={<WizardFooter back="password" next="ingressip" />}
+        bottom={
+          <WizardFooter
+            back="password"
+            next="ingressip"
+            isNextEnabled={() =>
+              apiaddr.trim().replaceAll(' ', '').length === 12 && apiaddrValidation.valid
+            }
+          />
+        }
       />
     </Page>
   );

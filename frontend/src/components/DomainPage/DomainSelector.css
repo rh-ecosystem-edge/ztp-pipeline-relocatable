@@ -8,9 +8,15 @@
 
 .domain-selector__example {
   font-family: "Liberation Mono";
+  color: var(--pf-global--palette--black-600);
 }
 
 .domain-selector__example-domain {
   color: var(--pf-global--primary-color--100);
+  font-weight: bold;
+}
+
+.domain-selector__example-domain-invalid {
+  color: var(--pf-global--danger-color--100);
   font-weight: bold;
 }

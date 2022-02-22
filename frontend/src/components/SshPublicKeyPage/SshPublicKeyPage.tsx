@@ -10,13 +10,16 @@ import { SshPublicKeySelector } from './SshPublicKeySelector';
 export const SshPublicKeyPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('sshkey'), [setActiveStep]);
+  const {
+    state: { sshPubKeyValidation: validation },
+  } = useWizardProgressContext();
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
         middle={<SshPublicKeySelector />}
-        bottom={<WizardFooter back="domain" next="persist" />}
+        bottom={<WizardFooter back="domain" next="persist" isNextEnabled={() => !validation} />}
       />
     </Page>
   );

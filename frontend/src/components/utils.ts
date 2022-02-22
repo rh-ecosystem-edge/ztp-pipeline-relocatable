@@ -81,12 +81,6 @@ export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValida
   const validation: IpTripletSelectorValidationType = { valid: true, triplets: [] };
 
   for (let i = 0; i <= 3; i++) {
-    // const triplet = validateIpTripplet(
-    //   false,
-    //   addr.charAt(3 * i),
-    //   addr.charAt(3 * i + 1),
-    //   addr.charAt(3 * i + 2),
-    // );
     const triplet = addr.substring(i * 3, (i + 1) * 3).trim();
     const num = parseInt(triplet);
     const valid = num > 0 && num < 256;
@@ -99,8 +93,8 @@ export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValida
 };
 
 export const domainValidator = (domain: string): WizardStateType['domainValidation'] => {
-  if (domain.match(DNS_NAME_REGEX)) {
-    return ''; // passed
+  if (!domain || domain?.match(DNS_NAME_REGEX)) {
+    return ''; // passed ; optional - pass for empty as well
   }
   return "Valid domain wasn't provided";
 };

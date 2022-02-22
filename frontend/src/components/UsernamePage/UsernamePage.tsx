@@ -10,13 +10,22 @@ import { UsernameSelector } from './UsernameSelector';
 export const UsernamePage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('username'), [setActiveStep]);
+  const {
+    state: { username, usernameValidation: validation },
+  } = useWizardProgressContext();
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
         middle={<UsernameSelector />}
-        bottom={<WizardFooter back={undefined} next="password" />}
+        bottom={
+          <WizardFooter
+            back={undefined}
+            next="password"
+            isNextEnabled={() => !!username && !validation}
+          />
+        }
       />
     </Page>
   );

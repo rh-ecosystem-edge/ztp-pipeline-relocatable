@@ -40,11 +40,28 @@ export const DomainSelector: React.FC = () => {
       </StackItem>
       <StackItem isFilled>
         <div className="domain-selector__example">
-          Setup URL: https://setup.<span className="domain-selector__example-domain">{domain}</span>
+          Setup URL: https://setup.
+          <span
+            className={
+              validation
+                ? 'domain-selector__example-domain-invalid'
+                : 'domain-selector__example-domain'
+            }
+          >
+            {domain}
+          </span>
         </div>
         <div className="domain-selector__example">
           Console URL: https://console.
-          <span className="domain-selector__example-domain">{domain}</span>
+          <span
+            className={
+              validation
+                ? 'domain-selector__example-domain-invalid'
+                : 'domain-selector__example-domain'
+            }
+          >
+            {domain}
+          </span>
         </div>
       </StackItem>
     </Stack>

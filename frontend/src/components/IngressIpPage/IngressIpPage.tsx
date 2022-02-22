@@ -8,17 +8,25 @@ import { WizardFooter } from '../WizardFooter';
 
 import { IngressIpSelector } from './IngressIpSelector';
 
-// TODO: https://marvelapp.com/prototype/hfd719b/screen/84707949/handoff
 export const IngressIpPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('ingressip'));
+  const {
+    state: { ingressIp, ingressIpValidation },
+  } = useWizardProgressContext();
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
         middle={<IngressIpSelector />}
-        bottom={<WizardFooter back="apiaddr" next="domain" />}
+        bottom={
+          <WizardFooter
+            back="apiaddr"
+            next="domain"
+            isNextEnabled={() => !!ingressIp.trim() && ingressIpValidation.valid}
+          />
+        }
       />
     </Page>
   );
