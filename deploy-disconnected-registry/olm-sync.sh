@@ -90,23 +90,7 @@ function mirror() {
     echo "Destination Registry: ${DESTINATION_REGISTRY}"
     echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
-    echo "Mirror Mode: ${MIRROR_MODE}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-
-    if [[ ${MIRROR_MODE} == 'auto' ]]; then
-        mirror_auto
-    elif [[ ${MIRROR_MODE} == 'skopeo' ]]; then
-        mirror_skopeo
-    elif [[ ${MIRROR_MODE} == 'all' ]]; then
-        mirror_auto
-        # mirror_auto
-        mirror_skopeo
-    fi
-}
-
-function mirror_auto() {
-    # Mirror redhat-operator index image
-    echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 
     ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
     ####### using the vfs driver, and this causes errors.
@@ -114,10 +98,16 @@ function mirror_auto() {
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
 
-    retry = 1
-    while [ retry != 0 ]; do
-        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} 2>&1 | tee ${OUTPUTDIR}/mirror.log
-        if [ $? -eq 0 ]; then
+    retry=1
+    while [ ${retry} != 0 ]; do
+        # Mirror redhat-operator index image
+        echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
+        (
+            opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} 2>&1
+            SALIDA=$?
+        ) | tee ${OUTPUTDIR}/mirror.log
+
+        if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Mirroring index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
         else
@@ -126,10 +116,35 @@ function mirror_auto() {
             sleep 10
             retry=$((retry + 1))
         fi
+        if [ ${retry} == 12 ]; then
+            echo ">>>> ERROR: Mirroring index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retry limit reached"
+            exit 1
+        fi
     done
 
-    echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
-    GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
+    retry=1
+    while [ ${retry} != 0 ]; do
+        echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
+        (
+            GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} 2>&1
+            SALIDA=$?
+        ) | tee ${OUTPUTDIR}/mirror.log
+        if [ ${SALIDA} -eq 0 ]; then
+            echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
+            retry=0
+        else
+            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retrying in 10 seconds"
+            sleep 10
+            retry=$((retry + 1))
+        fi
+        if [ ${retry} == 12 ]; then
+            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retry limit reached"
+            exit 1
+        fi
+    done
 
     # Mirror redhat-operator packages
     echo ">>>> Trying to push OLM images to Internal Registry"
@@ -138,9 +153,6 @@ function mirror_auto() {
 
     cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
 
-}
-
-function mirror_skopeo() {
     # Patch to avoid issues on mirroring
     FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sort -u | xargs echo)
 
