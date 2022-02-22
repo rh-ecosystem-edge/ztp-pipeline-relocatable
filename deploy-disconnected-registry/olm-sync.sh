@@ -99,7 +99,7 @@ function mirror() {
         mirror_skopeo
     elif [[ ${MIRROR_MODE} == 'all' ]]; then
         mirror_auto
-        #mirror_auto
+        # mirror_auto
         mirror_skopeo
     fi
 }
@@ -114,7 +114,19 @@ function mirror_auto() {
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
 
-    opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
+    retry = 1
+    while [ retry != 0 ]; do
+        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} 2>&1 | tee ${OUTPUTDIR}/mirror.log
+        if [ $? -eq 0 ]; then
+            echo ">>>> Mirroring index image finished: ${OLM_DESTINATION_INDEX}"
+            retry=0
+        else
+            echo ">>>> ERROR: Mirroring index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retrying in 10 seconds"
+            sleep 10
+            retry=$((retry + 1))
+        fi
+    done
 
     echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
     GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
