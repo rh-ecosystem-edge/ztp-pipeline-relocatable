@@ -8,10 +8,10 @@ import {
   ApiAddressPage,
   IngressIpPage,
   DomainPage,
+  SshPublicKeyPage,
 } from '../../components';
 import Redirect from '../../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
-import { SshPublicKeyPage } from '../SshPublicKeyPage';
 
 import { useWizardState } from './wizardState';
 
