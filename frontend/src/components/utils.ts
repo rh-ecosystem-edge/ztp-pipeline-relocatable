@@ -102,10 +102,6 @@ export const usernameValidator = (username = ''): WizardStateType['username'] =>
 };
 
 export const passwordValidator = (pwd = ''): WizardStateType['password'] => {
-  if (pwd.length <= 8) {
-    return 'Valid password can not be shorter then 8 symbols';
-  }
-
-  // TODO(mlibra): add more conditions here
+  // We are validating password in PasswordRequirements component
   return ''; // passed
 };

@@ -13,6 +13,8 @@ import { EyeIcon, EyeSlashIcon } from '@patternfly/react-icons';
 import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
 
+import { PasswordConfirmationValidationText, PasswordRequirements } from './PasswordRequirements';
+
 import './PasswordSelector.css';
 
 const fieldId = 'input-password';
@@ -69,15 +71,16 @@ export const PasswordSelector: React.FC = () => {
           >
             {isVisible ? <EyeIcon /> : <EyeSlashIcon />}
           </Button>
+          <PasswordRequirements />
         </FormGroup>
       </StackItem>
+      <StackItem className="pasword-sublabel-item">
+        <Title headingLevel="h4">Confirm password</Title>
+      </StackItem>
       <StackItem isFilled>
-        <span>Retype password</span>
         <FormGroup
           fieldId={fieldId2}
-          helperTextInvalid={
-            validationCheck && <div className="validation-failed-text">{validationCheck}</div>
-          }
+          helperTextInvalid={<PasswordConfirmationValidationText validation={validationCheck} />}
           validated={validationCheck ? 'error' : 'default'}
         >
           <TextInput
