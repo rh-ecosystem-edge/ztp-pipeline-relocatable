@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { IpSelectorValidationType } from '../IpSelector';
+import { IpSelectorValidationType, IpTripletSelectorValidationType } from '../types';
 import {
   domainValidator,
   ipAddressValidator,
+  ipTripletAddressValidator,
   passwordValidator,
   sshPubKeyValidator,
   usernameValidator,
@@ -46,13 +47,14 @@ export const useWizardState = (): WizardStateType => {
   );
 
   const [ingressIp, setIngressIp] = React.useState('            ');
-  const [ingressIpValidation, setIngressIpValidation] = React.useState<IpSelectorValidationType>({
-    valid: true,
-    digits: [],
-  });
+  const [ingressIpValidation, setIngressIpValidation] =
+    React.useState<IpTripletSelectorValidationType>({
+      valid: true,
+      triplets: [],
+    });
   const handleSetIngressIp = React.useCallback(
     (newIp: string) => {
-      setIngressIpValidation(ipAddressValidator(newIp, false));
+      setIngressIpValidation(ipTripletAddressValidator(newIp));
       setIngressIp(newIp);
     },
     [setIngressIp],

@@ -1,0 +1,16 @@
+.ip-triplet {
+  width: 6rem;
+  text-align: center;
+  margin-left: var(--pf-global--spacer--xs);
+  margin-right: var(--pf-global--spacer--xs);
+}
+
+.ip-triplet-success {
+  --pf-c-form-control--BorderBottomColor: var(--pf-c-form-control--success--BorderBottomColor);
+  border-bottom-width: var(--pf-c-form-control--success--BorderBottomWidth);
+}
+
+.ip-triplet-error {
+  --pf-c-form-control--BorderBottomColor: var(--pf-c-form-control--invalid--BorderBottomColor);
+  border-bottom-width: var(--pf-c-form-control--invalid--BorderBottomWidth);
+}

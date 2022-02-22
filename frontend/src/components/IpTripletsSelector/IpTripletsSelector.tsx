@@ -2,26 +2,26 @@ import React from 'react';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_100 as dangerColor } from '@patternfly/react-tokens';
 
-import { IpDigitIndex, SingleIpDigitProps } from '../types';
-import { IpSelectorValidationType } from '../types';
-import { SingleIpDigit } from '../SingleIpDigit';
+import { IpTripletIndex, IpTripletProps } from '../types';
+import { IpTripletSelectorValidationType } from '../types';
+import { IpTriplet } from '../IpTriplet';
 
-import './IpSelector.css';
+import './IpTripletsSelector.css';
 
-export const IpSelector: React.FC<{
+export const IpTripletsSelector: React.FC<{
   address: string;
-  setAddress: SingleIpDigitProps['setAddress'];
-  validation: IpSelectorValidationType;
+  setAddress: IpTripletProps['setAddress'];
+  validation: IpTripletSelectorValidationType;
 }> = ({ address, setAddress, validation }) => {
-  const [focus, setFocus] = React.useState<IpDigitIndex>(0);
-  const validated = validation.digits || [];
+  const [focus, setFocus] = React.useState<IpTripletIndex | null>(0);
+  const validated = validation.triplets || [];
 
   return (
     <>
-      {([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as IpDigitIndex[]).map((position) => (
+      {([0, 1, 2, 3] as IpTripletIndex[]).map((position) => (
         <React.Fragment key={position}>
-          {position > 0 && position % 3 === 0 && <>.</>}
-          <SingleIpDigit
+          {position > 0 ? '.' : ''}
+          <IpTriplet
             key={position}
             position={position}
             address={address}

@@ -1,5 +1,8 @@
-import { IpSelectorValidationType } from './IpSelector/types';
-import { SingleIpDigitProps } from './SingleIpDigit';
+import {
+  IpSelectorValidationType,
+  IpTripletSelectorValidationType,
+  SingleIpDigitProps,
+} from './types';
 import { WizardStateType } from './Wizard/types';
 
 const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
@@ -69,6 +72,27 @@ export const ipAddressValidator = (addr: string, isMask: boolean): IpSelectorVal
     );
     validation.valid = validation.valid && triplet.valid;
     validation.digits = validation.digits.concat(triplet.digits);
+  }
+
+  return validation;
+};
+
+export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValidationType => {
+  const validation: IpTripletSelectorValidationType = { valid: true, triplets: [] };
+
+  for (let i = 0; i <= 3; i++) {
+    // const triplet = validateIpTripplet(
+    //   false,
+    //   addr.charAt(3 * i),
+    //   addr.charAt(3 * i + 1),
+    //   addr.charAt(3 * i + 2),
+    // );
+    const triplet = addr.substring(i * 3, (i + 1) * 3).trim();
+    const num = parseInt(triplet);
+    const valid = num > 0 && num < 256;
+
+    validation.valid = validation.valid && valid;
+    validation.triplets.push(valid ? 'success' : 'default');
   }
 
   return validation;

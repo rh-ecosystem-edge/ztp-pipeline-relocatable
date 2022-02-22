@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextInput } from '@patternfly/react-core';
 
-import { IpDigitIndex, SingleIpDigitProps } from './types';
+import { IpDigitIndex, SingleIpDigitProps } from '../types';
 
 import './SingleIpDigit.css';
 

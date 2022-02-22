@@ -4,6 +4,7 @@ import { Stack, StackItem, Title } from '@patternfly/react-core';
 import { IpSelector } from '../IpSelector';
 import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
+import { IpTripletsSelector } from '../IpTripletsSelector';
 
 export const IngressIpSelector: React.FC = () => {
   const {
@@ -22,7 +23,11 @@ export const IngressIpSelector: React.FC = () => {
         controller.
       </StackItem>
       <StackItem>
-        <IpSelector address={ingressIp} setAddress={handleSetIngressIp} validation={validation} />
+        <IpTripletsSelector
+          address={ingressIp}
+          setAddress={handleSetIngressIp}
+          validation={validation}
+        />
       </StackItem>
       <StackItem isFilled>
         {!validation.valid && (
