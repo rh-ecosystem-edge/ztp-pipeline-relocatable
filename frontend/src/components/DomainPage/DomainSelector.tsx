@@ -18,7 +18,7 @@ export const DomainSelector: React.FC = () => {
       <StackItem>
         <Title headingLevel="h1">Do you want to use a custom domain?</Title>
       </StackItem>
-      <StackItem>
+      <StackItem className="wizard-sublabel">
         Create unique URLs for your KubeFrame, such as device setup and console. <OptionalBadge />
       </StackItem>
       <StackItem className="domain-item">

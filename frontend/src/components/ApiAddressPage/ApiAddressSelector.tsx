@@ -19,7 +19,9 @@ export const ApiAddressSelector: React.FC = () => {
           What is your API address? <RequiredBadge />
         </Title>
       </StackItem>
-      <StackItem>Assign the IP address that will be used for API traffic.</StackItem>
+      <StackItem className="wizard-sublabel">
+        Assign the IP address that will be used for API traffic.
+      </StackItem>
       <StackItem>
         <IpSelector address={apiaddr} setAddress={handleSetApiaddr} validation={validation} />
       </StackItem>

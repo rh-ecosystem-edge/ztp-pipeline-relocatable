@@ -30,7 +30,7 @@ export const SshPublicKeySelector: React.FC = () => {
       <StackItem>
         <Title headingLevel="h1">SSH public key</Title>
       </StackItem>
-      <StackItem>
+      <StackItem className="wizard-sublabel">
         Want to use your SSH public key instead of a password to log into hosts? <OptionalBadge />
       </StackItem>
       <StackItem isFilled className="ssh-pub-key-item">

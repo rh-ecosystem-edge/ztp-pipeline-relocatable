@@ -18,7 +18,7 @@ export const IngressIpSelector: React.FC = () => {
           What's your ingress address? <RequiredBadge />
         </Title>
       </StackItem>
-      <StackItem>
+      <StackItem className="wizard-sublabel">
         Assign the IP address that will be used for new routes and traffic managed by the ingress
         controller.
       </StackItem>

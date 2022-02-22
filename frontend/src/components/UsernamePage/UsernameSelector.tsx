@@ -20,7 +20,9 @@ export const UsernameSelector: React.FC = () => {
           Choose a username <RequiredBadge />
         </Title>
       </StackItem>
-      <StackItem>Create a new personalized, account for future access.</StackItem>
+      <StackItem className="wizard-sublabel">
+        Create a new personalized, account for future access.
+      </StackItem>
       <StackItem className="username-item" isFilled>
         <FormGroup
           fieldId={fieldId}

@@ -46,7 +46,9 @@ export const PasswordSelector: React.FC = () => {
           Choose a password <RequiredBadge />
         </Title>
       </StackItem>
-      <StackItem>Keep your KubeFrame account safe and secure.</StackItem>
+      <StackItem className="wizard-sublabel">
+        Keep your KubeFrame account safe and secure.
+      </StackItem>
       <StackItem>
         <FormGroup
           fieldId={fieldId}
