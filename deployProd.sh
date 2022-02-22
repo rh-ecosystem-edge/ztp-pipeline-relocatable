@@ -30,3 +30,4 @@ cat deployment.yaml | \
 oc delete pod `oc get pods |grep kubeframe-ui|awk '{print $1}' -`
 oc get pods
 
+echo Do not forget to deploy CRDS via scripts/applyCrds.sh
