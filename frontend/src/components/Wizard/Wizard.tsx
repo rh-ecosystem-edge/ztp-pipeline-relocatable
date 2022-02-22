@@ -9,6 +9,7 @@ import {
   IngressIpPage,
   DomainPage,
   SshPublicKeyPage,
+  PersistPage,
 } from '../../components';
 import Redirect from '../../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
@@ -30,7 +31,7 @@ export const Wizard: React.FC = () => {
         <Route path="/ingressip" element={<IngressIpPage />} />
         <Route path="/domain" element={<DomainPage />} />
         <Route path="/sshkey" element={<SshPublicKeyPage />} />
-        <Route path="/persist" element={/*<PersistPage />*/ <WelcomePage />} />
+        <Route path="/persist" element={<PersistPage />} />
         <Route path="*" element={<Redirect to="/wizard/welcome" />} />
       </Routes>
     </WizardProgressContextProvider>

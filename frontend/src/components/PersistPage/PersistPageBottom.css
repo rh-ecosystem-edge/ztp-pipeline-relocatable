@@ -1,0 +1,25 @@
+.persist-page-bottom {
+  align-items: center;
+}
+
+.persist-page-bottom__success-icon {
+  height: var(--pf-global--icon--FontSize--xl);
+  width: var(--pf-global--icon--FontSize--xl);
+}
+
+.persist-page-bottom__progress-icon {
+  height: var(--pf-global--icon--FontSize--xl);
+  width: var(--pf-global--icon--FontSize--xl);
+}
+
+.persist-page-bottom__error-item {
+  width: 40rem;
+}
+
+.persist-page-bottom__error-item-footer {
+  height: 81px; /* TODO: make it responsive! */
+
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}

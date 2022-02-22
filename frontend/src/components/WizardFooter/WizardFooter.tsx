@@ -12,7 +12,6 @@ type WizardFooterProps = {
   isNextEnabled?: () => boolean;
 };
 
-// TODO: add final step
 export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next, isNextEnabled }) => {
   const navigate = useNavigate();
 
