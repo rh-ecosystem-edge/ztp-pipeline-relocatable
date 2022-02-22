@@ -13,9 +13,10 @@ import { EyeIcon, EyeSlashIcon } from '@patternfly/react-icons';
 import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
 
-import { PasswordConfirmationValidationText, PasswordRequirements } from './PasswordRequirements';
+import { PasswordRequirements } from './PasswordRequirements';
 
 import './PasswordSelector.css';
+import { HelperTextInvalid } from '../HelperTextInvalid';
 
 const fieldId = 'input-password';
 const fieldId2 = 'input-password-check';
@@ -82,7 +83,7 @@ export const PasswordSelector: React.FC = () => {
       <StackItem isFilled>
         <FormGroup
           fieldId={fieldId2}
-          helperTextInvalid={<PasswordConfirmationValidationText validation={validationCheck} />}
+          helperTextInvalid={<HelperTextInvalid validation={validationCheck} />}
           validated={validationCheck ? 'error' : 'default'}
         >
           <TextInput

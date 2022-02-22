@@ -37,18 +37,3 @@ export const PasswordRequirements: React.FC = () => {
     </ul>
   );
 };
-
-export const PasswordConfirmationValidationText: React.FC<{ validation?: string }> = ({
-  validation,
-}) =>
-  validation ? (
-    <div>
-      <ExclamationCircleIcon color={dangerColor.value} />
-      <span className="password-requirement-text">{validation}</span>
-    </div>
-  ) : (
-    <div>
-      <CheckCircleIcon color={successColor.value} />
-      Matches password
-    </div>
-  );
