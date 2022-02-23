@@ -12,14 +12,12 @@ STATICRELEASE="${DEVRELEASE}"
 
 # Versioned documents
 DOCS=(
-    'Deployment'
-    'Troubleshooting'
+    'ZTP for Factories.adoc'
+
 )
 
 # Documents using latest
-STATIC=(
-    'ZTP for Factories.adoc'
-)
+STATIC=()
 
 DEV=(
 
