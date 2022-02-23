@@ -159,7 +159,8 @@ function mirror() {
     cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
 
     # Patch to avoid issues on mirroring
-    FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sort -u | xargs echo)
+    # In order to match both / and - in the package name we replace them by . that grep with regexp mode can understand
+    FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sed 's#-#.#g' | sed 's#olm/##g' | sed 's#/#.#g' | sort -u | xargs echo)
 
     echo ">> Packages that have failed START"
     echo ${FAILEDPACKAGES}
@@ -167,9 +168,11 @@ function mirror() {
 
     PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
     for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
-        for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
+        for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
             for pkg in ${FAILEDPACKAGES}; do
-                if [[ $(echo ${package} | grep -q ${pkg}) ]]; then
+                echo $package | grep -qE $pkg
+                MATCH=$?
+                if [ ${MATCH} == 0 ]; then
                     echo
                     echo "Package: ${package}"
                     echo "DEBUG: skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
