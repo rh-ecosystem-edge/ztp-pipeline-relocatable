@@ -1,0 +1,21 @@
+ifndef::upstream[]
+{product-author}
+{product-version}
+:icons:
+:kebab: image:kebab.png[title="Options menu"]
+endif::[]
+:data-uri:
+:experimental:
+:toc: macro
+:toc-title:
+:imagesdir: images
+:prewrap!:
+:op-system-first: Red Hat Enterprise Linux CoreOS (RHCOS)
+:op-system: RHCOS
+:asb-name: OpenShift Ansible Broker
+:tsb-name: Template Service Broker
+:rh-openstack-first: Red Hat OpenStack Platform (RHOSP)
+:rh-openstack: RHOSP
+:cloud-redhat-com: Red Hat OpenShift Cluster Manager
+:op-system-base: RHEL
+:op-system-base-full: Red Hat Enterprise Linux (RHEL)

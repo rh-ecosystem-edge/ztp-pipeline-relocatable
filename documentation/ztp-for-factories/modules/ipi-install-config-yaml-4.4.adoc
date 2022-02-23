@@ -1,0 +1,65 @@
+apiVersion: v1
+xref:basedomain[basedomain]: +<domain>+
+metadata:
+  xref:metadataname[name]: +<cluster-name>+
+networking:
+  xref:machinecidr[machineCIDR]: +<public-cidr>+
+  networkType: OVNKubernetes
+compute:
+- xref:workername[name]: worker
+  xref:computereplicas[replicas]: 2 <1>
+controlPlane:
+  xref:controlplanename[name]: master
+  xref:controlplanereplicas[replicas]: 3
+  platform:
+    baremetal: {}
+platform:
+  baremetal:
+    xref:apivip[apiVIP]: +<api-ip>+
+    xref:ingressvip[ingressVIP]: +<wildcard-ip>+
+    xref:dnsVIP[dnsVIP]: +<dns-ip>+
+    xref:provisioningNetworkInterface[provisioningNetworkInterface]: +<NIC1>+
+    xref:provisioningNetworkCIDR[provisioningNetworkCIDR]: +<CIDR>+
+    xref:hoststable[hosts]:
+      - xref:name[name]: openshift-master-0
+        xref:role[role]: master
+        xref:bmc-addressing_{context}[bmc]:
+          address: ipmi://+<out-of-band-ip>+ # <2>
+          username: +<user>+
+          password: +<password>+
+        xref:bootMACAddress[bootMACAddress]: +<NIC1-mac-address>+
+        xref:hardwareProfile[hardwareProfile]: default
+      - xref:name[name]: openshift-master-1
+        xref:role[role]: master
+        xref:bmc-addressing_{context}[bmc]:
+          address: ipmi://+<out-of-band-ip>+
+          username: +<user>+
+          password: +<password>+
+        xref:bootMACAddress[bootMACAddress]: +<NIC1-mac-address>+
+        xref:hardwareProfile[hardwareProfile]: default
+      - xref:name[name]: openshift-master-2
+        xref:role[role]: master
+        xref:bmc-addressing_{context}[bmc]:
+          address: ipmi://<out-of-band-ip>
+          username: +<user>+
+          password: +<password>+
+        xref:bootMACAddress[bootMACAddress]: +<NIC1-mac-address>+
+        xref:hardwareProfile[hardwareProfile]: default
+      - xref:name[name]: openshift-worker-0
+        xref:role[role]: worker
+        xref:bmc-addressing_{context}[bmc]:
+          address: ipmi://+<out-of-band-ip>+
+          username: +<user>+
+          password: +<password>+
+        xref:bootMACAddress[bootMACAddress]: +<NIC1-mac-address>+
+        xref:hardwareProfile[hardwareProfile]: unknown
+      - xref:name[name]: openshift-worker-1
+        xref:role[role]: worker
+        xref:bmc-addressing_{context}[bmc]:
+          address: ipmi://+<out-of-band-ip>+
+          username: +<user>+
+          password: +<password>+
+        xref:bootMACAddress[bootMACAddress]: +<NIC1-mac-address>+
+        xref:hardwareProfile[hardwareProfile]: unknown
+xref:pullsecret[pullSecret]: '+<pull_secret>+'
+xref:sshkey[sshKey]: '+<ssh_pub_key>+'
