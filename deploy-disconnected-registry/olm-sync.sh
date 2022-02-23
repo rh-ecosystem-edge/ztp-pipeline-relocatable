@@ -112,16 +112,16 @@ function mirror() {
         ) 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
 
         if [ ${SALIDA} -eq 0 ]; then
-            echo ">>>> Mirroring index image finished: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
         else
-            echo ">>>> ERROR: Mirroring index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
             echo ">>>> ERROR: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi
         if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Mirroring index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
             echo ">>>> ERROR: Retry limit reached"
             exit 1
         fi
