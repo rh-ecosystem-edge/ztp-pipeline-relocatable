@@ -19,7 +19,7 @@ echo ">>>>>>>>>>>>>>"
 if ! (command -v jq &>/dev/null); then
     curl -Ls https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 >/usr/bin/jq
     chmod u+x /usr/bin/jq
-    
+
     if [ ! -d "/root/bin" ]; then
         mkdir -p /root/bin
         export PATH="${PATH}:/root/bin"

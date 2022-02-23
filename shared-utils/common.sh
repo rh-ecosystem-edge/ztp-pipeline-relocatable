@@ -12,7 +12,7 @@ function recover_spoke_rsa() {
     fi
 
     spoke=${1}
-    if [[ -z "${WORKDIR}" ]];then
+    if [[ -z ${WORKDIR} ]]; then
         WORKDIR=${OUTPUTDIR}/..
     fi
     export SPOKE_SAFE_FOLDER="${WORKDIR}/${spoke}"
@@ -37,7 +37,7 @@ function generate_rsa_spoke() {
 
     spoke=${1}
 
-    if [[ -z "${WORKDIR}" ]];then
+    if [[ -z ${WORKDIR} ]]; then
         WORKDIR=${OUTPUTDIR}/..
     fi
 
