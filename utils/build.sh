@@ -2,10 +2,10 @@
 # Builds documentation for each release in both HTML and PDF versions
 
 # Space separated version list to build
-RELEASES="4.10"
+RELEASES="4.9"
 
 # Devel releases for static documents and devel docs
-DEVRELEASE="4.10"
+DEVRELEASE="4.9"
 
 # STATIC Release
 STATICRELEASE="${DEVRELEASE}"
