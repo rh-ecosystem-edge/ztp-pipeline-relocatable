@@ -12,13 +12,13 @@ STATICRELEASE="${DEVRELEASE}"
 
 # Versioned documents
 DOCS=(
-    'ZTP-for-factories'
+
 )
 
 # Documents using latest
 STATIC=()
 
-DEV=(
+DEV=('ZTP-for-factories'
 
 )
 
