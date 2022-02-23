@@ -100,15 +100,16 @@ function mirror() {
 
     # Empty log file
     >${OUTPUTDIR}/mirror.log
+    SALIDA=1
 
     retry=1
     while [ ${retry} != 0 ]; do
         # Mirror redhat-operator index image
         echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
         (
-            opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} 2>&1
+            opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
             SALIDA=$?
-        ) | tee -a ${OUTPUTDIR}/mirror.log
+        ) 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
 
         if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Mirroring index image finished: ${OLM_DESTINATION_INDEX}"
@@ -130,9 +131,9 @@ function mirror() {
     while [ ${retry} != 0 ]; do
         echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
         (
-            GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} 2>&1
+            GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
             SALIDA=$?
-        ) | tee -a ${OUTPUTDIR}/mirror.log
+        ) 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
         if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
