@@ -123,3 +123,14 @@ export const passwordValidator = (pwd = ''): WizardStateType['password'] => {
   // We are validating password in PasswordRequirements component
   return ''; // passed
 };
+
+export const ipWithDots = (ip: string) =>
+  (
+    ip.substring(0, 3) +
+    '.' +
+    ip.substring(3, 6) +
+    '.' +
+    ip.substring(6, 9) +
+    '.' +
+    ip.substring(9, 12)
+  ).replaceAll(' ', '');

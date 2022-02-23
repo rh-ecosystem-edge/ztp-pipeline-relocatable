@@ -15,7 +15,8 @@ import {
 } from '@patternfly/react-tokens';
 
 import { useWizardProgressContext } from '../WizardProgress';
-import { PeristsErrorType, persist } from './persist';
+import { persist } from './persist';
+import { PeristsErrorType } from './types';
 
 import './PersistPageBottom.css';
 

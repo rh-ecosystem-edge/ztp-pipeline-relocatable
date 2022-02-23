@@ -17,7 +17,12 @@ export interface Service extends IResource {
   apiVersion: ServiceApiVersionType;
   kind: ServiceKindType;
   metadata: Metadata;
-  spec?: unknown;
+  spec?: {
+    loadBalancerIP?: string;
+    ports?: { name: string; protocol: string; port: number; targetPort: number }[];
+    selector?: Record<string, string>;
+    type?: string;
+  };
   status?: unknown;
 }
 

@@ -33,7 +33,7 @@ export const useWizardState = (): WizardStateType => {
     [setPassword],
   );
 
-  const [apiaddr, setApiaddr] = React.useState('            '); // TODO: set default here
+  const [apiaddr, setApiaddr] = React.useState('192168  7200');
   const [apiaddrValidation, setApiaddrValidation] = React.useState<IpSelectorValidationType>({
     valid: true,
     digits: [],
@@ -46,7 +46,7 @@ export const useWizardState = (): WizardStateType => {
     [setApiaddr],
   );
 
-  const [ingressIp, setIngressIp] = React.useState('            ');
+  const [ingressIp, setIngressIp] = React.useState('192168  7201');
   const [ingressIpValidation, setIngressIpValidation] =
     React.useState<IpTripletSelectorValidationType>({
       valid: true,

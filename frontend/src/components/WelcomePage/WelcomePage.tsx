@@ -8,6 +8,7 @@ import { WelcomeTop } from './WelcomeTop';
 import { WelcomeBottom } from './WelcomeBottom';
 
 export const WelcomePage: React.FC = () => {
+  // TODO: remove following, so far to force login; replace by loading date for Edit
   React.useEffect(() => {
     const doItAsync = async () => {
       const service = await getService({
