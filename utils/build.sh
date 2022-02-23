@@ -124,7 +124,7 @@ ${doc}-${release}:
 done
 
 rm -f website/latest
-ln -s ${release} website/latest
+# ln -s ${release} website/latest
 
 # TODO: CHECK why RC != 0 with no errors website (despite of gem)
 RC=0
