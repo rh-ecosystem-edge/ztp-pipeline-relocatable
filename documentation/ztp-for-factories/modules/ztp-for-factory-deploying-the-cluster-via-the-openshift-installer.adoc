@@ -1,0 +1,13 @@
+// Module included in the following assemblies:
+//
+// * installing/installing_bare_metal_ipi/ztp-for-factory-installation-workflow.adoc
+
+[id='deploying-the-cluster-via-the-openshift-installer_{context}']
+= Deploying the cluster via the {product-title} installer
+
+Run the {product-title} installer:
+
+[source,terminal]
+----
+[kni@provisioner ~]$ ./openshift-baremetal-install --dir ~/clusterconfigs --log-level debug create cluster
+----

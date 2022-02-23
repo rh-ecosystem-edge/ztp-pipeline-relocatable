@@ -1,10 +1,10 @@
 //local build
 
-[id="ipi-install-main"]
-= Deploying Installer Provisioned Infrastructure (IPI) on Bare Metal
+[id="ztp-for-factory-main"]
+= ZTP for Factory Workflow
 
 :imagesdir: images
-:context: ipi-install-installation-workflow
+:context: ztp-for-factory-installation-workflow
 :product-version: 4.8
 :upstream:
 :product-title: OpenShift Container Platform
@@ -12,20 +12,20 @@
 :op-system: RHCOS
 
 // Deploying IPI Baremetal
-include::ipi-install-overview.adoc[leveloffset=+1]
+include::ztp-for-factory-overview.adoc[leveloffset=+1]
 
 // Prerequisites
-include::ipi-install-prerequisites.adoc[leveloffset=+1]
+include::ztp-for-factory-prerequisites.adoc[leveloffset=+1]
 
 // Installation Workflow
-include::ipi-install-installation-workflow.adoc[leveloffset=+1]
+include::ztp-for-factory-installation-workflow.adoc[leveloffset=+1]
 
 //Post installation configuration.
 ifeval::[{product-version} > 4.7]
-include::ipi-install-post-installation-configuration.adoc[leveloffset=+1]
+include::ztp-for-factory-post-installation-configuration.adoc[leveloffset=+1]
 endif::[]
 
 //Day 2
-include::ipi-install-expanding-the-cluster.adoc[leveloffset=+1]
+include::ztp-for-factory-expanding-the-cluster.adoc[leveloffset=+1]
 
-include::ipi-install-troubleshooting.adoc[leveloffset=+1]
+include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]

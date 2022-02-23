@@ -2,7 +2,7 @@
 // TODO
 // * networking/TBD
 // * networking/load-balancing-openstack.adoc
-// * installing/installing_bare_metal_ipi/ipi-install-post-installation-configuration.adoc jowilkin
+// * installing/installing_bare_metal_ipi/ztp-for-factory-post-installation-configuration.adoc jowilkin
 // For thinking and reviewing, adding to networking/load-balancing-openstack.adoc
 
 [id="nw-osp-configuring-external-load-balancer_{context}"]

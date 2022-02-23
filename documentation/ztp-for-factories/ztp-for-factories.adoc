@@ -1,7 +1,7 @@
 [id="deploying-ipi-bare-metal"]
 = Deploying ZTP for Factory
 //include::modules/common-attributes.adoc[]
-:context: ipi-install
+:context: ztp-for-factory
 
 ifdef::watermark[]
 [IMPORTANT]

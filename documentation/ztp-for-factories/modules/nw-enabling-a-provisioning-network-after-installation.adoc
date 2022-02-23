@@ -1,6 +1,6 @@
 // This is included in the following assemblies:
 //
-// ipi-install-post-installation-configuration.adoc
+// ztp-for-factory-post-installation-configuration.adoc
 
 [id="enabling-a-provisioning-network-after-installation_{context}"]
 

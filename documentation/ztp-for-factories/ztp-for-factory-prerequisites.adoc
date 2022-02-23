@@ -1,0 +1,42 @@
+[id="ztp-for-factory-prerequisites"]
+= Prerequisites
+include::modules/common-attributes.adoc[]
+:context: ztp-for-factory-prerequisites
+
+toc::[]
+
+Installer-provisioned installation of {product-title} requires:
+
+. One provisioner node with {op-system-base-full} 8.x installed.
+. Three control plane nodes.
+. Baseboard Management Controller (BMC) access to each node.
+ifeval::[{product-version} > 4.5]
+. At least one network:
+.. One *required* routable network
+.. One *optional* network for provisioning nodes; and,
+.. One *optional* management network.
+endif::[]
+ifeval::[{product-version} < 4.6]
+. At least two networks:
+.. One *required* routable network
+.. One *required* network for provisioning nodes; and,
+.. One *optional* management network.
+endif::[]
+
+Before starting an installer-provisioned installation of {product-title}, ensure the hardware environment meets the following requirements.
+
+include::modules/ztp-for-factory-node-requirements.adoc[leveloffset=+1]
+ifeval::[{product-version} >= 4.6]
+include::modules/ztp-for-factory-firmware-requirements-for-installing-with-virtual-media.adoc[leveloffset=+1]
+endif::[]
+include::modules/ztp-for-factory-network-requirements.adoc[leveloffset=+1]
+ifdef::upstream[]
+ifeval::[{product-version} >= 4.5]
+// Include IPv6 information only in DRAFT documentation
+include::modules/ztp-for-factory-ipv6-network-requirements.adoc[leveloffset=+1]
+endif::[]
+endif::[]
+include::modules/ztp-for-factory-configuring-nodes.adoc[leveloffset=+1]
+include::modules/ztp-for-factory-out-of-band-management.adoc[leveloffset=+1]
+include::modules/ztp-for-factory-required-data-for-installation.adoc[leveloffset=+1]
+include::modules/ztp-for-factory-validation-checklist-for-nodes.adoc[leveloffset=+1]
