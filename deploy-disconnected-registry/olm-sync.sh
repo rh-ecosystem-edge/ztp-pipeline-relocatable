@@ -109,7 +109,10 @@ function mirror() {
         (
             opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
             SALIDA=$?
+            echo "INNERLOOP: Return code in SALIDA is ${SALIDA}"
         ) 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
+
+        echo "OUTERLOOP: Return code in SALIDA is ${SALIDA}"
 
         if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
