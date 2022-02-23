@@ -98,6 +98,9 @@ function mirror() {
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
 
+    # Empty log file
+    >${OUTPUTDIR}/mirror.log
+
     retry=1
     while [ ${retry} != 0 ]; do
         # Mirror redhat-operator index image
@@ -105,7 +108,7 @@ function mirror() {
         (
             opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} 2>&1
             SALIDA=$?
-        ) | tee ${OUTPUTDIR}/mirror.log
+        ) | tee -a ${OUTPUTDIR}/mirror.log
 
         if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Mirroring index image finished: ${OLM_DESTINATION_INDEX}"
@@ -129,7 +132,7 @@ function mirror() {
         (
             GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} 2>&1
             SALIDA=$?
-        ) | tee ${OUTPUTDIR}/mirror.log
+        ) | tee -a ${OUTPUTDIR}/mirror.log
         if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
@@ -149,7 +152,7 @@ function mirror() {
     # Mirror redhat-operator packages
     echo ">>>> Trying to push OLM images to Internal Registry"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
-    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 2>&1 | tee ${OUTPUTDIR}/mirror.log
+    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
 
     cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
 
