@@ -12,7 +12,7 @@ STATICRELEASE="${DEVRELEASE}"
 
 # Versioned documents
 DOCS=(
-    'ZTP-for-factories.adoc'
+    'ZTP-for-factories'
 )
 
 # Documents using latest
