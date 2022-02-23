@@ -1,0 +1,27 @@
+name: Deploy via Jekyll on GitHub  pages
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron:  '0 0 * * *'
+
+jobs:
+  jekyll:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2.3.4
+
+    # Use GitHub Actions' cache to shorten build times and decrease load on servers
+    - uses: actions/cache@v2.1.6
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+
+    - uses: iranzo/gh-pages-jekyll-action@1.0.1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        SOURCE_FOLDER: website

@@ -1,0 +1,15 @@
+[id="ztp-for-factory-overview"]
+= Overview
+include::modules/common-attributes.adoc[]
+:context: ztp-for-factory
+
+ifdef::watermark[]
+[IMPORTANT]
+====
+The ZTP for Factory Workflow  images and code described in this document are for *Developer Preview*
+purposes and are *not supported* by Red Hat at this time.
+====
+endif::[]
+
+
+ZTP for Factory Workflow provides a way for installing on top of {product-title} the required pieces that will enable it to be used as a disconnected Hub Cluster and able to deploy Spoke Clusters that will be configured as the last step of the installation as disconnected too.

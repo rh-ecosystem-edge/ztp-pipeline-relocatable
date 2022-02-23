@@ -1,0 +1,31 @@
+//local build
+
+[id="ztp-for-factory-main"]
+= ZTP for Factory Workflow
+
+:imagesdir: images
+:context: ztp-for-factory-installation-workflow
+:product-version: 4.8
+:upstream:
+:product-title: OpenShift Container Platform
+:op-system-first: Red Hat Enterprise Linux CoreOS (RHCOS)
+:op-system: RHCOS
+
+// Deploying IPI Baremetal
+include::ztp-for-factory-overview.adoc[leveloffset=+1]
+
+// Prerequisites
+include::ztp-for-factory-prerequisites.adoc[leveloffset=+1]
+
+// Installation Workflow
+include::ztp-for-factory-installation-workflow.adoc[leveloffset=+1]
+
+//Post installation configuration.
+ifeval::[{product-version} > 4.7]
+include::ztp-for-factory-post-installation-configuration.adoc[leveloffset=+1]
+endif::[]
+
+//Day 2
+include::ztp-for-factory-expanding-the-cluster.adoc[leveloffset=+1]
+
+include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]

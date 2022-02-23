@@ -12,7 +12,7 @@ function extract_kubeconfig() {
     ## Extract the Spoke kubeconfig and put it on the shared folder
     export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
     echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${SPOKE_KUBECONFIG}
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
 }
 
 function prepare_env() {
@@ -90,23 +90,7 @@ function mirror() {
     echo "Destination Registry: ${DESTINATION_REGISTRY}"
     echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
-    echo "Mirror Mode: ${MIRROR_MODE}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-
-    if [[ ${MIRROR_MODE} == 'auto' ]]; then
-        mirror_auto
-    elif [[ ${MIRROR_MODE} == 'skopeo' ]]; then
-        mirror_skopeo
-    elif [[ ${MIRROR_MODE} == 'all' ]]; then
-        mirror_auto
-        mirror_auto
-        #mirror_skopeo
-    fi
-}
-
-function mirror_auto() {
-    # Mirror redhat-operator index image
-    echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 
     ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
     ####### using the vfs driver, and this causes errors.
@@ -114,31 +98,93 @@ function mirror_auto() {
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
 
-    opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
+    # Empty log file
+    >${OUTPUTDIR}/mirror.log
+    SALIDA=1
 
-    echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
-    GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
+    retry=1
+    while [ ${retry} != 0 ]; do
+        # Mirror redhat-operator index image
+        echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 
+        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} >>${OUTPUTDIR}/mirror.log 2>&1
+        SALIDA=$?
+
+        if [ ${SALIDA} -eq 0 ]; then
+            echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
+            retry=0
+        else
+            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retrying in 10 seconds"
+            sleep 10
+            retry=$((retry + 1))
+        fi
+        if [ ${retry} == 12 ]; then
+            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retry limit reached"
+            exit 1
+        fi
+    done
+
+    retry=1
+    while [ ${retry} != 0 ]; do
+        echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
+
+        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+        GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} >>${OUTPUTDIR}/mirror.log 2>&1
+        SALIDA=$?
+
+        if [ ${SALIDA} -eq 0 ]; then
+            echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
+            retry=0
+        else
+            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retrying in 10 seconds"
+            sleep 10
+            retry=$((retry + 1))
+        fi
+        if [ ${retry} == 12 ]; then
+            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Retry limit reached"
+            exit 1
+        fi
+    done
+
+    # Mirror redhat-operator packages
     echo ">>>> Trying to push OLM images to Internal Registry"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
-    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100
-}
+    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 >>${OUTPUTDIR}/mirror.log 2>&1
 
-function mirror_skopeo() {
+    cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
+
     # Patch to avoid issues on mirroring
+    # In order to match both / and - in the package name we replace them by . that grep with regexp mode can understand
+    FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sed 's#-#.#g' | sed 's#olm/##g' | sed 's#/#.#g' | sort -u | xargs echo)
+
+    echo ">> Packages that have failed START"
+    echo ${FAILEDPACKAGES}
+    echo ">> Packages that have failed END"
+
     PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
     for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
         for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
-            echo
-            echo "Package: ${package}"
-            echo "DEBUG: skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
-            skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-            if [[ ${?} != 0 ]]; then
-                echo "Error on Image Copy, retrying after 5 seconds..."
-                sleep 10
-                skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-            fi
-            sleep 1
+            for pkg in ${FAILEDPACKAGES}; do
+                echo $package | grep -qE $pkg
+                MATCH=$?
+                if [ ${MATCH} == 0 ]; then
+                    echo
+                    echo "Package: ${package}"
+                    echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
+                    skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                    if [[ ${?} != 0 ]]; then
+                        echo "Error on Image Copy, retrying after 5 seconds..."
+                        sleep 10
+                        skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                    fi
+                    sleep 1
+                fi
+            done
         done
     done
 
@@ -154,9 +200,9 @@ function mirror_skopeo() {
 if [[ ${1} == 'hub' ]]; then
     prepare_env 'hub'
     create_cs 'hub'
-    trust_internal_registry 'hub' 
+    trust_internal_registry 'hub'
     if ! ./verify_olm_sync.sh 'hub'; then
-        mirror 'hub' 
+        mirror 'hub'
     else
         echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
     fi
@@ -172,7 +218,7 @@ elif [[ ${1} == "spoke" ]]; then
         else
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
-        prepare_env 'spoke' 
+        prepare_env 'spoke'
         create_cs 'spoke' ${spoke}
         trust_internal_registry 'hub'
         trust_internal_registry 'spoke' ${spoke}

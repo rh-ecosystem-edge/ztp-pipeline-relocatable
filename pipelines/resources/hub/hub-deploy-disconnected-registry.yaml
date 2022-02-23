@@ -33,8 +33,6 @@ spec:
         value: "deploy-disconnected-registry"
       - name: SHARED_DIR
         value: "shared-utils"
-      - name: MIRROR_MODE
-        value: "all"
 
   steps:
     - name: deploy-disconnected-registry
