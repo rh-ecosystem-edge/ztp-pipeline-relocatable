@@ -1,12 +1,12 @@
 [id="deploying-ipi-bare-metal"]
-= Deploying IPI Bare Metal
+= Deploying ZTP for Factory
 //include::modules/common-attributes.adoc[]
 :context: ipi-install
 
 ifdef::watermark[]
 [IMPORTANT]
 ====
-The Bare Metal IPI images and code described in this document are for *Developer Preview*
+The ZTP for Factory Workflow  images and code described in this document are for *Developer Preview*
 purposes and are *not supported* by Red Hat at this time.
 ====
 endif::[]
