@@ -106,13 +106,10 @@ function mirror() {
     while [ ${retry} != 0 ]; do
         # Mirror redhat-operator index image
         echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
-        (
-            opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}
-            SALIDA=$?
-            echo "INNERLOOP: Return code in SALIDA is ${SALIDA}"
-        ) 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
 
-        echo "OUTERLOOP: Return code in SALIDA is ${SALIDA}"
+        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} 2>&1 >>${OUTPUTDIR}/mirror.log
+        SALIDA=$?
 
         if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
@@ -133,10 +130,11 @@ function mirror() {
     retry=1
     while [ ${retry} != 0 ]; do
         echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
-        (
-            GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}
-            SALIDA=$?
-        ) 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
+
+        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+        GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} 2>&1 >>${OUTPUTDIR}/mirror.log
+        SALIDA=$?
+
         if [ ${SALIDA} -eq 0 ]; then
             echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
@@ -156,7 +154,7 @@ function mirror() {
     # Mirror redhat-operator packages
     echo ">>>> Trying to push OLM images to Internal Registry"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
-    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 2>&1 | tee -a ${OUTPUTDIR}/mirror.log
+    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 2>&1 >>${OUTPUTDIR}/mirror.log
 
     cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
 
