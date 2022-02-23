@@ -1,7 +1,7 @@
 # Site settings
 show_downloads: false
 title: 'ZTP for Factory Workflows'
-description: "Documents produced by "
+description: "Documents produced by Management Integration Team"
 permalink: pretty
 repository: rh-ecosystem-edge/ztp-pipeline-relocatable
 baseurl: /ztp-pipeline-relocatable/
