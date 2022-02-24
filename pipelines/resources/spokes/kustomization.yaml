@@ -3,6 +3,7 @@ resources:
   - spoke-deploy-icsp-spokes-post.yaml
   - spoke-deploy-icsp-spokes-pre.yaml
   - spoke-deploy-metallb.yaml
+  - spoke-deploy-metallb-sno.yaml
   - spoke-deploy-ocs.yaml
   - spoke-deploy-spoke.yaml
   - spoke-deploy-spoke-sno.yaml

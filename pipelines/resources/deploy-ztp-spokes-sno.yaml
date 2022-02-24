@@ -72,7 +72,7 @@ spec:
   # Deploy MetalLB
   - name: deploy-metallb
     taskRef:
-      name: spoke-deploy-metallb
+      name: spoke-deploy-metallb-sno
     params:
       - name: spokes-config
         value: $(params.spokes-config)
