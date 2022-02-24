@@ -63,8 +63,6 @@ spec:
         value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
-      - name: sno
-        value: true
     runAfter:
       - pre-flight
     workspaces:
