@@ -117,7 +117,7 @@ function render_manifests() {
     echo ">> Rendering Manifests for Spoke ${index}"
 
     # Render NNCP Manifests
-    master = 0
+    master=0
     export NODENAME=kubeframe-spoke-${index}-master-${master}
     echo "Rendering NNCP for: ${NODENAME}"
     export NIC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
