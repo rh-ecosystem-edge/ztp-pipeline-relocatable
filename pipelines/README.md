@@ -18,12 +18,13 @@
 ## Workflow
 
 ### Bootstrap
-
-- Execute the bootstrap script file `pipelines/bootstrap.sh ${KUBECONFIG}` you can do that using this command:
+- Export your KUBECONFIG env variable previously
+- Execute the bootstrap script file `pipelines/bootstrap.sh` you can do that using this command:
+- If you want launch a specific branch, you could pass the first argument with the name of the branch. If you don't pass any argument, it will use the default branch (master/main).
 
 ```
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/tekton-pipeline/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
+curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/tekton-pipeline/pipelines/bootstrap.sh | bash -s -- 
 ```
 
 - This is the output:
