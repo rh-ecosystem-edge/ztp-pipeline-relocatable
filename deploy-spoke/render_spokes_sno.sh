@@ -5,6 +5,7 @@ set -o pipefail
 set -o nounset
 set -m
 
+echo "Doing SNO SPOKE RENDER"
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
