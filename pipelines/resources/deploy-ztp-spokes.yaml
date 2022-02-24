@@ -52,23 +52,6 @@ spec:
       - name: ztp
         workspace: ztp
 
-          #  # Restore Hub Config
-          #  - name: restore-hub-config
-          #    taskRef:
-          #      name: spoke-restore-hub-config
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #    runAfter:
-          #      - pre-flight
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
-
   # Deploy Spokes
   - name: deploy-spokes
     taskRef:
@@ -80,6 +63,8 @@ spec:
         value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
+      - name: sno
+        value: false
     runAfter:
       - pre-flight
     workspaces:

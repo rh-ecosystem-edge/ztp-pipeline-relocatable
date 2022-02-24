@@ -1,9 +1,9 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: deploy-ztp-hub
+  name: deploy-ztp-spoke-sno
 spec:
-  description: Tekton Pipeline to deploy Kubeframe Hub Cluster
+  description: Tekton Pipeline to deploy Kubeframe Spoke SNO cluster
   params:
     - name: git-url
       type: string
@@ -52,10 +52,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy HTTPD Server
-  - name: deploy-httpd-server
+  # Deploy Spokes
+  - name: deploy-spokes
     taskRef:
-      name: hub-deploy-httpd-server
+      name: spoke-deploy-spoke
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -63,16 +63,18 @@ spec:
         value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
+      - name: sno
+        value: true
     runAfter:
       - pre-flight
     workspaces:
       - name: ztp
         workspace: ztp
 
-  # Deploy Disconnected Registry + Sync
-  - name: deploy-disconnected-registry
+  # Deploy MetalLB
+  - name: deploy-metallb
     taskRef:
-      name: hub-deploy-disconnected-registry
+      name: spoke-deploy-metallb
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -81,15 +83,16 @@ spec:
       - name: ztp-container-image
         value: $(params.ztp-container-image)
     runAfter:
-      - deploy-httpd-server
+      - deploy-icsp-spokes-pre
     workspaces:
       - name: ztp
         workspace: ztp
 
-  # Deploy RHACM
-  - name: deploy-acm
+
+  # Detach Spoke Cluster
+  - name: detach-cluster
     taskRef:
-      name: hub-deploy-acm
+      name: spoke-detach-cluster
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -98,42 +101,7 @@ spec:
       - name: ztp-container-image
         value: $(params.ztp-container-image)
     runAfter:
-      - deploy-disconnected-registry
+      - deploy-workers
     workspaces:
       - name: ztp
         workspace: ztp
-
-  # Deploy ICSP Hub
-  - name: deploy-icsp-hub
-    taskRef:
-      name: hub-deploy-icsp-hub
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-    runAfter:
-      - deploy-acm
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # Deploy Hub Config
-  - name: deploy-hub-config
-    taskRef:
-      name: hub-deploy-hub-config
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-    runAfter:
-      - deploy-icsp-hub
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
