@@ -52,22 +52,20 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
             git pull
-            kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            kcli create plan -k -f create-vm-sno.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
+
         else
             echo "Metal3 + ipv4 + disconnected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            
         fi
     else
         echo "Metal3 + ipv6 + disconnected"
         t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-        kcli create plan --force --paramfile=lab_ipv6.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 
     fi
 else
     echo "Without Metal3 + ipv4 + connected"
-    kcli create kube openshift --force --paramfile lab-withoutMetal3.yml -P tag="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 fi
 
 # Spokes.yaml file generation
@@ -80,7 +78,7 @@ CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
 # Default configuration
 cat <<EOF >>spokes.yaml
 config:
-  clusterimageset: 'openshift-v4.9.13'
+  clusterimageset: openshift-v4.9.13
   OC_OCP_VERSION: '4.9'
   OC_OCP_TAG: '4.9.13-x86_64'
   OC_RHCOS_RELEASE: '49.84.202110081407-0'
@@ -93,8 +91,37 @@ cat <<EOF >>spokes.yaml
 spokes:
 EOF
 
-kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com -i 192.168.150.252
+for spoke in $(seq 0 $((CLUSTERS - 1))); do
+    cat <<EOF >>spokes.yaml
+  - spoke${spoke}-cluster:
+EOF
+      master=0
+      # Stanza generation for each master
+      MASTERUID=$(kcli info vm spoke${spoke}-cluster-sno${master} -f id -v)
+      cat <<EOF >>spokes.yaml
+      master${master}:
+        nic_ext_dhcp: enp1s0
+        nic_int_static: enp2s0
+        mac_ext_dhcp: "ee:ee:ee:ee:${master}${spoke}:${master}e"
+        mac_int_static: "aa:aa:aa:aa:${master}${spoke}:${master}a"
+        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
+        bmc_user: "amorgant"
+        bmc_pass: "alknopfler"
+        storage_disk:
+          - vda
+          - vdb
+          - vdc
+          - vdd
+EOF
+    done
+
+done
+
+kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
+kcli create dns -n bare-net kubeframe-registry-quay-kubeframe-registry.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
+kcli create dns -n bare-net noobaa-mgmt-openshift-storage.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
+kcli create dns -n bare-net api.spoke0-cluster.alklabs.com -i 192.168.150.201
+kcli create dns -n bare-net api-int.spoke0-cluster.alklabs.com -i 192.168.150.201
 
 echo ">>>> EOF"
 echo ">>>>>>>>"

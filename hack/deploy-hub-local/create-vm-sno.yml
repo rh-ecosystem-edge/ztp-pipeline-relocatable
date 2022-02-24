@@ -1,0 +1,23 @@
+parameters:
+  nodes: 1
+  clusters: 2 
+{% for i in range(0, clusters) %}
+{% for j in range(0, nodes) %}
+spoke{{ i }}-cluster-sno{{ j }}:
+  uefi_legacy: true
+  start: false
+  memory: 64000
+  numcpus: 24
+  nets:
+  - name: bare-net
+    mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
+  - name: kubeframe
+    nic: enp2s0
+    mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
+  disks:
+  - size: 200
+  - size: 200
+  - size: 200
+  - size: 200
+{% endfor %}
+{% endfor %}
