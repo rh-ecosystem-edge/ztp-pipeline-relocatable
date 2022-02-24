@@ -116,7 +116,7 @@ fi
 export BASEDIR=$(dirname "$0")
 export BRANCH='main'
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
-export KUBECONFIG_HUB="${1}"
+export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
 
 get_tkn
