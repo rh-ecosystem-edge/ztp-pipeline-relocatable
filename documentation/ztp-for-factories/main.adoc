@@ -26,6 +26,6 @@ include::ztp-for-factory-post-installation-configuration.adoc[leveloffset=+1]
 endif::[]
 
 //Day 2
-include::ztp-for-factory-expanding-the-cluster.adoc[leveloffset=+1]
+
 
 include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]
