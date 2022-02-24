@@ -108,11 +108,6 @@ function deploy_openshift_pipelines() {
     check_resource "deployment" "tekton-operator-webhook" "Available" "openshift-operators"
 }
 
-if [[ $# -lt 1 ]]; then
-    echo "The first argument should be the Kubeconfig Location for your Hub Cluster"
-    exit 1
-fi
-
 export BASEDIR=$(dirname "$0")
 export BRANCH='main'
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
