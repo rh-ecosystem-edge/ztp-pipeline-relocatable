@@ -17,9 +17,23 @@ Installer-provisioned installation of {product-title} requires:
 
 Of course, the requirements for the installation of {product-title} are also to be satisfied on the hardware involved in the installation.
 
+= The Spokes YAML file
 
+The `spokes.yaml` file contains all the configuration information required about the setup.
 
-### The Spokes YAMl file
+There's an example in the repo at <https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/examples/config.yaml>
+
+As you can check, it has two major sections `config` and `spokes`.
+
+== The Config section
+The ´config´ section contains the configuration for the installation, that is, image set to use, versions, tags, etc
+
+== The Spokes section
+The ´spokes´ section contains the configuration for the spokes.
+
+For each one of the defined spokes `spoke-1-name` (configurable), the file repeats the structure and it defines which are the vaules for the nics connected to the external network or the internal one, both with NIC name and with MAC address, as well as the required parameters for the Out of Band management controller.
+
+Each spoke is expected to have 3 masters and 1 worker node.
 
 ## Lab testing
 
