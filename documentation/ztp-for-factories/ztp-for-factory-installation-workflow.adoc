@@ -4,35 +4,3 @@ include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-installation-workflow
 
 toc::[]
-
-include::modules/ztp-for-factory-installing-rhel-on-the-provisioner-node.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-preparing-the-provisioner-node-for-openshift-install.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-retrieving-the-openshift-installer.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-extracting-the-openshift-installer.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-creating-an-rhcos-images-cache.adoc[leveloffset=+1]
-
-ifdef::upstream[]
-include::ztp-for-factory-configuration-files.adoc[leveloffset=+1]
-endif::[]
-
-ifndef::upstream[]
-include::installing/installing_bare_metal_ipi/ztp-for-factory-configuration-files.adoc[leveloffset=+1]
-endif::[]
-
-include::modules/ztp-for-factory-creating-a-disconnected-registry.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-deploying-routers-on-worker-nodes.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-validation-checklist-for-installation.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-deploying-the-cluster-via-the-openshift-installer.adoc[leveloffset=+1]
-
-include::modules/ztp-for-factory-following-the-installation.adoc[leveloffset=+1]
-
-ifeval::[{product-version}>4.6]
-include::modules/ztp-for-factory-verifying-static-ip-address-configuration.adoc[leveloffset=+1]
-endif::[]

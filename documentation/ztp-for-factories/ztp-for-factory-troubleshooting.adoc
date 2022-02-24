@@ -26,17 +26,3 @@ image:flow4.png[Flow-Diagram-4]
 
 _Workflow 4 of 4_ illustrates a troubleshooting workflow from
 xref:ztp-for-factory-troubleshooting-api-not-accessible_{context}[ a non-accessible API] to a xref:ztp-for-factory-troubleshooting-reviewing-the-installation_{context}[validated installation].
-
-
-include::modules/ztp-for-factory-troubleshooting-install-config.adoc[leveloffset=+1]
-include::modules/ztp-for-factory-troubleshooting-bootstrap-vm.adoc[leveloffset=+1]
-include::modules/ztp-for-factory-troubleshooting-bootstrap-vm-cannot-boot.adoc[leveloffset=+2]
-include::modules/ztp-for-factory-troubleshooting-bootstrap-vm-inspecting-logs.adoc[leveloffset=+2]
-include::modules/ztp-for-factory-troubleshooting-cluster-nodes-will-not-pxe.adoc[leveloffset=+1]
-include::modules/ztp-for-factory-troubleshooting-api-not-accessible.adoc[leveloffset=+1]
-include::modules/ztp-for-factory-troubleshooting-cleaning-up-previous-installations.adoc[leveloffset=+1]
-include::modules/ztp-for-factory-troubleshooting-registry-issues.adoc[leveloffset=+1]
-include::modules/ztp-for-factory-troubleshooting-misc-issues.adoc[leveloffset=+1]
-include::modules/ztp-for-factory-troubleshooting-failed-ignition-during-firstboot.adoc[leveloffset=+2]
-include::modules/ztp-for-factory-troubleshooting-ntp-out-of-sync.adoc[leveloffset=+2]
-include::modules/ztp-for-factory-troubleshooting-reviewing-the-installation.adoc[leveloffset=+1]
