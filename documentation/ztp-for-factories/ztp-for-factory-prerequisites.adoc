@@ -34,35 +34,3 @@ The ´spokes´ section contains the configuration for the spokes.
 For each one of the defined spokes `spoke-1-name` (configurable), the file repeats the structure and it defines which are the vaules for the nics connected to the external network or the internal one, both with NIC name and with MAC address, as well as the required parameters for the Out of Band management controller.
 
 Each spoke is expected to have 3 masters and 1 worker node.
-
-## Lab testing
-
-This section will cover two aspects of the testing, the HUB and the Spokes
-
-### Hub
-
-We internally use the files in the folder `hack/deploy` to virtually setup an environment to test the pipeline.
-
-The first step is the `build-hub.sh` which builds the hab deployment with all the requirements (hub, DNS, PVC's, spokes.yaml, etc.) that will be later used with OpenShift Pipelines to perform all the tests.
-
-### Spokes
-
-## Usage
-
-### OpenShift Pipelines installation
-
-First we need to install OpenShift Pipelines Operator that will be used for running the pipeline, this is achieved by using a bootstrapping script that will install the Operator and the CR to initiate the deployment.
-
-This script will also create the required pipeline definitions and tasks.
-
-### Pipeline execution Hub
-
-```sh
-tkn XXXXX
-```
-
-### Pipeline execution Spoke
-
-### Monitoring
-
-You can follow the pipeline execution via XXXXX

@@ -29,3 +29,6 @@ endif::[]
 
 
 include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]
+
+
+include::ztp-for-factory-labtesting.adoc[leveloffset=+1]

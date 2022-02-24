@@ -4,3 +4,11 @@ include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-installation-workflow
 
 toc::[]
+
+
+
+### OpenShift Pipelines installation
+
+First we need to install OpenShift Pipelines Operator that will be used for running the pipeline, this is achieved by using a bootstrapping script that will install the Operator and the CR to initiate the deployment.
+
+This script will also create the required pipeline definitions and tasks.
