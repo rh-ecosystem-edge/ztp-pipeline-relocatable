@@ -55,7 +55,7 @@ spec:
   # Deploy Spokes
   - name: deploy-spokes
     taskRef:
-      name: spoke-deploy-spoke
+      name: spoke-deploy-spoke-sno
     params:
       - name: spokes-config
         value: $(params.spokes-config)
