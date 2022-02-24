@@ -7,7 +7,10 @@ toc::[]
 
 
 
-### OpenShift Pipelines installation
+== Installation workflow
+
+
+=== OpenShift Pipelines installation
 
 First we need to install OpenShift Pipelines Operator that will be used for running the pipeline, this is achieved by using a bootstrapping script that will install the Operator and the CR to initiate the deployment.
 
