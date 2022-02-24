@@ -1,5 +1,5 @@
 [id="ztp-for-factory-installation-workflow"]
-= Setting up the environment for an OpenShift installation
+= Workflow descprition
 include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-installation-workflow
 
