@@ -48,4 +48,4 @@ spec:
         #!/usr/bin/bash
 
         cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
-        ./deploy.sh
+        ./deploy-sno.sh
