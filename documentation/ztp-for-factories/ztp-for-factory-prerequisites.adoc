@@ -8,28 +8,16 @@ toc::[]
 Installer-provisioned installation of {product-title} requires:
 
 . OpenShift Cluster with 3 masters
-. PVC's defined
-. All Cluster Operators in good health status
+    . All Cluster Operators in good health status
+. PVC's defined for the HUB
 . Ability to add DNS entries
+    . `httpd-server.apps.CLUSTER.DOMAIN`
+    . `kubeframe-registry-kubeframe-registry.apps.CLUSTER.DOMAIN`
 . `spokes.yaml` file with the configuration for the spokes
 
 Of course, the requirements for the installation of {product-title} are also to be satisfied on the hardware involved in the installation.
 
-Before starting an installer-provisioned installation of {product-title}, ensure the hardware environment meets the following requirements.
 
-
-
-
-
-## Introduction
-
-
-## Requirements
-
-- Hub with 3 nodes and all Cluster Operators ready
-- PVCs for the Hub
-- ## DNS and DHCP configured with the entries for:
-- `spokes.yaml` file with the configuration for the spokes
 
 ### The Spokes YAMl file
 
