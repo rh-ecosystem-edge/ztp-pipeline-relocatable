@@ -1,0 +1,21 @@
+.final-page-sumamary {
+  margin-top: var(--pf-global--spacer--4xl);
+  margin-right: var(--pf-global--spacer--xl);
+  margin-left: var(--pf-global--spacer--xl);
+}
+
+.final-page-sumamary__item-first {
+  padding-bottom: var(--pf-global--spacer--2xl);
+}
+
+.final-page-sumamary__item {
+  padding-bottom: var(--pf-global--spacer--lg);
+}
+
+.final-page-summary__icon-success {
+  margin-right: var(--pf-global--spacer--xs);
+}
+
+.final-page-summary__settings {
+  font-weight: 600;
+}

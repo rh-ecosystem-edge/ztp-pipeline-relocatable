@@ -10,6 +10,7 @@ import {
   DomainPage,
   SshPublicKeyPage,
   PersistPage,
+  FinalPage,
 } from '../../components';
 import Redirect from '../../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
@@ -32,6 +33,7 @@ export const Wizard: React.FC = () => {
         <Route path="/domain" element={<DomainPage />} />
         <Route path="/sshkey" element={<SshPublicKeyPage />} />
         <Route path="/persist" element={<PersistPage />} />
+        <Route path="/final" element={<FinalPage />} />
         <Route path="*" element={<Redirect to="/wizard/welcome" />} />
       </Routes>
     </WizardProgressContextProvider>

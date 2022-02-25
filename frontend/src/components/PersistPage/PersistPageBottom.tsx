@@ -19,6 +19,7 @@ import { persist } from './persist';
 import { PeristsErrorType } from './types';
 
 import './PersistPageBottom.css';
+import { DELAY_BEFORE_FINAL_REDIRECT } from './constants';
 
 export const PersistPageBottom: React.FC = () => {
   const navigate = useNavigate();
@@ -32,8 +33,13 @@ export const PersistPageBottom: React.FC = () => {
     }
     setRetry(false);
     setError(undefined);
-    persist(state, setError);
-  }, [retry, setError, state]);
+
+    persist(state, setError, () => {
+      setTimeout(() => {
+        navigate(`/wizard/final`);
+      }, DELAY_BEFORE_FINAL_REDIRECT);
+    });
+  }, [retry, setError, state, navigate]);
 
   return (
     <Stack className="persist-page-bottom" hasGutter>
