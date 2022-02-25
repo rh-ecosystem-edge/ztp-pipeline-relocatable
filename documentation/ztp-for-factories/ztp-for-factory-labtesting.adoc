@@ -9,17 +9,16 @@ toc::[]
 == Lab Testing
 
 
-## Lab testing
 
 This section will cover two aspects of the testing, the HUB and the Spokes
 
-### Hub
+=== Hub
 
 We internally use the files in the folder `hack/deploy` to virtually setup an environment to test the pipeline.
 
 The first step is the `build-hub.sh` which builds the hab deployment with all the requirements (hub, DNS, PVC's, spokes.yaml, etc.) that will be later used with OpenShift Pipelines to perform all the tests.
 
-### Spokes
+=== Spokes
 
 ## Usage
 

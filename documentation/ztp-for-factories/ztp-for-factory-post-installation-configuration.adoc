@@ -1,5 +1,5 @@
 [id="ztp-for-factory-post-installation-configuration"]
-= Installer-provisioned post-installation configuration
+= Post-Installation Configuration
 include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-post-installation-configuration
 

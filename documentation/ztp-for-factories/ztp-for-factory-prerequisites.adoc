@@ -7,30 +7,98 @@ toc::[]
 
 Installer-provisioned installation of {product-title} requires:
 
-. OpenShift Cluster with 3 masters
+- OpenShift Cluster with 3 masters
     . All Cluster Operators in good health status
-. PVC's defined for the HUB
-. Ability to add DNS entries
+- PVC's defined for the HUB
+- DNS entries configured
     . `httpd-server.apps.CLUSTER.DOMAIN`
     . `kubeframe-registry-kubeframe-registry.apps.CLUSTER.DOMAIN`
-. `spokes.yaml` file with the configuration for the spokes
+- `spokes.yaml` file with the configuration for the spokes
 
 Of course, the requirements for the installation of {product-title} are also to be satisfied on the hardware involved in the installation.
 
 == The Spokes YAML file
 
-The `spokes.yaml` file contains all the configuration information required about the setup.
+The ```spokes.yaml``` file contains all the configuration information required about the setup.
 
 There's an example in the repo at <https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/examples/config.yaml>
 
-As you can check, it has two major sections `config` and `spokes`.
+As you can check, it has two major sections `config` and `spokes` that will be explained in the next section.
 
-=== The Config section
-The ´config´ section contains the configuration for the installation, that is, image set to use, versions, tags, etc
+=== Spokes.yaml walktrough
 
-=== The Spokes section
-The ´spokes´ section contains the configuration for the spokes.
+Following, you can see a commented configuration file with links to the explanation to each relevant file section and configuration value.
 
-For each one of the defined spokes `spoke-1-name` (configurable), the file repeats the structure and it defines which are the vaules for the nics connected to the external network or the internal one, both with NIC name and with MAC address, as well as the required parameters for the Out of Band management controller.
+[source,yaml, subs="verbatim,macros,attributes"]
+ifdef::backend-pdf[[listing]]
+----
+ifeval::[{product-version} > 1.0]
+include::ztp-for-factory-spokes-yaml.adoc[]
+endif::[]
+----
 
-Each spoke is expected to have 3 masters and 1 worker node.
+
+.Required parameters
+|===
+|Parameter/Section | Description
+
+
+| [[config]] `config`
+| This section marks the cluster configuration values that will be used for installation or configuration in both Hub and Spokes.
+
+| [[clusterimageset]] `clusterimageset`
+| This setting defines the Cluster Image Set used for the HUB and the Spokes
+
+| [[OC_OCP_VERSION]] `OC_OCP_VERSION`
+| Defines the OpenShift version to be used for the installation.
+
+| [[OC_OCP_TAG]] `OC_OCP_TAG`
+| This setting defines version tag to use
+
+| [[OC_RHCOS_RELEASE]] `OC_RHCOS_RELEASE`
+| This is the release to be used
+
+| [[OC_ACM_VERSION]] `OC_ACM_VERSION`
+| Specifies which ACM version should be used for the deployment
+
+| [[OC_OCS_VERSION]] `OC_OCS_VERSION`
+| This defines the OCS version to be used
+
+| [[spokes]] `spokes`
+| This section is the one containing the configuration for each one of the Spoke Clusters
+
+
+|[[spokename]] `spokename`
+| This option is configurable and will be the name to be used for the spoke cluster
+
+|[[mastername]] `mastername`
+| This value must match `master0`, `master1` or `master2`.
+
+|[[nic_ext_dhcp]] `nic_ext_dhcp`
+| NIC connected to the external DHCP
+
+|[[nic_int_static]] `nic_int_static`
+| NIC interface name connected to the internal network
+
+|[[mac_ext_dhcp]] `mac_ext_dhcp`
+| MAC Address for the NIC connected to the external DHCP network
+
+|[[mac_int_static]] `mac_int_static`
+| MAC Address for the NIC connected to the internal static network
+
+|[[bmc_url]] `bmc_url`
+| URL for the Baseboard Management Controller
+
+|[[bmc_user]] `bmc_user`
+| Username for the BMC
+
+|[[bmc_pass]] `bmc_pass`
+| Password for the BMC
+
+|[[storage_disk]] `storage_disk`
+| List of disk available in the node to be used for storage
+
+|[[workername]] `workername`
+| Hardcoded name as `worker0` for the worker node
+
+|===

@@ -15,12 +15,15 @@ This process doesn't fail... if it does.. you can keep the broken pieces!
 tkn XXXXX
 ```
 
+```console
 [root@flaper87-baremetal02 ~]# oc get pod -n spoke-deployer
 NAME READY STATUS RESTARTS AGE
 deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85 2/4 NotReady 0 6m32s
 deploy-ztp-hub-run-96tnl-deploy-httpd-server-rlrwq-pod-wsh5k 0/1 Completed 0 6m41s
 deploy-ztp-hub-run-96tnl-fetch-from-git-zl7m5-pod-fck69 0/1 Completed 0 6m59s
 deploy-ztp-hub-run-96tnl-pre-flight-rgdtr-pod-2gmh6 0/1 Completed 0 6m50s
+```
+```console
 [root@flaper87-baremetal02 ~]# oc debug pod/deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85 -n spoke-deployer
 Defaulting container name to step-deploy-disconnected-registry.
 Use 'oc describe pod/deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85-debug -n spoke-deployer' to see all of the containers in this pod.
@@ -29,3 +32,4 @@ Starting pod/deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85-deb
 Pod IP: 10.134.0.60
 If you don't see a command prompt, try pressing enter.
 sh-4.4# cd /workspace/ztp/
+```

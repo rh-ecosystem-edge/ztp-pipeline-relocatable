@@ -15,8 +15,6 @@ endif::[]
 ZTP for Factory Workflow provides a way for installing on top of {product-title} the required pieces that will enable it to be used as a disconnected Hub Cluster and able to deploy Spoke Clusters that will be configured as the last step of the installation as disconnected too.
 
 
-
-
 This repository contains the scripts and OpenShift Pipelines definitions used to configure a provided OpenShift cluster (reachable via `KUBECONFIG`) for use with the ZTP for Factory.
 
 The pipeline will then cover several aspects:
@@ -24,7 +22,7 @@ The pipeline will then cover several aspects:
 - Create required components( ACM, Registry, etc...)
 - Deploy and mirror a Registry with all required images and operators
 - Configure ACM to provision the spokes (based on the `spokes.yaml` file) cluster and deploy all required components on it.
-- deploy Advanced Cluster Management (ACM) components
+- Deploy Advanced Cluster Management (ACM) components
 - etc...
 
 The pipeline has two parts:
@@ -32,4 +30,4 @@ The pipeline has two parts:
 - One that deploys the HUB cluster configuration (based on existing requirements, like OCP deployed with ODF and volumes created)
 - Another that deploys Spoke clusters based on the configuration `spokes.yaml` file using a HUB cluster configured with the previous pipeline.
 
-The actual workflow can be checked at the files inside the `pipelines` folder.
+The actual workflow and its details can be checked at the files inside the `pipelines` folder.

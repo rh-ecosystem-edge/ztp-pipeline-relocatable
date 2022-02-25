@@ -1,5 +1,5 @@
 ---
-modified: "2022-02-25T12:17:54.009Z"
+modified: "2022-02-25T12:32:54.665Z"
 ---
 
 _Table of contents_
@@ -53,17 +53,19 @@ Regarding the documentation, the script `build.sh` generates a `yaml` containing
 
   ```console
   cd website
-  mkdir .jekyll-cache
+  mkdir .jekyll-cache _site
+  touch Gemfile.lock
   podman run -d --name ztpfactory -p 4000:4000 -v $(pwd):/srv/jekyll:Z jekyll/jekyll jekyll serve --watch --future
   ```
 
-  **NOTE**: Be sure to `cd` into the _website_ directory before running the above command as the Z at the end of the volume (-v) will relabel its contents so it can be written from within the container, like running `chcon -Rt svirt_sandbox_file_t -l s0:c1,c2` yourself.
+  **NOTE**: Be sure to `cd` into the _website_ directory before running the above command as the Z at the end of the volume (-v) will relabel its contents so it can be written from within the container, like running `chcon -Rt svirt_sandbox_file_t -l s0:c1,c2 website` yourself.
 
 - On an OS without `SELinux`:
 
   ```console
   cd website
-  mkdir .jekyll-cache
+  mkdir .jekyll-cache _site
+  touch Gemfile.lock
   podman run -d --name ztpfactory -p 4000:4000 -v $(pwd):/srv/jekyll jekyll/jekyll jekyll serve --watch --future
   ```
 
