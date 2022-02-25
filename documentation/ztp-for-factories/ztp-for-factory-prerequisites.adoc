@@ -14,6 +14,7 @@ Installer-provisioned installation of {product-title} requires:
     . `httpd-server.apps.CLUSTER.DOMAIN`
     . `kubeframe-registry-kubeframe-registry.apps.CLUSTER.DOMAIN`
 - `spokes.yaml` file with the configuration for the spokes
+- A set of systems for Spoke usage with 3 masters and 1 worker
 
 Of course, the requirements for the installation of {product-title} are also to be satisfied on the hardware involved in the installation.
 

@@ -2,10 +2,10 @@
 # Builds documentation for each release in both HTML and PDF versions
 
 # Space separated version list to build
-RELEASES="4.9"
+RELEASES="1.0"
 
 # Devel releases for static documents and devel docs
-DEVRELEASE="4.9"
+DEVRELEASE="1.0"
 
 # STATIC Release
 STATICRELEASE="${DEVRELEASE}"
@@ -18,8 +18,8 @@ DOCS=(
 # Documents using latest
 STATIC=()
 
-DEV=('ZTP-for-factories'
-
+DEV=(
+    'ZTP-for-factories'
 )
 
 # Get latest version for 'static' documents

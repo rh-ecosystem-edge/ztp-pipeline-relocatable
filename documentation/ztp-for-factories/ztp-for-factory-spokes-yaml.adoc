@@ -2,15 +2,15 @@ xref:config[config]:
   xref:clusterimageset[clusterimageset]: openshift-v4.9.0
   xref:OC_OCP_VERSION[OC_OCP_VERSION]: "4.9"
   xref:OC_OCP_TAG[OC_OCP_TAG]: "4.9.0-x86_64"
-  xref:OC_RHCOS_RELEASE[OC_RHCOS_RELEASE]: "49.84.202110081407-0" # TODO automate it to get it automated using binary
+  xref:OC_RHCOS_RELEASE[OC_RHCOS_RELEASE]: "49.84.202110081407-0"
   xref:OC_ACM_VERSION[OC_ACM_VERSION]: "2.4"
   xref:OC_OCS_VERSION[OC_OCS_VERSION]: "4.8"
 
 xref:spokes[spokes]:
   - xref:spokename[spoke1-name]:
       xref:mastername[master0]:
-        xref:nic_ext_dhcp[nic_ext_dhcp]: eno4 # ext_dhcp -> DHCP
-        xref:nic_int_static[nic_int_static]: eno5 # int_static -> Internal IP for cluster communication
+        xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
+        xref:nic_int_static[nic_int_static]: eno5
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:10"
         xref:mac_int_static[mac_int_static]: "aa:ss:dd:ee:b1:10"
         xref:bmc_url[bmc_url]: "<url bmc>"
