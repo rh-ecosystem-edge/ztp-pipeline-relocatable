@@ -28,12 +28,12 @@ As you can check, it has two major sections `config` and `spokes` that will be e
 
 === Spokes.yaml walktrough
 
-Following, you can see a commented configuration file with links to the explanation to each relevant file section and configuration value.
+Check next table for  a commented configuration file with links to the explanation to each relevant file section and configuration value.
 
 [source,yaml, subs="verbatim,macros,attributes"]
 ifdef::backend-pdf[[listing]]
 ----
-ifeval::[{product-version} > 1.0]
+ifeval::[{product-version} >= 1.0]
 include::ztp-for-factory-spokes-yaml.adoc[]
 endif::[]
 ----
