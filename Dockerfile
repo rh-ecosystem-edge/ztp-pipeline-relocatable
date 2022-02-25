@@ -18,6 +18,9 @@ RUN yarn build
 
 #############
 FROM registry.access.redhat.com/ubi8/nodejs-16-minimal:latest
+USER root
+RUN microdnf install -y httpd-tools ; microdnf clean all
+
 WORKDIR /app
 ENV NODE_ENV production
 

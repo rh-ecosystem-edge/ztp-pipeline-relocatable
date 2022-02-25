@@ -1,4 +1,4 @@
-import { getResource } from '.';
+import { getResource } from './resource-request';
 import { Metadata } from './metadata';
 import { IResource, IResourceDefinition } from './resource';
 

@@ -8,6 +8,8 @@ import { WizardStateType } from './Wizard/types';
 const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
 const SSH_PUBLIC_KEY_REGEX =
   /^(ssh-rsa|ssh-ed25519|ecdsa-[-a-z0-9]*) AAAA[0-9A-Za-z+/]+[=]{0,3}( .+)?$/;
+
+// keep following in sync with the backend
 const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
 
 export const addIpDots = (addressWithoutDots: string): string => {
@@ -17,7 +19,6 @@ export const addIpDots = (addressWithoutDots: string): string => {
     address += addressWithoutDots.substring(6, 9) + '.';
     address += addressWithoutDots.substring(9);
 
-    console.log('-- addressWithoutDots: ', addressWithoutDots, ' to ', address);
     return address;
   }
 

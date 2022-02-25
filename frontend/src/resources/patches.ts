@@ -1,1 +1,1 @@
-export type PatchType = { op: 'remove' | 'add' | 'replace'; path: string; value?: string };
+export type PatchType = { op: 'remove' | 'add' | 'replace'; path: string; value?: unknown };

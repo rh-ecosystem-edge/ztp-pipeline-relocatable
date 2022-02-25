@@ -5,6 +5,7 @@ import cors from 'cors';
 
 import { login, loginCallback, logout } from './k8s/oauth';
 import { liveness, ping, proxy, readiness, SA_TOKEN_FILE, serve } from './endpoints';
+import { htpasswd } from './endpoints/htpasswd';
 
 const PORT = process.env.BACKEND_PORT || 3001;
 
@@ -79,7 +80,9 @@ const start = () => {
   app.get(`/login/callback`, loginCallback);
   app.get(`/logout`, logout);
 
+  app.post(`/htpasswd`, htpasswd);
   app.all(`/api/*`, proxy);
+  app.all(`/apis/*`, proxy);
 
   app.get(`/*`, serve);
 
