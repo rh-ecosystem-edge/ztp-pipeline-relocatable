@@ -1,24 +1,22 @@
 [id="ztp-for-factory-troubleshooting"]
-= Troubleshooting
+= Lab testing
 include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-troubleshooting
 
 toc::[]
 
 
-== Lab Testing
-
-
-
 This section will cover two aspects of the testing, the HUB and the Spokes
 
-=== Hub
+== Hub
 
 We internally use the files in the folder `hack/deploy` to virtually setup an environment to test the pipeline.
 
-The first step is the `build-hub.sh` which builds the hab deployment with all the requirements (hub, DNS, PVC's, spokes.yaml, etc.) that will be later used with OpenShift Pipelines to perform all the tests.
+The first step is the `build-hub.sh` which builds the lab deployment with all the requirements (hub, DNS, PVC's, `spokes.yaml`, etc.) that will be later used with OpenShift Pipelines to perform all the tests.
 
-=== Spokes
+== Spokes
+
+For the spokes we use the script `build-spokes.sh`
 
 ## Usage
 
