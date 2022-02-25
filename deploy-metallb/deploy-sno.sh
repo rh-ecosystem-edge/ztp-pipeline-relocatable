@@ -291,7 +291,7 @@ for spoke in ${ALLSPOKES}; do
 
     # Waiting a bit to avoid webhook readyness issue
     # Internal error occurred: failed calling webhook "nodenetworkconfigurationpolicies-mutate.nmstate.io"
-    sleep 10
+    sleep 60
 
     master=0
     NODENAME="${spoke}-nncp-kubeframe-spoke-${index}-master-${master}"
