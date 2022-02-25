@@ -267,6 +267,9 @@ for spoke in ${ALLSPOKES}; do
     echo ">> Deploying NMState and MetalLB for ${spoke}"
     ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
     sleep 2
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "sed -i 's/kubeframe-catalog/redhat-operators/g' manifests/03-NMS-Subscription.yaml"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "sed -i 's/kubeframe-catalog/redhat-operators/g' manifests/03-MLB-Subscription.yaml"
+    sleep 2
     ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
     sleep 10
     echo
