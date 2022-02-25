@@ -1,14 +1,18 @@
+---
+modified: "2022-02-25T15:08:03.937Z"
+---
+
 # ZTP Using OpenShift Pipelines
 
 ## Prereqs
 
-- You need at least a hub cluster deployed and functional and an accessible Kubeconfig file
-- The clsuter should be IPv4/Connected
-- An Spokes file (you can create one using [this](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/blob/tekton-pipeline/examples/config.yaml) as a sample.
+- You need at least a hub cluster deployed and functional and an accessible `KUBECONFIG` file
+- The cluster should be IPv4/Connected
+- An Spokes file (you can create one using [this](https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/examples/config.yaml) as a sample.
 
 ## Quickstart
 
-- First, you need to execute the script using curl command
+- First, you need to execute the script using `curl` command
 
 ## Clarifications
 
@@ -21,14 +25,14 @@
 
 - Execute the bootstrap script file `pipelines/bootstrap.sh ${KUBECONFIG}` you can do that using this command:
 
-```
+```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/tekton-pipeline/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
 ```
 
 - This is the output:
 
-```
+```console
 >>>> Creating NS spoke-deployer and giving permissions to SA spoke-deployer
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 namespace/spoke-deployer configured
