@@ -1,5 +1,5 @@
 ---
-modified: "2022-02-23T14:09:07.275Z"
+modified: "2022-02-25T12:17:54.009Z"
 ---
 
 _Table of contents_
@@ -99,18 +99,3 @@ If now, for example we want to have an additional document (not versioned) for `
 - Add `Troubleshooting` with a space to `STATIC`, so that the script loop that generates it will take it from there.
 
 The new doc, `Troubleshooting` will appear in the `Additional` section and will get a `-a release=4.5` when generated, this allows for example the example above, where the `Deployment` guide can be live previewed before moving it into the `Documentation` section.
-
-[root@flaper87-baremetal02 ~]# oc get pod -n spoke-deployer
-NAME READY STATUS RESTARTS AGE
-deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85 2/4 NotReady 0 6m32s
-deploy-ztp-hub-run-96tnl-deploy-httpd-server-rlrwq-pod-wsh5k 0/1 Completed 0 6m41s
-deploy-ztp-hub-run-96tnl-fetch-from-git-zl7m5-pod-fck69 0/1 Completed 0 6m59s
-deploy-ztp-hub-run-96tnl-pre-flight-rgdtr-pod-2gmh6 0/1 Completed 0 6m50s
-[root@flaper87-baremetal02 ~]# oc debug pod/deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85 -n spoke-deployer
-Defaulting container name to step-deploy-disconnected-registry.
-Use 'oc describe pod/deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85-debug -n spoke-deployer' to see all of the containers in this pod.
-
-Starting pod/deploy-ztp-hub-run-96tnl-deploy-disconnected-registry-4m2-5ts85-debug, command was: /tekton/tools/entrypoint -wait_file /tekton/downward/ready -wait_file_content -post_file /tekton/tools/0 -termination_path /tekton/termination -step_metadata_dir /tekton/steps/step-deploy-disconnected-registry -step_metadata_dir_link /tekton/steps/0 -docker-cfg=pipeline-dockercfg-w6xlw -entrypoint /tekton/scripts/script-0-x6mfw --
-Pod IP: 10.134.0.60
-If you don't see a command prompt, try pressing enter.
-sh-4.4# cd /workspace/ztp/
