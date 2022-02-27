@@ -16,14 +16,14 @@ import {
 
 import { useWizardProgressContext } from '../WizardProgress';
 import { persist } from './persist';
-import { PeristsErrorType } from './types';
+import { PersistErrorType } from './types';
 
 import './PersistPageBottom.css';
 import { DELAY_BEFORE_FINAL_REDIRECT } from './constants';
 
 export const PersistPageBottom: React.FC = () => {
   const navigate = useNavigate();
-  const [error, setError] = React.useState<PeristsErrorType>(/* undefined */);
+  const [error, setError] = React.useState<PersistErrorType>(/* undefined */);
   const [retry, setRetry] = React.useState(true);
   const { state } = useWizardProgressContext();
 

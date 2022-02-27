@@ -1,0 +1,17 @@
+.settings-page-sumamary__form {
+  height: 100%;
+}
+
+.settings-page-sumamary {
+  padding-top: var(--pf-global--spacer--2xl);
+  margin-right: var(--pf-global--spacer--xl);
+  margin-left: var(--pf-global--spacer--xl);
+}
+
+.settings-page-sumamary__item {
+  padding-bottom: var(--pf-global--spacer--lg);
+}
+
+.settings-page-sumamary__item__footer {
+  margin-bottom: var(--pf-global--spacer--lg);
+}

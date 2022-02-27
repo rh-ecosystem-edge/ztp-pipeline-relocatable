@@ -6,10 +6,10 @@ import { getService, Service } from '../../resources/service';
 import { ipWithDots } from '../utils';
 import { MISSING_VALUE, RESOURCE_CREATE_TITLE, RESOURCE_PATCH_TITLE } from './constants';
 import { SERVICE_TEMPLATE_API, SERVICE_TEMPLATE_METALLB_INGRESS } from './resourceTemplates';
-import { PeristsErrorType } from './types';
+import { PersistErrorType } from './types';
 
 const saveService = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   _serviceIp: string,
   template: Service,
   actionName: string,
@@ -80,12 +80,12 @@ const saveService = async (
 };
 
 export const saveIngress = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   ingressIp: string,
 ): Promise<boolean> =>
   saveService(setError, ingressIp, SERVICE_TEMPLATE_METALLB_INGRESS, 'ingress IP');
 
 export const saveApi = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   apiip: string,
 ): Promise<boolean> => saveService(setError, apiip, SERVICE_TEMPLATE_API, 'API IP');

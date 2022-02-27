@@ -1,20 +1,28 @@
 import React from 'react';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_100 as dangerColor } from '@patternfly/react-tokens';
+import { TextInput } from '@patternfly/react-core';
 
-import { IpTripletIndex, IpTripletProps } from '../types';
-import { IpTripletSelectorValidationType } from '../types';
+import { IpTripletIndex, IpTripletProps, IpTripletSelectorValidationType } from '../types';
 import { IpTriplet } from '../IpTriplet';
+import { ipWithDots } from '../utils';
 
 import './IpTripletsSelector.css';
 
 export const IpTripletsSelector: React.FC<{
+  id?: string;
   address: string;
   setAddress: IpTripletProps['setAddress'];
   validation: IpTripletSelectorValidationType;
-}> = ({ address, setAddress, validation }) => {
+  isNarrow?: boolean;
+  isDisabled?: boolean;
+}> = ({ id = 'ip-triplet', address, setAddress, validation, isNarrow, isDisabled }) => {
   const [focus, setFocus] = React.useState<IpTripletIndex | null>(0);
   const validated = validation.triplets || [];
+
+  if (isDisabled) {
+    return <TextInput id={id} value={ipWithDots(address)} isDisabled={true} />;
+  }
 
   return (
     <>
@@ -23,12 +31,14 @@ export const IpTripletsSelector: React.FC<{
           {position > 0 ? '.' : ''}
           <IpTriplet
             key={position}
+            id={`${id}-${position}`}
             position={position}
             address={address}
             setAddress={setAddress}
             focus={focus}
             setFocus={setFocus}
             validated={validated[position]}
+            isNarrow={isNarrow}
           />
         </React.Fragment>
       ))}

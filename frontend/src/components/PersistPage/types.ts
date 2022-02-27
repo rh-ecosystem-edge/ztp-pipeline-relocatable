@@ -1,4 +1,4 @@
-export type PeristsErrorType = {
+export type PersistErrorType = {
   title: string;
   message: string;
 } | null;

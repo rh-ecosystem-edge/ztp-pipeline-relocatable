@@ -6,15 +6,16 @@ import { IpTripletIndex, IpTripletProps } from '../types';
 import './IpTriplet.css';
 
 export const IpTriplet: React.FC<IpTripletProps> = ({
+  id,
   position,
   focus,
   address,
   setAddress,
   setFocus,
   validated,
+  isNarrow,
 }) => {
   const input = React.createRef<HTMLInputElement>();
-  const fieldId = `ip-triplet-${position}`;
   const [isFocused, setIsFocused] = React.useState(false);
 
   const onChange = React.useCallback(
@@ -57,6 +58,12 @@ export const IpTriplet: React.FC<IpTripletProps> = ({
     clzName += ' ip-triplet-error';
   }
 
+  if (isNarrow) {
+    clzName += ' ip-triplet__narrow';
+  } else {
+    clzName += ' ip-triplet__wide';
+  }
+
   let zeroedValue = address.substring(position * 3, (position + 1) * 3);
   if (!isFocused && zeroedValue.trim().length > 0) {
     zeroedValue = zeroedValue.replaceAll(' ', '0');
@@ -65,7 +72,7 @@ export const IpTriplet: React.FC<IpTripletProps> = ({
   return (
     <TextInput
       ref={input}
-      id={fieldId}
+      id={id}
       className={clzName}
       value={zeroedValue}
       type="text"

@@ -12,10 +12,10 @@ import {
   RESOURCE_PATCH_TITLE,
 } from './constants';
 import { CLUSTER_ADMIN_ROLE_BINDING, HTPASSWD_SECRET } from './resourceTemplates';
-import { PeristsErrorType } from './types';
+import { PersistErrorType } from './types';
 
 const getHtpasswdData = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   username: string,
   password: string,
 ): Promise<string | undefined> => {
@@ -46,7 +46,7 @@ const getHtpasswdData = async (
 };
 
 const createSecret = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   htPasswdDataB64: string,
 ): Promise<Secret | undefined> => {
   try {
@@ -65,7 +65,7 @@ const createSecret = async (
 };
 
 const patchIDP = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   oauth: OAuth,
   secret: Secret,
 ): Promise<OAuth | undefined> => {
@@ -104,7 +104,7 @@ const patchIDP = async (
 
 // Mimics: oc adm policy add-cluster-role-to-user cluster-admin [USER]
 const bindClusterAdminRole = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   username: string,
 ): Promise<IResource | undefined> => {
   try {
@@ -123,7 +123,7 @@ const bindClusterAdminRole = async (
 };
 
 export const persistIdentityProvider = async (
-  setError: (error: PeristsErrorType) => void,
+  setError: (error: PersistErrorType) => void,
   username: string,
   password: string,
 ): Promise<boolean> => {

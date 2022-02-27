@@ -29,8 +29,8 @@ export const IngressIpSelector: React.FC = () => {
         />
       </StackItem>
       <StackItem isFilled>
-        {!validation.valid && (
-          <div className="address-validation-failed">Provided IP address is incorrect.</div>
+        {validation.message && (
+          <div className="address-validation-failed">{validation.message}</div>
         )}
       </StackItem>
     </Stack>

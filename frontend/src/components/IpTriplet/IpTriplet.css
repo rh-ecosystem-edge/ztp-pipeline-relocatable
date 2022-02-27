@@ -1,8 +1,15 @@
 .ip-triplet {
-  width: 6rem;
   text-align: center;
   margin-left: var(--pf-global--spacer--xs);
   margin-right: var(--pf-global--spacer--xs);
+}
+
+.ip-triplet__wide {
+  width: 6rem;
+}
+
+.ip-triplet__narrow {
+  width: 4rem;
 }
 
 .ip-triplet-success {

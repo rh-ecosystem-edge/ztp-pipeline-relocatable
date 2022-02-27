@@ -90,6 +90,9 @@ export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValida
     validation.triplets.push(valid ? 'success' : 'default');
   }
 
+  if (!validation.valid) {
+    validation.message = 'Provided IP address is incorrect.';
+  }
   return validation;
 };
 
