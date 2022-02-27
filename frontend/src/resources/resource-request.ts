@@ -416,13 +416,6 @@ export async function fetchRetry<T>(options: {
           if (status.code === 401) {
             // 401 is returned from kubernetes in a Status object if token is not valid
             navigateToLogin();
-            /*
-            if (process.env.NODE_ENV === 'production') {
-              window.location.reload();
-            } else {
-              window.location.href = `${getBackendUrl()}/login`;
-            }
-            */
             throw new ResourceError(status.message as string, status.code as number);
           } else if (ResourceErrorCodes.includes(status.code as number)) {
             throw new ResourceError(status.message as string, status.code as number);
@@ -445,15 +438,6 @@ export async function fetchRetry<T>(options: {
         case 401: // 401 is returned from the backend if no token cookie is on request
           if (!options.disableRedirectUnauthorizedLogin) {
             navigateToLogin();
-
-            /*
-            if (process.env.NODE_ENV === 'production') {
-              // TODO: verify that!!!
-              window.location.reload();
-            } else {
-              window.location.href = `${getBackendUrl()}/login`;
-            }
-            */
           }
           throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized);
         case 404:

@@ -62,7 +62,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean }> = ({ isIni
             fieldId="apiaddr"
             label="API address"
             isRequired={true}
-            helperTextInvalid={apiaddrValidation.message || 'TODO: foooo'}
+            helperTextInvalid={apiaddrValidation.message}
             validated={apiaddrValidation.valid ? 'default' : 'error'}
           >
             <IpTripletsSelector
@@ -80,7 +80,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean }> = ({ isIni
             fieldId="ingressip"
             label="Ingress address"
             isRequired={true}
-            helperTextInvalid={ingressIpValidation.message || 'TODO: baaaaar'}
+            helperTextInvalid={ingressIpValidation.message}
             validated={ingressIpValidation.valid ? 'default' : 'error'}
           >
             <IpTripletsSelector
@@ -98,7 +98,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean }> = ({ isIni
             fieldId="domain"
             label="Domain"
             isRequired={false}
-            helperTextInvalid={domainValidation || 'baaaaar'}
+            helperTextInvalid={domainValidation}
             validated={!domainValidation ? 'default' : 'error'}
           >
             <TextInput
