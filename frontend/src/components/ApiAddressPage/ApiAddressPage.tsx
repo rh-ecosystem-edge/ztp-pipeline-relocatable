@@ -6,13 +6,12 @@ import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
 import { ApiAddressSelector } from './ApiAddressSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 export const ApiAddressPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('apiaddr'), [setActiveStep]);
-  const {
-    state: { apiaddr, apiaddrValidation },
-  } = useWizardProgressContext();
+  const { apiaddr, apiaddrValidation } = useK8SStateContext();
 
   return (
     <Page>

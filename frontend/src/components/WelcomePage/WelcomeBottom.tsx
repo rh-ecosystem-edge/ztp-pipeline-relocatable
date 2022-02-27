@@ -1,18 +1,51 @@
 import React from 'react';
-import { Button, ButtonVariant, Stack, StackItem, Title } from '@patternfly/react-core';
+import {
+  Alert,
+  AlertVariant,
+  Button,
+  ButtonVariant,
+  Stack,
+  StackItem,
+  Title,
+} from '@patternfly/react-core';
+import { useNavigate } from 'react-router-dom';
 
 import './WelcomeBottom.css';
 
-export const WelcomeBottom: React.FC = () => (
-  <Stack className="welcome-bottom" hasGutter>
-    <StackItem>
-      <Title headingLevel="h1">KubeFrame</Title>
-    </StackItem>
-    <StackItem isFilled>To set up the configuration of your KubeFrame, click Continue.</StackItem>
-    <StackItem>
-      <Button component="a" href="/wizard/username" variant={ButtonVariant.primary}>
-        Continue
-      </Button>
-    </StackItem>
-  </Stack>
-);
+export const WelcomeBottom: React.FC<{ error?: string; nextPage?: string }> = ({
+  error,
+  nextPage,
+}) => {
+  const navigate = useNavigate();
+
+  return (
+    <Stack className="welcome-bottom" hasGutter>
+      <StackItem>
+        <Title headingLevel="h1">KubeFrame</Title>
+      </StackItem>
+      <StackItem isFilled>To set up the configuration of your KubeFrame, click Continue.</StackItem>
+      {error && (
+        <StackItem>
+          <Alert
+            title="Connection failed"
+            variant={AlertVariant.danger}
+            isInline
+            className="welcome-bottom__error"
+          >
+            {error}
+          </Alert>
+        </StackItem>
+      )}
+      <StackItem>
+        <Button
+          component="a"
+          onClick={() => navigate(nextPage || '/welcome')}
+          variant={ButtonVariant.primary}
+          isDisabled={!nextPage}
+        >
+          Continue
+        </Button>
+      </StackItem>
+    </Stack>
+  );
+};

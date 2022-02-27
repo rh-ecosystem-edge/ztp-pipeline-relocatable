@@ -2,29 +2,34 @@ import React from 'react';
 
 import { Page } from '../Page';
 import { ContentTwoRows } from '../ContentTwoRows';
-import { getService } from '../../resources/service';
 
 import { WelcomeTop } from './WelcomeTop';
 import { WelcomeBottom } from './WelcomeBottom';
+import { useK8SStateContext } from '../K8SStateContext';
+import { initialDataLoad } from './initialDataLoad';
 
 export const WelcomePage: React.FC = () => {
-  // TODO: remove following, so far to force login; replace by loading date for Edit
-  React.useEffect(() => {
-    const doItAsync = async () => {
-      const service = await getService({
-        name: 'router-internal-default',
-        namespace: 'openshift-ingress',
-      }).promise;
-      console.log('--- Service: ', service);
-    };
+  const [nextPage, setNextPage] = React.useState<string>();
+  const [error, setError] = React.useState<string>();
+  const { handleSetApiaddr, handleSetIngressIp /* TODO: domain */ } = useK8SStateContext();
 
-    doItAsync();
-  }, []);
+  // Load initial data, switch between Inital vs. Edit flow
+  React.useEffect(
+    () => {
+      initialDataLoad({ setNextPage, setError, handleSetApiaddr, handleSetIngressIp });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      /* just once */
+    ],
+  );
 
   return (
     <Page>
-      {/* <ContentTwoCols left={left} right={right} /> */}
-      <ContentTwoRows top={<WelcomeTop />} bottom={<WelcomeBottom />} />
+      <ContentTwoRows
+        top={<WelcomeTop />}
+        bottom={<WelcomeBottom error={error} nextPage={nextPage} />}
+      />
     </Page>
   );
 };

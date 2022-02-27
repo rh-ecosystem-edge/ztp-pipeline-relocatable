@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route } from 'react-router';
 
 import {
-  WelcomePage,
   UsernamePage,
   PasswordPage,
   ApiAddressPage,
@@ -15,17 +14,12 @@ import {
 import Redirect from '../../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
 
-import { useWizardState } from './wizardState';
-
 import './Wizard.css';
 
 export const Wizard: React.FC = () => {
-  const wizardState = useWizardState();
-
   return (
-    <WizardProgressContextProvider state={wizardState}>
+    <WizardProgressContextProvider>
       <Routes>
-        <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/username" element={<UsernamePage />} />
         <Route path="/password" element={<PasswordPage />} />
         <Route path="/apiaddr" element={<ApiAddressPage />} />
@@ -34,7 +28,7 @@ export const Wizard: React.FC = () => {
         <Route path="/sshkey" element={<SshPublicKeyPage />} />
         <Route path="/persist" element={<PersistPage />} />
         <Route path="/final" element={<FinalPage />} />
-        <Route path="*" element={<Redirect to="/wizard/welcome" />} />
+        <Route path="*" element={<Redirect to="/welcome" />} />
       </Routes>
     </WizardProgressContextProvider>
   );

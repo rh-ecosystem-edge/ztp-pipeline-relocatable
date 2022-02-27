@@ -10,21 +10,18 @@ import {
 } from '@patternfly/react-core';
 import { EyeIcon, EyeSlashIcon } from '@patternfly/react-icons';
 
-import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
-
+import { HelperTextInvalid } from '../HelperTextInvalid';
+import { useK8SStateContext } from '../K8SStateContext';
 import { PasswordRequirements } from './PasswordRequirements';
 
 import './PasswordSelector.css';
-import { HelperTextInvalid } from '../HelperTextInvalid';
 
 const fieldId = 'input-password';
 const fieldId2 = 'input-password-check';
 
 export const PasswordSelector: React.FC = () => {
-  const {
-    state: { password, handleSetPassword, passwordValidation: validation },
-  } = useWizardProgressContext();
+  const { password, handleSetPassword, passwordValidation: validation } = useK8SStateContext();
   const [isVisible, setVisible] = React.useState(false);
 
   const [passwordCheck, setPasswordCheck] = React.useState('');

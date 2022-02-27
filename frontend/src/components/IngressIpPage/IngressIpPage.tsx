@@ -7,13 +7,12 @@ import { useWizardProgressContext } from '../WizardProgress/WizardProgressContex
 import { WizardFooter } from '../WizardFooter';
 
 import { IngressIpSelector } from './IngressIpSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 export const IngressIpPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('ingressip'));
-  const {
-    state: { ingressIp, ingressIpValidation },
-  } = useWizardProgressContext();
+  const { ingressIp, ingressIpValidation } = useK8SStateContext();
 
   return (
     <Page>

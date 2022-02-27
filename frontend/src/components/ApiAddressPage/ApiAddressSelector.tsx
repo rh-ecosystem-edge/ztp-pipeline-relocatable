@@ -1,16 +1,14 @@
 import React from 'react';
 import { Stack, StackItem, Title } from '@patternfly/react-core';
 
-import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
 import { IpTripletsSelector } from '../IpTripletsSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 import './ApiAddressSelector.css';
 
 export const ApiAddressSelector: React.FC = () => {
-  const {
-    state: { apiaddr, handleSetApiaddr, apiaddrValidation: validation },
-  } = useWizardProgressContext();
+  const { apiaddr, handleSetApiaddr, apiaddrValidation: validation } = useK8SStateContext();
 
   return (
     <Stack className="wizard-content" hasGutter>

@@ -9,3 +9,7 @@
 .welcome-bottom:last-child {
   padding-bottom: 3rem;
 }
+
+.welcome-bottom__error {
+  width: 40rem;
+}

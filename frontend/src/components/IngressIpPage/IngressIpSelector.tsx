@@ -1,14 +1,12 @@
 import React from 'react';
 import { Stack, StackItem, Title } from '@patternfly/react-core';
 
-import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
 import { IpTripletsSelector } from '../IpTripletsSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 export const IngressIpSelector: React.FC = () => {
-  const {
-    state: { ingressIp, handleSetIngressIp, ingressIpValidation: validation },
-  } = useWizardProgressContext();
+  const { ingressIp, handleSetIngressIp, ingressIpValidation: validation } = useK8SStateContext();
 
   return (
     <Stack className="wizard-content" hasGutter>

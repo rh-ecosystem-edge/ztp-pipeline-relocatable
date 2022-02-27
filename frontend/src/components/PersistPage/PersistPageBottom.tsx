@@ -14,18 +14,18 @@ import {
   global_success_color_100 as successColor,
 } from '@patternfly/react-tokens';
 
-import { useWizardProgressContext } from '../WizardProgress';
 import { persist } from './persist';
 import { PersistErrorType } from './types';
+import { DELAY_BEFORE_FINAL_REDIRECT } from './constants';
+import { useK8SStateContext } from '../K8SStateContext';
 
 import './PersistPageBottom.css';
-import { DELAY_BEFORE_FINAL_REDIRECT } from './constants';
 
 export const PersistPageBottom: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = React.useState<PersistErrorType>(/* undefined */);
   const [retry, setRetry] = React.useState(true);
-  const { state } = useWizardProgressContext();
+  const state = useK8SStateContext();
 
   React.useEffect(() => {
     if (!retry) {

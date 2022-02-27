@@ -1,5 +1,5 @@
+import { K8SStateContextData } from './K8SStateContext';
 import { IpTripletSelectorValidationType } from './types';
-import { WizardStateType } from './Wizard/types';
 
 const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
 const SSH_PUBLIC_KEY_REGEX =
@@ -39,14 +39,14 @@ export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValida
   return validation;
 };
 
-export const domainValidator = (domain: string): WizardStateType['domainValidation'] => {
+export const domainValidator = (domain: string): K8SStateContextData['domainValidation'] => {
   if (!domain || domain?.match(DNS_NAME_REGEX)) {
     return ''; // passed ; optional - pass for empty as well
   }
   return "Valid domain wasn't provided";
 };
 
-export const sshPubKeyValidator = (key: string): WizardStateType['sshPubKeyValidation'] => {
+export const sshPubKeyValidator = (key: string): K8SStateContextData['sshPubKeyValidation'] => {
   if (!key || key.match(SSH_PUBLIC_KEY_REGEX)) {
     return ''; // passed
   }
@@ -54,7 +54,7 @@ export const sshPubKeyValidator = (key: string): WizardStateType['sshPubKeyValid
   return "Valid public SSH key wasn't provided";
 };
 
-export const usernameValidator = (username = ''): WizardStateType['username'] => {
+export const usernameValidator = (username = ''): K8SStateContextData['username'] => {
   if (username.length >= 54) {
     return 'Valid username can not be longer than 54 characters.';
   }
@@ -66,12 +66,12 @@ export const usernameValidator = (username = ''): WizardStateType['username'] =>
   return "Valid username wasn't provided";
 };
 
-export const passwordValidator = (pwd = ''): WizardStateType['password'] => {
+export const passwordValidator = (pwd = ''): K8SStateContextData['password'] => {
   // We are validating password in PasswordRequirements component
   return ''; // passed
 };
 
-export const ipWithDots = (ip: string) =>
+export const ipWithDots = (ip: string): string =>
   (
     ip.substring(0, 3) +
     '.' +
@@ -81,3 +81,19 @@ export const ipWithDots = (ip: string) =>
     '.' +
     ip.substring(9, 12)
   ).replaceAll(' ', '');
+
+export const ipWithoutDots = (ip?: string): string => {
+  if (ip) {
+    const triplets = ip.split('.');
+    if (triplets.length === 4) {
+      let result = triplets[0].padStart(3, ' ');
+      result += triplets[1].padStart(3, ' ');
+      result += triplets[2].padStart(3, ' ');
+      result += triplets[3].padStart(3, ' ');
+      return result;
+    }
+  }
+
+  console.info('Unrecognized ip address format "', ip, '"');
+  return '            '; // 12 characters
+};

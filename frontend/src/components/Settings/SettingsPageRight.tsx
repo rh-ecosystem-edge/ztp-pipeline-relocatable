@@ -11,17 +11,28 @@ import {
   TextInput,
   Title,
 } from '@patternfly/react-core';
-import { useWizardState } from '../Wizard/wizardState';
+
 import { persist, PersistErrorType } from '../PersistPage';
+import { IpTripletsSelector } from '../IpTripletsSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 import './SettingsPageRight.css';
-import { ipWithDots } from '../utils';
-import { IpTripletsSelector } from '../IpTripletsSelector';
 
-export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean }> = ({ isInitialEdit }) => {
+export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError?: string }> = ({
+  isInitialEdit,
+  initialError,
+}) => {
   const [isEdit, setEdit] = React.useState(isInitialEdit);
-  const [error, setError] = React.useState<PersistErrorType>();
-  const state = useWizardState();
+  const [_error, setError] = React.useState<PersistErrorType>();
+  const state = useK8SStateContext();
+
+  const error: PersistErrorType | undefined = initialError
+    ? {
+        title: 'Connection failed',
+        message: initialError,
+      }
+    : _error;
+
   const {
     apiaddr,
     apiaddrValidation,

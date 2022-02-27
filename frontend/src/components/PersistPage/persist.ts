@@ -1,10 +1,10 @@
-import { WizardStateType } from '../Wizard/types';
+import { K8SStateContextData } from '../K8SStateContext';
 import { persistIdentityProvider } from './persistIdentityProvider';
 import { saveApi, saveIngress } from './persistServices';
 import { PersistErrorType } from './types';
 
 export const persist = async (
-  state: WizardStateType,
+  state: K8SStateContextData,
   setError: (error: PersistErrorType) => void,
   onSuccess: () => void,
 ) => {

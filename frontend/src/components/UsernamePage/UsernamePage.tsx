@@ -6,13 +6,12 @@ import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
 import { UsernameSelector } from './UsernameSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 export const UsernamePage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('username'), [setActiveStep]);
-  const {
-    state: { username, usernameValidation: validation },
-  } = useWizardProgressContext();
+  const { username, usernameValidation: validation } = useK8SStateContext();
 
   return (
     <Page>

@@ -6,7 +6,7 @@ import {
   global_success_color_100 as successColor,
 } from '@patternfly/react-tokens';
 
-import { useWizardProgressContext } from '../WizardProgress';
+import { useK8SStateContext } from '../K8SStateContext';
 
 const isPasswordPolicyLength = (pwd?: string): boolean => !!pwd && pwd.length >= 8;
 const isPasswordPolicyUppercase = (pwd?: string): boolean =>
@@ -20,9 +20,7 @@ const PolicyIcon: React.FC<{ policyMet: boolean }> = ({ policyMet }) =>
   );
 
 export const PasswordRequirements: React.FC = () => {
-  const {
-    state: { password },
-  } = useWizardProgressContext();
+  const { password } = useK8SStateContext();
 
   return (
     <ul>

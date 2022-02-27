@@ -6,13 +6,12 @@ import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
 import { DomainSelector } from './DomainSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 export const DomainPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('domain'), [setActiveStep]);
-  const {
-    state: { domainValidation: validation },
-  } = useWizardProgressContext();
+  const { domainValidation: validation } = useK8SStateContext();
 
   return (
     <Page>

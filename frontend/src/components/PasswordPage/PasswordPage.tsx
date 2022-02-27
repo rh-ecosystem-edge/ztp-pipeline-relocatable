@@ -6,13 +6,12 @@ import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
 import { PasswordSelector } from './PasswordSelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 export const PasswordPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('password'), [setActiveStep]);
-  const {
-    state: { password, passwordValidation: validation },
-  } = useWizardProgressContext();
+  const { password, passwordValidation: validation } = useK8SStateContext();
 
   return (
     <Page>

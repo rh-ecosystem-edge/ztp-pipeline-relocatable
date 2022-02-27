@@ -6,13 +6,12 @@ import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
 import { SshPublicKeySelector } from './SshPublicKeySelector';
+import { useK8SStateContext } from '../K8SStateContext';
 
 export const SshPublicKeyPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('sshkey'), [setActiveStep]);
-  const {
-    state: { sshPubKeyValidation: validation },
-  } = useWizardProgressContext();
+  const { sshPubKeyValidation: validation } = useK8SStateContext();
 
   return (
     <Page>

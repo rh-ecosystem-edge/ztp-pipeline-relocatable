@@ -1,8 +1,8 @@
 import React from 'react';
 import { FileUpload, FormGroup, Stack, StackItem, Title } from '@patternfly/react-core';
 
-import { useWizardProgressContext } from '../WizardProgress';
 import { OptionalBadge } from '../Badge';
+import { useK8SStateContext } from '../K8SStateContext';
 
 import './SshPublicKeySelector.css';
 
@@ -10,8 +10,10 @@ const fieldId = 'input-domain';
 
 export const SshPublicKeySelector: React.FC = () => {
   const {
-    state: { sshPubKey, handleSetSshPubKey, sshPubKeyValidation: validationMessage },
-  } = useWizardProgressContext();
+    sshPubKey,
+    handleSetSshPubKey,
+    sshPubKeyValidation: validationMessage,
+  } = useK8SStateContext();
 
   const [filename, setFilename] = React.useState<string>();
   const [isFileUploading, setIsFileUploading] = React.useState(false);

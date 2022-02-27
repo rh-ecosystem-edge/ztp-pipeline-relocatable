@@ -1,17 +1,15 @@
 import React from 'react';
 import { FormGroup, Stack, StackItem, TextInput, Title } from '@patternfly/react-core';
 
-import { useWizardProgressContext } from '../WizardProgress';
 import { OptionalBadge } from '../Badge';
+import { useK8SStateContext } from '../K8SStateContext';
 
 import './DomainSelector.css';
 
 const fieldId = 'input-domain';
 
 export const DomainSelector: React.FC = () => {
-  const {
-    state: { domain, handleSetDomain, domainValidation: validation },
-  } = useWizardProgressContext();
+  const { domain, handleSetDomain, domainValidation: validation } = useK8SStateContext();
 
   return (
     <Stack className="wizard-content" hasGutter>
