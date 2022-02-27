@@ -12,10 +12,13 @@ import { CheckCircleIcon, ArrowRightIcon } from '@patternfly/react-icons';
 import { global_success_color_100 as successColor } from '@patternfly/react-tokens';
 import { useNavigate } from 'react-router-dom';
 
+import { useConsoleUrl } from '../../resources/utils';
+
 import './FinalPageSummary.css';
 
 export const FinalPageSummary: React.FC = () => {
   const navigate = useNavigate();
+  const consoleUrl = useConsoleUrl();
 
   return (
     <Stack hasGutter className="final-page-sumamary">
@@ -47,8 +50,10 @@ export const FinalPageSummary: React.FC = () => {
       <StackItem>
         <Button
           variant={ButtonVariant.primary}
+          isDisabled={!consoleUrl}
           onClick={() => {
-            console.error('TODO: navigate to OCP');
+            console.info('Redirecting to OCP console: ', consoleUrl);
+            window.location.href = consoleUrl || '';
           }}
         >
           OpenShift console
