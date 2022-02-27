@@ -65,12 +65,13 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean }> = ({ isIni
             helperTextInvalid={apiaddrValidation.message || 'TODO: foooo'}
             validated={apiaddrValidation.valid ? 'default' : 'error'}
           >
-            <TextInput
+            <IpTripletsSelector
               id="apiaddr"
-              value={ipWithDots(apiaddr)}
-              validated={apiaddrValidation.valid ? 'default' : 'error'}
-              onChange={(value: string) => handleSetApiaddr(value)}
+              address={apiaddr}
+              setAddress={handleSetApiaddr}
+              validation={apiaddrValidation}
               isDisabled={!isEdit}
+              isNarrow
             />
           </FormGroup>
         </StackItem>
@@ -83,6 +84,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean }> = ({ isIni
             validated={ingressIpValidation.valid ? 'default' : 'error'}
           >
             <IpTripletsSelector
+              id="ingress-ip"
               address={ingressIp}
               setAddress={handleSetIngressIp}
               validation={ingressIpValidation}

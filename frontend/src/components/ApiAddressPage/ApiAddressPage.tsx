@@ -23,9 +23,7 @@ export const ApiAddressPage: React.FC = () => {
           <WizardFooter
             back="password"
             next="ingressip"
-            isNextEnabled={() =>
-              apiaddr.trim().replaceAll(' ', '').length === 12 && apiaddrValidation.valid
-            }
+            isNextEnabled={() => !!apiaddr.trim() && apiaddrValidation.valid}
           />
         }
       />

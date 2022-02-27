@@ -1,9 +1,8 @@
 import React from 'react';
 
-import { IpSelectorValidationType, IpTripletSelectorValidationType } from '../types';
+import { IpTripletSelectorValidationType } from '../types';
 import {
   domainValidator,
-  ipAddressValidator,
   ipTripletAddressValidator,
   passwordValidator,
   sshPubKeyValidator,
@@ -34,14 +33,16 @@ export const useWizardState = (): WizardStateType => {
   );
 
   const [apiaddr, setApiaddr] = React.useState('192168  7200');
-  const [apiaddrValidation, setApiaddrValidation] = React.useState<IpSelectorValidationType>({
-    valid: true,
-    digits: [],
-  });
+  const [apiaddrValidation, setApiaddrValidation] = React.useState<IpTripletSelectorValidationType>(
+    {
+      valid: true,
+      triplets: [],
+    },
+  );
   const handleSetApiaddr = React.useCallback(
-    (newApiaddr: string) => {
-      setApiaddrValidation(ipAddressValidator(newApiaddr, true));
-      setApiaddr(newApiaddr);
+    (newIp: string) => {
+      setApiaddrValidation(ipTripletAddressValidator(newIp));
+      setApiaddr(newIp);
     },
     [setApiaddr],
   );

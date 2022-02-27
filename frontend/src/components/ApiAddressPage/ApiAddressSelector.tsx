@@ -1,9 +1,9 @@
 import React from 'react';
 import { Stack, StackItem, Title } from '@patternfly/react-core';
 
-import { IpSelector } from '../IpSelector';
 import { useWizardProgressContext } from '../WizardProgress';
 import { RequiredBadge } from '../Badge';
+import { IpTripletsSelector } from '../IpTripletsSelector';
 
 import './ApiAddressSelector.css';
 
@@ -23,11 +23,15 @@ export const ApiAddressSelector: React.FC = () => {
         Assign the IP address that will be used for API traffic.
       </StackItem>
       <StackItem>
-        <IpSelector address={apiaddr} setAddress={handleSetApiaddr} validation={validation} />
+        <IpTripletsSelector
+          address={apiaddr}
+          setAddress={handleSetApiaddr}
+          validation={validation}
+        />
       </StackItem>
       <StackItem isFilled>
-        {!validation.valid && (
-          <div className="address-validation-failed">Provided subnet mask is incorrect.</div>
+        {validation.message && (
+          <div className="address-validation-failed">{validation.message}</div>
         )}
       </StackItem>
     </Stack>

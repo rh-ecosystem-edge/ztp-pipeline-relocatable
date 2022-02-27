@@ -1,4 +1,4 @@
-import { IpSelectorValidationType, IpTripletSelectorValidationType } from '../types';
+import { IpTripletSelectorValidationType } from '../types';
 
 export type WizardStateType = {
   username: string;
@@ -10,7 +10,7 @@ export type WizardStateType = {
   handleSetPassword: (newVal: string) => void;
 
   apiaddr: string; // 12 characters
-  apiaddrValidation: IpSelectorValidationType;
+  apiaddrValidation: IpTripletSelectorValidationType;
   handleSetApiaddr: (newApiaddr: string) => void;
 
   ingressIp: string; // 12 characters
