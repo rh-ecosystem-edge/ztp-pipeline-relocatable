@@ -17,7 +17,7 @@ export const persist = async (
     console.error('TODO: The domain is not persisted.');
     // finished with success
 
-    setError(null); // show green circle of success
+    setError(null); // show the green circle of success
     onSuccess();
   }
 };

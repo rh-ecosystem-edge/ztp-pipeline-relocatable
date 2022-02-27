@@ -19,21 +19,21 @@ const getHtpasswdData = async (
   username: string,
   password: string,
 ): Promise<string | undefined> => {
-  let htPasswdDataB64: string | undefined = undefined;
   try {
-    const htPasswdData = await postRequest('/htpasswd', {
+    const htPasswdData = (await postRequest('/htpasswd', {
       username,
       password,
-    }).promise;
-    // htPasswdDataB64 = Buffer.from(htPasswdData as string).toString('base64');
-    htPasswdDataB64 = btoa(htPasswdData as string);
-    if (!htPasswdDataB64) {
+    }).promise) as { htpasswdData: string };
+    if (!htPasswdData?.htpasswdData) {
       console.error('Can not encode password to htpasswd');
       setError({
         title: RESOURCE_CREATE_TITLE,
         message: `Can not encode password for the ${HTPASSWD_SECRET.metadata.name} htpasswd secret in the ${HTPASSWD_SECRET.metadata.name} namespace.`,
       });
+      return undefined;
     }
+    const htPasswdDataB64 = btoa(htPasswdData.htpasswdData);
+    return htPasswdDataB64;
   } catch (e) {
     console.error(e);
     setError({
@@ -42,7 +42,7 @@ const getHtpasswdData = async (
     });
   }
 
-  return htPasswdDataB64;
+  return undefined;
 };
 
 const createSecret = async (
