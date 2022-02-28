@@ -6,7 +6,6 @@ import {
   ipTripletAddressValidator,
   ipWithoutDots,
   passwordValidator,
-  sshPubKeyValidator,
   usernameValidator,
 } from './utils';
 
@@ -30,10 +29,6 @@ export type K8SStateContextData = {
   domain: string;
   handleSetDomain: (newDomain: string) => void;
   domainValidation?: string;
-
-  sshPubKey?: string;
-  handleSetSshPubKey: (newKey: string | File) => void;
-  sshPubKeyValidation?: string;
 };
 
 const K8SStateContext = React.createContext<K8SStateContextData | null>(null);
@@ -98,15 +93,6 @@ export const K8SStateContextProvider: React.FC<{
     setDomain(newDomain);
   }, []);
 
-  const [sshPubKey, setSshPubKey] = React.useState<string>('');
-  const [sshPubKeyValidation, setSshPubKeyValidation] =
-    React.useState<K8SStateContextData['sshPubKeyValidation']>();
-  const handleSetSshPubKey = React.useCallback((newKey: string | File) => {
-    const keyString = newKey as string;
-    setSshPubKeyValidation(sshPubKeyValidator(keyString));
-    setSshPubKey(keyString);
-  }, []);
-
   const value = React.useMemo(
     () => ({
       username,
@@ -129,9 +115,9 @@ export const K8SStateContextProvider: React.FC<{
       domainValidation,
       handleSetDomain,
 
-      sshPubKey,
-      handleSetSshPubKey,
-      sshPubKeyValidation,
+      // sshPubKey,
+      // handleSetSshPubKey,
+      // sshPubKeyValidation,
     }),
     [
       apiaddr,
@@ -142,20 +128,19 @@ export const K8SStateContextProvider: React.FC<{
       handleSetDomain,
       handleSetIngressIp,
       handleSetPassword,
-      handleSetSshPubKey,
+      // handleSetSshPubKey,
       handleSetUsername,
       ingressIp,
       ingressIpValidation,
       password,
       passwordValidation,
-      sshPubKey,
-      sshPubKeyValidation,
+      // sshPubKey,
+      // sshPubKeyValidation,
       username,
       usernameValidation,
     ],
   );
 
-  console.log('--- value: ', value);
   return <K8SStateContext.Provider value={value}>{children}</K8SStateContext.Provider>;
 };
 

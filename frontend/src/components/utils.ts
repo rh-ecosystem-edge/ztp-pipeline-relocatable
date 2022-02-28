@@ -2,8 +2,6 @@ import { K8SStateContextData } from './K8SStateContext';
 import { IpTripletSelectorValidationType } from './types';
 
 const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
-const SSH_PUBLIC_KEY_REGEX =
-  /^(ssh-rsa|ssh-ed25519|ecdsa-[-a-z0-9]*) AAAA[0-9A-Za-z+/]+[=]{0,3}( .+)?$/;
 
 // keep following in sync with the backend
 const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
@@ -44,14 +42,6 @@ export const domainValidator = (domain: string): K8SStateContextData['domainVali
     return ''; // passed ; optional - pass for empty as well
   }
   return "Valid domain wasn't provided";
-};
-
-export const sshPubKeyValidator = (key: string): K8SStateContextData['sshPubKeyValidation'] => {
-  if (!key || key.match(SSH_PUBLIC_KEY_REGEX)) {
-    return ''; // passed
-  }
-
-  return "Valid public SSH key wasn't provided";
 };
 
 export const usernameValidator = (username = ''): K8SStateContextData['username'] => {

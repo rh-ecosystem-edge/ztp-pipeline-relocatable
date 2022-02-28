@@ -2,13 +2,9 @@ import React from 'react';
 import { ProgressStepProps } from '@patternfly/react-core';
 
 type WizardProgressStep = Pick<ProgressStepProps, 'isCurrent' | 'variant'>;
-export type WizardProgressStepType =
-  | 'username'
-  | 'password'
-  | 'apiaddr'
-  | 'ingressip'
-  | 'domain'
-  | 'sshkey'; // those displayed in the top-level progress
+
+// those displayed in the top-level progress
+export type WizardProgressStepType = 'username' | 'password' | 'apiaddr' | 'ingressip' | 'domain';
 export type WizardStepType = WizardProgressStepType | 'persist';
 
 export type WizardProgressSteps = {
@@ -17,7 +13,6 @@ export type WizardProgressSteps = {
   apiaddr: WizardProgressStep;
   ingressip: WizardProgressStep;
   domain: WizardProgressStep;
-  sshkey: WizardProgressStep;
 };
 
 export type WizardProgressContextData = {
@@ -31,7 +26,6 @@ const WIZARD_STEP_INDEXES: { [key in WizardProgressStepType]: number } = {
   apiaddr: 2,
   ingressip: 3,
   domain: 4,
-  sshkey: 5,
 };
 
 const WizardProgressContext = React.createContext<WizardProgressContextData | null>(null);
@@ -60,16 +54,11 @@ export const WizardProgressContextProvider: React.FC<{
       isCurrent: false,
       variant: 'pending',
     },
-    sshkey: {
-      isCurrent: false,
-      variant: 'pending',
-    },
   });
 
   const value: WizardProgressContextData = React.useMemo(
     () => ({
       steps,
-      // state,
 
       setActiveStep: (step: WizardProgressStepType) => {
         if (!steps[step].isCurrent) {
