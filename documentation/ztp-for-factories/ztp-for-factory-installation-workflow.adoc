@@ -1,5 +1,5 @@
 [id="ztp-for-factory-installation-workflow"]
-= Workflow description
+= The workflow
 include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-installation-workflow
 
@@ -7,17 +7,16 @@ toc::[]
 
 
 
-== Installation workflow
 
 
-=== OpenShift Pipelines installation
+== OpenShift Pipelines installation
 
 First, we need to install OpenShift Pipelines Operator that will be used for running the pipeline, this is achieved by using a bootstrapping script that will install the Operator and the CR to initiate the deployment.
 
-This script will also create the required pipeline definitions and tasks.
+This script, will also create the required pipeline definitions and tasks.
 
 
-==== Bootstrapping OpenShift Pipelines
+=== Bootstrapping OpenShift Pipelines
 - Execute the bootstrap script file `pipelines/bootstrap.sh ${KUBECONFIG}` you can do that using this command:
 
 ```sh
@@ -25,7 +24,7 @@ export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/tekton-pipeline/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
 ```
 
-- A similar output will be shown:
+- An  output similar to this one, will be shown:
 
 ```console
 >>>> Creating NS spoke-deployer and giving permissions to SA spoke-deployer
@@ -71,7 +70,21 @@ task.tekton.dev/spoke-detach-cluster configured
 task.tekton.dev/spoke-restore-hub-config configured
 ```
 
-This script will deploy Openshift-Pipelines and enable the Tasks and Pipelines into your Hub cluster.
-Then you can continue the flow using the command line or the UI to interact with OpenShift Pipelines
+This script has  deployed Openshift-Pipelines and enabled the Tasks and Pipelines into the Hub cluster.
+We can now continue the flow using the command line or the UI to interact with OpenShift Pipelines, so it is recommended to install the Tekton CLI `tkn` to interact with OpenShift Pipelines from this https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64-0.21.0.tar.gz[link].
 
-You will pass some arguments to the Task or Pipeline in order to execute them, for that you need to use the Tekton CLI `tkn` using this https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64-0.21.0.tar.gz[link].
+== Hub pipeline
+
+The Hub pipeline is the pipeline that will be used to deploy the infrastructure for the HUB to be ready to deploy spokes:
+
+
+
+
+```sh
+tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+```
+== Spoke pipeline
+
+```sh
+tkn pipeline start -n spoke-deployer -p git-revision=tekton -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+```
