@@ -99,31 +99,69 @@ function deploy_pipeline() {
 }
 
 function deploy_openshift_pipelines() {
+
     echo ">>>> Deploying Openshift Pipelines"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${PIPELINES_DIR}/manifests/01-subscription.yaml
     sleep 30
 
     check_resource "deployment" "openshift-pipelines-operator" "Available" "openshift-operators"
     check_resource "deployment" "tekton-operator-webhook" "Available" "openshift-operators"
+
+    declare -a StringArray=("clustertasks.tekton.dev" "conditions.tekton.dev" "pipelineresources.tekton.dev" "pipelineruns.tekton.dev" "pipelines.tekton.dev" "runs.tekton.dev" "taskruns.tekton.dev" "tasks.tekton.dev" "tektonaddons.operator.tekton.dev" "tektonconfigs.operator.tekton.dev" "tektoninstallersets.operator.tekton.dev" "tektonpipelines.operator.tekton.dev" "tektontriggers.operator.tekton.dev")
+    for crd in ${StringArray[@]}
+    do
+        check_resource "crd" "${crd}" "Established" "openshift-operators"
+    done
+
 }
 
-if [[ $# -lt 1 ]]; then
-    echo "The first argument should be the Kubeconfig Location for your Hub Cluster"
-    exit 1
-fi
+function clean_openshift_pipelines() {
+
+    echo ">>>> Cleaning Openshift Pipelines and their components"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    oc delete subscriptions.operators.coreos.com -n openshift-operators openshift-pipelines-operator-rh
+    oc delete csv -n openshift-operators $(oc get csv -n openshift-operators --no-headers | grep openshift-pipelines-operator | cut -f1 -d\ )
+    oc delete ns ${SPOKE_DEPLOYER_NS}
+    oc delete mutatingwebhookconfigurations webhook.operator.tekton.dev webhook.pipeline.tekton.dev webhook.triggers.tekton.dev
+    oc delete validatingwebhookconfigurations validation.webhook.operator.tekton.dev validation.webhook.pipeline.tekton.dev validation.webhook.triggers.tekton.dev
+    oc delete apiservices v1alpha1.operator.tekton.dev v1alpha1.tekton.dev v1alpha1.triggers.tekton.dev v1beta1.tekton.dev v1beta1.triggers.tekton.dev
+
+    for crd in $(oc get crd | grep tekton | cut -f1 -d\ )
+    do 
+        oc delete crd $crd --grace-period=10 --force
+        if [[ ${?} != 0 ]];then
+            oc patch crd $crd -p '{"metadata":{"finalizers":null}}' --type merge
+        fi
+    done
+
+}
 
 export BASEDIR=$(dirname "$0")
-export BRANCH='main'
+export BRANCH=${1:-main}
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
-export KUBECONFIG_HUB="${1}"
+export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
+export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 
 get_tkn
 clone_ztp
 export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
 export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
+
+if [[ ${#} -ge 1 ]];then
+        if [[ ${1} == 'clean' ]]; then
+            clean_openshift_pipelines
+        echo "Done!"
+        exit 0
+        fi
+fi
+
+if [[ -z "${KUBECONFIG}" ]]; then
+    echo "KUBECONFIG var is empty"
+    exit 1
+fi
 
 create_permissions
 deploy_openshift_pipelines
