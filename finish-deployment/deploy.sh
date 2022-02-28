@@ -56,12 +56,11 @@ function save_files() {
 
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
-    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname); do
-        NODE_IP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ${node} -o jsonpath='{.status.addresses[0].address}')
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "mkdir ${CLUSTER_DATA_FOLDER}"
-        copy_files_common "${SPOKE_SAFE_FOLDER}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
-        copy_files_common "${WORKDIR/../deploy-spoke/csr_autoapprover.sh}" "${NODE_IP}" "/usr/sbin/"
-        copy_files_common "${WORKDIR/../deploy-spoke/csrapprover.service}" "${NODE_IP}" "/etc/systemd/system/"
+    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname | cut -d / -f 2); do
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${node} "mkdir ${CLUSTER_DATA_FOLDER}"
+        copy_files_common "${SPOKE_SAFE_FOLDER}" "${node}" "${CLUSTER_DATA_FOLDER}/"
+        copy_files_common "csr_autoapprover.sh" "${node}" "/usr/sbin/"
+        copy_files_common "csrapprover.service" "${node}" "/etc/systemd/system/"
     done
 }
 
