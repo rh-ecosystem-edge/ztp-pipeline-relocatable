@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.178",
+    "dpdm": "^3.8.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.5.1"
@@ -30,7 +31,8 @@
   "scripts": {
     "start": "HTTPS=true SSL_CRT_FILE=${TLS_CERT_FILE} SSL_KEY_FILE=${TLS_KEY_FILE} react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "yarn test:circular && react-scripts test",
+    "test:circular": "dpdm --warning false --tree false --exit-code circular:1 src/index.tsx",
     "eject": "react-scripts eject",
     "clean": "rm -rf node_modules build",
     "lint": "eslint -c .eslintrc --ext .js,.jsx,.ts,.tsx ./src",

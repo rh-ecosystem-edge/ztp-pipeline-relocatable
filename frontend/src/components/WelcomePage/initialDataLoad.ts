@@ -1,5 +1,5 @@
 import { getService } from '../../resources/service';
-import { K8SStateContextData } from '../K8SStateContext';
+import { K8SStateContextData } from '../types';
 import {
   SERVICE_TEMPLATE_API,
   SERVICE_TEMPLATE_METALLB_INGRESS,

@@ -1,5 +1,4 @@
-import { K8SStateContextData } from './K8SStateContext';
-import { IpTripletSelectorValidationType } from './types';
+import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
 
 const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
 

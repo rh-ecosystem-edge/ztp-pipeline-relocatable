@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IpTripletSelectorValidationType } from './types';
+import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
 import {
   domainValidator,
   ipTripletAddressValidator,
@@ -8,28 +8,6 @@ import {
   passwordValidator,
   usernameValidator,
 } from './utils';
-
-export type K8SStateContextData = {
-  username: string;
-  usernameValidation?: string; // just a message or empty
-  handleSetUsername: (newVal: string) => void;
-
-  password: string;
-  passwordValidation?: string;
-  handleSetPassword: (newVal: string) => void;
-
-  apiaddr: string; // 12 characters
-  apiaddrValidation: IpTripletSelectorValidationType;
-  handleSetApiaddr: (newApiaddr: string) => void;
-
-  ingressIp: string; // 12 characters
-  ingressIpValidation: IpTripletSelectorValidationType;
-  handleSetIngressIp: (newIp: string) => void;
-
-  domain: string;
-  handleSetDomain: (newDomain: string) => void;
-  domainValidation?: string;
-};
 
 const K8SStateContext = React.createContext<K8SStateContextData | null>(null);
 
@@ -128,14 +106,11 @@ export const K8SStateContextProvider: React.FC<{
       handleSetDomain,
       handleSetIngressIp,
       handleSetPassword,
-      // handleSetSshPubKey,
       handleSetUsername,
       ingressIp,
       ingressIpValidation,
       password,
       passwordValidation,
-      // sshPubKey,
-      // sshPubKeyValidation,
       username,
       usernameValidation,
     ],

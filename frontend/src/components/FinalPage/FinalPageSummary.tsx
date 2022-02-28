@@ -12,7 +12,7 @@ import { CheckCircleIcon, ArrowRightIcon } from '@patternfly/react-icons';
 import { global_success_color_100 as successColor } from '@patternfly/react-tokens';
 import { useNavigate } from 'react-router-dom';
 
-import { useConsoleUrl } from '../../resources/utils';
+import { useConsoleUrl } from '../../resources/consoleUrl';
 
 import './FinalPageSummary.css';
 

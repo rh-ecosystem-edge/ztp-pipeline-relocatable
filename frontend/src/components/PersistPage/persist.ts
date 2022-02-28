@@ -1,4 +1,4 @@
-import { K8SStateContextData } from '../K8SStateContext';
+import { K8SStateContextData } from '../types';
 import { persistIdentityProvider } from './persistIdentityProvider';
 import { saveApi, saveIngress } from './persistServices';
 import { PersistErrorType } from './types';
