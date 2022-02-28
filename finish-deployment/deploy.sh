@@ -60,6 +60,8 @@ function save_files() {
         NODE_IP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ${node} -o jsonpath='{.status.addresses[0].address}')
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "mkdir ${CLUSTER_DATA_FOLDER}"
         copy_files_common "${SPOKE_SAFE_FOLDER}" "${NODE_IP}" "${CLUSTER_DATA_FOLDER}/"
+        copy_files_common "${WORKDIR/../deploy-spoke/csr_autoapprover.sh}" "${NODE_IP}" "/usr/sbin/"
+        copy_files_common "${WORKDIR/../deploy-spoke/csrapprover.service}" "${NODE_IP}" "/etc/systemd/system/"
     done
 }
 
