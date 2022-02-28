@@ -44,6 +44,12 @@ function detach_cluster() {
 }
 
 function clean_cluster() {
+    #####################################################
+    # WARNING!
+    # Carefully doing the Clean Cluster, we are storing 
+    # the key files on the spoke cluster Namespace and 
+    # with this funciton you will delete it
+    #####################################################
     # Function to clean cluster from hub
     cluster=${1}
     echo ">> Cleaning Spoke ${cluster} cluster from Hub"
@@ -84,6 +90,15 @@ function recover_spoke_files() {
     save_files ${cluster}
 }
 
+function store_rsa_secrets() {
+    # Function to save the RSA Key-Pair into the Hub
+    echo ">>>> Creating spoke cluster Keypair on Hub: "
+    echo ">> Secret name: ${cluster}-keypair"
+    echo ">> Namespace: ${cluster}"
+    cluster=${1}
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
+}
+
 source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Dettaching clusters"
@@ -98,6 +113,13 @@ for spoke in ${ALLSPOKES}; do
     check_cluster ${spoke}
     recover_spoke_rsa ${spoke}
     recover_spoke_files ${spoke}
+    store_rsa_secrets ${spoke}
     #detach_cluster ${spoke}
+    #####################################################
+    # WARNING!
+    # Carefully doing the Clean Cluster, we are storing 
+    # the key files on the spoke cluster Namespace and 
+    # with this funciton you will delete it
+    #####################################################
     #clean_cluster ${spoke}
 done
