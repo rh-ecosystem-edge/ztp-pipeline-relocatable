@@ -1,12 +1,30 @@
 import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret';
 import { Service, ServiceApiVersion, ServiceKind } from '../../resources/service';
 
+export const ADDRESS_POOL_ANNOTATION_KEY = 'metallb.universe.tf/address-pool';
+
+export const ADDRESS_POOL_TEMPLATE = {
+  apiVersion: 'metallb.io/v1alpha1',
+  kind: 'AddressPool',
+  metadata: {
+    generateName: 'kubeframe-', // To be filled
+    name: '',
+    namespace: '', // To be filled
+  },
+  spec: {
+    protocol: 'layer2',
+    addresses: [
+      '', // To be filled, example: '172.18.0.100-172.18.0.255',
+    ],
+  },
+};
+
 export const SERVICE_TEMPLATE_METALLB_INGRESS: Service = {
   kind: ServiceKind,
   apiVersion: ServiceApiVersion,
   metadata: {
     annotations: {
-      'metallb.universe.tf/address-pool': 'ingress-public-ip',
+      // To be filled: 'metallb.universe.tf/address-pool': 'kubeframe-ingress-public-ip',
     },
     name: 'metallb-ingress',
     namespace: 'openshift-ingress',
@@ -29,7 +47,7 @@ export const SERVICE_TEMPLATE_API: Service = {
   apiVersion: ServiceApiVersion,
   metadata: {
     annotations: {
-      'metallb.universe.tf/address-pool': 'api-public-ip',
+      // To be filled, 'metallb.universe.tf/address-pool': 'kubeframe-api-public-ip',
     },
     name: 'metallb-api',
     namespace: 'openshift-kube-apiserver',
