@@ -27,6 +27,8 @@ There's an example in the repo at <https://raw.githubusercontent.com/rh-ecosyste
 
 As you can check, it has two major sections `config` and `spokes` that will be explained in the next section.
 
+Just keep in mind that the spokes section, can contain several `spoke-name` entries, one per spoke cluster to be deployed by the workflow.
+
 === Spokes.yaml walktrough
 
 Check next table for  a commented configuration file with links to the explanation to each relevant file section and configuration value.
