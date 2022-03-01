@@ -72,8 +72,7 @@ create_spoke_definitions() {
         export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_SPOKE_API} ${SPOKE_API_NAME}" | base64)
         export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
         export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
-        export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition": {"version": "3.1.0"}, "systemd": { "units": [{ "name": "csr-approver.service", "enabled": true, "contents": "[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage": {"files": [{"path": "/opt/bin/csr-approver.sh", "mode": 492, "append": [{"source": "data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
-
+        export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.1.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
         # Generate the spoke definition yaml
         cat <<EOF >${OUTPUTDIR}/spoke-${i}-cluster.yaml
 ---
