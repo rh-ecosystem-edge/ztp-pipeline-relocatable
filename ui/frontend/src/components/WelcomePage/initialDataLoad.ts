@@ -17,30 +17,35 @@ export const initialDataLoad = async ({
   handleSetApiaddr: K8SStateContextData['handleSetApiaddr'];
   handleSetIngressIp: K8SStateContextData['handleSetIngressIp'];
 }) => {
+  let ingressService, apiService;
   try {
-    const ingressService = await getService({
+    ingressService = await getService({
       name: SERVICE_TEMPLATE_METALLB_INGRESS.metadata.name || '',
       namespace: SERVICE_TEMPLATE_METALLB_INGRESS.metadata.namespace || '',
     }).promise;
-    const apiService = await getService({
+    apiService = await getService({
       name: SERVICE_TEMPLATE_API.metadata.name || '',
       namespace: SERVICE_TEMPLATE_API.metadata.namespace || '',
     }).promise;
-
-    if (ingressService.spec?.loadBalancerIP) {
-      handleSetIngressIp(ipWithoutDots(ingressService.spec?.loadBalancerIP));
-      handleSetApiaddr(ipWithoutDots(apiService.spec?.loadBalancerIP));
-      // TODO: domain
-
-      // The Edit flow for the 2nd and later run
-      setNextPage && setNextPage('/settings');
+  } catch (_e) {
+    const e = _e as { message: string; code: number };
+    if (e.code !== 404) {
+      console.error(e, e.code);
+      setError('Failed to contact OpenShift Platform API.');
       return;
     }
-
-    // The Wizard for the first run
-    setNextPage && setNextPage('/wizard/username');
-  } catch (e) {
-    console.error(e);
-    setError('Failed to contact OpenShift Platform API.');
   }
+
+  if (ingressService?.spec?.loadBalancerIP) {
+    handleSetIngressIp(ipWithoutDots(ingressService.spec?.loadBalancerIP));
+    handleSetApiaddr(ipWithoutDots(apiService?.spec?.loadBalancerIP));
+    // TODO: read & set the domain
+
+    // The Edit flow for the 2nd and later run
+    setNextPage && setNextPage('/settings');
+    return;
+  }
+
+  // The Wizard for the first run
+  setNextPage && setNextPage('/wizard/username');
 };

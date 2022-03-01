@@ -58,6 +58,8 @@ export class ResourceError extends Error {
     super(message);
     Object.setPrototypeOf(this, ResourceError.prototype);
     this.name = 'ResourceError';
+    this.code = code;
+    this.reason = reason;
   }
 }
 

@@ -10,13 +10,19 @@ import { initialDataLoad } from '../WelcomePage/initialDataLoad';
 
 export const Settings: React.FC = () => {
   const [error, setError] = React.useState<string>();
+  const [isDataLoaded, setDataLoaded] = React.useState<boolean>(false);
   const { handleSetApiaddr, handleSetIngressIp /* TODO: domain */ } = useK8SStateContext();
 
   // Following is needed when navigated directly by setting the URL in the browser
   // It is not needed when navigated from the WelcomePage but let's refresh to show recent data anyway
   React.useEffect(
     () => {
-      initialDataLoad({ setNextPage: undefined, setError, handleSetApiaddr, handleSetIngressIp });
+      initialDataLoad({
+        setNextPage: () => setDataLoaded(true),
+        setError,
+        handleSetApiaddr,
+        handleSetIngressIp,
+      });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -24,12 +30,14 @@ export const Settings: React.FC = () => {
     ],
   );
 
-  return (
+  return isDataLoaded ? (
     <Page>
       <ContentTwoCols
         left={<SettingsPageLeft />}
         right={<SettingsPageRight isInitialEdit={false} initialError={error} />}
       />
     </Page>
+  ) : (
+    <div>TODO: Loading spinner</div>
   );
 };
