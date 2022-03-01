@@ -115,11 +115,4 @@ for spoke in ${ALLSPOKES}; do
     recover_spoke_files ${spoke}
     store_rsa_secrets ${spoke}
     #detach_cluster ${spoke}
-    #####################################################
-    # WARNING!
-    # Carefully doing the Clean Cluster, we are storing 
-    # the key files on the spoke cluster Namespace and 
-    # with this funciton you will delete it
-    #####################################################
-    #clean_cluster ${spoke}
 done
