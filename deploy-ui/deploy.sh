@@ -119,5 +119,4 @@ do
     deploy_ui ${spoke}
 
     check_resource "deployment" "kubeframe-ui" "Available" "${UI_NS}" "${SPOKE_KUBECONFIG}"
-    check_resource "route" "kubeframe-ui" "Admitted" "${UI_NS}" "${SPOKE_KUBECONFIG}"
 done
