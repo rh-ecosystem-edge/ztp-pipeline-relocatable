@@ -8,7 +8,7 @@ do
 done
 
 # Begin looking for and signing CSRs to activate nodes
-CLUSTER_DATA_FOLDER="~/cluster_access_data"
+CLUSTER_DATA_FOLDER="/var/home/core/cluster_access_data"
 SPOKE_KUBECONFIG=$(ls $CLUSTER_DATA_FOLDER/kubeconfig-*|head -1)
 
 

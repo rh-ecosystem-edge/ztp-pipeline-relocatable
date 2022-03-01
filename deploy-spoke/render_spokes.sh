@@ -71,7 +71,8 @@ create_spoke_definitions() {
         export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
         export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_SPOKE_API} ${SPOKE_API_NAME}" | base64)
         export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
-        export JSON_STRING_CFG_OVERRIDE='{"ignition": {"version": "3.1.0"}, "systemd": { "units": [{ "name": "csr-approver.service", "enabled": true, "contents": "[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]},{"path": "/opt/bin/csr-approver.sh", "mode": 492, "append": [{"source": "data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
+        export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
+        export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition": {"version": "3.1.0"}, "systemd": { "units": [{ "name": "csr-approver.service", "enabled": true, "contents": "[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage": {"files": [{"path": "/opt/bin/csr-approver.sh", "mode": 492, "append": [{"source": "data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
 
         # Generate the spoke definition yaml
         cat <<EOF >${OUTPUTDIR}/spoke-${i}-cluster.yaml
@@ -184,7 +185,7 @@ spec:
  nmStateConfigLabelSelector:
    matchLabels:
      nmstate_config_cluster_name: $CHANGE_SPOKE_NAME
- ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE}'
+ ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE_INFRAENV}'
  sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
 EOF
 
@@ -283,6 +284,7 @@ metadata:
  annotations:
    inspect.metal3.io: disabled
    bmac.agent-install.openshift.io/hostname: 'kubeframe-spoke-${i}-master-${master}'
+   bmac.agent-install.openshift.io/ignition-config-overrides: '${JSON_STRING_CFG_OVERRIDE_BMH}'
 spec:
  online: false
  bootMACAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
