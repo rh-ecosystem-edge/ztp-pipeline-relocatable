@@ -142,7 +142,6 @@ export BRANCH=${1:-main}
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
-export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 
 get_tkn
 clone_ztp
