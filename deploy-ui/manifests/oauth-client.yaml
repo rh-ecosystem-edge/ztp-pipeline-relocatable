@@ -1,0 +1,13 @@
+---
+apiVersion: oauth.openshift.io/v1
+grantMethod: auto
+kind: OAuthClient
+metadata:
+  labels:
+    app: kubeframe-ui
+  name: kubeframeoauth
+  namespace: $UI_NS
+redirectURIs:
+- $UI_APP_URL/login/callback
+secret: kubeframeoauthsecret
+

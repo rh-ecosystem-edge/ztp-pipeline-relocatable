@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-metallb
+  name: spoke-deploy-ui
   annotations:
     description: |
-      This task will deploy MetalLB on the Spoke Cluster.
+      This task will deploy the ZTPFW UI into the spoke  clsuters
 spec:
   workspaces:
     - name: ztp
@@ -26,16 +26,16 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_METALLB_DIR
-        value: "deploy-metallb"
+      - name: DEPLOY_UI_DIR
+        value: "deploy-ui"
       - name: SHARED_DIR
         value: "shared-utils"
   steps:
-    - name: deploy-metallb
+    - name: deploy-ui
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_METALLB_DIR}
+        cd ${WORKDIR}/${DEPLOY_UI_DIR}
         ./deploy.sh

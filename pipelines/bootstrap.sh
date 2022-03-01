@@ -137,55 +137,11 @@ function clean_openshift_pipelines() {
 
 }
 
-function deploy_ui() {
-    echo ">>>> Deploying the User Interface"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
-    export UI_CONSOLE_HOST=`oc --kubeconfig=${KUBECONFIG_SPOKE} get route console -n openshift-console -o jsonpath="{.spec.host}"`
-    export UI_ROUTE_HOST=${UI_ROUTE_HOST:-`echo ${UI_CONSOLE_SPOKE} | sed 's/console-openshift-console/kube-frame/'`} # Per the Router resource
-    export UI_APP_URL=https:\\/\\/${UI_ROUTE_HOST}
- 
-    echo UI Parameters:
-    eval echo NAMESPACE: ${UI_NS}
-    eval echo IMAGE: ${UI_IMAGE}
-    eval echo ROUTE_HOST ${UI_ROUTE_HOST}
-    eval echo APP_URL: ${UI_APP_URL}
-    
-    oc new-project ${UI_NS} || true # might excist already
-
-    export TLS_CERT_FILE=${TLS_CERT_FILE:-}
-    if [ x${TLS_CERT_FILE} = x ] ; then
-      export TLS_CERT_FILE=./certs/tls.crt
-      export TLS_KEY_FILE=./certs/tls.key
-
-      echo Autogenerating self-signed TLS certificates, set TLS_CERT_FILE and TLS_KEY_FILE environment variables if you want otherwise 
-      mkdir -p ./certs
-      openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt
-    fi
-
-    oc --kubeconfig=${KUBECONFIG_SPOKE} delete secret kubeframe-ui-certs -n ${UI_NS} || true # easier than calling "oc apply" ...
-    oc --kubeconfig=${KUBECONFIG_SPOKE} create secret tls kubeframe-ui-certs -n ${UI_NS} \
-      --cert=${TLS_CERT_FILE} \
-      --key=${TLS_KEY_FILE}
-
-    cat "${PIPELINES_DIR}/resources/spokes/spoke-ui-deploy.yaml" | \
-      sed "s/___NAMESPACE___/${UI_NS}/g" | \
-      sed "s/___IMAGE___/${UI_IMAGE}/g" | \
-      sed "s/___ROUTE_HOST___/${UI_ROUTE_HOST}/g" | \
-      sed "s/___APP_URL___/${UI_APP_URL}/g" | \
-      oc --kubeconfig=${KUBECONFIG_SPOKE} apply -f -
-
-    eval echo The User interface is deployed to: ${UI_APP_URL}
-}
-
 export BASEDIR=$(dirname "$0")
 export BRANCH=${1:-main}
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${KUBECONFIG}"
-export KUBECONFIG_SPOKE="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
-export UI_NS=kubeframe-ui
-export UI_IMAGE=${UI_IMAGE:-"quay.io\\/ztpfw\\/ui:latest"}
 
 get_tkn
 clone_ztp
@@ -209,5 +165,3 @@ fi
 create_permissions
 deploy_openshift_pipelines
 deploy_pipeline
-deploy_ui
-
