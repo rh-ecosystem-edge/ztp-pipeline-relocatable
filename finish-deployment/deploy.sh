@@ -59,8 +59,6 @@ function save_files() {
     for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname | cut -d / -f 2); do
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${node} "mkdir ${CLUSTER_DATA_FOLDER}"
         copy_files_common "${SPOKE_SAFE_FOLDER}" "${node}" "${CLUSTER_DATA_FOLDER}/"
-        copy_files_common "csr_autoapprover.sh" "${node}" "/usr/sbin/"
-        copy_files_common "csrapprover.service" "${node}" "/etc/systemd/system/"
     done
 }
 
