@@ -10,8 +10,8 @@ UI_TAG = latest
 all: build push
 
 build:
-	podman build -t $(PIPE_IMAGE):$(PIPE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .
-	podman build -t $(UI_IMAGE):$(UI_TAG) -f $(CI_FOLDER)/Containerfile.UI .
+	podman build --platform linux/amd64 -t $(PIPE_IMAGE):$(PIPE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .
+	podman build --platform linux/amd64 -t $(UI_IMAGE):$(UI_TAG) -f $(CI_FOLDER)/Containerfile.UI .
 
 push: build
 	podman push $(PIPE_IMAGE):$(PIPE_TAG)
