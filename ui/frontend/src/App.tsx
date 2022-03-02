@@ -5,7 +5,7 @@ import { WelcomePage } from './components';
 import { Wizard } from './components/Wizard';
 import { Settings } from './components/Settings';
 import { K8SStateContextProvider } from './components/K8SStateContext';
-import Redirect from './Redirect';
+import Redirect from './components/Redirect';
 
 import './App.css';
 
