@@ -62,14 +62,7 @@ export class ResourceError extends Error {
 }
 
 export function getBackendUrl() {
-  /*
-    if (process.env.MODE === 'plugin') {
-        const proxyPath = process.env.PLUGIN_PROXY_PATH  || window.acmConsolePluginProxyPath
-        return proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : undefined
-    }
-    */
   return process.env.REACT_APP_BACKEND_PATH || ''; //process.env.BACKEND_URL;
-  // return '';
 }
 
 export function createResource<Resource extends IResource, ResultType = Resource>(

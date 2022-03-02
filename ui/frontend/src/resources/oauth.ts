@@ -5,9 +5,6 @@ import { IResource } from './resource';
 export type OAuthApiVersionType = 'config.openshift.io/v1';
 export const OAuthApiVersion: OAuthApiVersionType = 'config.openshift.io/v1';
 
-// /apis/config.openshift.io/v1/oauths/cluster
-// /apis/config.openshift.io/v1/oauths/cluster
-// /apis/config.openshift.io/v1/oauths/cluster
 export type OAuthKindType = 'OAuth';
 export const OAuthKind: OAuthKindType = 'OAuth';
 
