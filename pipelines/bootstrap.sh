@@ -122,7 +122,7 @@ function clean_openshift_pipelines() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc delete subscriptions.operators.coreos.com -n openshift-operators openshift-pipelines-operator-rh
     oc delete csv -n openshift-operators $(oc get csv -n openshift-operators --no-headers | grep openshift-pipelines-operator | cut -f1 -d\ )
-    oc delete ns ${SPOKE_DEPLOYER_NS}
+    oc delete ns ${SPOKE_DEPLOYER_NS} 
     oc delete mutatingwebhookconfigurations webhook.operator.tekton.dev webhook.pipeline.tekton.dev webhook.triggers.tekton.dev
     oc delete validatingwebhookconfigurations validation.webhook.operator.tekton.dev validation.webhook.pipeline.tekton.dev validation.webhook.triggers.tekton.dev
     oc delete apiservices v1alpha1.operator.tekton.dev v1alpha1.tekton.dev v1alpha1.triggers.tekton.dev v1beta1.tekton.dev v1beta1.triggers.tekton.dev
@@ -145,8 +145,8 @@ export PIPELINES_DIR=${WORKDIR}/pipelines
 
 get_tkn
 
-if [[ ${#} -ge 1 ]];then
-        if [[ ${1} == 'clean' ]]; then
+if [[ ${#} -ge 2 ]];then
+        if [[ ${2} == 'clean' ]]; then
             clean_openshift_pipelines
         echo "Done!"
         exit 0
