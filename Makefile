@@ -1,5 +1,4 @@
 CI_FOLDER = images
-
 PIPE_IMAGE = quay.io/ztpfw/pipeline
 PIPE_TAG = latest
 UI_IMAGE = quay.io/ztpfw/ui
