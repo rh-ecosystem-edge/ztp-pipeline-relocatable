@@ -1,4 +1,6 @@
 #!/bin/sh
+# Set path during systemd execution
+export PATH=/root/.local/bin:/root/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Wait for API to come online
 until [ $(curl -k -s https://api:6443/version?timeout=10s | jq -r '.major' | grep -v null | wc -l) -eq 1 ]; do
