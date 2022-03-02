@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash';
 import { createResource, deleteResource, patchResource } from '../../resources';
 import { PatchType } from '../../resources/patches';
 import { getService, Service } from '../../resources/service';
-import { ipWithDots } from '../utils';
+import { addIpDots } from '../utils';
 import { MISSING_VALUE, RESOURCE_CREATE_TITLE, RESOURCE_PATCH_TITLE } from './constants';
 import {
   ADDRESS_POOL_ANNOTATION_KEY,
@@ -58,7 +58,7 @@ const saveService = async (
   const name = template.metadata.name || '';
   const namespace = template.metadata.namespace || '';
 
-  const serviceIp = ipWithDots(_serviceIp);
+  const serviceIp = addIpDots(_serviceIp);
 
   try {
     // Try to find existing resource. Decide about Add/Patch

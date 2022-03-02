@@ -1,6 +1,8 @@
 import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
 
-const DNS_NAME_REGEX = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/;
+// https://stackoverflow.com/questions/10306690/what-is-a-regular-expression-which-will-match-a-valid-domain-name-without-a-subd
+const DNS_NAME_REGEX =
+  /^(((?!\\-))(xn\\-\\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\\-\\-)?([a-z0-9\\-]{1,61}|[a-z0-9\\-]{1,30})\.[a-z]{2,}$/;
 
 // keep following in sync with the backend
 const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
@@ -15,7 +17,7 @@ export const addIpDots = (addressWithoutDots: string): string => {
     return address;
   }
 
-  throw Error('Invalid address: ' + addressWithoutDots);
+  throw new Error('Invalid address: ' + addressWithoutDots);
 };
 
 export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValidationType => {
@@ -60,6 +62,7 @@ export const passwordValidator = (pwd = ''): K8SStateContextData['password'] => 
   return ''; // passed
 };
 
+/*
 export const ipWithDots = (ip: string): string =>
   (
     ip.substring(0, 3) +
@@ -70,7 +73,7 @@ export const ipWithDots = (ip: string): string =>
     '.' +
     ip.substring(9, 12)
   ).replaceAll(' ', '');
-
+*/
 export const ipWithoutDots = (ip?: string): string => {
   if (ip) {
     const triplets = ip.split('.');
