@@ -16,7 +16,7 @@
     "lint": "cd frontend && yarn lint && cd ../backend && yarn lint",
     "prettier": "concurrently 'cd frontend && yarn prettier'  'cd backend && yarn prettier' -n frontend,backend -c green,blue",
     "pretest": "yarn lint",
-    "test": "cd frontend && CI=true yarn test"
+    "test": "cd frontend && CI=true yarn test --coverage"
   },
   "devDependencies": {
     "concurrently": "^7.0.0"
