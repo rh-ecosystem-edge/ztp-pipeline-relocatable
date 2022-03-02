@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 
-import { ApiAddressPage } from './ApiAddressPage';
+import { IngressIpPage } from './IngressIpPage';
 import { K8SStateContextProvider } from '../K8SStateContext';
 import { WizardProgressContextProvider } from '../WizardProgress';
 import { MemoryRouter } from 'react-router-dom';
@@ -11,13 +11,13 @@ const Component = () => {
     <K8SStateContextProvider>
       <WizardProgressContextProvider>
         <MemoryRouter>
-          <ApiAddressPage />
+          <IngressIpPage />
         </MemoryRouter>
       </WizardProgressContextProvider>
     </K8SStateContextProvider>
   );
 };
-describe('ApiAddressPage', () => {
+describe('IngressIpPage', () => {
   it('can render', () => {
     const { container } = render(<Component />);
     expect(screen.queryAllByTestId('address-validation-failed')).toHaveLength(0);
