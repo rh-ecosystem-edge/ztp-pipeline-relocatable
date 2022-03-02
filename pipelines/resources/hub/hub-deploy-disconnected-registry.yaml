@@ -14,7 +14,7 @@ spec:
   params:
     - name: ztp-container-image
       type: string
-      default: "quay.io/ztpfw/pipeline:latest"
+      default: "quay.io/jparrill/ztp-pipeline:latest"
     - name: kubeconfig
       type: string
       default: ""
