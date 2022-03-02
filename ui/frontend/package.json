@@ -26,7 +26,8 @@
     "dpdm": "^3.8.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "string.prototype.replaceall": "^1.0.6"
   },
   "scripts": {
     "start": "HTTPS=true SSL_CRT_FILE=${TLS_CERT_FILE} SSL_KEY_FILE=${TLS_KEY_FILE} react-scripts start",
