@@ -11,7 +11,9 @@ Installer-provisioned installation of {product-title} requires:
     . All Cluster Operators in good health status
     . Cluster reachable via a `KUBECONFIG` file
 - PVC's defined for the HUB
+    . Nuestro lider carismático insiste en que no sea un `emptydir`
 - DNS entries configured
+
     . `httpd-server.apps.CLUSTER.DOMAIN`
     . `kubeframe-registry-kubeframe-registry.apps.CLUSTER.DOMAIN`
 - `spokes.yaml` file with the configuration for the spokes

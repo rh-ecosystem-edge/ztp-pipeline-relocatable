@@ -7,7 +7,7 @@
 }
 
 .domain-selector__example {
-  font-family: "Liberation Mono";
+  font-family: 'Liberation Mono';
   color: var(--pf-global--palette--black-600);
 }
 

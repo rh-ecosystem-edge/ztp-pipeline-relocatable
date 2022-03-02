@@ -167,5 +167,3 @@ spec:
     kind: Service
     name: kubeframe-ui
   wildcardPolicy: None
-
-
