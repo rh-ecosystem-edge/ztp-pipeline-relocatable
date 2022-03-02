@@ -117,6 +117,6 @@ do
     grab_api_ingress ${spoke}
     fill_ui_vars ${spoke}
     deploy_ui ${spoke}
-
     check_resource "deployment" "kubeframe-ui" "Available" "${UI_NS}" "${SPOKE_KUBECONFIG}"
+    echo ">> UI Deployment done in: ${spoke}"
 done
