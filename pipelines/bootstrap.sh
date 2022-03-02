@@ -128,11 +128,11 @@ function clean_openshift_pipelines() {
     oc delete apiservices v1alpha1.operator.tekton.dev v1alpha1.tekton.dev v1alpha1.triggers.tekton.dev v1beta1.tekton.dev v1beta1.triggers.tekton.dev
 
     for crd in $(oc get crd | grep tekton | cut -f1 -d\ )
-    do 
+    do
         oc delete crd $crd --timeout=10s
         if [[ ${?} != 0 ]];then
             oc patch crd $crd -p '{"metadata":{"finalizers":null}}' --type merge
-	    oc delete crd $crd --grace-period=0 --force
+            oc delete crd $crd --grace-period=0 --force
         fi
     done
 

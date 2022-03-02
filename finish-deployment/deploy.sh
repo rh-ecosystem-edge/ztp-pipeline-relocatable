@@ -48,7 +48,7 @@ function clean_cluster() {
     # WARNING!
     # Carefully doing the Clean Cluster, we are storing 
     # the key files on the spoke cluster Namespace and 
-    # with this funciton you will delete it
+    # with this function you will delete it
     #####################################################
     # Function to clean cluster from hub
     cluster=${1}
