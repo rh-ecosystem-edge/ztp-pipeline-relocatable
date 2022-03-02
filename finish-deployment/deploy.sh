@@ -97,7 +97,7 @@ function store_rsa_secrets() {
     echo ">> Secret name: ${cluster}-keypair"
     echo ">> Namespace: ${cluster}"
     oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
-    oc --kubeconfig=${SPOKE_KUBECONFIG} -n default create secret generic customer-ssh-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
+    oc --kubeconfig=${SPOKE_KUBECONFIG} -n default create secret generic cluster-ssh-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
 }
 
 source ${WORKDIR}/shared-utils/common.sh
