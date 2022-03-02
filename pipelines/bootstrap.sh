@@ -129,9 +129,10 @@ function clean_openshift_pipelines() {
 
     for crd in $(oc get crd | grep tekton | cut -f1 -d\ )
     do 
-        oc delete crd $crd --grace-period=10 --force
+        oc delete crd $crd --grace-period=10
         if [[ ${?} != 0 ]];then
             oc patch crd $crd -p '{"metadata":{"finalizers":null}}' --type merge
+        oc delete crd $crd --grace-period=0 --force
         fi
     done
 
