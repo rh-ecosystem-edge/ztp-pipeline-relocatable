@@ -24,7 +24,9 @@ while [ ${count} -gt 0 ]; do
     oc get csr | grep Pending | grep -E 'kube-apiserver-client|kubelet-serving' | awk '{print $1}' | xargs oc adm certificate approve
 
     if [ $(oc get csr | grep Approved | grep -v Issued | wc -l) -gt 0 ]; then
-        echo "Waiting for certificate requests and issued certificates..."
+        echo "CSR(s) approved and issued"
+        sleep 10
+        break
     else
         echo "No pending/unissued certificate requests (CSR) found."
         count=$((count - 1))
@@ -32,3 +34,11 @@ while [ ${count} -gt 0 ]; do
     sleep 20
 
 done
+
+ if [ $(oc get csr | grep Approved | grep -v Issued | wc -l) -gt 0 ]; then
+    rm ${KUBECONFIG}
+    echo "Kubeconfig file removed"
+    systemctl disable csr-approver
+    echo "csr-approver service disabled"
+    exit 0
+fi
