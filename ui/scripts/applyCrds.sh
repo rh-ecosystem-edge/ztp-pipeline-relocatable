@@ -13,4 +13,3 @@ curl https://raw.githubusercontent.com/metallb/metallb-operator/main/config/crd/
 curl https://raw.githubusercontent.com/metallb/metallb-operator/main/config/crd/bases/metallb.io_bfdprofiles.yaml | oc apply -f -
 curl https://raw.githubusercontent.com/metallb/metallb-operator/main/config/crd/bases/metallb.io_bgppeers.yaml | oc apply -f -
 curl https://raw.githubusercontent.com/metallb/metallb-operator/main/config/crd/bases/metallb.io_metallbs.yaml | oc apply -f -
-

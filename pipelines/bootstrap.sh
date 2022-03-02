@@ -109,8 +109,7 @@ function deploy_openshift_pipelines() {
     check_resource "deployment" "tekton-operator-webhook" "Available" "openshift-operators"
 
     declare -a StringArray=("clustertasks.tekton.dev" "conditions.tekton.dev" "pipelineresources.tekton.dev" "pipelineruns.tekton.dev" "pipelines.tekton.dev" "runs.tekton.dev" "taskruns.tekton.dev" "tasks.tekton.dev" "tektonaddons.operator.tekton.dev" "tektonconfigs.operator.tekton.dev" "tektoninstallersets.operator.tekton.dev" "tektonpipelines.operator.tekton.dev" "tektontriggers.operator.tekton.dev")
-    for crd in ${StringArray[@]}
-    do
+    for crd in ${StringArray[@]}; do
         check_resource "crd" "${crd}" "Established" "openshift-operators"
     done
 
@@ -150,15 +149,15 @@ export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kust
 export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
-if [[ ${#} -ge 2 ]];then
-        if [[ ${2} == 'clean' ]]; then
-            clean_openshift_pipelines
+if [[ ${#} -ge 2 ]]; then
+    if [[ ${1} == 'clean' ]]; then
+        clean_openshift_pipelines
         echo "Done!"
         exit 0
-        fi
+    fi
 fi
 
-if [[ -z "${KUBECONFIG}" ]]; then
+if [[ -z ${KUBECONFIG} ]]; then
     echo "KUBECONFIG var is empty"
     exit 1
 fi
