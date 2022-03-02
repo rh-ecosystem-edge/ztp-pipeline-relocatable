@@ -9,10 +9,10 @@ done
 
 # Begin looking for and signing CSRs to activate nodes
 CLUSTER_DATA_FOLDER="/var/home/core/cluster_access_data"
-SPOKE_KUBECONFIG=$(ls $CLUSTER_DATA_FOLDER/*/kubeconfig-*|head -1)
+export KUBECONFIG=$(ls $CLUSTER_DATA_FOLDER/*/kubeconfig-*|head -1)
 
 
-if [ -f "${SPOKE_KUBECONFIG}" ]; then
+if [ ! -f "${KUBECONFIG}" ]; then
   echo "ERROR: Could not find kubeconfig file for cluster"
   exit 1
 fi
@@ -23,7 +23,7 @@ do
 
   oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}' | grep -E "kubelet-serving|kube-apiserver-client-kubelet" | xargs oc adm certificate approve
 
-  if [ $(oc get csr --kubeconfig "${SPOKE_KUBECONFIG}" | grep Approved | grep -v Issued | wc -l) -gt 0 ]; then
+  if [ $(oc get csr | grep Approved | grep -v Issued | wc -l) -gt 0 ]; then
     echo "Waiting for certificate requests and issued certificates..."
   else
     echo "No pending/unissued certificate requests (CSR) found."
