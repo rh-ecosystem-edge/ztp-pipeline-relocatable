@@ -92,11 +92,12 @@ function recover_spoke_files() {
 
 function store_rsa_secrets() {
     # Function to save the RSA Key-Pair into the Hub
-    echo ">>>> Creating spoke cluster Keypair on Hub: "
+    cluster=${1}
+    echo ">>>> Creating spoke cluster Keypair on Hub and Spoke ${cluster} "
     echo ">> Secret name: ${cluster}-keypair"
     echo ">> Namespace: ${cluster}"
-    cluster=${1}
     oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
+    oc --kubeconfig=${SPOKE_KUBECONFIG} -n default create secret generic customer-ssh-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
 }
 
 source ${WORKDIR}/shared-utils/common.sh
