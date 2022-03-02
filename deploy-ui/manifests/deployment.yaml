@@ -76,4 +76,3 @@ spec:
         - name: certs-secret
           secret:
             secretName: kubeframe-ui-tls
-

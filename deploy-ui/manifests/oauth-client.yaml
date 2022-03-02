@@ -10,4 +10,3 @@ metadata:
 redirectURIs:
 - $UI_APP_URL/login/callback
 secret: kubeframeoauthsecret
-

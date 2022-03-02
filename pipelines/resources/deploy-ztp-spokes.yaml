@@ -170,7 +170,7 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
-          
+
   # Deploy ZTPFWUI
   - name: deploy-ui
     taskRef:

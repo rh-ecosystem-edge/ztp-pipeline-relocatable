@@ -46,8 +46,8 @@ function detach_cluster() {
 function clean_cluster() {
     #####################################################
     # WARNING!
-    # Carefully doing the Clean Cluster, we are storing 
-    # the key files on the spoke cluster Namespace and 
+    # Carefully doing the Clean Cluster, we are storing
+    # the key files on the spoke cluster Namespace and
     # with this function you will delete it
     #####################################################
     # Function to clean cluster from hub
@@ -95,8 +95,8 @@ function store_rsa_secrets() {
     echo ">>>> Creating spoke cluster Keypair on Hub and Spoke ${cluster} "
     echo ">> Secret name: ${cluster}-keypair"
     echo ">> Namespace: ${cluster}"
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
-    oc --kubeconfig=${SPOKE_KUBECONFIG} -n default create secret generic cluster-ssh-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE}
+    oc --kubeconfig=${SPOKE_KUBECONFIG} -n default create secret generic cluster-ssh-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE}
 }
 
 source ${WORKDIR}/shared-utils/common.sh

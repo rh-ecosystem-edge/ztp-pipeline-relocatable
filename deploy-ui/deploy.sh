@@ -39,7 +39,6 @@ function check_resource() {
         exit 1
     fi
 
-
     RESOURCE="${1}"
     RESOURCE_NAME="${2}"
     TYPE_STATUS="${3}"
@@ -89,7 +88,7 @@ function fill_ui_vars() {
     export UI_IMAGE="quay.io/ztpfw/ui:latest"
     export UI_ROUTE_HOST="kubeframe-ui-${UI_NS}.${SPOKE_INGRESS_NAME}"
     export UI_APP_URL="https://${UI_ROUTE_HOST}"
- 
+
     echo ">> UI Parameters:"
     echo "NAMESPACE: ${UI_NS}"
     echo "IMAGE: ${UI_IMAGE}"
@@ -111,8 +110,7 @@ if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
 
-for spoke in ${ALLSPOKES}
-do
+for spoke in ${ALLSPOKES}; do
     extract_kubeconfig_common ${spoke}
     grab_api_ingress ${spoke}
     fill_ui_vars ${spoke}

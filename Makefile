@@ -16,4 +16,3 @@ build:
 push: build
 	podman push $(PIPE_IMAGE):$(PIPE_TAG)
 	podman push $(UI_IMAGE):$(UI_TAG)
-
