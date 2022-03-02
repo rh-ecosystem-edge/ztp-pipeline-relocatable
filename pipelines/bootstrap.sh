@@ -2,7 +2,7 @@
 
 set -o pipefail
 set -o nounset
-set -o errexit
+#set -o errexit
 set -m
 
 function get_tkn() {
@@ -121,15 +121,17 @@ function clean_openshift_pipelines() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc delete subscriptions.operators.coreos.com -n openshift-operators openshift-pipelines-operator-rh
     oc delete csv -n openshift-operators $(oc get csv -n openshift-operators --no-headers | grep openshift-pipelines-operator | cut -f1 -d\ )
-    oc delete ns ${SPOKE_DEPLOYER_NS}
+    oc delete ns ${SPOKE_DEPLOYER_NS} 
     oc delete mutatingwebhookconfigurations webhook.operator.tekton.dev webhook.pipeline.tekton.dev webhook.triggers.tekton.dev
     oc delete validatingwebhookconfigurations validation.webhook.operator.tekton.dev validation.webhook.pipeline.tekton.dev validation.webhook.triggers.tekton.dev
     oc delete apiservices v1alpha1.operator.tekton.dev v1alpha1.tekton.dev v1alpha1.triggers.tekton.dev v1beta1.tekton.dev v1beta1.triggers.tekton.dev
 
-    for crd in $(oc get crd | grep tekton | cut -f1 -d\ ); do
-        oc delete crd $crd --grace-period=10 --force
-        if [[ ${?} != 0 ]]; then
+    for crd in $(oc get crd | grep tekton | cut -f1 -d\ )
+    do
+        oc delete crd $crd --timeout=10s
+        if [[ ${?} != 0 ]];then
             oc patch crd $crd -p '{"metadata":{"finalizers":null}}' --type merge
+            oc delete crd $crd --grace-period=0 --force
         fi
     done
 
@@ -147,7 +149,7 @@ export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kust
 export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
-if [[ ${#} -ge 1 ]]; then
+if [[ ${#} -ge 2 ]]; then
     if [[ ${1} == 'clean' ]]; then
         clean_openshift_pipelines
         echo "Done!"

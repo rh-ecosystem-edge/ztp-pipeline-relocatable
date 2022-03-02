@@ -1,0 +1,18 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: kubeframe-ui
+  name: kubeframe-ui
+  namespace: $UI_NS
+spec:
+  port:
+    targetPort: https
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt
+  to:
+    kind: Service
+    name: kubeframe-ui
+  wildcardPolicy: None

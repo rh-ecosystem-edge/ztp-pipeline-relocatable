@@ -170,6 +170,23 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
+          
+  # Deploy ZTPFWUI
+  - name: deploy-ui
+    taskRef:
+      name: spoke-deploy-ui
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+    runAfter:
+      - deploy-icsp-spokes-post
+    workspaces:
+      - name: ztp
+        workspace: ztp
 
   # Deploy Workers
   - name: deploy-workers

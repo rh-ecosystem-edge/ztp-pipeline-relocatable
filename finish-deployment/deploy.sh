@@ -44,6 +44,12 @@ function detach_cluster() {
 }
 
 function clean_cluster() {
+    #####################################################
+    # WARNING!
+    # Carefully doing the Clean Cluster, we are storing 
+    # the key files on the spoke cluster Namespace and 
+    # with this function you will delete it
+    #####################################################
     # Function to clean cluster from hub
     cluster=${1}
     echo ">> Cleaning Spoke ${cluster} cluster from Hub"
@@ -52,13 +58,13 @@ function clean_cluster() {
 
 function save_files() {
     cluster=${1}
-    CLUSTER_DATA_FOLDER="~/cluster_access_data"
 
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
-    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname | cut -d / -f 2); do
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${node} "mkdir ${CLUSTER_DATA_FOLDER}"
-        copy_files_common "${SPOKE_SAFE_FOLDER}" "${node}" "${CLUSTER_DATA_FOLDER}/"
+    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname); do
+        NODE_IP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ${node} -o jsonpath='{.status.addresses[0].address}')
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "mkdir -p ~/.kube"
+        copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP}" "./.kube/config"
     done
 }
 
@@ -83,6 +89,16 @@ function recover_spoke_files() {
     save_files ${cluster}
 }
 
+function store_rsa_secrets() {
+    # Function to save the RSA Key-Pair into the Hub
+    cluster=${1}
+    echo ">>>> Creating spoke cluster Keypair on Hub and Spoke ${cluster} "
+    echo ">> Secret name: ${cluster}-keypair"
+    echo ">> Namespace: ${cluster}"
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
+    oc --kubeconfig=${SPOKE_KUBECONFIG} -n default create secret generic cluster-ssh-keypair --from-file=${RSA_KEY_FILE} --from-file=${RSA_PUB_FILE} 
+}
+
 source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Dettaching clusters"
@@ -97,6 +113,6 @@ for spoke in ${ALLSPOKES}; do
     check_cluster ${spoke}
     recover_spoke_rsa ${spoke}
     recover_spoke_files ${spoke}
+    store_rsa_secrets ${spoke}
     #detach_cluster ${spoke}
-    #clean_cluster ${spoke}
 done
