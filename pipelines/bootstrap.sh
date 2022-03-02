@@ -144,10 +144,6 @@ export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
 
 get_tkn
-clone_ztp
-export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
-export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
-export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
 if [[ ${#} -ge 1 ]];then
         if [[ ${1} == 'clean' ]]; then
@@ -156,6 +152,11 @@ if [[ ${#} -ge 1 ]];then
         exit 0
         fi
 fi
+
+clone_ztp
+export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
+export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
+export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
 if [[ -z "${KUBECONFIG}" ]]; then
     echo "KUBECONFIG var is empty"
