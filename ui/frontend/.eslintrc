@@ -32,7 +32,17 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "react/prop-types": "off"
+    "react/prop-types": "off",
+    "testing-library/no-debugging-utils": [
+      "error",
+      {
+        "utilsToCheckFor": {
+          "debug": false,
+          "logRoles": true,
+          "logDOM": true
+        }
+      }
+    ]
   },
   "settings": {
     "react": {
