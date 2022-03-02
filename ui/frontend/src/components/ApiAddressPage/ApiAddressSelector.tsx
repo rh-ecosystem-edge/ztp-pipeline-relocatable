@@ -29,7 +29,9 @@ export const ApiAddressSelector: React.FC = () => {
       </StackItem>
       <StackItem isFilled>
         {validation.message && (
-          <div className="address-validation-failed">{validation.message}</div>
+          <div data-testid="address-validation-failed" className="address-validation-failed">
+            {validation.message}
+          </div>
         )}
       </StackItem>
     </Stack>
