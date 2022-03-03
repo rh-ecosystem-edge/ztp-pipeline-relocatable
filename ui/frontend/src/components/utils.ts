@@ -1,3 +1,4 @@
+import { isPasswordPolicyMet } from './PasswordPage/utils';
 import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
 
 // https://stackoverflow.com/questions/10306690/what-is-a-regular-expression-which-will-match-a-valid-domain-name-without-a-subd
@@ -57,9 +58,8 @@ export const usernameValidator = (username = ''): K8SStateContextData['username'
   return "Valid username wasn't provided";
 };
 
-export const passwordValidator = (pwd = ''): K8SStateContextData['password'] => {
-  // We are validating password in PasswordRequirements component
-  return ''; // passed
+export const passwordValidator = (pwd: string): K8SStateContextData['passwordValidation'] => {
+  return isPasswordPolicyMet(pwd);
 };
 
 /*

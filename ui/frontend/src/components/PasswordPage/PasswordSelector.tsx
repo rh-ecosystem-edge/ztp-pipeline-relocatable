@@ -20,20 +20,21 @@ import './PasswordSelector.css';
 const fieldId = 'input-password';
 const fieldId2 = 'input-password-check';
 
-export const PasswordSelector: React.FC = () => {
+export const PasswordSelector: React.FC<{
+  equalityValidationCheck?: string;
+  setEqualityValidationCheck: (result: string) => void;
+}> = ({ equalityValidationCheck, setEqualityValidationCheck }) => {
   const { password, handleSetPassword, passwordValidation: validation } = useK8SStateContext();
+  const [passwordCheck, setPasswordCheck] = React.useState(''); // content of the input-box
   const [isVisible, setVisible] = React.useState(false);
-
-  const [passwordCheck, setPasswordCheck] = React.useState('');
-  const [validationCheck, setValidationCheck] = React.useState('');
 
   const validateEquality = React.useCallback(() => {
     if (password !== passwordCheck) {
-      setValidationCheck('Passwords does not match.');
+      setEqualityValidationCheck('Passwords does not match.');
     } else {
-      setValidationCheck('');
+      setEqualityValidationCheck('');
     }
-  }, [setValidationCheck, passwordCheck, password]);
+  }, [setEqualityValidationCheck, passwordCheck, password]);
 
   React.useEffect(() => validateEquality(), [validateEquality, passwordCheck, password]);
 
@@ -80,13 +81,13 @@ export const PasswordSelector: React.FC = () => {
       <StackItem isFilled>
         <FormGroup
           fieldId={fieldId2}
-          helperTextInvalid={<HelperTextInvalid validation={validationCheck} />}
-          validated={validationCheck ? 'error' : 'default'}
+          helperTextInvalid={<HelperTextInvalid validation={equalityValidationCheck} />}
+          validated={equalityValidationCheck ? 'error' : 'default'}
         >
           <TextInput
             id={fieldId}
             value={passwordCheck}
-            validated={validationCheck ? 'error' : 'default'}
+            validated={equalityValidationCheck ? 'error' : 'default'}
             isRequired={false}
             onChange={setPasswordCheck}
             type={isVisible ? 'text' : 'password'}

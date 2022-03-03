@@ -25,7 +25,7 @@ export const K8SStateContextProvider: React.FC<{
   );
 
   const [password, setPassword] = React.useState('');
-  const [passwordValidation, setPasswordValidation] = React.useState<string>('');
+  const [passwordValidation, setPasswordValidation] = React.useState(true);
   const handleSetPassword = React.useCallback(
     (newVal: string) => {
       setPasswordValidation(passwordValidator(newVal));
