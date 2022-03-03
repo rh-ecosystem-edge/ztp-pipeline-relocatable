@@ -149,7 +149,7 @@ export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
 export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
 if [[ ${#} -ge 2 ]]; then
-    if [[ ${1} == 'clean' ]]; then
+    if [[ ${2} == 'clean' ]]; then
         clean_openshift_pipelines
         echo "Done!"
         exit 0
