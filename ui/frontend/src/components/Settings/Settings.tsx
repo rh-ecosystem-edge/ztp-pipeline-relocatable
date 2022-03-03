@@ -2,11 +2,12 @@ import React from 'react';
 
 import { Page } from '../Page';
 import { ContentTwoCols } from '../ContentTwoCols';
-
-import { SettingsPageLeft } from './SettingsPageLeft';
-import { SettingsPageRight } from './SettingsPageRight';
 import { useK8SStateContext } from '../K8SStateContext';
 import { initialDataLoad } from '../WelcomePage/initialDataLoad';
+
+import { Spinner } from './Spinner';
+import { SettingsPageLeft } from './SettingsPageLeft';
+import { SettingsPageRight } from './SettingsPageRight';
 
 export const Settings: React.FC = () => {
   const [error, setError] = React.useState<string>();
@@ -38,6 +39,8 @@ export const Settings: React.FC = () => {
       />
     </Page>
   ) : (
-    <div>TODO: Loading spinner</div>
+    <Page>
+      <ContentTwoCols left={<SettingsPageLeft />} right={<Spinner />} />
+    </Page>
   );
 };
