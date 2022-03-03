@@ -92,10 +92,6 @@ export const K8SStateContextProvider: React.FC<{
       domain,
       domainValidation,
       handleSetDomain,
-
-      // sshPubKey,
-      // handleSetSshPubKey,
-      // sshPubKeyValidation,
     }),
     [
       apiaddr,

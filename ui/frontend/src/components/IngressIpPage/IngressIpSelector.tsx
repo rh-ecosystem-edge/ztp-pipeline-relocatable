@@ -7,7 +7,6 @@ import { useK8SStateContext } from '../K8SStateContext';
 
 export const IngressIpSelector: React.FC = () => {
   const { ingressIp, handleSetIngressIp, ingressIpValidation: validation } = useK8SStateContext();
-
   return (
     <Stack className="wizard-content" hasGutter>
       <StackItem>
@@ -28,7 +27,9 @@ export const IngressIpSelector: React.FC = () => {
       </StackItem>
       <StackItem isFilled>
         {validation.message && (
-          <div className="address-validation-failed">{validation.message}</div>
+          <div data-testid="address-validation-failed" className="address-validation-failed">
+            {validation.message}
+          </div>
         )}
       </StackItem>
     </Stack>

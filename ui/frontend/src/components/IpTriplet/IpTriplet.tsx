@@ -72,7 +72,7 @@ export const IpTriplet: React.FC<IpTripletProps> = ({
   return (
     <TextInput
       ref={input}
-      id={id}
+      data-testid={id}
       className={clzName}
       value={zeroedValue}
       type="text"

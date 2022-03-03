@@ -5,7 +5,7 @@ import { TextInput } from '@patternfly/react-core';
 
 import { IpTripletIndex, IpTripletProps, IpTripletSelectorValidationType } from '../types';
 import { IpTriplet } from '../IpTriplet';
-import { ipWithDots } from '../utils';
+import { addIpDots } from '../utils';
 
 import './IpTripletsSelector.css';
 
@@ -21,7 +21,7 @@ export const IpTripletsSelector: React.FC<{
   const validated = validation.triplets || [];
 
   if (isDisabled) {
-    return <TextInput id={id} value={ipWithDots(address)} isDisabled={true} />;
+    return <TextInput id={id} value={addIpDots(address)} isDisabled={true} />;
   }
 
   return (

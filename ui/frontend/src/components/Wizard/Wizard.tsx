@@ -10,7 +10,7 @@ import {
   PersistPage,
   FinalPage,
 } from '../../components';
-import Redirect from '../../Redirect';
+import Redirect from '../Redirect';
 import { WizardProgressContextProvider } from '../WizardProgress';
 
 import './Wizard.css';
