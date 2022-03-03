@@ -56,7 +56,7 @@ function check_mcp() {
     timeout=0
     ready=false
     echo KUBECONFIG=${TARGET_KUBECONFIG}
-    while [ "$timeout" -lt "240" ]; do
+    while [ "$timeout" -lt "1000" ]; do
         echo "Nodes:"
         oc --kubeconfig=${TARGET_KUBECONFIG} get nodes
         echo
@@ -83,7 +83,7 @@ function check_ocs_ready() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    while [ "$timeout" -lt "240" ]; do
+    while [ "$timeout" -lt "1000" ]; do
         if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
             ready=true
             break
@@ -102,7 +102,7 @@ function check_route_ready() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    while [ "$timeout" -lt "240" ]; do
+    while [ "$timeout" -lt "1000" ]; do
         if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -eq 3 ]]; then
             ready=true
             break
