@@ -1,0 +1,36 @@
+version: ci
+image: centos8stream
+virtual_masters: false
+provisioning_enable: false
+disconnected: false
+launch_steps: true
+deploy_openshift: true
+cluster: test-ci
+domain: alklabs.com
+baremetal_cidr: 192.168.150.0/24
+baremetal_net: bare-net
+api_ip: 192.168.150.253
+ingress_ip: 192.168.150.252
+ipmi_user: amorgant
+ipmi_password: alknopfler
+disk_size: 80
+masters:
+  - redfish_address: 192.168.1.5
+    provisioning_mac: 98:03:9b:62:ab:19
+    model: hpe
+  - redfish_address: 192.168.1.5
+    provisioning_mac: 98:03:9b:62:ab:19
+    model: hpe
+  - redfish_address: 192.168.1.5
+    provisioning_mac: 98:03:9b:62:ab:19
+    model: hpe
+
+
+
+
+
+
+
+
+
+
