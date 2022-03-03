@@ -21,7 +21,7 @@ This script, will also create the required pipeline definitions and tasks.
 
 ```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/tekton-pipeline/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
+curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s
 ```
 
 - An  output similar to this one, will be shown:
