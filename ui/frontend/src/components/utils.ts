@@ -9,10 +9,10 @@ const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
 
 export const addIpDots = (addressWithoutDots: string): string => {
   if (addressWithoutDots?.length === 12) {
-    let address = addressWithoutDots.substring(0, 3) + '.';
-    address += addressWithoutDots.substring(3, 6) + '.';
-    address += addressWithoutDots.substring(6, 9) + '.';
-    address += addressWithoutDots.substring(9);
+    let address = addressWithoutDots.substring(0, 3).trim() + '.';
+    address += addressWithoutDots.substring(3, 6).trim() + '.';
+    address += addressWithoutDots.substring(6, 9).trim() + '.';
+    address += addressWithoutDots.substring(9).trim();
 
     return address;
   }

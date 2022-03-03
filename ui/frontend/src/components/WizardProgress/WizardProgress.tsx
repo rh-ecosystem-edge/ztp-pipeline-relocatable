@@ -41,6 +41,14 @@ export const WizardProgress: React.FC = () => {
       <ProgressStep id="domain" titleId="domain-title" aria-label="Domain step" {...steps.domain}>
         Domain
       </ProgressStep>
+      <ProgressStep
+        id="sshkey"
+        titleId="sshkey-title"
+        aria-label="Download SSH key step"
+        {...steps.sshkey}
+      >
+        SSH
+      </ProgressStep>
     </ProgressStepper>
   );
 };

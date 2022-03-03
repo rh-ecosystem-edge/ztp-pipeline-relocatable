@@ -6,3 +6,4 @@ export * from './IngressIpPage';
 export * from './DomainPage';
 export * from './PersistPage';
 export * from './FinalPage';
+export * from './DownloadSshKeyPage';

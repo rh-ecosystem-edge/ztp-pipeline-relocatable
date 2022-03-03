@@ -5,20 +5,21 @@ import { ContentThreeRows } from '../ContentThreeRows';
 import { WizardProgress } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
-import { DomainSelector } from './DomainSelector';
-import { useK8SStateContext } from '../K8SStateContext';
+import { DownloadSshKey } from './DownloadSshKey';
 
-export const DomainPage: React.FC = () => {
+export const DownloadSshKeyPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
-  React.useEffect(() => setActiveStep('domain'), [setActiveStep]);
-  const { domainValidation: validation } = useK8SStateContext();
+  React.useEffect(() => setActiveStep('sshkey'), [setActiveStep]);
+  const [isDownloaded, setDownloaded] = React.useState(false);
+
+  const isNextEnabled = () => isDownloaded;
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
-        middle={<DomainSelector />}
-        bottom={<WizardFooter back="ingressip" next="sshkey" isNextEnabled={() => !validation} />}
+        middle={<DownloadSshKey setDownloaded={setDownloaded} />}
+        bottom={<WizardFooter back="domain" next="persist" isNextEnabled={isNextEnabled} />}
       />
     </Page>
   );

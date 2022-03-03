@@ -25,7 +25,7 @@ export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next, isNextEn
         onClick={() => navigate(`/wizard/${next}`)}
         isDisabled={isNextEnabled && !isNextEnabled()}
       >
-        Continue
+        {next === 'persist' ? 'Finish setup' : 'Continue'}
       </Button>
     </div>
   );

@@ -35,7 +35,7 @@ const IP_TRIPLET_DEFAULT = {
 describe('Test component utils', () => {
   it('addIpDots', () => {
     expect(() => addIpDots('')).toThrow('Invalid address: ');
-    expect(addIpDots('127  1  1  1')).toBe('127.  1.  1.  1');
+    expect(addIpDots('127  1  1  1')).toBe('127.1.1.1');
     expect(addIpDots('127001001001')).toBe('127.001.001.001');
   });
 
