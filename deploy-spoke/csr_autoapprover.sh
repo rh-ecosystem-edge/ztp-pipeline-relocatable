@@ -9,8 +9,7 @@ until [ $(curl -k -s https://api:6443/version?timeout=10s | jq -r '.major' | gre
 done
 
 # Begin looking for and signing CSRs to activate nodes
-CLUSTER_DATA_FOLDER="/var/home/core/cluster_access_data"
-export KUBECONFIG=$(ls $CLUSTER_DATA_FOLDER/*/kubeconfig-* | head -1)
+export KUBECONFIG="/var/home/core/.kube/config"
 
 if [ ! -f "${KUBECONFIG}" ]; then
     echo "ERROR: Could not find kubeconfig file for cluster"
@@ -36,7 +35,7 @@ while [ ${count} -gt 0 ]; do
 done
 
 if [ $(oc get csr | grep Approved | grep -v Issued | wc -l) -gt 0 ]; then
-    rm ${KUBECONFIG}
+    rm -f ${KUBECONFIG}
     echo "Kubeconfig file removed"
     systemctl disable csr-approver
     echo "csr-approver service disabled"
