@@ -81,6 +81,12 @@ function mirror() {
         cp -rf ${PULL_SECRET} ~/.docker/config.json
     fi
 
+    if [ ! -f /var/run/user/0/containers/auth.json ]; then
+        echo "Copy credentails for opm index"
+        mkdir -p /var/run/user/0/containers
+        cp -f /workspace/ztp/build/pull-secret.json /var/run/user/0/containers/auth.json
+    fi
+
     echo ">>>> Mirror OLM Operators"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Pull Secret: ${PULL_SECRET}"
