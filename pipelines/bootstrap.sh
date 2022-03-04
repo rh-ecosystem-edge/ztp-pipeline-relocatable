@@ -22,6 +22,21 @@ function get_tkn() {
     fi
 }
 
+function get_yq() {
+    URL="https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_amd64"
+    BIN_FOLDER="${HOME}/bin"
+
+    if [ ! $(command -v yq) ]; then
+        echo ">>>> Downloading yq into: ${BIN_FOLDER}"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        mkdir -p ${BIN_FOLDER}
+        curl -Lk ${URL} -o "${BIN_FOLDER}/yq"
+        chmod 755 ${BIN_FOLDER}/yq
+    else
+        echo ">>>> Binary yq already installed!"
+    fi
+}
+
 function check_resource() {
     # 1 - Resource type: "deployment"
     # 2 - Resource name: "openshift-pipelines-operator"
@@ -143,6 +158,7 @@ export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
 
 get_tkn
+get_yq
 clone_ztp
 export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
 export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
