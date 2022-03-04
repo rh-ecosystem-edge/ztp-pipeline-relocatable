@@ -31,3 +31,5 @@ The pipeline has two parts:
 - Another that deploys Spoke clusters based on the configuration `spokes.yaml` file using a HUB cluster configured with the previous pipeline.
 
 The actual workflow and its details can be checked at the files inside the `pipelines` folder.
+
+image::network.png[]
