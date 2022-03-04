@@ -94,6 +94,7 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
 };
 
 export function logout(req: Request, res: Response): void {
+  logger.debug('Logout called');
   const token = getToken(req);
   if (!token) return unauthorized(req, res);
 
@@ -109,6 +110,7 @@ export function logout(req: Request, res: Response): void {
   }
 
   const clientRequest = request(
+    // /apis/oauth.openshift.io/v1/oauthaccesstokens/sha256~e49cNiBYVhrRff3jpdZY2o1U2mjeEGQDRjvSKVREvNs
     `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
     {
       method: 'DELETE',
@@ -116,11 +118,13 @@ export function logout(req: Request, res: Response): void {
       agent: new Agent({ rejectUnauthorized: false }),
     },
     (response: IncomingMessage) => {
-      deleteCookie(res, 'acm-access-token-cookie');
+      logger.debug('OAuth access token deleted');
+      deleteCookie(res, K8S_ACCESS_TOKEN_COOKIE);
       res.writeHead(response.statusCode || 500).end();
     },
   );
   clientRequest.on('error', () => {
+    logger.warn('Failed to delete OAuth access token');
     respondInternalServerError(req, res);
   });
   clientRequest.end();
