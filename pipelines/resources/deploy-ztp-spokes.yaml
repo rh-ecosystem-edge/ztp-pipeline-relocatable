@@ -38,7 +38,7 @@ spec:
   # Preflight
   - name: pre-flight
     taskRef:
-      name: common-pre-flight
+      name: common-pre-flight-spokes
     params:
       - name: spokes-config
         value: $(params.spokes-config)
