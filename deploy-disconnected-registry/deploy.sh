@@ -38,6 +38,39 @@ function extract_kubeconfig() {
     oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
 }
 
+function side_evict_error() {
+
+    KUBEC=${1}
+    echo ">> Looking for eviction errors"
+    pattern='SchedulingDisabled'
+
+    conflicting_node="$(oc --kubeconfig=${KUBEC} get node --no-headers | grep ${pattern} | cut -f1 -d\ )"
+
+    if [[ -z ${conflicting_node} ]]; then
+        echo "No masters on ${pattern}"
+    else
+        conflicting_daemon_pod=$(oc --kubeconfig=${KUBEC} get pod -n openshift-machine-config-operator -o wide --no-headers | grep daemon | grep ${conflicting_node} | cut -f1 -d\ )
+        log_entry="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep evicting | tail -1 | grep pods)"
+
+        if [[ -z ${log_entry} ]]; then
+            echo "No Conflicting LogEntry on ${conflicting_daemon_pod}"
+        else
+            echo ">> Conflicting LogEntry Found!!"
+            pod=$(echo ${log_entry##*pods/} | cut -d\" -f2)
+            conflicting_ns=$(oc --kubeconfig=${KUBEC} get pod -A | grep ${pod} | cut -f1 -d\ )
+
+            echo ">> Clean Eviction triggered info: "
+            echo NODE: ${conflicting_node}
+            echo DAEMON: ${conflicting_daemon_pod}
+            echo NS: ${conflicting_ns}
+            echo LOG: ${log_entry}
+            echo POD: ${pod}
+
+            oc --kubeconfig=${KUBEC} delete pod -n ${conflicting_ns} ${pod}
+        fi
+    fi
+}
+
 function check_mcp() {
 
     echo Mode: ${1}
@@ -68,7 +101,8 @@ function check_mcp() {
             break
         fi
         echo "Waiting for MCP Updated field on: ${1}"
-        sleep 5
+        sleep 20
+        side_evict_error ${TARGET_KUBECONFIG}
         timeout=$((timeout + 1))
     done
 
