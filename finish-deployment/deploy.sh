@@ -70,7 +70,7 @@ function save_files() {
 
 function check_cluster() {
     cluster=${1}
-    wait_time=240
+    wait_time=10000
 
     echo ">>>> Check spoke cluster: ${cluster}"
     echo ">> Check ManagedCluster for spoke: ${cluster}"
