@@ -293,6 +293,8 @@ spec:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_MASTER_BMC_URL'
    credentialsName: 'kubeframe-spoke-${i}-master-${master}-bmc-secret'
+   rootDeviceHints:
+     deviceName: "/dev/nvme0n1"
 
 EOF
 
