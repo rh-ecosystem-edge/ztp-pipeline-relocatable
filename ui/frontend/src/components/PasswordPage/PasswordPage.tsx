@@ -12,17 +12,23 @@ export const PasswordPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
   React.useEffect(() => setActiveStep('password'), [setActiveStep]);
   const { password, passwordValidation: validation } = useK8SStateContext();
+  const [equalityValidationCheck, setEqualityValidationCheck] = React.useState('');
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
-        middle={<PasswordSelector />}
+        middle={
+          <PasswordSelector
+            equalityValidationCheck={equalityValidationCheck}
+            setEqualityValidationCheck={setEqualityValidationCheck}
+          />
+        }
         bottom={
           <WizardFooter
             back="username"
             next="apiaddr"
-            isNextEnabled={() => !!password && !validation}
+            isNextEnabled={() => !!password && !!validation && !equalityValidationCheck}
           />
         }
       />

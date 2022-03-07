@@ -1,3 +1,4 @@
+import { isPasswordPolicyMet } from './PasswordPage/utils';
 import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
 
 // https://stackoverflow.com/questions/10306690/what-is-a-regular-expression-which-will-match-a-valid-domain-name-without-a-subd
@@ -9,10 +10,10 @@ const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
 
 export const addIpDots = (addressWithoutDots: string): string => {
   if (addressWithoutDots?.length === 12) {
-    let address = addressWithoutDots.substring(0, 3) + '.';
-    address += addressWithoutDots.substring(3, 6) + '.';
-    address += addressWithoutDots.substring(6, 9) + '.';
-    address += addressWithoutDots.substring(9);
+    let address = addressWithoutDots.substring(0, 3).trim() + '.';
+    address += addressWithoutDots.substring(3, 6).trim() + '.';
+    address += addressWithoutDots.substring(6, 9).trim() + '.';
+    address += addressWithoutDots.substring(9).trim();
 
     return address;
   }
@@ -57,9 +58,8 @@ export const usernameValidator = (username = ''): K8SStateContextData['username'
   return "Valid username wasn't provided";
 };
 
-export const passwordValidator = (pwd = ''): K8SStateContextData['password'] => {
-  // We are validating password in PasswordRequirements component
-  return ''; // passed
+export const passwordValidator = (pwd: string): K8SStateContextData['passwordValidation'] => {
+  return isPasswordPolicyMet(pwd);
 };
 
 /*

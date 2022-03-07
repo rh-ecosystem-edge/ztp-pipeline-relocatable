@@ -25,7 +25,7 @@ export type K8SStateContextData = {
   handleSetUsername: (newVal: string) => void;
 
   password: string;
-  passwordValidation?: string;
+  passwordValidation: boolean;
   handleSetPassword: (newVal: string) => void;
 
   apiaddr: string; // 12 characters

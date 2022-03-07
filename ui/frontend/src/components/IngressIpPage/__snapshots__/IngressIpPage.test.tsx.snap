@@ -273,6 +273,30 @@ exports[`IngressIpPage can render 1`] = `
                 </div>
               </div>
             </li>
+            <li
+              aria-label="Download SSH key step"
+              class="pf-c-progress-stepper__step pf-m-pending"
+              id="sshkey"
+            >
+              <div
+                class="pf-c-progress-stepper__step-connector"
+              >
+                <span
+                  class="pf-c-progress-stepper__step-icon"
+                />
+              </div>
+              <div
+                class="pf-c-progress-stepper__step-main"
+              >
+                <div
+                  aria-labelledby="sshkey sshkey-title"
+                  class="pf-c-progress-stepper__step-title"
+                  id="sshkey-title"
+                >
+                  SSH
+                </div>
+              </div>
+            </li>
           </ol>
         </div>
         <div

@@ -1,0 +1,26 @@
+.download-item {
+  background-color: #e7f1fa;
+  border-radius: 2px; /* keep in sync with Page.css */
+}
+
+.download-item .pf-l-grid {
+  margin-left: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.download-item__icon {
+  border-right: 1px;
+  border-right-style: solid;
+  padding-right: var(--pf-global--spacer--md);
+  border-right-color: var(--pf-global--palette--black-400);
+}
+
+.download-item__text {
+  margin-left: var(--pf-global--spacer--md);
+  color: var(--pf-global--palette--black-600);
+}
+
+.download-item__error {
+  margin-top: var(--pf-global--spacer--sm);
+}

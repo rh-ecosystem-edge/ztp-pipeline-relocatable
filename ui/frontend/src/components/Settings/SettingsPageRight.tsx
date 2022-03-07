@@ -23,6 +23,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError
   initialError,
 }) => {
   const [isEdit, setEdit] = React.useState(isInitialEdit);
+  const [isSaving, setIsSaving] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
   const state = useK8SStateContext();
 
@@ -47,9 +48,11 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError
     handleSetDomain,
   } = state;
 
-  const onSave = () => {
+  const onSave = async () => {
+    setIsSaving(true);
     setError(undefined);
-    persist(state, setError, onSuccess);
+    await persist(state, setError, onSuccess);
+    setIsSaving(false);
   };
 
   const onSuccess = () => {
@@ -144,7 +147,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError
           )}
           {isEdit && (
             <>
-              <Button variant={ButtonVariant.primary} onClick={onSave}>
+              <Button variant={ButtonVariant.primary} onClick={onSave} isDisabled={isSaving}>
                 Save
               </Button>
               <Button variant={ButtonVariant.link} onClick={onCancelEdit}>
