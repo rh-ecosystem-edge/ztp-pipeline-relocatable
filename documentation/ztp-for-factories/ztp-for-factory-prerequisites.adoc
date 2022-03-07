@@ -11,11 +11,15 @@ Installer-provisioned installation of {product-title} requires:
     . All Cluster Operators in good health status
     . Cluster reachable via a `KUBECONFIG` file
 - PVC's defined for the HUB
-    . Nuestro lider carismático insiste en que no sea un `emptydir`
-- DNS entries configured
+    . It must not be an `emptydir` because between each step in the pipeline, the contents will be removed and we require them to further progress.
+- DNS entries configured and resolvable from both internal and external network, with DNS on the DHCP Factory network
+    - HUB
+        . `api.hub.<domain>` and `api-int.hub.<domain>` entries to the same IP address
+        . ingress (*.apps.hub.<domain>)
+    - SPOKE
+        . `api.<spokename>.<domain>` and `api-int.<spokename>.<domain>` entries to the same IP address
+        . ingress (*.apps.<spokename>.<domain>)
 
-    . `httpd-server.apps.CLUSTER.DOMAIN`
-    . `kubeframe-registry-kubeframe-registry.apps.CLUSTER.DOMAIN`
 - `spokes.yaml` file with the configuration for the spokes
 - A set of systems for Spoke usage with 3 masters and 1 worker
 
