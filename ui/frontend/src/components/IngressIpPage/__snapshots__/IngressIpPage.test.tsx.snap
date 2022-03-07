@@ -396,6 +396,7 @@ exports[`IngressIpPage can render 1`] = `
               data-ouia-component-id="OUIA-Generated-Button-link-1"
               data-ouia-component-type="PF4/Button"
               data-ouia-safe="true"
+              data-testid="wizard-footer-button-back"
               type="button"
             >
               Go back
@@ -406,6 +407,7 @@ exports[`IngressIpPage can render 1`] = `
               data-ouia-component-id="OUIA-Generated-Button-primary-1"
               data-ouia-component-type="PF4/Button"
               data-ouia-safe="true"
+              data-testid="wizard-footer-button-next"
               type="button"
             >
               Continue
