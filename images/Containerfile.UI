@@ -13,7 +13,8 @@ COPY ./ui/backend ./backend
 COPY ./ui/package.json ./ui/yarn.lock ./
 
 RUN yarn clean
-RUN yarn install
+# Reduce flakiness. The NPM registry network operations can fail sometime ...
+RUN yarn install || (sleep 5 ; yarn install) || (sleep 5 ; yarn install)
 RUN yarn build
 
 #############
