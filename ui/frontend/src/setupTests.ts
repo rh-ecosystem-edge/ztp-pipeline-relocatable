@@ -4,5 +4,8 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 import replaceAllInserter from 'string.prototype.replaceall';
+import fetchMock from 'jest-fetch-mock';
 
 replaceAllInserter.shim();
+fetchMock.enableMocks();
+global.URL.createObjectURL = jest.fn();

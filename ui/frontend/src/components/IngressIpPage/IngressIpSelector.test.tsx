@@ -4,11 +4,6 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { IngressIpSelector } from './IngressIpSelector';
 import { K8SStateContextProvider, useK8SStateContext } from '../K8SStateContext';
 
-// const delay = (ms: number) =>
-//   new Promise((resolve) => {
-//     setTimeout(resolve, ms);
-//   });
-
 const TestedComponent: React.FC<{
   ctxData?: { ingressIp: string };
 }> = ({ ctxData }) => {

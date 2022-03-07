@@ -33,9 +33,15 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
   React.useEffect(() => {
     const doItAsync = async () => {
       try {
-        const secret = await getSecret(SSH_PRIVATE_KEY_SECRET).promise;
-        if (secret?.data?.['id_rsa.key']) {
-          setSshKey(secret.data['id_rsa.key']);
+        let secret = await getSecret(SSH_PRIVATE_KEY_SECRET).promise;
+
+        if (secret && typeof secret === 'string') {
+          // workaround for tests
+          secret = JSON.parse(secret);
+        }
+        const data = secret?.data;
+        if (data?.['id_rsa.key']) {
+          setSshKey(data['id_rsa.key']);
         } else {
           setError({
             title: SSH_PRIVATE_KEY_SECRET_INCORRECT,
@@ -103,7 +109,12 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
             <div className="download-item__text">KubeFrame Private SSH Key</div>
           </GridItem>
           <GridItem span={10}>
-            <Button variant={ButtonVariant.link} onClick={onDownload} isDisabled={!sshKey}>
+            <Button
+              data-testid="button-download-ssh-key"
+              variant={ButtonVariant.link}
+              onClick={onDownload}
+              isDisabled={!sshKey}
+            >
               <DownloadIcon />
               &nbsp;Download
             </Button>
