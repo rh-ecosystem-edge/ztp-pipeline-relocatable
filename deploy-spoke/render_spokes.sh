@@ -288,13 +288,11 @@ spec:
  online: false
  bootMACAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
  rootDeviceHints:
-   deviceName: /dev/sda
+   deviceName: /dev/nvme0n1
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_MASTER_BMC_URL'
    credentialsName: 'kubeframe-spoke-${i}-master-${master}-bmc-secret'
-   rootDeviceHints:
-     deviceName: "/dev/nvme0n1"
 
 EOF
 
