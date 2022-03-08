@@ -10,8 +10,3 @@ export const HelperTextInvalid: React.FC<{ validation?: string }> = ({ validatio
       <span>{validation}</span>
     </div>
   ) : null;
-/*: (
-    <div>
-      <CheckCircleIcon color={successColor.value} />
-      Matches password
-    </div> );*/

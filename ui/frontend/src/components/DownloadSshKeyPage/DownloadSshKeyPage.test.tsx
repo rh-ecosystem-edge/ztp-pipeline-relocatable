@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
+import fetch from 'jest-fetch-mock';
 
 import { DownloadSshKeyPage } from './DownloadSshKeyPage';
 import { K8SStateContextProvider } from '../K8SStateContext';
