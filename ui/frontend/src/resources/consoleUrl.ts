@@ -6,7 +6,7 @@ export const useConsoleUrl = () => {
   const [consoleUrl, setConsoleUrl] = React.useState<string>();
   React.useEffect(() => {
     const doItAsync = async () => {
-      const route = await getResource<Route>({
+      let route = await getResource<Route>({
         apiVersion: 'route.openshift.io/v1',
         kind: 'Route',
         metadata: {
@@ -15,10 +15,18 @@ export const useConsoleUrl = () => {
         },
       }).promise;
 
-      if (route.spec?.host) {
-        const result = `https://${route.spec.host}`;
+      if (route && typeof route === 'string') {
+        // workaround for tests
+        route = JSON.parse(route);
+      }
+      const host = route.spec?.host;
+
+      if (host) {
+        const result = `https://${host}`;
         console.log('OCP console URL read: ', result);
         setConsoleUrl(result);
+      } else {
+        console.warn('The OCP console route does not contain host');
       }
     };
     doItAsync();

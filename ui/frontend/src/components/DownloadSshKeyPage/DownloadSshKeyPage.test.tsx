@@ -30,7 +30,8 @@ describe('DownloadSshKeyPage', () => {
     let container;
     // eslint-disable-next-line testing-library/no-unnecessary-act
     await act(async () => {
-      container = render(<Component />);
+      const { container: c } = render(<Component />);
+      container = c;
       await delay(1000);
     });
 

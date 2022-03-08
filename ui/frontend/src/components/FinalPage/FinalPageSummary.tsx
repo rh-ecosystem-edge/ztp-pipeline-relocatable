@@ -51,6 +51,7 @@ export const FinalPageSummary: React.FC = () => {
         <Button
           variant={ButtonVariant.primary}
           isDisabled={!consoleUrl}
+          data-testid="final-page-button-console"
           onClick={() => {
             console.info('Redirecting to OCP console: ', consoleUrl);
             window.location.href = consoleUrl || '';
@@ -58,7 +59,11 @@ export const FinalPageSummary: React.FC = () => {
         >
           OpenShift console
         </Button>
-        <Button variant={ButtonVariant.link} onClick={() => navigate(`/settings`)}>
+        <Button
+          variant={ButtonVariant.link}
+          data-testid="final-page-button-settings"
+          onClick={() => navigate(`/settings`)}
+        >
           <Text className="final-page-summary__settings">
             Settings&nbsp;
             <ArrowRightIcon />
