@@ -61,15 +61,13 @@ function save_files() {
 
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
-    for master in 0 1 2
-    do
+    for master in 0 1 2; do
         EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
         echo ""
         echo ">>>> Copying ${cluster} Kubeconfig to Master ${master} Node"
-        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name)
-        do
+        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
             NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
-            if [[ ! -z ${NODE_IP} ]];then
+            if [[ -n ${NODE_IP} ]]; then
                 echo "Master Node: ${master}"
                 echo "AGENT: ${agent}"
                 echo "BMC: ${EXT_MAC_ADDR}"
