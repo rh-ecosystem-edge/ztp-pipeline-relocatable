@@ -9,38 +9,49 @@ import { Spinner } from './Spinner';
 import { SettingsPageLeft } from './SettingsPageLeft';
 import { SettingsPageRight } from './SettingsPageRight';
 
+export const SettingsContent: React.FC<{ error?: string; forceReload: () => void }> = ({
+  error,
+  forceReload,
+}) => (
+  <Page>
+    <ContentTwoCols
+      left={<SettingsPageLeft />}
+      right={
+        <SettingsPageRight isInitialEdit={false} initialError={error} forceReload={forceReload} />
+      }
+    />
+  </Page>
+);
+
+export const SettingsLoading: React.FC = () => (
+  <Page>
+    <ContentTwoCols left={<SettingsPageLeft />} right={<Spinner />} />
+  </Page>
+);
+
 export const Settings: React.FC = () => {
   const [error, setError] = React.useState<string>();
   const [isDataLoaded, setDataLoaded] = React.useState<boolean>(false);
+  const [isReload, setReload] = React.useState(true);
   const { handleSetApiaddr, handleSetIngressIp /* TODO: domain */ } = useK8SStateContext();
 
   // Following is needed when navigated directly by setting the URL in the browser
   // It is not needed when navigated from the WelcomePage but let's refresh to show recent data anyway
-  React.useEffect(
-    () => {
+  React.useEffect(() => {
+    if (isReload) {
+      setReload(false);
       initialDataLoad({
         setNextPage: () => setDataLoaded(true),
         setError,
         handleSetApiaddr,
         handleSetIngressIp,
       });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      /* just once */
-    ],
-  );
+    }
+  }, [handleSetApiaddr, handleSetIngressIp, isReload]);
 
   return isDataLoaded ? (
-    <Page>
-      <ContentTwoCols
-        left={<SettingsPageLeft />}
-        right={<SettingsPageRight isInitialEdit={false} initialError={error} />}
-      />
-    </Page>
+    <SettingsContent error={error} forceReload={() => setReload(true)} />
   ) : (
-    <Page>
-      <ContentTwoCols left={<SettingsPageLeft />} right={<Spinner />} />
-    </Page>
+    <SettingsLoading />
   );
 };

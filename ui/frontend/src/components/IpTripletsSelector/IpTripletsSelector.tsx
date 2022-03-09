@@ -21,7 +21,7 @@ export const IpTripletsSelector: React.FC<{
   const validated = validation.triplets || [];
 
   if (isDisabled) {
-    return <TextInput id={id} value={addIpDots(address)} isDisabled={true} />;
+    return <TextInput id={id} data-testid={id} value={addIpDots(address)} isDisabled={true} />;
   }
 
   return (
