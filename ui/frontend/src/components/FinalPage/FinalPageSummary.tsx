@@ -31,13 +31,13 @@ export const FinalPageSummary: React.FC = () => {
           Setup complete!
         </Title>
         <Text component={TextVariants.small}>
-          Your Kuberame has been successfully configured and is ready to use.
+          Your cluster has been successfully configured and is ready to use.
         </Text>
       </StackItem>
       <StackItem className="final-page-sumamary__item">
         <Title headingLevel="h3">Enjoy your KubeFrame</Title>
         <Text component={TextVariants.small}>
-          MAC Your Kuberame has been successfully configured and is ready to use.
+          Your cluster has been successfully configured and is ready to use.
         </Text>
       </StackItem>
       <StackItem className="final-page-sumamary__item">
@@ -51,6 +51,7 @@ export const FinalPageSummary: React.FC = () => {
         <Button
           variant={ButtonVariant.primary}
           isDisabled={!consoleUrl}
+          data-testid="final-page-button-console"
           onClick={() => {
             console.info('Redirecting to OCP console: ', consoleUrl);
             window.location.href = consoleUrl || '';
@@ -58,7 +59,11 @@ export const FinalPageSummary: React.FC = () => {
         >
           OpenShift console
         </Button>
-        <Button variant={ButtonVariant.link} onClick={() => navigate(`/settings`)}>
+        <Button
+          variant={ButtonVariant.link}
+          data-testid="final-page-button-settings"
+          onClick={() => navigate(`/settings`)}
+        >
           <Text className="final-page-summary__settings">
             Settings&nbsp;
             <ArrowRightIcon />

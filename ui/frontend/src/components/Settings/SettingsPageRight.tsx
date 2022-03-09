@@ -18,10 +18,11 @@ import { useK8SStateContext } from '../K8SStateContext';
 
 import './SettingsPageRight.css';
 
-export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError?: string }> = ({
-  isInitialEdit,
-  initialError,
-}) => {
+export const SettingsPageRight: React.FC<{
+  isInitialEdit?: boolean;
+  initialError?: string;
+  forceReload: () => void;
+}> = ({ isInitialEdit, initialError, forceReload }) => {
   const [isEdit, setEdit] = React.useState(isInitialEdit);
   const [isSaving, setIsSaving] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
@@ -62,7 +63,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError
 
   const onCancelEdit = () => {
     setEdit(false);
-    console.error('TODO: reload initial data');
+    forceReload();
   };
 
   return (
@@ -117,6 +118,7 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError
           >
             <TextInput
               id="domain"
+              data-testid="settings-page-input-domain"
               value={domain}
               validated={!domainValidation ? 'default' : 'error'}
               onChange={handleSetDomain}
@@ -126,14 +128,24 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError
         </StackItem>
         {error && (
           <StackItem isFilled className="summary-page-sumamary__item">
-            <Alert title={error.title} variant={AlertVariant.danger} isInline>
+            <Alert
+              data-testid="settings-page-alert-error"
+              title={error.title}
+              variant={AlertVariant.danger}
+              isInline
+            >
               {error.message}
             </Alert>
           </StackItem>
         )}
         {error === null && (
           <StackItem isFilled className="summary-page-sumamary__item">
-            <Alert title="Changes saved" variant={AlertVariant.success} isInline>
+            <Alert
+              data-testid="settings-page-alert-all-saved"
+              title="Changes saved"
+              variant={AlertVariant.success}
+              isInline
+            >
               All changes have been saved.
             </Alert>
           </StackItem>
@@ -141,16 +153,29 @@ export const SettingsPageRight: React.FC<{ isInitialEdit?: boolean; initialError
         {error === undefined && <StackItem isFilled></StackItem>}
         <StackItem className="settings-page-sumamary__item__footer">
           {!isEdit && (
-            <Button variant={ButtonVariant.primary} onClick={() => setEdit(true)}>
+            <Button
+              data-testid="settings-page-button-edit"
+              variant={ButtonVariant.primary}
+              onClick={() => setEdit(true)}
+            >
               Edit
             </Button>
           )}
           {isEdit && (
             <>
-              <Button variant={ButtonVariant.primary} onClick={onSave} isDisabled={isSaving}>
+              <Button
+                data-testid="settings-page-button-save"
+                variant={ButtonVariant.primary}
+                onClick={onSave}
+                isDisabled={isSaving}
+              >
                 Save
               </Button>
-              <Button variant={ButtonVariant.link} onClick={onCancelEdit}>
+              <Button
+                data-testid="settings-page-button-cancel"
+                variant={ButtonVariant.link}
+                onClick={onCancelEdit}
+              >
                 Cancel
               </Button>
             </>

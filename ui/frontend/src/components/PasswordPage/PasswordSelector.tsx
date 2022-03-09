@@ -58,6 +58,7 @@ export const PasswordSelector: React.FC<{
         >
           <TextInput
             id={fieldId}
+            data-testid={fieldId}
             value={password}
             validated={validation ? 'error' : 'default'}
             isRequired={false}
@@ -81,11 +82,17 @@ export const PasswordSelector: React.FC<{
       <StackItem isFilled>
         <FormGroup
           fieldId={fieldId2}
-          helperTextInvalid={<HelperTextInvalid validation={equalityValidationCheck} />}
+          helperTextInvalid={
+            <HelperTextInvalid
+              id="password__equality-validation"
+              validation={equalityValidationCheck}
+            />
+          }
           validated={equalityValidationCheck ? 'error' : 'default'}
         >
           <TextInput
-            id={fieldId}
+            id={fieldId2}
+            data-testid={fieldId2}
             value={passwordCheck}
             validated={equalityValidationCheck ? 'error' : 'default'}
             isRequired={false}

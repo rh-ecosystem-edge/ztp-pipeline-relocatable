@@ -17,10 +17,15 @@ export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next, isNextEn
 
   return (
     <div className="wizard-footer">
-      <Button variant={ButtonVariant.link} onClick={() => navigate(`/wizard/${back || 'welcome'}`)}>
+      <Button
+        data-testid="wizard-footer-button-back"
+        variant={ButtonVariant.link}
+        onClick={() => navigate(`/wizard/${back || 'welcome'}`)}
+      >
         Go back
       </Button>
       <Button
+        data-testid="wizard-footer-button-next"
         variant={ButtonVariant.primary}
         onClick={() => navigate(`/wizard/${next}`)}
         isDisabled={isNextEnabled && !isNextEnabled()}

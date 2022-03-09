@@ -3,15 +3,13 @@ import React from 'react';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_100 as dangerColor } from '@patternfly/react-tokens';
 
-export const HelperTextInvalid: React.FC<{ validation?: string }> = ({ validation }) =>
+export const HelperTextInvalid: React.FC<{ id: string; validation?: string }> = ({
+  id,
+  validation,
+}) =>
   validation ? (
     <div className="helper-text-invalid">
       <ExclamationCircleIcon color={dangerColor.value} />
-      <span>{validation}</span>
+      <span data-testid={id}>{validation}</span>
     </div>
   ) : null;
-/*: (
-    <div>
-      <CheckCircleIcon color={successColor.value} />
-      Matches password
-    </div> );*/

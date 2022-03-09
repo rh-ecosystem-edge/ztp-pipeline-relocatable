@@ -12,11 +12,11 @@ const isPasswordPolicyLength = (pwd?: string): boolean => !!pwd && pwd.length >=
 const isPasswordPolicyUppercase = (pwd?: string): boolean =>
   !!pwd && pwd.toLocaleLowerCase() !== pwd;
 
-const PolicyIcon: React.FC<{ policyMet: boolean }> = ({ policyMet }) =>
+const PolicyIcon: React.FC<{ idPrefix: string; policyMet: boolean }> = ({ idPrefix, policyMet }) =>
   policyMet ? (
-    <CheckCircleIcon color={successColor.value} />
+    <CheckCircleIcon color={successColor.value} data-testid={`${idPrefix}-ok`} />
   ) : (
-    <ExclamationCircleIcon color={dangerColor.value} />
+    <ExclamationCircleIcon color={dangerColor.value} data-testid={`${idPrefix}-failed`} />
   );
 
 export const PasswordRequirements: React.FC = () => {
@@ -25,11 +25,14 @@ export const PasswordRequirements: React.FC = () => {
   return (
     <ul>
       <li>
-        <PolicyIcon policyMet={isPasswordPolicyLength(password)} />
+        <PolicyIcon policyMet={isPasswordPolicyLength(password)} idPrefix="requirement-length" />
         <span className="password-requirement-text">8 characters minimum</span>
       </li>
       <li className="pf-c-helper-text__item pf-m-dynamic pf-m-error">
-        <PolicyIcon policyMet={isPasswordPolicyUppercase(password)} />
+        <PolicyIcon
+          policyMet={isPasswordPolicyUppercase(password)}
+          idPrefix="requirement-uppercase"
+        />
         <span className="password-requirement-text">One uppercase character</span>
       </li>
     </ul>

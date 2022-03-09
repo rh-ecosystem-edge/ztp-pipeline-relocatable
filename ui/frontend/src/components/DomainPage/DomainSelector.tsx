@@ -23,7 +23,11 @@ export const DomainSelector: React.FC = () => {
         <FormGroup
           fieldId={fieldId}
           helperTextInvalid={
-            validation && <div className="validation-failed-text">{validation}</div>
+            validation && (
+              <div data-testid="domain-validation-failed" className="validation-failed-text">
+                {validation}
+              </div>
+            )
           }
           validated={validation ? 'error' : 'default'}
         >
@@ -40,6 +44,7 @@ export const DomainSelector: React.FC = () => {
         <div className="domain-selector__example">
           Setup URL: https://setup.
           <span
+            data-testid="domain-selector-example-setup"
             className={
               validation
                 ? 'domain-selector__example-domain-invalid'
@@ -52,6 +57,7 @@ export const DomainSelector: React.FC = () => {
         <div className="domain-selector__example">
           Console URL: https://console.
           <span
+            data-testid="domain-selector-example-console"
             className={
               validation
                 ? 'domain-selector__example-domain-invalid'
