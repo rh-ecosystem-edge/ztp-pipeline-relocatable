@@ -61,10 +61,24 @@ function save_files() {
 
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
-    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -oname); do
-        NODE_IP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ${node} -o jsonpath='{.status.addresses[0].address}')
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "mkdir -p ~/.kube"
-        copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP}" "./.kube/config"
+    for master in 0 1 2
+    do
+        EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${NS} agent -o name)
+        do
+            NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
+            if [[ ! -z ${NODE_IP} ]];then
+                echo ""
+                echo ">>>> Copying ${cluster} Kubeconfig to Master Nodes"
+                echo "Master Node: ${master}"
+                echo "AGENT: ${agent}"
+                echo "BMC: ${EXT_MAC_ADDR}"
+                echo "IP: ${NODE_IP%%/*}"
+                echo ">>>>"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "mkdir -p ~/.kube"
+                copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP%%/*}" "./.kube/config"
+            fi
+        done
     done
 }
 
