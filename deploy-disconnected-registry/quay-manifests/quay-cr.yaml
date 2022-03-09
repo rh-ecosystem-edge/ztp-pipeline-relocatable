@@ -1,8 +1,8 @@
 apiVersion: quay.redhat.com/v1
 kind: QuayRegistry
 metadata:
-  name: kubeframe-registry
-  namespace: kubeframe-registry
+  name: ztpfw-registry
+  namespace: ztpfw-registry
 spec:
   configBundleSecret: config-bundle-secret
   components:

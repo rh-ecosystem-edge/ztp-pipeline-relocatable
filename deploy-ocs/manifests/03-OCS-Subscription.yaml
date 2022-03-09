@@ -7,5 +7,5 @@ metadata:
 spec:
   channel: "stable-CHANGEME"
   name: ocs-operator
-  source: kubeframe-catalog
+  source: ztpfw-catalog
   sourceNamespace: openshift-marketplace

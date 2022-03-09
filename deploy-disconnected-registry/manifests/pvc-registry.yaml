@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: data-pvc
-  namespace: kubeframe-registry
+  namespace: ztpfw-registry
 spec:
   volumeMode: Filesystem
   resources:

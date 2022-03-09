@@ -64,7 +64,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
       <div
         class="page-header-middle"
       >
-        KubeFrame setup
+        ZTPFW setup
       </div>
     </div>
     <div
@@ -368,9 +368,9 @@ exports[`DownloadSshKeyPage can render 1`] = `
                   >
                     Warning alert:
                   </span>
-                  KubeFrame does not store the private key. Please download and keep your key in a safe place.
+                  ZTPFW does not store the private key. Please download and keep your key in a safe place.
                 </h4>
-                
+
               </div>
               <div
                 aria-label="Danger Alert"
@@ -405,7 +405,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                     Danger alert:
                   </span>
                   Incorrect SSH key secret
-                   
+
                   <button
                     aria-disabled="false"
                     class="pf-c-button pf-m-link pf-m-inline"
@@ -417,7 +417,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                     Try again
                   </button>
                 </h4>
-                
+
               </div>
             </div>
             <div
@@ -458,7 +458,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                   <div
                     class="download-item__text"
                   >
-                    KubeFrame Private SSH Key
+                    ZTPFW Private SSH Key
                   </div>
                 </div>
                 <div

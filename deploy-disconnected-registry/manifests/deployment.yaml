@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kubeframe-registry
+  name: ztpfw-registry
   labels:
-    name: kubeframe-registry
+    name: ztpfw-registry
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: kubeframe-registry
+      name: ztpfw-registry
   template:
     metadata:
       labels:
-        name: kubeframe-registry
+        name: ztpfw-registry
     spec:
       containers:
-        - name: kubeframe-registry
+        - name: ztpfw-registry
           image: quay.io/jparrill/registry:3
           imagePullPolicy: Always
           ports:
@@ -55,7 +55,7 @@ spec:
             claimName: data-pvc
         - name: certs-secret
           secret:
-            secretName: kubeframe-registry-tls
+            secretName: ztpfw-registry-tls
         - name: auth-secret
           secret:
             secretName: auth

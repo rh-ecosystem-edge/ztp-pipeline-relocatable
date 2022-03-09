@@ -21,9 +21,9 @@ export const WelcomeBottom: React.FC<{ error?: string; nextPage?: string }> = ({
   return (
     <Stack className="welcome-bottom" hasGutter>
       <StackItem>
-        <Title headingLevel="h1">KubeFrame</Title>
+        <Title headingLevel="h1">ZTPFW</Title>
       </StackItem>
-      <StackItem isFilled>To set up the configuration of your KubeFrame, click Continue.</StackItem>
+      <StackItem isFilled>To set up the configuration of your ZTPFW, click Continue.</StackItem>
       {error && (
         <StackItem>
           <Alert

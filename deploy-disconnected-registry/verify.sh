@@ -19,7 +19,7 @@ elif [[ ${1} == 'spoke' ]]; then
     TG_KUBECONFIG=${SPOKE_KUBECONFIG}
 fi
 
-if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TG_KUBECONFIG} get -n kubeframe-registry deployment kubeframe-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
+if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TG_KUBECONFIG} get -n ztpfw-registry deployment ztpfw-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
     #namespace or resources does not exist. Launching the step to create it...
     exit 1
 fi

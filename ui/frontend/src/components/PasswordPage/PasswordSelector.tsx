@@ -46,7 +46,7 @@ export const PasswordSelector: React.FC<{
         </Title>
       </StackItem>
       <StackItem className="wizard-sublabel">
-        Keep your KubeFrame account safe and secure.
+        Keep your ZTPFW account safe and secure.
       </StackItem>
       <StackItem>
         <FormGroup

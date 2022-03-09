@@ -118,7 +118,7 @@ function render_manifests() {
 
     # Render NNCP Manifests
     for master in 0 1 2; do
-        export NODENAME=kubeframe-spoke-${index}-master-${master}
+        export NODENAME=ztpfw-spoke-${index}-master-${master}
         echo "Rendering NNCP for: ${NODENAME}"
         export NIC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
         render_file manifests/nncp.yaml ${OUTPUTDIR}/${spoke}-nncp-${NODENAME}.yaml
@@ -292,10 +292,10 @@ for spoke in ${ALLSPOKES}; do
     sleep 60
 
     for master in 0 1 2; do
-        NODENAME="${spoke}-nncp-kubeframe-spoke-${index}-master-${master}"
+        NODENAME="${spoke}-nncp-ztpfw-spoke-${index}-master-${master}"
         # I've been forced to do that, don't blame me :(
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
-        verify_remote_resource ${spoke} "default" "nncp" "kubeframe-spoke-${index}-master-${master}-nncp" "Available"
+        verify_remote_resource ${spoke} "default" "nncp" "ztpfw-spoke-${index}-master-${master}-nncp" "Available"
     done
     echo
 

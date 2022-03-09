@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "0.0.1",
-  "description": "The UI backend for the KubeFrame project.",
+  "description": "The UI backend for the ZTPFW project.",
   "main": "src/index.js",
   "author": "Marek Libra",
   "license": "Apache-2.0",

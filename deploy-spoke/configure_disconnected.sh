@@ -121,7 +121,7 @@ kind: ImageContentSourcePolicy
 metadata:
   labels:
     operators.openshift.org/catalog: "true"
-  name: kubeframe-${cluster}
+  name: ztpfw-${cluster}
 spec:
   repositoryDigestMirrors:
 EOF
@@ -318,11 +318,11 @@ elif [[ ${1} == 'spoke' ]]; then
                 copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
                 copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/icsp-hub.yaml"
                 # Check ICSP
-                RCICSP=$(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy kubeframe-hub | wc -l || true")
+                RCICSP=$(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy ztpfw-hub | wc -l || true")
                 OC_COMMAND="${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} oc"
                 MANIFESTS_PATH='manifests'
             else
-                RCICSP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
+                RCICSP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${spoke} | wc -l || true)
                 OC_COMMAND="oc --kubeconfig=${SPOKE_KUBECONFIG}"
                 MANIFESTS_PATH="${OUTPUTDIR}"
             fi
@@ -354,7 +354,7 @@ elif [[ ${1} == 'spoke' ]]; then
             recover_mapping
             recover_spoke_rsa ${spoke}
 
-            RCICSP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ImageContentSourcePolicy kubeframe-${spoke} | wc -l || true)
+            RCICSP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${spoke} | wc -l || true)
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo ">>>> Waiting for old stuff deletion..."
             else

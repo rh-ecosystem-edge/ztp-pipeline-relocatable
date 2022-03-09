@@ -52,7 +52,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
             git pull
-            kcli create network --nodhcp --domain kubeframe -c 192.168.7.0/24 kubeframe
+            kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
             kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
         else
             echo "Metal3 + ipv4 + disconnected"
@@ -94,7 +94,7 @@ spokes:
 EOF
 
 kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net kubeframe-registry-kubeframe-registry.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
 
 echo ">>>> EOF"
 echo ">>>>>>>>"

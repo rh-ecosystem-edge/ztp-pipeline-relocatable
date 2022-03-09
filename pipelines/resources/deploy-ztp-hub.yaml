@@ -3,7 +3,7 @@ kind: Pipeline
 metadata:
   name: deploy-ztp-hub
 spec:
-  description: Tekton Pipeline to deploy Kubeframe Hub Cluster
+  description: Tekton Pipeline to deploy ZTPFW Hub Cluster
   params:
     - name: git-url
       type: string

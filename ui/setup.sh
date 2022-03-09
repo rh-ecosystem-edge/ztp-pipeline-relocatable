@@ -10,10 +10,10 @@ echo export NODE_ENV=development >>./backend/envs
 CLUSTER_API_URL=$(oc get infrastructure cluster -o jsonpath={.status.apiServerURL})
 echo export CLUSTER_API_URL=$CLUSTER_API_URL >>./backend/envs
 
-OAUTH2_CLIENT_ID=kubeframeoauth
+OAUTH2_CLIENT_ID=ztpfwoauth
 echo export OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >>./backend/envs
 
-OAUTH2_CLIENT_SECRET=kubeframeoauthsecret
+OAUTH2_CLIENT_SECRET=ztpfwoauthsecret
 echo export OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >>./backend/envs
 
 OAUTH2_REDIRECT_URL=https://localhost:3000/login/callback

@@ -11,7 +11,7 @@ spoke{{ i }}-cluster-m{{ j }}:
   nets:
   - name: bare-net
     mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
-  - name: kubeframe
+  - name: ztpfw
     nic: enp2s0
     mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
   disks:
@@ -31,7 +31,7 @@ spoke{{ i }}-cluster-w0:
   nets:
   - name: bare-net
     mac: ee:ee:ee:0{{ i }}:0{{ i }}:0e
-  - name: kubeframe
+  - name: ztpfw
     nic: enp2s0
     mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
   disks:

@@ -3,8 +3,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: kubeframe-ui
-  name: kubeframe-ui
+    app: ztpfw-ui
+  name: ztpfw-ui
   namespace: ___NAMESPACE___
 spec:
   progressDeadlineSeconds: 600
@@ -12,12 +12,12 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: kubeframe-ui
+      app: ztpfw-ui
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: kubeframe-ui
+        app: ztpfw-ui
     spec:
 #      affinity:
 #        nodeAffinity:
@@ -67,11 +67,11 @@ spec:
         - name: CLUSTER_API_URL
           value: https://kubernetes.default.svc:443
         - name: OAUTH2_CLIENT_ID
-          value: "kubeframeoauth"
+          value: "ztpfwoauth"
         - name: OAUTH2_REDIRECT_URL
           value: "___APP_URL___/login/callback"
         - name: OAUTH2_CLIENT_SECRET
-          value: "kubeframeoauthsecret"
+          value: "ztpfwoauthsecret"
         image: ___IMAGE___
         imagePullPolicy: Always
         livenessProbe:
@@ -84,7 +84,7 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
-        name: kubeframe-ui
+        name: ztpfw-ui
         ports:
         - containerPort: 3000
           protocol: TCP
@@ -103,7 +103,7 @@ spec:
             memory: 40Mi
         volumeMounts:
         - mountPath: /app/certs
-          name: kubeframe-ui-certs
+          name: ztpfw-ui-certs
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -111,10 +111,10 @@ spec:
         runAsNonRoot: true
       terminationGracePeriodSeconds: 15
       volumes:
-      - name: kubeframe-ui-certs
+      - name: ztpfw-ui-certs
         secret:
           defaultMode: 420
-          secretName: kubeframe-ui-certs
+          secretName: ztpfw-ui-certs
 
 ---
 apiVersion: oauth.openshift.io/v1
@@ -122,19 +122,19 @@ grantMethod: auto
 kind: OAuthClient
 metadata:
   labels:
-    app: kubeframe-ui
-  name: kubeframeoauth
+    app: ztpfw-ui
+  name: ztpfwoauth
 redirectURIs:
 - ___APP_URL___/login/callback
-secret: kubeframeoauthsecret
+secret: ztpfwoauthsecret
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: kubeframe-ui
-  name: kubeframe-ui
+    app: ztpfw-ui
+  name: ztpfw-ui
   namespace: ___NAMESPACE___
 spec:
   internalTrafficPolicy: Cluster
@@ -144,7 +144,7 @@ spec:
     protocol: TCP
     targetPort: 3000
   selector:
-    app: kubeframe-ui
+    app: ztpfw-ui
   type: ClusterIP
 
 ---
@@ -152,8 +152,8 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   labels:
-    app: kubeframe-ui
-  name: kubeframe-ui
+    app: ztpfw-ui
+  name: ztpfw-ui
   namespace: ___NAMESPACE___
 spec:
   host: ___ROUTE_HOST___
@@ -165,5 +165,5 @@ spec:
     termination: passthrough
   to:
     kind: Service
-    name: kubeframe-ui
+    name: ztpfw-ui
   wildcardPolicy: None

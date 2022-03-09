@@ -70,7 +70,7 @@ export const PersistPageBottom: React.FC = () => {
             />
           </StackItem>
           <StackItem isFilled className="wizard-sublabel">
-            Saving settings for your KubeFrame...
+            Saving settings for your ZTPFW...
           </StackItem>
         </>
       ) : (

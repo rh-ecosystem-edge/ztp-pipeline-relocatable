@@ -76,7 +76,7 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
         <Alert
           variant={AlertVariant.warning}
           isInline
-          title="KubeFrame does not store the private key. Please download and keep your key in a safe place."
+          title="ZTPFW does not store the private key. Please download and keep your key in a safe place."
         />
         {error?.title && (
           <Alert
@@ -106,7 +106,7 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
             <img src={book} className="download-ssh__book" alt="Book icon" />
           </GridItem>
           <GridItem span={10}>
-            <div className="download-item__text">KubeFrame Private SSH Key</div>
+            <div className="download-item__text">ZTPFW Private SSH Key</div>
           </GridItem>
           <GridItem span={10}>
             <Button

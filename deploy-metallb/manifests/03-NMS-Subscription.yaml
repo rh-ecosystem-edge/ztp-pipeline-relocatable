@@ -7,5 +7,5 @@ metadata:
 spec:
   channel: "stable"
   name: kubernetes-nmstate-operator
-  source: kubeframe-catalog
+  source: ztpfw-catalog
   sourceNamespace: openshift-marketplace

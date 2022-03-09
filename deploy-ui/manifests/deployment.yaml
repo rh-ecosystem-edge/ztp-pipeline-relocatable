@@ -3,8 +3,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: kubeframe-ui
-  name: kubeframe-ui
+    app: ztpfw-ui
+  name: ztpfw-ui
   namespace: $UI_NS
 spec:
   progressDeadlineSeconds: 600
@@ -12,14 +12,14 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: kubeframe-ui
+      app: ztpfw-ui
   template:
     metadata:
       labels:
-        app: kubeframe-ui
+        app: ztpfw-ui
     spec:
       containers:
-      - name: kubeframe-ui
+      - name: ztpfw-ui
         image: $UI_IMAGE
         imagePullPolicy: Always
         ports:
@@ -38,11 +38,11 @@ spec:
           - name: CLUSTER_API_URL
             value: https://kubernetes.default.svc:443
           - name: OAUTH2_CLIENT_ID
-            value: "kubeframeoauth"
+            value: "ztpfwoauth"
           - name: OAUTH2_REDIRECT_URL
             value: "$UI_APP_URL/login/callback"
           - name: OAUTH2_CLIENT_SECRET
-            value: "kubeframeoauthsecret"
+            value: "ztpfwoauthsecret"
         livenessProbe:
           failureThreshold: 1
           httpGet:
@@ -75,4 +75,4 @@ spec:
       volumes:
         - name: certs-secret
           secret:
-            secretName: kubeframe-ui-tls
+            secretName: ztpfw-ui-tls
