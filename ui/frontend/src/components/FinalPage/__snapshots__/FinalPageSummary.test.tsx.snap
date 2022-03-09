@@ -37,7 +37,7 @@ exports[`FinalPageSummary can render 1`] = `
         data-ouia-safe="true"
         data-pf-content="true"
       >
-        Your Ztpfw has been successfully configured and is ready to use.
+        Your cluster has been successfully configured and is ready to use.
       </small>
     </div>
     <div
@@ -58,7 +58,7 @@ exports[`FinalPageSummary can render 1`] = `
         data-ouia-safe="true"
         data-pf-content="true"
       >
-        MAC Your Kuberame has been successfully configured and is ready to use.
+        Your cluster has been successfully configured and is ready to use.
       </small>
     </div>
     <div
