@@ -16,6 +16,8 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc" #TODO  may be clear test and render with script
         bmc_pass: "user-pass" #TODO  may be clear test and render with script
+        root_disk:
+          - sda
         storage_disk:
           - sdb
           - sdc
@@ -29,6 +31,8 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk:
+          - sda
         storage_disk:
           - sdb
           - sdc
@@ -42,6 +46,8 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk:
+          - sda
         storage_disk:
           - sdb
           - sdc
@@ -64,6 +70,8 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk:
+          - sda
         storage_disk:
           - sdb
           - sdc
@@ -77,6 +85,8 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk:
+          - sda
         storage_disk:
           - sdb
           - sdc
@@ -90,6 +100,8 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk:
+          - sda
         storage_disk:
           - sdb
           - sdc
