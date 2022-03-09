@@ -64,7 +64,7 @@ exports[`PersistPage can render 1`] = `
       <div
         class="page-header-middle"
       >
-        KubeFrame setup
+        ZTPFW setup
       </div>
     </div>
     <div
@@ -132,7 +132,7 @@ exports[`PersistPage can render 1`] = `
             <div
               class="pf-l-stack__item pf-m-fill wizard-sublabel"
             >
-              Saving settings for your KubeFrame...
+              Saving settings for your ZTPFW...
             </div>
           </div>
         </div>

@@ -35,7 +35,7 @@ export const FinalPageSummary: React.FC = () => {
         </Text>
       </StackItem>
       <StackItem className="final-page-sumamary__item">
-        <Title headingLevel="h3">Enjoy your KubeFrame</Title>
+        <Title headingLevel="h3">Enjoy your ZTPFW</Title>
         <Text component={TextVariants.small}>
           Your cluster has been successfully configured and is ready to use.
         </Text>
@@ -43,8 +43,8 @@ export const FinalPageSummary: React.FC = () => {
       <StackItem className="final-page-sumamary__item">
         <Title headingLevel="h3">Need to change something?</Title>
         <Text component={TextVariants.small}>
-          If you need to modify your settings, make sure you are still connected to your KubeFrame
-          and click Settings.
+          If you need to modify your settings, make sure you are still connected to your ZTPFW and
+          click Settings.
         </Text>
       </StackItem>
       <StackItem>

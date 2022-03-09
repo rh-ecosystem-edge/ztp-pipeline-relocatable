@@ -3,7 +3,7 @@ kind: Pipeline
 metadata:
   name: deploy-ztp-spokes
 spec:
-  description: Tekton Pipeline to deploy Kubeframe Spokes clusters
+  description: Tekton Pipeline to deploy ZTPFW Spokes clusters
   params:
     - name: git-url
       type: string

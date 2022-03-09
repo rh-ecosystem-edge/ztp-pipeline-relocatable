@@ -17,7 +17,7 @@ export const DomainSelector: React.FC = () => {
         <Title headingLevel="h1">Do you want to use a custom domain?</Title>
       </StackItem>
       <StackItem className="wizard-sublabel">
-        Create unique URLs for your KubeFrame, such as device setup and console. <OptionalBadge />
+        Create unique URLs for your ZTPFW, such as device setup and console. <OptionalBadge />
       </StackItem>
       <StackItem className="domain-item">
         <FormGroup

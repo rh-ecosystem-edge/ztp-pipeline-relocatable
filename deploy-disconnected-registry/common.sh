@@ -86,7 +86,7 @@ source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-export REGISTRY=kubeframe-registry
+export REGISTRY=ztpfw-registry
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
 export QUAY_MANIFESTS=quay-manifests

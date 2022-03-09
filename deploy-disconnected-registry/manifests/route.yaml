@@ -3,8 +3,8 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   labels:
-    name: kubeframe-registry
-  name: kubeframe-registry
+    name: ztpfw-registry
+  name: ztpfw-registry
 spec:
   port:
     targetPort: registry
@@ -12,4 +12,4 @@ spec:
     insecureEdgeTerminationPolicy: Redirect
     termination: reencrypt
   to:
-    name: kubeframe-registry
+    name: ztpfw-registry

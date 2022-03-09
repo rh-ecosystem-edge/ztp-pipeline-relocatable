@@ -64,7 +64,7 @@ exports[`Seetings can render data 1`] = `
       <div
         class="page-header-middle"
       >
-        KubeFrame setup
+        ZTPFW setup
       </div>
     </div>
     <div
@@ -352,7 +352,7 @@ exports[`Seetings can render data 2`] = `
       <div
         class="page-header-middle"
       >
-        KubeFrame setup
+        ZTPFW setup
       </div>
     </div>
     <div
@@ -722,7 +722,7 @@ exports[`Seetings can render data 3`] = `
       <div
         class="page-header-middle"
       >
-        KubeFrame setup
+        ZTPFW setup
       </div>
     </div>
     <div
@@ -1010,7 +1010,7 @@ exports[`Seetings can render error 1`] = `
       <div
         class="page-header-middle"
       >
-        KubeFrame setup
+        ZTPFW setup
       </div>
     </div>
     <div
@@ -1340,7 +1340,7 @@ exports[`Seetings can render loading state 1`] = `
       <div
         class="page-header-middle"
       >
-        KubeFrame setup
+        ZTPFW setup
       </div>
     </div>
     <div

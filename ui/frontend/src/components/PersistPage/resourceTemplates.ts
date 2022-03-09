@@ -7,7 +7,7 @@ export const ADDRESS_POOL_TEMPLATE = {
   apiVersion: 'metallb.io/v1alpha1',
   kind: 'AddressPool',
   metadata: {
-    generateName: 'kubeframe-', // To be filled
+    generateName: 'ztpfw-', // To be filled
     name: '',
     namespace: '', // To be filled
   },
@@ -24,7 +24,7 @@ export const SERVICE_TEMPLATE_METALLB_INGRESS: Service = {
   apiVersion: ServiceApiVersion,
   metadata: {
     annotations: {
-      // To be filled: 'metallb.universe.tf/address-pool': 'kubeframe-ingress-public-ip',
+      // To be filled: 'metallb.universe.tf/address-pool': 'ztpfw-ingress-public-ip',
     },
     name: 'metallb-ingress',
     namespace: 'openshift-ingress',
@@ -47,7 +47,7 @@ export const SERVICE_TEMPLATE_API: Service = {
   apiVersion: ServiceApiVersion,
   metadata: {
     annotations: {
-      // To be filled, 'metallb.universe.tf/address-pool': 'kubeframe-api-public-ip',
+      // To be filled, 'metallb.universe.tf/address-pool': 'ztpfw-api-public-ip',
     },
     name: 'metallb-api',
     namespace: 'openshift-kube-apiserver',
@@ -69,7 +69,7 @@ export const HTPASSWD_SECRET: Secret = {
   },
   kind: SecretKind,
   metadata: {
-    generateName: 'kubeframe-htpasswd-secret-',
+    generateName: 'ztpfw-htpasswd-secret-',
     namespace: 'openshift-config',
   },
   type: 'Opaque',

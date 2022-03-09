@@ -21,7 +21,7 @@ const createAddressPool = async (
 ): Promise<string | undefined> => {
   try {
     const object = cloneDeep(ADDRESS_POOL_TEMPLATE);
-    object.metadata.generateName = `kubeframe-${type}-`;
+    object.metadata.generateName = `ztpfw-${type}-`;
     object.metadata.namespace = namespace;
     object.spec.addresses = [`${serviceIp}-${serviceIp}`];
 
@@ -106,7 +106,7 @@ const saveService = async (
 
       // Do clean-up
       try {
-        if (oldAddressPoolName?.startsWith(`kubeframe-${type}-`)) {
+        if (oldAddressPoolName?.startsWith(`ztpfw-${type}-`)) {
           await deleteResource({
             apiVersion: ADDRESS_POOL_TEMPLATE.apiVersion,
             kind: ADDRESS_POOL_TEMPLATE.kind,

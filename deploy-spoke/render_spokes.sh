@@ -165,7 +165,7 @@ metadata:
   namespace: $CHANGE_SPOKE_NAME
   labels:
     name: $CHANGE_SPOKE_NAME
-    kubeframe: "true"
+    ztpfw: "true"
 spec:
   hubAcceptsClient: true
   leaseDurationSeconds: 60
@@ -217,7 +217,7 @@ EOF
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
- name: kubeframe-spoke-${i}-master-${master}
+ name: ztpfw-spoke-${i}-master-${master}
  namespace: $CHANGE_SPOKE_NAME
  labels:
    nmstate_config_cluster_name: $CHANGE_SPOKE_NAME
@@ -266,7 +266,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
- name: 'kubeframe-spoke-${i}-master-${master}-bmc-secret'
+ name: 'ztpfw-spoke-${i}-master-${master}-bmc-secret'
  namespace: '$CHANGE_SPOKE_NAME'
 type: Opaque
 data:
@@ -276,13 +276,13 @@ data:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
- name: 'kubeframe-spoke-${i}-master-${master}'
+ name: 'ztpfw-spoke-${i}-master-${master}'
  namespace: '$CHANGE_SPOKE_NAME'
  labels:
    infraenvs.agent-install.openshift.io: '$CHANGE_SPOKE_NAME'
  annotations:
    inspect.metal3.io: disabled
-   bmac.agent-install.openshift.io/hostname: 'kubeframe-spoke-${i}-master-${master}'
+   bmac.agent-install.openshift.io/hostname: 'ztpfw-spoke-${i}-master-${master}'
    bmac.agent-install.openshift.io/ignition-config-overrides: '${JSON_STRING_CFG_OVERRIDE_BMH}'
 spec:
  online: false
@@ -292,7 +292,7 @@ spec:
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_MASTER_BMC_URL'
-   credentialsName: 'kubeframe-spoke-${i}-master-${master}-bmc-secret'
+   credentialsName: 'ztpfw-spoke-${i}-master-${master}-bmc-secret'
 
 EOF
 

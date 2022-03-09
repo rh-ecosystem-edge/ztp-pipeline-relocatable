@@ -127,7 +127,7 @@ function grab_api_ingress() {
     export SPOKE_API_NAME="api.${cluster}.${HUB_BASEDOMAIN}"
     export SPOKE_API_IP="$(dig @${HUB_NODE_IP} +short ${SPOKE_API_NAME})"
     export SPOKE_INGRESS_NAME="apps.${cluster}.${HUB_BASEDOMAIN}"
-    export REGISTRY_URL="kubeframe-registry-kubeframe-registry"
+    export REGISTRY_URL="ztpfw-registry-ztpfw-registry"
     export SPOKE_INGRESS_IP="$(dig @${HUB_NODE_IP} +short ${REGISTRY_URL}.${SPOKE_INGRESS_NAME})"
 }
 
@@ -137,9 +137,9 @@ export KUBECONFIG_HUB=${KUBECONFIG}
 echo ">>>> Grabbing info from Spokes File"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-export OC_DIS_CATALOG=kubeframe-catalog
+export OC_DIS_CATALOG=ztpfw-catalog
 export MARKET_NS=openshift-marketplace
-export KUBEFRAME_NS=kubeframe
+export ZTPFW_NS=ztpfw
 export OUTPUTDIR=${OUTPUTDIR:-$WORKDIR/build}
 export MIRROR_MODE=${MIRROR_MODE:-all}
 export SCP_COMMAND='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -r'

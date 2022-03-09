@@ -48,7 +48,7 @@ Resolving deltas: 100% (2182/2182), done.
 subscription.operators.coreos.com/openshift-pipelines-operator-rh unchanged
 >>>> Waiting for: Openshift Pipelines
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
->>>> Deploying Kubeframe Pipelines and tasks
+>>>> Deploying ZTPFW Pipelines and tasks
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 pipeline.tekton.dev/deploy-ztp-hub configured
 pipeline.tekton.dev/deploy-ztp-spokes configured

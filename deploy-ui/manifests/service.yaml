@@ -3,15 +3,15 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: kubeframe-ui
-  name: kubeframe-ui
+    app: ztpfw-ui
+  name: ztpfw-ui
   namespace: $UI_NS
   annotations:
-    service.beta.openshift.io/serving-cert-secret-name: kubeframe-ui-tls
+    service.beta.openshift.io/serving-cert-secret-name: ztpfw-ui-tls
 spec:
   internalTrafficPolicy: Cluster
   selector:
-    app: kubeframe-ui
+    app: ztpfw-ui
   ports:
   - name: https
     port: 443

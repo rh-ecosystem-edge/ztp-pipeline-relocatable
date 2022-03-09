@@ -108,7 +108,7 @@ function clone_ztp() {
 }
 
 function deploy_pipeline() {
-    echo ">>>> Deploying Kubeframe Pipelines Resources"
+    echo ">>>> Deploying ZTPFW Pipelines Resources"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc --kubeconfig=${KUBECONFIG_HUB} apply -k ${PIPELINES_DIR}/resources/.
 }

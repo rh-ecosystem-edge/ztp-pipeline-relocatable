@@ -65,7 +65,7 @@ create_worker_definitions() {
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
- name: kubeframe-spoke-${i}-worker-${worker}
+ name: ztpfw-spoke-${i}-worker-${worker}
  namespace: $CHANGE_SPOKE_NAME
  labels:
    nmstate_config_cluster_name: $CHANGE_SPOKE_NAME
@@ -118,7 +118,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
- name: 'kubeframe-spoke-${i}-worker-${worker}-bmc-secret'
+ name: 'ztpfw-spoke-${i}-worker-${worker}-bmc-secret'
  namespace: '$CHANGE_SPOKE_NAME'
 type: Opaque
 data:
@@ -128,13 +128,13 @@ data:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
- name: 'kubeframe-spoke-${i}-worker-${worker}'
+ name: 'ztpfw-spoke-${i}-worker-${worker}'
  namespace: '$CHANGE_SPOKE_NAME'
  labels:
    infraenvs.agent-install.openshift.io: '$CHANGE_SPOKE_NAME'
  annotations:
    inspect.metal3.io: disabled
-   bmac.agent-install.openshift.io/hostname: 'kubeframe-spoke-${i}-worker-${worker}'
+   bmac.agent-install.openshift.io/hostname: 'ztpfw-spoke-${i}-worker-${worker}'
    bmac.agent-install.openshift.io/role: worker
 spec:
  online: false
@@ -144,7 +144,7 @@ spec:
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_WORKER_BMC_URL'
-   credentialsName: 'kubeframe-spoke-${i}-worker-${worker}-bmc-secret'
+   credentialsName: 'ztpfw-spoke-${i}-worker-${worker}-bmc-secret'
 
 EOF
 

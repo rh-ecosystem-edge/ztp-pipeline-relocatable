@@ -3,8 +3,8 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   labels:
-    app: kubeframe-ui
-  name: kubeframe-ui
+    app: ztpfw-ui
+  name: ztpfw-ui
   namespace: $UI_NS
 spec:
   port:
@@ -14,5 +14,5 @@ spec:
     termination: reencrypt
   to:
     kind: Service
-    name: kubeframe-ui
+    name: ztpfw-ui
   wildcardPolicy: None
