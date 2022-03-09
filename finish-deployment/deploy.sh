@@ -58,7 +58,7 @@ function clean_cluster() {
 
 function save_files() {
     cluster=${1}
-
+    i=${2}
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
     for master in 0 1 2; do
@@ -98,7 +98,7 @@ function recover_spoke_files() {
     echo ">> Recovering Spoke ${cluster} cluster Files"
     extract_kubeconfig_common ${cluster}
     extract_kubeadmin_pass_common ${cluster}
-    save_files ${cluster}
+    save_files ${cluster} ${2}
 }
 
 function store_rsa_secrets() {
@@ -119,12 +119,13 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
-
+i=0
 for spoke in ${ALLSPOKES}; do
     echo ">> Cluster: ${spoke}"
     check_cluster ${spoke}
     recover_spoke_rsa ${spoke}
-    recover_spoke_files ${spoke}
+    recover_spoke_files ${spoke} $i
     store_rsa_secrets ${spoke}
     #detach_cluster ${spoke}
+    i=$((i+1))
 done
