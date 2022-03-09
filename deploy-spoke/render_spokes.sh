@@ -100,6 +100,7 @@ spec:
     name: $CHANGE_SPOKE_NAME
   imageSetRef:
     name: $CHANGE_SPOKE_CLUSTERIMAGESET
+  fips: true
   apiVIP: "$CHANGE_SPOKE_API"
   ingressVIP: "$CHANGE_SPOKE_INGRESS"
   networking:
