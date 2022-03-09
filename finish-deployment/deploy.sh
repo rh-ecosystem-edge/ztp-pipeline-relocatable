@@ -61,7 +61,7 @@ function save_files() {
     i=${2}
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
-    for master in 0 1 2; do
+    for master in ${MASTERIDS}; do
         EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
         echo ""
         echo ">>>> Copying ${cluster} Kubeconfig to Master ${master} Node"
@@ -127,5 +127,5 @@ for spoke in ${ALLSPOKES}; do
     recover_spoke_files ${spoke} $i
     store_rsa_secrets ${spoke}
     #detach_cluster ${spoke}
-    i=$((i+1))
+    i=$((i + 1))
 done
