@@ -209,6 +209,7 @@ EOF
 
             export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
 
+            export CHANGE_SPOKE_MASTER_ROOT_DISK=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.root_disk" ${SPOKES_FILE})
             # Now, write the template to disk
             OUTPUT="${OUTPUTDIR}/spoke-${i}-master-${master}.yaml"
 
@@ -288,7 +289,7 @@ spec:
  online: false
  bootMACAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
  rootDeviceHints:
-   deviceName: /dev/nvme0n1
+   deviceName: '$CHANGE_SPOKE_MASTER_ROOT_DISK'
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_MASTER_BMC_URL'
