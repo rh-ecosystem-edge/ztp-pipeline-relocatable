@@ -314,7 +314,7 @@ exports[`IngressIpPage can render 1`] = `
                 data-ouia-component-type="PF4/Title"
                 data-ouia-safe="true"
               >
-                What's your ingress address?
+                What's your ingress address? 
                 <span
                   class="required-badge"
                 >
@@ -330,7 +330,7 @@ exports[`IngressIpPage can render 1`] = `
             <div
               class="pf-l-stack__item"
             >
-
+              
               <input
                 aria-invalid="false"
                 aria-label="IP triplet, position 1"

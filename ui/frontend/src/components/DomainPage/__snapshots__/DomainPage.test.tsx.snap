@@ -334,7 +334,7 @@ exports[`DomainPage can render 1`] = `
             <div
               class="pf-l-stack__item wizard-sublabel"
             >
-              Create unique URLs for your ZTPFW, such as device setup and console.
+              Create unique URLs for your ZTPFW, such as device setup and console. 
               <span
                 class="pf-c-badge pf-m-read"
               >
@@ -360,7 +360,7 @@ exports[`DomainPage can render 1`] = `
                     type="text"
                     value=""
                   />
-
+                  
                 </div>
               </div>
             </div>

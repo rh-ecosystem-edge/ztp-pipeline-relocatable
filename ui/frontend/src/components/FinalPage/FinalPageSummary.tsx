@@ -43,8 +43,8 @@ export const FinalPageSummary: React.FC = () => {
       <StackItem className="final-page-sumamary__item">
         <Title headingLevel="h3">Need to change something?</Title>
         <Text component={TextVariants.small}>
-          If you need to modify your settings, make sure you are still connected to your ZTPFW
-          and click Settings.
+          If you need to modify your settings, make sure you are still connected to your ZTPFW and
+          click Settings.
         </Text>
       </StackItem>
       <StackItem>

@@ -370,7 +370,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                   </span>
                   ZTPFW does not store the private key. Please download and keep your key in a safe place.
                 </h4>
-
+                
               </div>
               <div
                 aria-label="Danger Alert"
@@ -405,7 +405,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                     Danger alert:
                   </span>
                   Incorrect SSH key secret
-
+                   
                   <button
                     aria-disabled="false"
                     class="pf-c-button pf-m-link pf-m-inline"
@@ -417,7 +417,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                     Try again
                   </button>
                 </h4>
-
+                
               </div>
             </div>
             <div
