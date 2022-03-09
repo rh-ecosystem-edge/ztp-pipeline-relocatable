@@ -1,14 +1,14 @@
 #!/bin/bash
-export IMAGE=${IMAGE:-'quay.io\/mlibra\/kubeframe:latest'}
-export ROUTE_HOST=${ROUTE_HOST:-"kubeframe.apps.mlibra-cim-04.redhat.com"}
-export NAMESPACE=${NAMESPACE:-"kubeframe-ui"}
+export IMAGE=${IMAGE:-'quay.io\/ztpfw\/ui:latest'}
+export ROUTE_HOST=${ROUTE_HOST:-"ztpfwui.apps.mlibra-cim-04.redhat.com"}
+export NAMESPACE=${NAMESPACE:-"ztpfw-ui"}
 
 export APP_URL=https:\\/\\/${ROUTE_HOST}
 
 cd scripts
 
 # Let following silently fail if the project already exists
-oc new-project kubeframe-ui
+oc new-project ztpfw-ui
 
 echo Parameters:
 set -ex
@@ -27,7 +27,7 @@ cat deployment.yaml |
     oc apply -f -
 
 ### Restart the pod - just to be sure, i.e. TLS could be changed
-oc delete pod $(oc get pods | grep kubeframe-ui | awk '{print $1}' -)
+oc delete pod $(oc get pods | grep ztpfw-ui | awk '{print $1}' -)
 oc get pods
 
 echo Do not forget to deploy CRDS via scripts/applyCrds.sh
