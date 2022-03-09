@@ -149,11 +149,11 @@ exports[`Seetings can render data 1`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -170,7 +170,7 @@ exports[`Seetings can render data 1`] = `
                       type="text"
                       value="192.168.1.2"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -196,11 +196,11 @@ exports[`Seetings can render data 1`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -217,7 +217,7 @@ exports[`Seetings can render data 1`] = `
                       type="text"
                       value="1.5.22.255"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -240,7 +240,7 @@ exports[`Seetings can render data 1`] = `
                         Domain
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -257,7 +257,7 @@ exports[`Seetings can render data 1`] = `
                       type="text"
                       value="my.domain.com"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -437,16 +437,16 @@ exports[`Seetings can render data 2`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
                   >
-
+                    
                     <input
                       aria-invalid="false"
                       aria-label="IP triplet, position 1"
@@ -494,7 +494,7 @@ exports[`Seetings can render data 2`] = `
                       type="text"
                       value="002"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -520,16 +520,16 @@ exports[`Seetings can render data 2`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
                   >
-
+                    
                     <input
                       aria-invalid="false"
                       aria-label="IP triplet, position 1"
@@ -577,7 +577,7 @@ exports[`Seetings can render data 2`] = `
                       type="text"
                       value="255"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -600,7 +600,7 @@ exports[`Seetings can render data 2`] = `
                         Domain
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -616,7 +616,7 @@ exports[`Seetings can render data 2`] = `
                       type="text"
                       value="my.domain.com"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -807,11 +807,11 @@ exports[`Seetings can render data 3`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -828,7 +828,7 @@ exports[`Seetings can render data 3`] = `
                       type="text"
                       value="192.168.1.2"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -854,11 +854,11 @@ exports[`Seetings can render data 3`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -875,7 +875,7 @@ exports[`Seetings can render data 3`] = `
                       type="text"
                       value="1.5.22.255"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -898,7 +898,7 @@ exports[`Seetings can render data 3`] = `
                         Domain
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -915,7 +915,7 @@ exports[`Seetings can render data 3`] = `
                       type="text"
                       value="my.domain.com"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -1095,11 +1095,11 @@ exports[`Seetings can render error 1`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -1116,7 +1116,7 @@ exports[`Seetings can render error 1`] = `
                       type="text"
                       value="192.168.7.200"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -1142,11 +1142,11 @@ exports[`Seetings can render error 1`] = `
                         aria-hidden="true"
                         class="pf-c-form__label-required"
                       >
-
+                         
                         *
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -1163,7 +1163,7 @@ exports[`Seetings can render error 1`] = `
                       type="text"
                       value="192.168.7.201"
                     />
-
+                    
                   </div>
                 </div>
               </div>
@@ -1186,7 +1186,7 @@ exports[`Seetings can render error 1`] = `
                         Domain
                       </span>
                     </label>
-
+                     
                   </div>
                   <div
                     class="pf-c-form__group-control"
@@ -1203,7 +1203,7 @@ exports[`Seetings can render error 1`] = `
                       type="text"
                       value=""
                     />
-
+                    
                   </div>
                 </div>
               </div>

@@ -20,7 +20,7 @@ exports[`DomainSelector can can handle invalid domain 1`] = `
     <div
       class="pf-l-stack__item wizard-sublabel"
     >
-      Create unique URLs for your ZTPFW, such as device setup and console.
+      Create unique URLs for your ZTPFW, such as device setup and console. 
       <span
         class="pf-c-badge pf-m-read"
       >
@@ -105,7 +105,7 @@ exports[`DomainSelector can can handle valid domain 1`] = `
     <div
       class="pf-l-stack__item wizard-sublabel"
     >
-      Create unique URLs for your ZTPFW, such as device setup and console.
+      Create unique URLs for your ZTPFW, such as device setup and console. 
       <span
         class="pf-c-badge pf-m-read"
       >
@@ -131,7 +131,7 @@ exports[`DomainSelector can can handle valid domain 1`] = `
             type="text"
             value="valid.com"
           />
-
+          
         </div>
       </div>
     </div>
@@ -185,7 +185,7 @@ exports[`DomainSelector can render 1`] = `
     <div
       class="pf-l-stack__item wizard-sublabel"
     >
-      Create unique URLs for your ZTPFW, such as device setup and console.
+      Create unique URLs for your ZTPFW, such as device setup and console. 
       <span
         class="pf-c-badge pf-m-read"
       >
@@ -211,7 +211,7 @@ exports[`DomainSelector can render 1`] = `
             type="text"
             value=""
           />
-
+          
         </div>
       </div>
     </div>

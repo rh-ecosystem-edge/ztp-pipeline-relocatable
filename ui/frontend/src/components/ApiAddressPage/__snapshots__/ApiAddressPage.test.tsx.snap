@@ -300,7 +300,7 @@ exports[`ApiAddressPage can render 1`] = `
                 data-ouia-component-type="PF4/Title"
                 data-ouia-safe="true"
               >
-                What is your API address?
+                What is your API address? 
                 <span
                   class="required-badge"
                 >
@@ -316,7 +316,7 @@ exports[`ApiAddressPage can render 1`] = `
             <div
               class="pf-l-stack__item"
             >
-
+              
               <input
                 aria-invalid="false"
                 aria-label="IP triplet, position 1"
