@@ -16,6 +16,7 @@ xref:spokes[spokes]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: sda
         xref:storage_disk[storage_disk]:
           - sdb
           - sdc
@@ -29,6 +30,7 @@ xref:spokes[spokes]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: sda
         xref:storage_disk[storage_disk]:
           - sdb
           - sdc
@@ -42,6 +44,7 @@ xref:spokes[spokes]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: sda
         xref:storage_disk[storage_disk]:
           - sdb
           - sdc

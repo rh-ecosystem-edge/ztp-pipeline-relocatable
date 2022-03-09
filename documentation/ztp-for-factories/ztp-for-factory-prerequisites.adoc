@@ -105,6 +105,9 @@ endif::[]
 |[[bmc_pass]] `bmc_pass`
 | Password for the BMC
 
+|[[root_disk]] `root_disk`
+| Disk device to be used for OS installation
+
 |[[storage_disk]] `storage_disk`
 | List of disk available in the node to be used for storage
 
