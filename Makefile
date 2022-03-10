@@ -4,7 +4,7 @@ PIPE_TAG = latest
 UI_IMAGE = quay.io/ztpfw/ui
 UI_TAG = latest
 
-.PHONY: build push
+.PHONY: build push doc
 
 all: build push
 
@@ -15,3 +15,6 @@ build:
 push: build
 	podman push $(PIPE_IMAGE):$(PIPE_TAG)
 	podman push $(UI_IMAGE):$(UI_TAG)
+
+doc:
+	bash build.sh

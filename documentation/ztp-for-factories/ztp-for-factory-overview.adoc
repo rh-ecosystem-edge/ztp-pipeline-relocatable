@@ -19,7 +19,7 @@ This repository contains the scripts and OpenShift Pipelines definitions used to
 
 The pipeline will then cover several aspects:
 
-- Create required components( ACM, Registry, etc...)
+- Create required components (ACM, Registry, etc...)
 - Deploy and mirror a Registry with all required images and operators
 - Configure ACM to provision the spokes (based on the `spokes.yaml` file) cluster and deploy all required components on it.
 - Deploy Advanced Cluster Management (ACM) components

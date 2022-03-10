@@ -7,21 +7,39 @@ toc::[]
 
 Installer-provisioned installation of {product-title} requires:
 
+### Base
 - OpenShift Cluster with 3 masters
     . All Cluster Operators in good health status
     . Cluster reachable via a `KUBECONFIG` file
-- PVC's defined for the HUB
-    . It must not be an `emptydir` because between each step in the pipeline, the contents will be removed and we require them to further progress.
+    . The API/API-INT/Ingress should be deployed on the DHCP Ext Network (Factory network)
+
+### Networking
 - DNS entries configured and resolvable from both internal and external network, with DNS on the DHCP Factory network
     - HUB
-        . `api.hub.<domain>` and `api-int.hub.<domain>` entries to the same IP address
-        . ingress (*.apps.hub.<domain>)
+        . `api.<hub-domain>.<domain>` and `api-int.<hub-domain>.<domain>` entries to the same IP address
+        . ingress (*.apps.<hub-domain>.<net-domain>)
     - SPOKE
-        . `api.<spokename>.<domain>` and `api-int.<spokename>.<domain>` entries to the same IP address
-        . ingress (*.apps.<spokename>.<domain>)
+        . `api.<spoke-domain>.<net-domain>` and `api-int.<spoke-domain>.<net-domain>` entries to the same IP address
+        . ingress (*.apps.<spoke-domain>.<net-domain>)
+- External DHCP with some free IPs on the factory to provide access to the Spoke using the external network interface
+    - Every Spoke will need at least ~6 IPs from this External Network (without the broadcast and network ip)
+        . 1 per node
+        . 1 API and same for API-INT
+        . 1 for the Ingress entry (*.apps.<spoke-domain>.<net-domain>)
 
-- `spokes.yaml` file with the configuration for the spokes
-- A set of systems for Spoke usage with 3 masters and 1 worker
+### Storage
+- We need some Existant PVs on the HUB
+    . We cannot use `emptyDir` directive because between each step in the pipeline, the contents will be removed and we require them to further progress.
+    . 3 PVs for ACM (the expected size will depend on how many spokes will you deploy) 
+    . 1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 200Gb on the Hub 
+    side (Maybe more if you have ODF/OCS deployed).
+    . 1 for the HTTPD server, which will host the RHCOS images.
+    . We need to fill the Openshift Storage requirements for the Hub like (SSD/NVME).
+    . LSO should be enough but we recommend to use a more reliable one like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
+
+### General
+- `spokes.yaml` file with the configuration for the spokes (In this initial version you will need to bake this file by hand)
+- The enclosure is suppose to be just one Spoke which contains 3 masters, 1 worker and 1 Switch L2-L3
 
 Of course, the requirements for the installation of {product-title} are also to be satisfied on the hardware involved in the installation.
 
