@@ -5,7 +5,7 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  build-repo:
+  clone-pr-branch:
     runs-on: rh-flapper
     steps:
       - name: Checkout
@@ -15,7 +15,7 @@ jobs:
 
 
   remove-old-deployment:
-    needs: build-repo
+    needs: clone-pr-branch
     runs-on: rh-flapper
     steps:
       - name: remove all old deployments and vms
@@ -47,3 +47,33 @@ jobs:
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
           tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+
+  verify-pipe-success:
+    needs: launch-spoke-pipeline
+    runs-on: rh-flapper
+    steps:
+      - name: verify if the pipe has been successful
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          
+          while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
+            echo "Waiting for the pipeline to finish"
+            status=$(tkn pr ls | head -2 | grep -i running | awk '{print $1}')
+            echo "Status: "
+            echo "------- "
+            tkn  pr describe -L -ojsonpath={.status.conditions[0].message}
+            echo
+            echo "---------"
+            sleep 60
+          done
+          
+          if [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
+            echo "The pipeline has failed"
+            exit 1
+          elif [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i success | wc -l) -gt 0 ]; then
+            echo "The pipeline has succeeded"
+            exit 0
+          else
+            echo "The pipeline has not finished"
+            exit 1
+          fi
