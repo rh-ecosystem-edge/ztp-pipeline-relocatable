@@ -27,7 +27,7 @@ jobs:
           kcli delete vm spoke0-cluster-m1 -y || true
           kcli delete vm spoke0-cluster-m2 -y || true
           kcli delete vm spoke0-cluster-w0 -y || true
-          list=tkn pr ls -n spoke-deployer |grep -i running | cut -d' ' -f1
+          list=$(tkn pr ls -n spoke-deployer |grep -i running | cut -d' ' -f1)
           for i in $list; do
             tkn pr cancel $i -n spoke-deployer
           done
