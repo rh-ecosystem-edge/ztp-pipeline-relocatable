@@ -23,10 +23,14 @@ jobs:
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
           oc delete --ignore-not-found=true managedcluster spoke0-cluster
           oc delete --ignore-not-found=true ns spoke0-cluster
-          kcli delete vm spoke0-cluster-m0 -y
-          kcli delete vm spoke0-cluster-m1 -y
-          kcli delete vm spoke0-cluster-m2 -y
-          kcli delete vm spoke0-cluster-w0 -y
+          exist=$(kcli list vm | grep spoke | wc -l)
+          if [ $exist -gt 0 ]; then
+            kcli delete vm spoke0-cluster-m0 -y
+            kcli delete vm spoke0-cluster-m1 -y
+            kcli delete vm spoke0-cluster-m2 -y
+            kcli delete vm spoke0-cluster-w0 -y
+          fi
+          
 
   create-new-vm:
     needs: remove-old-deployment
