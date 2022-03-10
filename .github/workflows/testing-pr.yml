@@ -23,13 +23,10 @@ jobs:
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
           oc delete --ignore-not-found=true managedcluster spoke0-cluster
           oc delete --ignore-not-found=true ns spoke0-cluster
-          exist=$(kcli list vm | grep spoke | wc -l)
-          if [ $exist -gt 0 ]; then
-            kcli delete vm spoke0-cluster-m0 -y
-            kcli delete vm spoke0-cluster-m1 -y
-            kcli delete vm spoke0-cluster-m2 -y
-            kcli delete vm spoke0-cluster-w0 -y
-          fi
+          kcli delete vm spoke0-cluster-m0 -y || true
+          kcli delete vm spoke0-cluster-m1 -y || true
+          kcli delete vm spoke0-cluster-m2 -y || true
+          kcli delete vm spoke0-cluster-w0 -y || true
           
 
   create-new-vm:
@@ -49,4 +46,4 @@ jobs:
       - name: launch the spoke pipeline
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          tkn pipeline start -n spoke-deployer -p git-revision=${{ github.base_ref }} -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+          tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
