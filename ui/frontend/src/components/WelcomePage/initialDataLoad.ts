@@ -5,6 +5,7 @@ import {
   SERVICE_TEMPLATE_METALLB_INGRESS,
 } from '../PersistPage/resourceTemplates';
 import { ipWithoutDots } from '../utils';
+import { getHtpasswdIdentityProvider, getOAuth } from '../../resources/oauth';
 
 export const initialDataLoad = async ({
   setNextPage,
@@ -17,8 +18,9 @@ export const initialDataLoad = async ({
   handleSetApiaddr: K8SStateContextData['handleSetApiaddr'];
   handleSetIngressIp: K8SStateContextData['handleSetIngressIp'];
 }) => {
-  let ingressService, apiService;
+  let ingressService, apiService, oauth;
   try {
+    oauth = await getOAuth().promise;
     ingressService = await getService({
       name: SERVICE_TEMPLATE_METALLB_INGRESS.metadata.name || '',
       namespace: SERVICE_TEMPLATE_METALLB_INGRESS.metadata.namespace || '',
@@ -38,14 +40,18 @@ export const initialDataLoad = async ({
 
   if (ingressService?.spec?.loadBalancerIP) {
     handleSetIngressIp(ipWithoutDots(ingressService.spec?.loadBalancerIP));
+  }
+  if (apiService?.spec?.loadBalancerIP) {
     handleSetApiaddr(ipWithoutDots(apiService?.spec?.loadBalancerIP));
-    // TODO: read & set the domain
+  }
+  // TODO: read & set the domain
 
+  if (getHtpasswdIdentityProvider(oauth)) {
     // The Edit flow for the 2nd and later run
     setNextPage && setNextPage('/settings');
     return;
   }
 
-  // The Wizard for the first run
+  // The Wizard for the very first run
   setNextPage && setNextPage('/wizard/username');
 };
