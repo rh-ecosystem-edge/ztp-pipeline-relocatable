@@ -1,0 +1,48 @@
+name: Test before Merge
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  build-repo:
+    runs-on: rh-flapper
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+
+  remove-old-deployment:
+    needs: build-repo
+    runs-on: rh-flapper
+    steps:
+      - name: remove all old deployments and vms
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          oc delete managedcluster spoke0-cluster
+          oc delete ns spoke0-cluster
+          kcli delete vm spoke0-cluster-m0 -y
+          kcli delete vm spoke0-cluster-m1 -y
+          kcli delete vm spoke0-cluster-m2 -y
+          kcli delete vm spoke0-cluster-w0 -y
+
+  create-new-vm:
+    needs: remove-old-deployment
+    runs-on: rh-flapper
+    steps:
+      - name: create new vms and requirements
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          cd hack/deploy-hub-local
+          ./build-spoke.sh ~/openshift_pull.json 1
+
+  launch-spoke-pipeline:
+    needs: create-new-vm
+    runs-on: rh-flapper
+    steps:
+      - name: launch the spoke pipeline
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          tkn pipeline start -n spoke-deployer -p git-revision=${{ github.base_ref }} -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
