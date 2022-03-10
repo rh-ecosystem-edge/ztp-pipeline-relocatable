@@ -31,6 +31,7 @@ export const UsernameSelector: React.FC = () => {
         >
           <TextInput
             id={fieldId}
+            data-testid={fieldId}
             value={username}
             validated={validation ? 'error' : 'default'}
             isRequired={false}
