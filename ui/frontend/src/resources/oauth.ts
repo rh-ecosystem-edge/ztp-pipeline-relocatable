@@ -1,6 +1,7 @@
 import { getResource } from './resource-request';
 import { Metadata } from './metadata';
 import { IResource } from './resource';
+import { IDENTITY_PROVIDER_NAME } from '../components/PersistPage/constants';
 
 export type OAuthApiVersionType = 'config.openshift.io/v1';
 export const OAuthApiVersion: OAuthApiVersionType = 'config.openshift.io/v1';
@@ -36,3 +37,6 @@ export const getOAuth = () =>
       name: 'cluster',
     },
   });
+
+export const getHtpasswdIdentityProvider = (oauth?: OAuth): IndetityProviderType | undefined =>
+  oauth?.spec?.identityProviders?.find((ip) => ip.name === IDENTITY_PROVIDER_NAME);
