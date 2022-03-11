@@ -10,7 +10,7 @@ repos:
   #     - id: pyupgrade
   #       args: [--py36-plus]
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.1
+    rev: v2.4.1
     hooks:
       - id: prettier
         files: \.(css|js|md|markdown|json)
@@ -19,15 +19,15 @@ repos:
     hooks:
       - id: seed-isort-config
   - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.10.1
+    rev: v5.9.3
     hooks:
       - id: isort
   - repo: https://github.com/python/black
-    rev: 22.1.0
+    rev: 21.11b1
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.0.1
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -78,7 +78,7 @@ repos:
         types:
           - shell
   - repo: https://github.com/asottile/blacken-docs
-    rev: v1.12.1
+    rev: v1.11.0
     hooks:
       - id: blacken-docs
   # - repo: https://github.com/hcodes/yaspeller.git

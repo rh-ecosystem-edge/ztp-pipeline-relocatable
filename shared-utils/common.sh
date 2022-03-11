@@ -185,7 +185,6 @@ elif [[ ! -f ${KUBECONFIG} ]]; then
     exit 1
 fi
 
-export MASTERIDS="$(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1))))"
 export KUBECONFIG_HUB=${KUBECONFIG}
 export PULL_SECRET=${OUTPUTDIR}/pull-secret.json
 
