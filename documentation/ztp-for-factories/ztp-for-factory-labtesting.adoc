@@ -1,7 +1,7 @@
-[id="ztp-for-factory-troubleshooting"]
+[id="ztp-for-factory-labtesting"]
 = Lab testing
 include::modules/common-attributes.adoc[]
-:context: ztp-for-factory-troubleshooting
+:context: ztp-for-factory-labtesting
 
 toc::[]
 

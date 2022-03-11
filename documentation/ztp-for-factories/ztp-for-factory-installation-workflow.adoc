@@ -131,18 +131,7 @@ tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(ca
 | Yes
 |===
 
-== Hub pipeline
-
-The Hub pipeline is the pipeline that will be used to deploy the infrastructure for the HUB to be ready to deploy spokes:
-
-```sh
-tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
-```
-
 This command will trigger the Pipeline, it's asynchronous, and will respond with another command which access the log directly. 
 
-== Spoke pipeline
-
-```sh
-tkn pipeline start -n spoke-deployer -p git-revision=tekton -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
-```
+include::ztp-for-factory-pipeline-hub.adoc[leveloffset=+1]
+include::ztp-for-factory-pipeline-edge.adoc[leveloffset=+1]

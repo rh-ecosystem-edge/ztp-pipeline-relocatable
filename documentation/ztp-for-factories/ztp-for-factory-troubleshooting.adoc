@@ -5,9 +5,7 @@ include::modules/common-attributes.adoc[]
 
 toc::[]
 
-
 == Troubleshooting the installer workflow
-
 
 This process doesn't fail... if it does.. you can keep the broken pieces!
 

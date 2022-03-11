@@ -7,13 +7,13 @@ toc::[]
 
 Installer-provisioned installation of {product-title} requires:
 
-### Base
+== Base
 - OpenShift Cluster with 3 masters
     . All Cluster Operators in good health status
     . Cluster reachable via a `KUBECONFIG` file
     . The API/API-INT/Ingress should be deployed on the DHCP Ext Network (Factory network)
 
-### Networking
+== Networking
 - DNS entries configured and resolvable from both internal and external network, with DNS on the DHCP Factory network
     - HUB
         . `api.<hub-domain>.<domain>` and `api-int.<hub-domain>.<domain>` entries to the same IP address
@@ -27,7 +27,7 @@ Installer-provisioned installation of {product-title} requires:
         . 1 API and same for API-INT
         . 1 for the Ingress entry (*.apps.<spoke-domain>.<net-domain>)
 
-### Storage
+== Storage
 - We need some Existant PVs on the HUB
     . We cannot use `emptyDir` directive because between each step in the pipeline, the contents will be removed and we require them to further progress.
     . 3 PVs for ACM (the expected size will depend on how many spokes will you deploy) 
@@ -37,7 +37,7 @@ Installer-provisioned installation of {product-title} requires:
     . We need to fill the Openshift Storage requirements for the Hub like (SSD/NVME).
     . LSO should be enough but we recommend to use a more reliable one like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
 
-### General
+== General
 - `spokes.yaml` file with the configuration for the spokes (In this initial version you will need to bake this file by hand)
 - The enclosure is suppose to be just one Spoke which contains 3 masters, 1 worker and 1 Switch L2-L3
 
