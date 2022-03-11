@@ -1,0 +1,83 @@
+name: Test before Merge
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  clone-pr-branch:
+    runs-on: rh-flapper
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+
+  remove-old-deployment:
+    needs: clone-pr-branch
+    runs-on: rh-flapper
+    steps:
+      - name: remove all old deployments and vms
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          oc delete --ignore-not-found=true managedcluster spoke0-cluster
+          oc delete --ignore-not-found=true ns spoke0-cluster
+          kcli delete vm spoke0-cluster-m0 -y || true
+          kcli delete vm spoke0-cluster-m1 -y || true
+          kcli delete vm spoke0-cluster-m2 -y || true
+          kcli delete vm spoke0-cluster-w0 -y || true
+          list=$(tkn pr ls -n spoke-deployer |grep -i running | cut -d' ' -f1)
+          for i in $list; do
+            tkn pr cancel $i -n spoke-deployer
+          done
+          
+
+  create-new-vm:
+    needs: remove-old-deployment
+    runs-on: rh-flapper
+    steps:
+      - name: create new vms and requirements
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          cd hack/deploy-hub-local
+          ./build-spoke.sh ~/openshift_pull.json 1
+
+  launch-spoke-pipeline:
+    needs: create-new-vm
+    runs-on: rh-flapper
+    steps:
+      - name: launch the spoke pipeline
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+
+  verify-pipe-success:
+    needs: launch-spoke-pipeline
+    runs-on: rh-flapper
+    steps:
+      - name: verify if the pipe has been successful
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          
+          while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
+            echo "Waiting for the pipeline to finish"
+            status=$(tkn pr ls | head -2 | grep -i running | awk '{print $1}')
+            echo "Status: "
+            echo "------- "
+            tkn  pr describe -L -ojsonpath={.status.conditions[0].message}
+            echo
+            echo "---------"
+            sleep 60
+          done
+          
+          if [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
+            echo "The pipeline has failed"
+            exit 1
+          elif [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i success | wc -l) -gt 0 ]; then
+            echo "The pipeline has succeeded"
+            exit 0
+          else
+            echo "The pipeline has not finished"
+            exit 1
+          fi
