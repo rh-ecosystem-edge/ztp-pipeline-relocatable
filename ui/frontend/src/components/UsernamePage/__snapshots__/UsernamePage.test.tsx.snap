@@ -1,0 +1,349 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UsernamePage can render 1`] = `
+<div>
+  <div
+    class="pf-c-background-image"
+    style="--pf-c-background-image--BackgroundImage: url(/background.png); --pf-c-background-image--BackgroundImage-2x: url(/background.png); --pf-c-background-image--BackgroundImage--sm: url(/background.png); --pf-c-background-image--BackgroundImage--sm-2x: url(/background.png); --pf-c-background-image--BackgroundImage--lg: url(/background.png); --pf-c-background-image--Filter: url(#patternfly-background-image-filter-overlay0);"
+  >
+    <svg
+      class="pf-c-background-image__filter"
+      height="0"
+      width="0"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <filter
+        id="patternfly-background-image-filter-overlay0"
+      >
+        <fecolormatrix
+          type="matrix"
+          values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0"
+        />
+        <fecomponenttransfer
+          color-interpolation-filters="sRGB"
+          result="duotone"
+        >
+          <fefuncr
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncg
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncb
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefunca
+            tableValues="0 1"
+            type="table"
+          />
+        </fecomponenttransfer>
+      </filter>
+    </svg>
+  </div>
+  <header
+    class="pf-c-page__header page-header"
+  >
+    <div
+      class="pf-c-page__header-brand"
+    >
+      <a
+        class="pf-c-page__header-brand-link"
+      >
+        <img
+          alt="Logo"
+          src="RedHatLogo.svg"
+        />
+      </a>
+    </div>
+    <div
+      class="pf-c-page__header-nav"
+    >
+      <div
+        class="page-header-middle"
+      >
+        ZTPFW setup
+      </div>
+    </div>
+    <div
+      class="pf-c-page__header-tools"
+    >
+      <a
+        aria-disabled="false"
+        class="pf-c-button pf-m-tertiary"
+        data-ouia-component-id="OUIA-Generated-Button-tertiary-1"
+        data-ouia-component-type="PF4/Button"
+        data-ouia-safe="true"
+        href="/logout"
+      >
+        Log out
+      </a>
+    </div>
+  </header>
+  <div
+    class="page-container"
+  >
+    <div
+      class="page-content"
+    >
+      <div
+        class="pf-l-stack pf-m-gutter"
+      >
+        <div
+          class="pf-l-stack__item content-three-rows__top"
+        >
+          <ol
+            class="pf-c-progress-stepper pf-m-center wizard-progress"
+          >
+            <li
+              aria-label="Username step"
+              class="pf-c-progress-stepper__step pf-m-info pf-m-current"
+              id="username"
+            >
+              <div
+                class="pf-c-progress-stepper__step-connector"
+              >
+                <span
+                  class="pf-c-progress-stepper__step-icon"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="currentColor"
+                    height="1em"
+                    role="img"
+                    style="vertical-align: -0.125em;"
+                    viewBox="0 0 1024 1024"
+                    width="1em"
+                  >
+                    <path
+                      d="M512.1,0 C229.7,0 0,229.8 0,512 C0,794.3 229.8,1024 512.1,1024 C794.4,1024 1024,794.3 1024,512 C1024,229.7 794.4,0 512.1,0 Z M512,896 C300.2,896 128,723.9 128,512 C128,300.3 300.2,128 512,128 C723.7,128 896,300.2 896,512 C896,723.8 723.7,896 512,896 Z M512,224 C671.1,224 800,352.9 800,512 C800,671.1 671.1,800 512,800 C352.9,800 224,671.1 224,512 C224,352.9 352.9,224 512,224"
+                    />
+                  </svg>
+                </span>
+              </div>
+              <div
+                class="pf-c-progress-stepper__step-main"
+              >
+                <div
+                  aria-labelledby="username username-title"
+                  class="pf-c-progress-stepper__step-title"
+                  id="username-title"
+                >
+                  Username
+                </div>
+              </div>
+            </li>
+            <li
+              aria-label="Password step"
+              class="pf-c-progress-stepper__step pf-m-pending"
+              id="password"
+            >
+              <div
+                class="pf-c-progress-stepper__step-connector"
+              >
+                <span
+                  class="pf-c-progress-stepper__step-icon"
+                />
+              </div>
+              <div
+                class="pf-c-progress-stepper__step-main"
+              >
+                <div
+                  aria-labelledby="password password-title"
+                  class="pf-c-progress-stepper__step-title"
+                  id="password-title"
+                >
+                  Password
+                </div>
+              </div>
+            </li>
+            <li
+              aria-label="API step"
+              class="pf-c-progress-stepper__step pf-m-pending"
+              id="apiaddr"
+            >
+              <div
+                class="pf-c-progress-stepper__step-connector"
+              >
+                <span
+                  class="pf-c-progress-stepper__step-icon"
+                />
+              </div>
+              <div
+                class="pf-c-progress-stepper__step-main"
+              >
+                <div
+                  aria-labelledby="apiaddr apiaddr-title"
+                  class="pf-c-progress-stepper__step-title"
+                  id="apiaddr-title"
+                >
+                  API
+                </div>
+              </div>
+            </li>
+            <li
+              aria-label="Ingress step"
+              class="pf-c-progress-stepper__step pf-m-pending"
+              id="ingressip"
+            >
+              <div
+                class="pf-c-progress-stepper__step-connector"
+              >
+                <span
+                  class="pf-c-progress-stepper__step-icon"
+                />
+              </div>
+              <div
+                class="pf-c-progress-stepper__step-main"
+              >
+                <div
+                  aria-labelledby="ingressip ingressip-title"
+                  class="pf-c-progress-stepper__step-title"
+                  id="ingressip-title"
+                >
+                  Ingress
+                </div>
+              </div>
+            </li>
+            <li
+              aria-label="Domain step"
+              class="pf-c-progress-stepper__step pf-m-pending"
+              id="domain"
+            >
+              <div
+                class="pf-c-progress-stepper__step-connector"
+              >
+                <span
+                  class="pf-c-progress-stepper__step-icon"
+                />
+              </div>
+              <div
+                class="pf-c-progress-stepper__step-main"
+              >
+                <div
+                  aria-labelledby="domain domain-title"
+                  class="pf-c-progress-stepper__step-title"
+                  id="domain-title"
+                >
+                  Domain
+                </div>
+              </div>
+            </li>
+            <li
+              aria-label="Download SSH key step"
+              class="pf-c-progress-stepper__step pf-m-pending"
+              id="sshkey"
+            >
+              <div
+                class="pf-c-progress-stepper__step-connector"
+              >
+                <span
+                  class="pf-c-progress-stepper__step-icon"
+                />
+              </div>
+              <div
+                class="pf-c-progress-stepper__step-main"
+              >
+                <div
+                  aria-labelledby="sshkey sshkey-title"
+                  class="pf-c-progress-stepper__step-title"
+                  id="sshkey-title"
+                >
+                  SSH
+                </div>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <div
+          class="pf-l-stack__item pf-m-fill content-three-rows__middle"
+        >
+          <div
+            class="pf-l-stack pf-m-gutter wizard-content"
+          >
+            <div
+              class="pf-l-stack__item"
+            >
+              <h1
+                class="pf-c-title pf-m-2xl"
+                data-ouia-component-id="OUIA-Generated-Title-1"
+                data-ouia-component-type="PF4/Title"
+                data-ouia-safe="true"
+              >
+                Choose a username 
+                <span
+                  class="required-badge"
+                >
+                  *
+                </span>
+              </h1>
+            </div>
+            <div
+              class="pf-l-stack__item wizard-sublabel"
+            >
+              Create a new personalized, account for future access.
+            </div>
+            <div
+              class="pf-l-stack__item pf-m-fill username-item"
+            >
+              <div
+                class="pf-c-form__group"
+              >
+                <div
+                  class="pf-c-form__group-control"
+                >
+                  <input
+                    aria-invalid="false"
+                    class="pf-c-form-control"
+                    data-ouia-component-id="OUIA-Generated-TextInputBase-1"
+                    data-ouia-component-type="PF4/TextInput"
+                    data-ouia-safe="true"
+                    data-testid="input-username"
+                    id="input-username"
+                    type="text"
+                    value=""
+                  />
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="pf-l-stack__item content-three-rows__bottom"
+        >
+          <div
+            class="wizard-footer"
+          >
+            <button
+              aria-disabled="false"
+              class="pf-c-button pf-m-link"
+              data-ouia-component-id="OUIA-Generated-Button-link-1"
+              data-ouia-component-type="PF4/Button"
+              data-ouia-safe="true"
+              data-testid="wizard-footer-button-back"
+              type="button"
+            >
+              Go back
+            </button>
+            <button
+              aria-disabled="true"
+              class="pf-c-button pf-m-primary pf-m-disabled"
+              data-ouia-component-id="OUIA-Generated-Button-primary-1"
+              data-ouia-component-type="PF4/Button"
+              data-ouia-safe="true"
+              data-testid="wizard-footer-button-next"
+              disabled=""
+              type="button"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

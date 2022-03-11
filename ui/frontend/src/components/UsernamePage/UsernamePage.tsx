@@ -13,7 +13,6 @@ export const UsernamePage: React.FC = () => {
   React.useEffect(() => setActiveStep('username'), [setActiveStep]);
   const { username, usernameValidation: validation } = useK8SStateContext();
 
-  console.log('--- UsernamePage');
   return (
     <Page>
       <ContentThreeRows
