@@ -1,11 +1,11 @@
 name: Test before Merge
 on:
-  pull_request:
-    branches:
-      - main
+  pull_request_review:
+    types: [submitted]
   workflow_dispatch:
 jobs:
   clone-pr-branch:
+    if: github.event.review.state == 'approved' 
     runs-on: CI-pool
     steps:
       - name: Checkout
@@ -15,6 +15,7 @@ jobs:
 
 
   remove-old-deployment:
+    if: github.event.review.state == 'approved'
     needs: clone-pr-branch
     runs-on: rh-flapper
     steps:
@@ -34,6 +35,7 @@ jobs:
           
 
   create-new-vm:
+    if: github.event.review.state == 'approved'
     needs: remove-old-deployment
     runs-on: rh-flapper
     steps:
@@ -44,6 +46,7 @@ jobs:
           ./build-spoke.sh ~/openshift_pull.json 1
 
   launch-spoke-pipeline:
+    if: github.event.review.state == 'approved'
     needs: create-new-vm
     runs-on: rh-flapper
     steps:
@@ -53,6 +56,7 @@ jobs:
           tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 
   verify-pipe-success:
+    if: github.event.review.state == 'approved'
     needs: launch-spoke-pipeline
     runs-on: rh-flapper
     steps:
