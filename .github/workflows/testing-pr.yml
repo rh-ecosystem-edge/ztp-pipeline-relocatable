@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 jobs:
   clone-pr-branch:
-    if: github.event.review.state == 'approved' 
+    if: github.event.review.state == 'approved'
     runs-on: CI-pool
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
           for i in $list; do
             tkn pr cancel $i -n spoke-deployer
           done
-          
+
 
   create-new-vm:
     if: github.event.review.state == 'approved'
@@ -63,7 +63,7 @@ jobs:
       - name: verify if the pipe has been successful
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          
+
           while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
             echo "Waiting for the pipeline to finish"
             status=$(tkn pr ls | head -2 | grep -i running | awk '{print $1}')
@@ -74,7 +74,7 @@ jobs:
             echo "---------"
             sleep 60
           done
-          
+
           if [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
             echo "The pipeline has failed"
             exit 1
