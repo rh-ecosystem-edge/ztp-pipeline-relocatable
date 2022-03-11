@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   clone-pr-branch:
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: Checkout
         uses: actions/checkout@v2
