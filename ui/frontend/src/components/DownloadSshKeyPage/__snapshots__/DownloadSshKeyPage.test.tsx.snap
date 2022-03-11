@@ -64,7 +64,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
       <div
         class="page-header-middle"
       >
-        ZTPFW setup
+        Edge cluster setup
       </div>
     </div>
     <div
@@ -368,7 +368,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                   >
                     Warning alert:
                   </span>
-                  ZTPFW does not store the private key. Please download and keep your key in a safe place.
+                  Edge cluster does not store the private key. Please download and keep your key in a safe place.
                 </h4>
                 
               </div>
@@ -458,7 +458,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                   <div
                     class="download-item__text"
                   >
-                    ZTPFW Private SSH Key
+                    Edge Cluster Private SSH Key
                   </div>
                 </div>
                 <div
