@@ -3,7 +3,7 @@
 // * scalability_and_performance/ztp-factory-install-clusters.adoc
 :_content-type: REFERENCE
 [id="ztp-factory-install-pipelines-flags-arguments_{context}"]
-= ZTP factory install pipelines flags and arguments
+= Tekton pipelines flags and arguments
 include::modules/common-attributes.adoc[]
 
 The pipeline arguments and flags are described in the following tables.

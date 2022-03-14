@@ -41,6 +41,10 @@ nameserver 192.168.7.10
 ----
 
 . Configure a static IP on the connected laptop:
+[NOTE]
+====
+Starting with Red Hat Enterprise Linux 8, network configurations are stored in the `/etc/NetworkManager/system-connections/` directory. This new configuration location uses the key file format instead of the ifcfg format. However, the previously stored configurations at `/etc/sysconfig/network-scripts/` continue to work. The `/etc/NetworkManager/system-connections/` directory stores any changes with the nmcli con mod name command.
+====
 
 .. Determine the name of the laptop's network interface card (NIC) as follows.
 +
@@ -73,7 +77,7 @@ Here `eth0` is the network card name, and it can be different for different comp
 BOOTPROTO=static
 IPADDR=192.168.7.21
 NETMASK=255.255.255.0
-GATEWAY=192.168.0.1
+GATEWAY=192.168.7.1
 DNS1=8.8.8.8
 DNS2=8.8.4.4
 ----
@@ -113,11 +117,15 @@ This `kubeadmin` username and password was created at the factory and should hav
 This new user account is granted `cluster-admin` privileges and should be used rather than the factory created `kubeadmin` account.
 ====
 
-.. In the **API** screen assign the IP address that will be used for API traffic. A default value is assigned but you are free to update this.
+.. In the **API** screen assign the IP address that will be used for API traffic. The default value should be replaced with an IP from the respective subnet
 
-.. In the **Ingress** screen assign the IP address that will be used for new routes and traffic managed by the ingress controller. A default value is assigned but you are free to update this.
+.. In the **Ingress** screen assign the IP address that will be used for new routes and traffic managed by the ingress controller. The default value should be replaced with an IP from the respective subnet
 
-.. Optional: Under Domain create unique URLs for the setup and console URLs for your edge cluster.
+Optional: Change the domain name to create unique URLs for the setup and console of your edge cluster.
+[NOTE]
+====
+The new and the old domain names should be properly configured in DNS.
+====
 
 .. Click **Download** in the **SSH** screen and download the edge cluster private SSH key.
 +
@@ -128,9 +136,9 @@ You need this to access the nodes of the edge cluster.
 
 .. Click **Finish setup**.
 
-.. Selecting **OpenShift console** brings you direct to the web console.
+.. Selecting **OpenShift console** redirects you to the web console.
 
-.. Under **Settings** you have the option to change the values of the **API address**, **Ingress address** and the previously configured **Domain**.
+.. Under **Settings** you have the option to change the values of the **API address**, **Ingress address** and the **Domain name**.
 +
 [NOTE]
 ====

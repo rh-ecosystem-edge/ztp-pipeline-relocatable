@@ -10,7 +10,7 @@ The hub configuration pipeline stage prepares the hub cluster to deploy multiple
 
 The flow associated with deploying the hub cluster is:
 
-Check hub::
+Check hub (preflight)::
 
 The initial stages in the hub pipeline downloads the various tools needed. It downloads `jq`, `oc`, `opm` and `kubectl`. It also proceeds to verify that various hub install prerequisites exist before proceeding, for example it checks the:
 
@@ -45,4 +45,4 @@ Deploy Assisted Installer::
 
 This step ensures the Assisted Installer service supports installing the edge clusters. This step configures the way the edge cluster is deployed, the certificates, the image sources, the cluster details, and so on.
 
-At this stage, the hub cluster is ready to install the edge cluster.
+At this stage, the hub cluster is ready to install the edge clusters.

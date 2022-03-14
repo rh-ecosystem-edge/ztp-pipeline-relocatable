@@ -1,0 +1,6 @@
+[id="ztp-for-factory-makeconnected"]
+= Update the Edge Cluster
+include::common-attributes.adoc[]
+:context: ztp-for-factory
+
+Follow regular update procedures in the documentation after connecting the EdgeCluster to upstream catalogs.

@@ -21,7 +21,7 @@ $ tkn pipeline logs deploy-ztp-edgecluster-run-2rklt -f -n edgecluster-deployer
 +
 [NOTE]
 ====
-The `edgecluster-deployer` pipeline stores all the artefacts for {product-title} Pipelines.
+The `edgecluster-deployer` namespace stores all the artifacts for {product-title} Pipelines.
 ====
 . Select **PipelineRuns** to drill down into the details of the pipeline runs.
 

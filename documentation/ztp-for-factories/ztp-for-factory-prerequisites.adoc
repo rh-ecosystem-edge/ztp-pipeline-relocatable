@@ -8,10 +8,10 @@ toc::[]
 Installer-provisioned installation of {product-title} requires:
 
 == Base
-- OpenShift Cluster with 3 masters
-    . All Cluster Operators in good health status
-    . Cluster reachable via a `KUBECONFIG` file
-    . The API/API-INT/Ingress should be deployed on the DHCP Ext Network (Factory network)
+- OpenShift Cluster with 3 masters:
+    * All Cluster Operators in good health status
+    * Cluster reachable via a `KUBECONFIG` file
+    * The API/API-INT/Ingress should be deployed on the DHCP Ext Network (Factory network)
 
 == Networking
 - Only one physical nic is required (the NIC used for the DHCP Ext Network). In this case, the internal network will be a sub-interface from the external network using a vlan tag in the edge cluster configuration. However, you could define 2 nics in the config yaml file (internal and external), and the internal network will be another physical interface instead of using vlan tag.
@@ -57,7 +57,7 @@ Just keep in mind that the edgeclusters section, can contain several `edgecluste
 
 === Edge-clusters.yaml walktrough
 
-Check next table for  a commented configuration file with links to the explanation to each relevant file section and configuration value.
+Check next table for a commented configuration file with links to the explanation to each relevant file section and configuration value.
 
 [source,yaml, subs="verbatim,macros,attributes"]
 ifdef::backend-pdf[[listing]]

@@ -6,7 +6,7 @@
 = Running the hub cluster factory install pipeline
 include::modules/common-attributes.adoc[]
 
-Run the following steps to run the hub factory install pipeline.
+The edge pipeline performs a series of steps to deploy an Edge Cluster, review the following sections on the requirements and the procedure.
 
 .Prerequisites
 
@@ -25,25 +25,27 @@ At this stage you only need to build out the `config` section. The `config` sect
 [source,yaml]
 ----
 config:
-  OC_OCP_VERSION: "4.10.9" <1>
-  OC_ACM_VERSION: "2.4" <2>
-  OC_OCS_VERSION: "4.9" <3>
+  OC_OCP_VERSION: "4.10.24"
+  OC_ACM_VERSION: "2.5" <2>
+  OC_ODF_VERSION: "4.10" <3>
 ----
 +
 <1> {product-title} version of the edge cluster.
-<2> Red Hat Advanced Cluster Management (RHACM) version.
+<2> Red Hat Advanced Cluster Management (RHACM) version. Note that ACM 2.5 when using the `mce` pipeline, will deploy MCE 2.0
 <3> The OpenShift Data Foundation (ODF) version.
 
 . Start the hub cluster pipeline from the command line:
 +
 [source,terminal]
 ----
-$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster.yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster.yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub<1>
 ----
 +
+<1> Note that there are different pipeline runs available (`deploy-ztp-hub` and `deploy-ztp-hub-mce`)
+
 [NOTE]
 ====
-This command starts the pipeline in the namespace `edgecluster-deployer` with the defined edge cluster configuration and the `kube` configuration in the workspace `ztp` with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
+This command starts the hub cluster pipeline in the namespace `edgecluster-deployer` with the defined edge cluster configuration and the `kubeconfig` in the workspace `ztp` with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
 ====
 +
 .Example output

@@ -9,7 +9,7 @@ NOTE:: This documentation it's mostly for the developers/qes etc... working in t
 
 == Deploying the environment in Virtual
 
-This is a very expensive option to work with all nodes in virtual, which means, you will need a big boy to make this work:
+This is a very expensive option to work with all nodes in virtual, which means, you will need a big server to make this work:
 
 === Hardware requirements
 Hardware Reqs for the Hub (3 Nodes):
@@ -34,7 +34,7 @@ Worker Node:
 === Software requirements
 
 - Libvirtd/Qemu/KVM
-- Kcli for the scripts.
+- Kcli (https://github.com/karmab/kcli) for the scripts.
 - Some binaries oc, kubectl, tkn, yq, jq and ketall (for debugging)
 
 === Deploying the Base Hub
@@ -44,7 +44,7 @@ Deploys the Hub cluster with an NFS as a Base Storage for the requirements
 ```console
 git clone git@github.com:rh-ecosystem-edge/ztp-pipeline-relocatable.git
 cd ztp-pipeline-relocatable/hack/deploy-hub-local
-./build-hub.sh ${HOME}/openshift_pull.json 1
+./build-hub.sh ${HOME}/openshift_pull.json ${OCP_VERSION} ${ACM_VERSION} ${ODF_VERSION} compact
 ```
 
 === Bootstraping OpenShift Pipelines
@@ -70,7 +70,7 @@ tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw
 Creates 4 VMs and the proper DNS entries for the involved network
 
 ```sh
-./build-edgecluster.sh ${HOME}/openshift_pull.json 1
+./build-edgecluster.sh ${HOME}/openshift_pull.json ${OCP_VERSION} ${ACM_VERSION} ${ODF_VERSION} compact
 ```
 
 === Executing the Edge Cluster Pipeline
@@ -79,7 +79,14 @@ You can customize the parameter `git-revision=<BRANCH>` to point to your own bra
 
 ```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p edgeclusters-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
+tkn pipeline start -n edgecluster-deployer \
+            -p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
+            -p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
+            -p kubeconfig=${KUBECONFIG} \
+            -w name=ztp,claimName=ztp-pvc \
+            --timeout 5h \
+            --pod-template ./pipelines/resources/common/pod-template.yaml \
+            --use-param-defaults deploy-ztp-edgeclusters
 ```
 
 == Build Images
