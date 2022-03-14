@@ -106,6 +106,12 @@ function deploy_ui() {
     render_file manifests/route.yaml
 }
 
+function verify_ui() {
+    echo ">>>> Verifying deployment of the user interface on: ${spoke}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    curl ${UI_APP_URL} -k -m 30
+}
+
 if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
@@ -116,5 +122,6 @@ for spoke in ${ALLSPOKES}; do
     fill_ui_vars ${spoke}
     deploy_ui ${spoke}
     check_resource "deployment" "ztpfw-ui" "Available" "${UI_NS}" "${SPOKE_KUBECONFIG}"
+    verify_ui ${spoke}
     echo ">> UI Deployment done in: ${spoke}"
 done
