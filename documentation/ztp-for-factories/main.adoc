@@ -26,3 +26,6 @@ include::ztp-for-factory-post-installation-configuration.adoc[leveloffset=+1]
 //Day 2
 include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]
 include::ztp-for-factory-development.adoc[leveloffset=+1]
+
+
+include::ztp-for-factory-miscellaneous.adoc[leveloffset=+1]

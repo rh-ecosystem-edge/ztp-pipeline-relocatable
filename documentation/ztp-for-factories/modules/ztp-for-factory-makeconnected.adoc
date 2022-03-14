@@ -1,0 +1,94 @@
+[id="ztp-for-factory-makeconnected"]
+= Make the cluster connected
+include::common-attributes.adoc[]
+:context: ztp-for-factory
+
+After the Edge Cluster installation and detach from ACM operation, the cluster has an internal Quay registry that holds all the pieces and it's the source for all the images that the cluster might require to work as a disconnected cluster.
+
+In order to revert it to become an online cluster again, there are several steps required:
+
+
+
+Steps to make the cluster connected:
+
+- Remove ICSP's
+- Change catalog source for operators
+
+
+  flavio3.iranzo.io  root  ~  oc get  ImageContentSourcePolicy  ztpfw-spoke0-cluster -o yaml
+
+  flavio3.iranzo.io  root  ~  oc get catalogsource -A
+
+openshift-marketplace   ztpfw-catalog   Disconnected Lab   grpc   disconnected-lab   14h
+
+
+
+
+function gen_header() {
+    cat <<EOF >${ICSP_OUTFILE}
+---
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  labels:
+    operators.openshift.org/catalog: "true"
+  name: ztpfw-${cluster}
+spec:
+  repositoryDigestMirrors:
+EOF
+}
+
+
+
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: kubernetes-nmstate-operator
+  namespace: openshift-nmstate
+spec:
+  channel: "stable"
+  name: kubernetes-nmstate-operator
+  source: ztpfw-catalog
+  sourceNamespace: openshift-marketplace
+
+
+
+ oc get catalogsource  -n openshift-marketplace ztpfw-catalog -oyaml
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"operators.coreos.com/v1alpha1","kind":"CatalogSource","metadata":{"annotations":{},"name":"ztpfw-catalog","namespace":"openshift-marketplace"},"spec":{"displayName":"Disconnected Lab","image":"ztpfw-registry-quay-ztpfw-registry.apps.spoke0-cluster.rdc130.lan/olm/redhat-operator-index:v4.9","publisher":"disconnected-lab","sourceType":"grpc","updateStrategy":{"registryPoll":{"interval":"30m"}}}}
+  creationTimestamp: "2022-03-16T12:24:42Z"
+  generation: 1
+  name: ztpfw-catalog
+  namespace: openshift-marketplace
+  resourceVersion: "138506"
+  uid: d6cb170c-2598-4c91-b174-9c2dc3c31a62
+spec:
+  displayName: Disconnected Lab
+  image: ztpfw-registry-quay-ztpfw-registry.apps.spoke0-cluster.rdc130.lan/olm/redhat-operator-index:v4.9
+  publisher: disconnected-lab
+  sourceType: grpc
+  updateStrategy:
+    registryPoll:
+      interval: 30m
+status:
+  connectionState:
+    address: ztpfw-catalog.openshift-marketplace.svc:50051
+    lastConnect: "2022-03-16T12:28:17Z"
+    lastObservedState: READY
+  latestImageRegistryPoll: "2022-03-16T12:54:46Z"
+  registryService:
+    createdAt: "2022-03-16T12:26:37Z"
+    port: "50051"
+    protocol: grpc
+    serviceName: ztpfw-catalog
+    serviceNamespace: openshift-marketplace
+
+
+https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/openshift/mirror-gpu-ocp-disconnected.html#mirror-the-operator-catalogs-on-a-disconnected-cluster
+
+https://access.redhat.com/solutions/6542281

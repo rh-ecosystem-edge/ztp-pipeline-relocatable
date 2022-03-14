@@ -1,0 +1,106 @@
+[id="ztp-for-factory-makeconnected"]
+= Install NVIDIA Operator
+include::common-attributes.adoc[]
+:context: ztp-for-factory
+
+
+https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/openshift/install-gpu-ocp.html#install-nvidiagpu
+
+Instalar el NVIDIA operator
+Instalar el Node Feature Discovery (NFD)
+Configurar NFD
+Configurar ClusterPolicy
+profit
+
+
+certified-operators - gpu-operator-certified registry.redhat.io/redhat/certified-operator-index:v4.9
+
+
+redhat-operators - nfd registry.redhat.io/redhat/redhat-operator-index:v4.9
+
+
+
+
+[source,yaml, subs="verbatim,macros,attributes"]
+----
+apiVersion: nvidia.com/v1
+kind: ClusterPolicy
+metadata:
+  namespace: nvidia-gpu-operator
+  name: gpu-cluster-policy
+spec:
+  dcgmExporter:
+    config:
+      name: ""
+  dcgm:
+    enabled: true
+  daemonsets: {}
+  devicePlugin: {}
+  driver:
+    enabled: true
+    use_ocp_driver_toolkit: true
+    repoConfig:
+      configMapName: ""
+    certConfig:
+      name: ""
+    licensingConfig:
+      nlsEnabled: false
+      configMapName: ""
+    virtualTopology:
+      config: ""
+  gfd: {}
+  migManager:
+    enabled: true
+  nodeStatusExporter:
+    enabled: true
+  operator:
+    defaultRuntime: crio
+    initContainer: {}
+  mig:
+    strategy: single
+  toolkit:
+    enabled: true
+  validator:
+    plugin:
+      env:
+        - name: WITH_WORKLOAD
+          value: "true"
+----
+
+
+And this
+
+[source,yaml, subs="verbatim,macros,attributes"]
+----
+apiVersion: nfd.openshift.io/v1
+kind: NodeFeatureDiscovery
+metadata:
+  name: nfd-instance-gpu
+  namespace: openshift-nfd
+spec:
+  instance: "" # instance is empty by default
+  operand:
+    image: quay.io/openshift/origin-node-feature-discovery:4.11
+    imagePullPolicy: Always
+  workerConfig:
+    configData: |
+      sources:
+        pci:
+          deviceClassWhitelist:
+            - "10de"
+            - "0200"
+            - "0302"
+            - "03"
+            - "12"
+          deviceLabelFields:
+            - vendor
+  customConfig:
+    configData: |
+      #    - name: "more.kernel.features"
+      #      matchOn:
+      #      - loadedKMod: ["example_kmod3"]
+      #    - name: "more.features.by.nodename"
+      #      value: customValue
+      #      matchOn:
+      #      - nodename: ["special-.*-node-.*"]
+----

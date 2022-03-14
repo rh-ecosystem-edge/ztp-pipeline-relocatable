@@ -1,0 +1,4 @@
+[id="ztp-for-factory-makeconnected"]
+= Update the Edge Cluster
+include::common-attributes.adoc[]
+:context: ztp-for-factory

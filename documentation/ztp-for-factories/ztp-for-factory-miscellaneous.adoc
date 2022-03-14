@@ -1,0 +1,12 @@
+[id="ztp-for-factory-miscellaneous"]
+= Miscellaneous operations
+include::modules/common-attributes.adoc[]
+:context: ztp-for-factory
+
+This section will cover additional recipes that can be applied on the Edge Cluster.
+
+include::modules/ztp-for-factory-makeconnected.adoc[leveloffset=+1]
+
+include::modules/ztp-for-factory-update.adoc[leveloffset=+1]
+
+include::modules/ztp-for-factory-nvidia.adoc[leveloffset=+1]
