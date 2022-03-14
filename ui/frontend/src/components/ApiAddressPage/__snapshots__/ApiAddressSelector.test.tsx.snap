@@ -64,7 +64,7 @@ exports[`ApiAddressSelector can render 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-2"
         type="text"
-        value="007"
+        value="7"
       />
       .
       <input
@@ -138,7 +138,7 @@ exports[`ApiAddressSelector can render change value 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-1"
         type="text"
-        value=" 86"
+        value="86"
       />
       .
       <input
@@ -162,7 +162,7 @@ exports[`ApiAddressSelector can render change value 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-3"
         type="text"
-        value="002"
+        value="2"
       />
     </div>
     <div
@@ -224,7 +224,7 @@ exports[`ApiAddressSelector can render non-default IP 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-1"
         type="text"
-        value="086"
+        value="86"
       />
       .
       <input
@@ -248,7 +248,7 @@ exports[`ApiAddressSelector can render non-default IP 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-3"
         type="text"
-        value="002"
+        value="2"
       />
     </div>
     <div
@@ -334,7 +334,7 @@ exports[`ApiAddressSelector can render validation error 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-3"
         type="text"
-        value="002"
+        value="2"
       />
       <svg
         aria-hidden="true"

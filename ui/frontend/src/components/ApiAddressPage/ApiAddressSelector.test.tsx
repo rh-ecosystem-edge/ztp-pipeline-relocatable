@@ -37,8 +37,8 @@ describe('ApiAddressSelector', () => {
     const { container } = render(<Component ctxData={{ apiaddr: '123 86111  2' }} />);
 
     expect(screen.getByTestId('ip-triplet-0')).toHaveValue('123');
-    expect(screen.getByTestId('ip-triplet-1')).toHaveValue('086');
-    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('002');
+    expect(screen.getByTestId('ip-triplet-1')).toHaveValue('86');
+    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('2');
     expect(screen.queryAllByTestId('address-validation-failed')).toHaveLength(0);
 
     expect(container).toMatchSnapshot();
@@ -49,7 +49,7 @@ describe('ApiAddressSelector', () => {
 
     expect(screen.getByTestId('ip-triplet-0')).toHaveValue('123');
     expect(screen.getByTestId('ip-triplet-1')).toHaveValue('586');
-    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('002');
+    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('2');
 
     expect(screen.queryAllByTestId('address-validation-failed')).toHaveLength(1);
     expect(screen.getByTestId('address-validation-failed')).toHaveClass(
@@ -66,15 +66,15 @@ describe('ApiAddressSelector', () => {
     const { container } = render(<Component ctxData={{ apiaddr: '123 86111  2' }} />);
 
     expect(screen.getByTestId('ip-triplet-0')).toHaveValue('123');
-    expect(screen.getByTestId('ip-triplet-1')).toHaveValue('086');
-    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('002');
+    expect(screen.getByTestId('ip-triplet-1')).toHaveValue('86');
+    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('2');
 
     const triplet0 = screen.getByTestId('ip-triplet-0');
     fireEvent.change(triplet0, { target: { value: '222' } });
 
     // chnage to correct value
     expect(screen.getByTestId('ip-triplet-0')).toHaveValue('222');
-    expect(screen.getByTestId('ip-triplet-1')).toHaveValue(' 86');
+    expect(screen.getByTestId('ip-triplet-1')).toHaveValue('86');
     expect(screen.queryAllByTestId('address-validation-failed')).toHaveLength(0);
 
     // try to change to wrong value
