@@ -23,9 +23,6 @@ include::ztp-for-factory-installation-workflow.adoc[leveloffset=+1]
 //Post installation configuration.
 include::ztp-for-factory-post-installation-configuration.adoc[leveloffset=+1]
 
-
 //Day 2
 include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]
-
-
-include::ztp-for-factory-labtesting.adoc[leveloffset=+1]
+include::ztp-for-factory-development.adoc[leveloffset=+1]

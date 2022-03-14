@@ -467,11 +467,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_debugging_a_task_execution_from_the_container_in_the_cluster">Debugging a task execution from the container in the cluster</a></li>
 </ul>
 </li>
-<li><a href="#ztp-for-factory-labtesting">Lab testing</a>
+<li><a href="#ztp-for-factory-development">Development</a>
 <ul class="sectlevel2">
-<li><a href="#_hub">Hub</a></li>
-<li><a href="#_spokes">Spokes</a></li>
-<li><a href="#_usage">Usage</a></li>
+<li><a href="#_deploying_the_environment_in_virtual">Deploying the environment in Virtual</a></li>
+<li><a href="#_build_images">Build Images</a></li>
+<li><a href="#_executing_a_pipeline_step">Executing a Pipeline Step</a></li>
 </ul>
 </li>
 </ul>
@@ -1417,48 +1417,187 @@ sh-4.4# cd /workspace/ztp/</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="ztp-for-factory-labtesting">Lab testing</h2>
+<h2 id="ztp-for-factory-development">Development</h2>
 <div class="sectionbody">
 <!-- toc disabled -->
-<div class="paragraph">
-<p>This section will cover two aspects of the testing, the HUB and the Spokes.</p>
-</div>
-<div class="paragraph">
-<p>The scripts described here are just used for testing in a laboratory and leverage the use of <a href="https://github.com/karmab/kcli">KCLI</a> tool for vm creation and DNS setup on a <code>libvirt</code>-capable machine.</p>
-</div>
-<div class="sect2">
-<h3 id="_hub">Hub</h3>
-<div class="paragraph">
-<p>We internally use the files in the folder <code>hack/deploy</code> to virtually setup an environment to test the pipeline.</p>
-</div>
-<div class="paragraph">
-<p>The first step is the <code>build-hub.sh</code> which builds the lab deployment with all the requirements (hub, DNS, PVC&#8217;s, <code>spokes.yaml</code>, etc.) that will be later used with OpenShift Pipelines to perform all the tests.</p>
-</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">NOTE</dt>
+<dd>
+<p>This documentation it&#8217;s mostly for the developers/qes etc&#8230;&#8203; working in the project.</p>
+</dd>
+</dl>
 </div>
 <div class="sect2">
-<h3 id="_spokes">Spokes</h3>
+<h3 id="_deploying_the_environment_in_virtual">Deploying the environment in Virtual</h3>
 <div class="paragraph">
-<p>For the spokes we use the script <code>build-spokes.sh</code></p>
+<p>This is a very expensive option to work with all nodes in virtual, which means, you will need a big boy to make this work:</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_usage">Usage</h3>
 <div class="sect3">
-<h4 id="_pipeline_execution_hub">Pipeline execution Hub</h4>
+<h4 id="_hardware_requirements">Hardware requirements</h4>
+<div class="paragraph">
+<p>Hardware Reqs for the Hub (3 Nodes):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>CPUs: 48 (16 each)</p>
+</li>
+<li>
+<p>RAM: 54 Gbs (18 each)</p>
+</li>
+<li>
+<p>Storage: 300 Gbs (each)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Hardware Reqs for the Edge Cluster (3 Master + 1 Worker Nodes):</p>
+</div>
+<div class="paragraph">
+<p>Master Nodes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>CPUs: 72 (24 each)</p>
+</li>
+<li>
+<p>RAM: 192 (64 each)</p>
+</li>
+<li>
+<p>Storage: 4 extra disks with 200Gb each one</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Worker Node:
+- CPUs: 12
+- RAM: 16
+- Storage: 4 extra disks with 200Gb each one</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_software_requirements">Software requirements</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Libvirtd/Qemu/KVM</p>
+</li>
+<li>
+<p>Kcli for the scripts.</p>
+</li>
+<li>
+<p>Some binaries oc, kubectl, tkn, yq, jq and ketall (for debugging)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_deploying_the_base_hub">Deploying the Base Hub</h4>
+<div class="paragraph">
+<p>Deploys the Hub cluster with an NFS as a Base Storage for the requirements</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight nowrap"><code class="language-sh" data-lang="sh">tkn XXXXX</code></pre>
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">git clone git@github.com:rh-ecosystem-edge/ztp-pipeline-relocatable.git
+cd ztp-pipeline-relocatable/hack/deploy-hub-local
+./build-hub.sh ${HOME}/openshift_pull.json 1</code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_pipeline_execution_spoke">Pipeline execution Spoke</h4>
-
-</div>
-<div class="sect3">
-<h4 id="_monitoring">Monitoring</h4>
+<h4 id="_bootstraping_openshift_pipelines">Bootstraping Openshift Pipelines</h4>
 <div class="paragraph">
-<p>You can follow the pipeline execution via XXXXX</p>
+<p>Installs the necessary things to start executing the Pipelines</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_executing_the_hub_pipeline">Executing the Hub Pipeline</h4>
+<div class="paragraph">
+<p>You can customize the parameter <code>git-revision=&lt;BRANCH&gt;</code> to point to your own branch</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_creating_the_edge_cluster_vms">Creating the Edge Cluster VMs</h4>
+<div class="paragraph">
+<p>Creates 4 VMs and the proper DNS entries for the involved network</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">./build-spoke.sh ${HOME}/openshift_pull.json 1</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_executing_the_edge_cluster_pipeline">Executing the Edge Cluster Pipeline</h4>
+<div class="paragraph">
+<p>You can customize the parameter <code>git-revision=&lt;BRANCH&gt;</code> to point to your own branch</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_images">Build Images</h3>
+<div class="paragraph">
+<p>You will need first access to the Quay Organization called <strong>ZTPFW</strong>, just ask whoever people involved in the project.</p>
+</div>
+<div class="paragraph">
+<p>You have some targets already in the Makefile, and today you just need to execute:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">make</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>this will change in the future to add functionality to the Image building</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_executing_a_pipeline_step">Executing a Pipeline Step</h3>
+<div class="paragraph">
+<p>Imagine you have an environment already deployed and you need to test the step you are working on, think on for example the UI. For that you just need to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>First step you updates the code in the PVC (This can change in the futurte when we embed the code in the Container Image)</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">tkn task start -n spoke-deployer -p git-revision=&lt;YOUR BRANCH&gt; -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults fetch-from-git</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>This second one executes the Pipeline Step</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight nowrap"><code class="language-console" data-lang="console">tkn task start -n spoke-deployer -p git-revision=&lt;YOUR BRANCH&gt; -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults spoke-deploy-ui</code></pre>
 </div>
 </div>
 </div>
@@ -1467,7 +1606,7 @@ sh-4.4# cd /workspace/ztp/</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-02-28 14:59:02 +0100
+Last updated 2022-03-14 12:31:19 +0100
 </div>
 </div>
 </body>
