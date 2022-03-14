@@ -39,6 +39,7 @@ export const WelcomeBottom: React.FC<{ error?: string; nextPage?: string }> = ({
       <StackItem>
         <Button
           component="a"
+          data-testid="welcome-button-continue"
           onClick={() => navigate(nextPage || '/welcome')}
           variant={ButtonVariant.primary}
           isDisabled={!nextPage}

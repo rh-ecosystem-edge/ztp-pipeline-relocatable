@@ -25,12 +25,17 @@ export const UsernameSelector: React.FC = () => {
         <FormGroup
           fieldId={fieldId}
           helperTextInvalid={
-            validation && <div className="validation-failed-text">{validation}</div>
+            validation && (
+              <div data-testid="validation-failed-text" className="validation-failed-text">
+                {validation}
+              </div>
+            )
           }
           validated={validation ? 'error' : 'default'}
         >
           <TextInput
             id={fieldId}
+            data-testid={fieldId}
             value={username}
             validated={validation ? 'error' : 'default'}
             isRequired={false}

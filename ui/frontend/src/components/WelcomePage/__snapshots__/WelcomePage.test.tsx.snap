@@ -1,0 +1,451 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Settings can render 1`] = `
+<div>
+  <div
+    class="pf-c-background-image"
+    style="--pf-c-background-image--BackgroundImage: url(/background.png); --pf-c-background-image--BackgroundImage-2x: url(/background.png); --pf-c-background-image--BackgroundImage--sm: url(/background.png); --pf-c-background-image--BackgroundImage--sm-2x: url(/background.png); --pf-c-background-image--BackgroundImage--lg: url(/background.png); --pf-c-background-image--Filter: url(#patternfly-background-image-filter-overlay0);"
+  >
+    <svg
+      class="pf-c-background-image__filter"
+      height="0"
+      width="0"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <filter
+        id="patternfly-background-image-filter-overlay0"
+      >
+        <fecolormatrix
+          type="matrix"
+          values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0"
+        />
+        <fecomponenttransfer
+          color-interpolation-filters="sRGB"
+          result="duotone"
+        >
+          <fefuncr
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncg
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncb
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefunca
+            tableValues="0 1"
+            type="table"
+          />
+        </fecomponenttransfer>
+      </filter>
+    </svg>
+  </div>
+  <header
+    class="pf-c-page__header page-header"
+  >
+    <div
+      class="pf-c-page__header-brand"
+    >
+      <a
+        class="pf-c-page__header-brand-link"
+      >
+        <img
+          alt="Logo"
+          src="RedHatLogo.svg"
+        />
+      </a>
+    </div>
+    <div
+      class="pf-c-page__header-nav"
+    >
+      <div
+        class="page-header-middle"
+      >
+        ZTPFW setup
+      </div>
+    </div>
+    <div
+      class="pf-c-page__header-tools"
+    >
+      <a
+        aria-disabled="false"
+        class="pf-c-button pf-m-tertiary"
+        data-ouia-component-id="OUIA-Generated-Button-tertiary-1"
+        data-ouia-component-type="PF4/Button"
+        data-ouia-safe="true"
+        href="/logout"
+      >
+        Log out
+      </a>
+    </div>
+  </header>
+  <div
+    class="page-container"
+  >
+    <div
+      class="page-content"
+    >
+      <div
+        class="pf-l-stack pf-m-gutter"
+      >
+        <div
+          class="pf-l-stack__item content-two-rows__top"
+        >
+          <div
+            class="welcome-top"
+            style="background-image: url(/backgroundWelcome.png);"
+          >
+            <img
+              alt="Kube"
+              class="welcome-top__kube"
+              src="kube.svg"
+            />
+          </div>
+        </div>
+        <div
+          class="pf-l-stack__item content-two-rows__bottom"
+        >
+          <div
+            class="pf-l-stack pf-m-gutter welcome-bottom"
+          >
+            <div
+              class="pf-l-stack__item"
+            >
+              <h1
+                class="pf-c-title pf-m-2xl"
+                data-ouia-component-id="OUIA-Generated-Title-1"
+                data-ouia-component-type="PF4/Title"
+                data-ouia-safe="true"
+              >
+                ZTPFW
+              </h1>
+            </div>
+            <div
+              class="pf-l-stack__item pf-m-fill"
+            >
+              To set up the configuration of your ZTPFW, click Continue.
+            </div>
+            <div
+              class="pf-l-stack__item"
+            >
+              <a
+                aria-disabled="false"
+                class="pf-c-button pf-m-primary"
+                data-ouia-component-id="OUIA-Generated-Button-primary-1"
+                data-ouia-component-type="PF4/Button"
+                data-ouia-safe="true"
+                data-testid="welcome-button-continue"
+              >
+                Continue
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Settings can render Settings page 1`] = `
+<div>
+  <div
+    class="pf-c-background-image"
+    style="--pf-c-background-image--BackgroundImage: url(/background.png); --pf-c-background-image--BackgroundImage-2x: url(/background.png); --pf-c-background-image--BackgroundImage--sm: url(/background.png); --pf-c-background-image--BackgroundImage--sm-2x: url(/background.png); --pf-c-background-image--BackgroundImage--lg: url(/background.png); --pf-c-background-image--Filter: url(#patternfly-background-image-filter-overlay2);"
+  >
+    <svg
+      class="pf-c-background-image__filter"
+      height="0"
+      width="0"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <filter
+        id="patternfly-background-image-filter-overlay2"
+      >
+        <fecolormatrix
+          type="matrix"
+          values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0"
+        />
+        <fecomponenttransfer
+          color-interpolation-filters="sRGB"
+          result="duotone"
+        >
+          <fefuncr
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncg
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncb
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefunca
+            tableValues="0 1"
+            type="table"
+          />
+        </fecomponenttransfer>
+      </filter>
+    </svg>
+  </div>
+  <header
+    class="pf-c-page__header page-header"
+  >
+    <div
+      class="pf-c-page__header-brand"
+    >
+      <a
+        class="pf-c-page__header-brand-link"
+      >
+        <img
+          alt="Logo"
+          src="RedHatLogo.svg"
+        />
+      </a>
+    </div>
+    <div
+      class="pf-c-page__header-nav"
+    >
+      <div
+        class="page-header-middle"
+      >
+        ZTPFW setup
+      </div>
+    </div>
+    <div
+      class="pf-c-page__header-tools"
+    >
+      <a
+        aria-disabled="false"
+        class="pf-c-button pf-m-tertiary"
+        data-ouia-component-id="OUIA-Generated-Button-tertiary-3"
+        data-ouia-component-type="PF4/Button"
+        data-ouia-safe="true"
+        href="/logout"
+      >
+        Log out
+      </a>
+    </div>
+  </header>
+  <div
+    class="page-container"
+  >
+    <div
+      class="page-content"
+    >
+      <div
+        class="pf-l-stack pf-m-gutter"
+      >
+        <div
+          class="pf-l-stack__item content-two-rows__top"
+        >
+          <div
+            class="welcome-top"
+            style="background-image: url(/backgroundWelcome.png);"
+          >
+            <img
+              alt="Kube"
+              class="welcome-top__kube"
+              src="kube.svg"
+            />
+          </div>
+        </div>
+        <div
+          class="pf-l-stack__item content-two-rows__bottom"
+        >
+          <div
+            class="pf-l-stack pf-m-gutter welcome-bottom"
+          >
+            <div
+              class="pf-l-stack__item"
+            >
+              <h1
+                class="pf-c-title pf-m-2xl"
+                data-ouia-component-id="OUIA-Generated-Title-3"
+                data-ouia-component-type="PF4/Title"
+                data-ouia-safe="true"
+              >
+                ZTPFW
+              </h1>
+            </div>
+            <div
+              class="pf-l-stack__item pf-m-fill"
+            >
+              To set up the configuration of your ZTPFW, click Continue.
+            </div>
+            <div
+              class="pf-l-stack__item"
+            >
+              <a
+                aria-disabled="false"
+                class="pf-c-button pf-m-primary"
+                data-ouia-component-id="OUIA-Generated-Button-primary-3"
+                data-ouia-component-type="PF4/Button"
+                data-ouia-safe="true"
+                data-testid="welcome-button-continue"
+              >
+                Continue
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Settings can render wizard 1`] = `
+<div>
+  <div
+    class="pf-c-background-image"
+    style="--pf-c-background-image--BackgroundImage: url(/background.png); --pf-c-background-image--BackgroundImage-2x: url(/background.png); --pf-c-background-image--BackgroundImage--sm: url(/background.png); --pf-c-background-image--BackgroundImage--sm-2x: url(/background.png); --pf-c-background-image--BackgroundImage--lg: url(/background.png); --pf-c-background-image--Filter: url(#patternfly-background-image-filter-overlay1);"
+  >
+    <svg
+      class="pf-c-background-image__filter"
+      height="0"
+      width="0"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <filter
+        id="patternfly-background-image-filter-overlay1"
+      >
+        <fecolormatrix
+          type="matrix"
+          values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0"
+        />
+        <fecomponenttransfer
+          color-interpolation-filters="sRGB"
+          result="duotone"
+        >
+          <fefuncr
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncg
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefuncb
+            tableValues="0.086274509803922 0.43921568627451"
+            type="table"
+          />
+          <fefunca
+            tableValues="0 1"
+            type="table"
+          />
+        </fecomponenttransfer>
+      </filter>
+    </svg>
+  </div>
+  <header
+    class="pf-c-page__header page-header"
+  >
+    <div
+      class="pf-c-page__header-brand"
+    >
+      <a
+        class="pf-c-page__header-brand-link"
+      >
+        <img
+          alt="Logo"
+          src="RedHatLogo.svg"
+        />
+      </a>
+    </div>
+    <div
+      class="pf-c-page__header-nav"
+    >
+      <div
+        class="page-header-middle"
+      >
+        ZTPFW setup
+      </div>
+    </div>
+    <div
+      class="pf-c-page__header-tools"
+    >
+      <a
+        aria-disabled="false"
+        class="pf-c-button pf-m-tertiary"
+        data-ouia-component-id="OUIA-Generated-Button-tertiary-2"
+        data-ouia-component-type="PF4/Button"
+        data-ouia-safe="true"
+        href="/logout"
+      >
+        Log out
+      </a>
+    </div>
+  </header>
+  <div
+    class="page-container"
+  >
+    <div
+      class="page-content"
+    >
+      <div
+        class="pf-l-stack pf-m-gutter"
+      >
+        <div
+          class="pf-l-stack__item content-two-rows__top"
+        >
+          <div
+            class="welcome-top"
+            style="background-image: url(/backgroundWelcome.png);"
+          >
+            <img
+              alt="Kube"
+              class="welcome-top__kube"
+              src="kube.svg"
+            />
+          </div>
+        </div>
+        <div
+          class="pf-l-stack__item content-two-rows__bottom"
+        >
+          <div
+            class="pf-l-stack pf-m-gutter welcome-bottom"
+          >
+            <div
+              class="pf-l-stack__item"
+            >
+              <h1
+                class="pf-c-title pf-m-2xl"
+                data-ouia-component-id="OUIA-Generated-Title-2"
+                data-ouia-component-type="PF4/Title"
+                data-ouia-safe="true"
+              >
+                ZTPFW
+              </h1>
+            </div>
+            <div
+              class="pf-l-stack__item pf-m-fill"
+            >
+              To set up the configuration of your ZTPFW, click Continue.
+            </div>
+            <div
+              class="pf-l-stack__item"
+            >
+              <a
+                aria-disabled="false"
+                class="pf-c-button pf-m-primary"
+                data-ouia-component-id="OUIA-Generated-Button-primary-2"
+                data-ouia-component-type="PF4/Button"
+                data-ouia-safe="true"
+                data-testid="welcome-button-continue"
+              >
+                Continue
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

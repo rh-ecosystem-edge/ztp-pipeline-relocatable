@@ -195,7 +195,7 @@ EOF
         export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
 
         # Now process blocks for each master
-        for master in 0 1 2; do
+        for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
 
             # Master loop
             export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.nic_int_static" ${SPOKES_FILE})

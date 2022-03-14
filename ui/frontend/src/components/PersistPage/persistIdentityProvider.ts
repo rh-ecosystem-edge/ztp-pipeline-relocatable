@@ -1,6 +1,11 @@
 import { cloneDeep } from 'lodash';
 import { createResource, patchResource, postRequest } from '../../resources';
-import { getOAuth, IndetityProviderType, OAuth } from '../../resources/oauth';
+import {
+  getHtpasswdIdentityProvider,
+  getOAuth,
+  IndetityProviderType,
+  OAuth,
+} from '../../resources/oauth';
 import { PatchType } from '../../resources/patches';
 import { IResource } from '../../resources/resource';
 import { Secret } from '../../resources/secret';
@@ -142,9 +147,7 @@ export const persistIdentityProvider = async (
     return false;
   }
 
-  const htpasswdIdentityProvider = oauth.spec?.identityProviders?.find(
-    (ip) => ip.name === IDENTITY_PROVIDER_NAME,
-  );
+  const htpasswdIdentityProvider = getHtpasswdIdentityProvider(oauth);
 
   if (htpasswdIdentityProvider) {
     console.info(

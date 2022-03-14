@@ -1,4 +1,5 @@
 import React from 'react';
+import { workaroundUnmarshallObject } from '../test-utils';
 import { getResource } from './resource-request';
 import { Route } from './Route';
 
@@ -15,10 +16,7 @@ export const useConsoleUrl = () => {
         },
       }).promise;
 
-      if (route && typeof route === 'string') {
-        // workaround for tests
-        route = JSON.parse(route);
-      }
+      route = workaroundUnmarshallObject(route);
       const host = route.spec?.host;
 
       if (host) {
