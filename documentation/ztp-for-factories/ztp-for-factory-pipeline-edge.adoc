@@ -1,0 +1,64 @@
+[id="ztp-for-factory-pipeline-edge"]
+= The Edge Node Pipeline
+include::modules/common-attributes.adoc[]
+:context: ztp-for-factory-pipeline-edge
+toc::[]
+
+The Edge Node Pipeline is an Openshift Object that will be used to deploy the Spoke clusters (Spokes only on the factory, after that they will be typical Edge nodes).
+
+We will need some prerequisited here:
+
+- Enough DHCP IPs in the external/factory network to hold the Edge Cluster
+- The API, API-INT and Ingress entries
+    . api.<spoke-cluster-name>.<network-domain>
+    . api-int.<spoke-cluster-name>.<network-domain>
+    . *.apps.<spoke-cluster-name>.<network-domain>
+- Clean disks for the OCS/ODF StorageCluster
+    . If the disks are not clean we will provide the way to clean them in other section.
+- DNS Resolution between the Spoke and the Hub API/Ingress entries.
+
+This is how we execute the Pipeline:
+
+```sh
+tkn pipeline start -n spoke-deployer -p git-revision=tekton -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+```
+
+After this command you will see this on the prompt:
+```console
+PipelineRun started: deploy-ztp-spokes-run-w5k7l
+
+In order to track the PipelineRun progress run:
+tkn pipelinerun logs deploy-ztp-spokes-run-w5k7l -f -n spoke-deployer
+```
+
+If you check the logs of just follow the PipelineRun on the Openshift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
+
+== The Workflow
+
+The Hub Workflow will be something like what you're seeing in the image, let's dig a bit on every step
+
+image::pipeline-spoke-workflow.png[]
+
+- **Download the code**:
+This phase will be mandatory or not, depending the scenario, if the environemnt it's fully disconnected, this source code will be embbeded into the Container Image.
+
+- **Check the Hub cluster**: 
+We will ensure all the things are ready to start the Hub provisioning, things like ClusterOperators, ClusterVersion and Nodes up and ready are basic to start working.
+
+- **Deploy Spoke Cluster**:
+The Pipeline will start with the Edge cluster Provisioning. This process will end pushing a notification from the Edge cluster to the Hub and answering with an ACK.
+
+- **Deploy NMState and MetalLB*:
+This is one of the Key steps, without this you will not be able to access the API/Ingress using the external address. This step deploys NMState and MetalLB operators which creates 1 profile per node to grab an IP from external's Network DHCP, then the MetalLB will create a resource called AddressPool to perform the relationship between the internal and external interface using a LoadBalancer interface. And finally creating a Service for the API and the Ingress.
+
+- **Deploy OCS/ODF**:
+This step will deploy Local Storage Operator and also Openshift Storage. Local Storage Operator will use the node disks (NVMEs) to create PVs, which OCS will use to deploy the StorageCluster on top of them, to generate the Storage Classes and Dynamic provisioning of the PVs.
+
+- **Deploy Quay**:
+We will deploy Quay Operator and components of Quay because the final customer will need a fully supported solution in the Edge and the factory (in the most probable scenario) will have their own internal registry in the factory. This Quay deployment has an small foot print enabling only the things needded to host an Internal Registry with basic functions.
+
+- **Deploy Worker Node**:
+At this point we will deploy the Worker node, and we will make it join to the Edge cluster.
+
+- **Dettach Edge Cluster**:
+This final step will perform some actions, first ensure that the things are well set and working. After that it will save the SSH-RSA keys, Kubeconfig and Kubeadmin password into the Hub, more concretelly in the <spoke-cluster-name> Namespace in the hub cluster. This could be sent afterwards to the customer, this policy should be set by the factory.

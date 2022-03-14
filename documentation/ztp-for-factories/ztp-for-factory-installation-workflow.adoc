@@ -5,10 +5,6 @@ include::modules/common-attributes.adoc[]
 
 toc::[]
 
-
-
-
-
 == OpenShift Pipelines installation
 
 First, we need to install OpenShift Pipelines Operator that will be used for running the pipeline, this is achieved by using a bootstrapping script that will install the Operator and the CR to initiate the deployment.
@@ -16,8 +12,10 @@ First, we need to install OpenShift Pipelines Operator that will be used for run
 This script, will also create the required pipeline definitions and tasks.
 
 
-=== Bootstrapping OpenShift Pipelines
+=== Bootstrapping OpenShift Pipelines and ZTPFW
 - Execute the bootstrap script file `pipelines/bootstrap.sh ${KUBECONFIG}` you can do that using this command:
+
+NOTE:: This bootstrap script will require at least these binaries: oc, yq, tkn
 
 ```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
@@ -70,21 +68,70 @@ task.tekton.dev/spoke-detach-cluster configured
 task.tekton.dev/spoke-restore-hub-config configured
 ```
 
-This script has  deployed Openshift-Pipelines and enabled the Tasks and Pipelines into the Hub cluster.
+This script will deploy Openshift-Pipelines and enabled the Tasks and Pipelines into the Hub cluster and more concretelly into the `spoke-deployer` Namespace.
+
 We can now continue the flow using the command line or the UI to interact with OpenShift Pipelines, so it is recommended to install the Tekton CLI `tkn` to interact with OpenShift Pipelines from this https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64-0.21.0.tar.gz[link].
 
-== Hub pipeline
+== ZTPFW Pipelines
 
-The Hub pipeline is the pipeline that will be used to deploy the infrastructure for the HUB to be ready to deploy spokes:
+We have 2 Pipelines created composed by some tasks each ones. Every Pipeline will be properly documented in each section.
 
-
-
+Let's explain the pipeline arguments and Flags we use in the ZTPFW, for that we will use this sample command as a base:
 
 ```sh
 tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ```
-== Spoke pipeline
 
-```sh
-tkn pipeline start -n spoke-deployer -p git-revision=tekton -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
-```
+.Pipeline Flags
+|===
+|Flag/Section | Description
+
+| `-n`
+| Openshift Namespace where the resources will be located
+
+| `-p`
+| Pipeline Parameter
+
+| `--timeout`
+| Pipeline General timeout.
+
+| `--use-param-defaults`
+| This means, "Apart of the parameters provided, the rest ones use the default options"
+
+| `-w`
+| The `Workspace` the place where Openshift Pipelines will hold the files during every step. We should not use an `EmptyDir`, if we use this option, the files generated between steps will not be saved. The best choice is `name=ztp,claimName=ztp-pvc`, this PVC will be created during the `bootstrap.sh` execution (It does not need more than 5Gb)
+|===
+
+.Pipeline Arguments
+|===
+|Parameter/Section | Description | Required
+
+| [[Namespace]] `Namespace`
+| This is a hardcoded Namespace where all the Tasks and Pipelines will be deployed.
+| Yes
+
+| [[git-revision]] `git-revision`
+| This will download the ZTPFW code from a concrete branch. This is more for testing purposes. Default: `main`
+| No 
+
+| [[spokes-config]] `spokes-config`
+| This `spokes.yaml` file will contain the whole information about you wanna deploy at the same time. You need to put it with a `cat` command as we do in the example execution.
+| Yes
+
+| [[kubeconfig]] `kubeconfig`
+| This is the **Hub** kubeconfig that will be used during the pipeline execution. You can point to the file or just use the KUBECONFIG variable.
+| Yes
+
+| `-w name=ztp,claimName=ztp-pvc`
+| This is mandatory to be executed as we declare here. With this declaration we are telling Tekton to use the Workspace ztp and the content should be placed on the `ztp-pvc` Persistent Volume.
+| Yes
+
+| `Pipeline Name`
+| In our sample command, it's the last argument. We will tell Tekton to execute this Pipeline and it's equivalent to the Name. You can look at the Pipelines deployed using `tkn pr ls` or `tkn task ls` for the tasks
+| Yes
+|===
+
+This command will trigger the Pipeline, it's asynchronous, and will respond with another command which access the log directly. 
+
+include::ztp-for-factory-pipeline-hub.adoc[leveloffset=+1]
+include::ztp-for-factory-pipeline-edge.adoc[leveloffset=+1]
