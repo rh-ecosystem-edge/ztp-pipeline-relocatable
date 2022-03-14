@@ -51,7 +51,7 @@ cd ztp-pipeline-relocatable/hack/deploy-hub-local
 
 Installs the necessary things to start executing the Pipelines
 
-```console
+```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s
 ```
@@ -60,7 +60,7 @@ curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-reloc
 
 You can customize the parameter `git-revision=<BRANCH>` to point to your own branch
 
-```console
+```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ```
@@ -69,15 +69,15 @@ tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(ca
 
 Creates 4 VMs and the proper DNS entries for the involved network
 
-```console
-./build-spoke.sh ${HOME}/openshift_pull.json 1 
+```sh
+./build-spoke.sh ${HOME}/openshift_pull.json 1
 ```
 
 === Executing the Edge Cluster Pipeline
 
 You can customize the parameter `git-revision=<BRANCH>` to point to your own branch
 
-```console
+```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 ```
@@ -88,8 +88,8 @@ You will need first access to the Quay Organization called **ZTPFW**, just ask w
 
 You have some targets already in the Makefile, and today you just need to execute:
 
-```console
-make 
+```sh
+make
 ```
 
 this will change in the future to add functionality to the Image building
@@ -100,12 +100,11 @@ Imagine you have an environment already deployed and you need to test the step y
 
 - First step you updates the code in the PVC (This can change in the futurte when we embed the code in the Container Image)
 
-```console
+```sh
 tkn task start -n spoke-deployer -p git-revision=<YOUR BRANCH> -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults fetch-from-git
 ```
 
-- This second one executes the Pipeline Step 
-```console
+- This second one executes the Pipeline Step
+```sh
 tkn task start -n spoke-deployer -p git-revision=<YOUR BRANCH> -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults spoke-deploy-ui
 ```
-
