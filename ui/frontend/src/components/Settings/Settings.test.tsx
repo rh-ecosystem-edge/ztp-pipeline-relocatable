@@ -65,9 +65,9 @@ describe('Seetings', () => {
     screen.getByTestId('settings-page-button-edit').click();
     expect(screen.getByTestId('settings-page-input-domain')).not.toBeDisabled();
     expect(screen.getByTestId('settings-page-input-domain')).toHaveValue('my.domain.com');
-    expect(screen.getByTestId('ingress-ip-1')).toHaveValue('005');
+    expect(screen.getByTestId('ingress-ip-1')).toHaveValue('5');
     expect(screen.getByTestId('ingress-ip-1')).not.toBeDisabled();
-    expect(screen.getByTestId('ingress-ip-2')).toHaveValue('022');
+    expect(screen.getByTestId('ingress-ip-2')).toHaveValue('22');
     expect(screen.getByTestId('ingress-ip-2')).not.toBeDisabled();
     expect(screen.getByTestId('ingress-ip-3')).toHaveValue('255');
     expect(screen.getByTestId('ingress-ip-3')).not.toBeDisabled();

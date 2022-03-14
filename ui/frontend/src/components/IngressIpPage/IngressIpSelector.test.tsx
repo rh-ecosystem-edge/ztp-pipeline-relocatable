@@ -38,7 +38,7 @@ describe('IngressIpSelector', () => {
 
     expect(screen.getByTestId('ip-triplet-0')).toHaveValue('012');
     expect(screen.getByTestId('ip-triplet-1')).toHaveValue('221');
-    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('010');
+    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('10');
     expect(screen.queryAllByTestId('address-validation-failed')).toHaveLength(0);
 
     expect(container).toMatchSnapshot();
@@ -49,7 +49,7 @@ describe('IngressIpSelector', () => {
 
     expect(screen.getByTestId('ip-triplet-0')).toHaveValue('123');
     expect(screen.getByTestId('ip-triplet-1')).toHaveValue('586');
-    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('002');
+    expect(screen.getByTestId('ip-triplet-3')).toHaveValue('2');
 
     expect(screen.queryAllByTestId('address-validation-failed')).toHaveLength(1);
     expect(screen.getByTestId('address-validation-failed')).toHaveClass(
