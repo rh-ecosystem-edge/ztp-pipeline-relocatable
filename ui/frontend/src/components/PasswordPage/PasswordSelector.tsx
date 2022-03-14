@@ -49,16 +49,16 @@ export const PasswordSelector: React.FC<{
       <StackItem>
         <FormGroup
           fieldId={fieldId}
-          helperTextInvalid={
-            validation && <div className="validation-failed-text">{validation}</div>
-          }
-          validated={validation ? 'error' : 'default'}
+          // helperTextInvalid={
+          //   validation && <div className="validation-failed-text">{validation}</div>
+          // }
+          validated={validation ? 'default' : 'error'}
         >
           <TextInput
             id={fieldId}
             data-testid={fieldId}
             value={password}
-            validated={validation ? 'error' : 'default'}
+            validated={validation ? 'default' : 'error'}
             isRequired={false}
             onChange={handleSetPassword}
             type={isVisible ? 'text' : 'password'}

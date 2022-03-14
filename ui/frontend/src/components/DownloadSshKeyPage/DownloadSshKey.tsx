@@ -20,6 +20,7 @@ import {
   SSH_PRIVATE_KEY_SECRET_TITLE,
 } from '../PersistPage/constants';
 import { PersistErrorType } from '../PersistPage/types';
+import { workaroundUnmarshallObject } from '../../test-utils';
 
 import book from './book.svg';
 import './DownloadSshKey.css';
@@ -34,12 +35,9 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
     const doItAsync = async () => {
       try {
         let secret = await getSecret(SSH_PRIVATE_KEY_SECRET).promise;
-
-        if (secret && typeof secret === 'string') {
-          // workaround for tests
-          secret = JSON.parse(secret);
-        }
+        secret = workaroundUnmarshallObject(secret);
         const data = secret?.data;
+
         if (data?.['id_rsa.key']) {
           setSshKey(data['id_rsa.key']);
         } else {

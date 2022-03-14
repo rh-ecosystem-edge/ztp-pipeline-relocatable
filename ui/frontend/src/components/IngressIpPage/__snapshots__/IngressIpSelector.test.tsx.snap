@@ -64,7 +64,7 @@ exports[`IngressIpSelector can render 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-2"
         type="text"
-        value="007"
+        value="7"
       />
       .
       <input
@@ -162,7 +162,7 @@ exports[`IngressIpSelector can render change value 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-3"
         type="text"
-        value="010"
+        value="10"
       />
     </div>
     <div
@@ -248,7 +248,7 @@ exports[`IngressIpSelector can render non-default IP 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-3"
         type="text"
-        value="010"
+        value="10"
       />
     </div>
     <div
@@ -334,7 +334,7 @@ exports[`IngressIpSelector can render validation error 1`] = `
         data-ouia-safe="true"
         data-testid="ip-triplet-3"
         type="text"
-        value="002"
+        value="2"
       />
       <svg
         aria-hidden="true"

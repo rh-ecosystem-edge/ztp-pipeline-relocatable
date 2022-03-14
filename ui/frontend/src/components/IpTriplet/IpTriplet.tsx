@@ -16,7 +16,6 @@ export const IpTriplet: React.FC<IpTripletProps> = ({
   isNarrow,
 }) => {
   const input = React.createRef<HTMLInputElement>();
-  const [isFocused, setIsFocused] = React.useState(false);
 
   const onChange = React.useCallback(
     (v) => {
@@ -64,22 +63,17 @@ export const IpTriplet: React.FC<IpTripletProps> = ({
     clzName += ' ip-triplet__wide';
   }
 
-  let zeroedValue = address.substring(position * 3, (position + 1) * 3);
-  if (!isFocused && zeroedValue.trim().length > 0) {
-    zeroedValue = zeroedValue.replaceAll(' ', '0');
-  }
+  const trimmedValue = address.substring(position * 3, (position + 1) * 3).trim() || '';
 
   return (
     <TextInput
       ref={input}
       data-testid={id}
       className={clzName}
-      value={zeroedValue}
+      value={trimmedValue}
       type="text"
       onChange={onChange}
       aria-label={`IP triplet, position ${position + 1}`}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
     />
   );
 };
