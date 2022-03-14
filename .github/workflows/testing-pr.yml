@@ -1,4 +1,4 @@
-name: Test before Merge
+name: Tests before Merging PR
 on:
   pull_request_review:
     types: [submitted]
