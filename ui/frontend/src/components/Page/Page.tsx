@@ -6,7 +6,9 @@ import { HeaderTools } from './HeaderTools';
 import RedHatLogo from './RedHatLogo.svg';
 import './Page.css';
 
-const HeaderMiddlePart: React.FC = () => <div className="page-header-middle">ZTPFW setup</div>;
+const HeaderMiddlePart: React.FC = () => (
+  <div className="page-header-middle">Edge cluster setup</div>
+);
 
 export const Page: React.FC = ({ children }) => {
   return (

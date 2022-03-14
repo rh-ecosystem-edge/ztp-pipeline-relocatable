@@ -2,7 +2,7 @@
 modified: 2022-03-09T11:10:44.009Z
 ---
 
-# The ZTPFW
+# The Edge Cluster configuration User Interface
 
 Configuration user interface for the ZTPFW.
 

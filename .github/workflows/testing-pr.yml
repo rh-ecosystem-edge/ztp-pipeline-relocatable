@@ -22,8 +22,8 @@ jobs:
       - name: remove all old deployments and vms
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          oc delete --ignore-not-found=true managedcluster spoke0-cluster
-          oc delete --ignore-not-found=true ns spoke0-cluster
+          oc delete --ignore-not-found=true managedcluster spoke0-cluster || true
+          oc delete --ignore-not-found=true ns spoke0-cluster || true
           kcli delete vm spoke0-cluster-m0 -y || true
           kcli delete vm spoke0-cluster-m1 -y || true
           kcli delete vm spoke0-cluster-m2 -y || true

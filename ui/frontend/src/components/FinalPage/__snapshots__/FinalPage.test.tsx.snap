@@ -64,7 +64,7 @@ exports[`FinalPage can render 1`] = `
       <div
         class="page-header-middle"
       >
-        ZTPFW setup
+        Edge cluster setup
       </div>
     </div>
     <div
@@ -160,7 +160,7 @@ exports[`FinalPage can render 1`] = `
                 data-ouia-component-type="PF4/Title"
                 data-ouia-safe="true"
               >
-                Enjoy your ZTPFW
+                Enjoy your Edge cluster
               </h3>
               <small
                 class=""
@@ -190,7 +190,7 @@ exports[`FinalPage can render 1`] = `
                 data-ouia-safe="true"
                 data-pf-content="true"
               >
-                If you need to modify your settings, make sure you are still connected to your ZTPFW and click Settings.
+                If you need to modify your settings, make sure you are still connected to your edge cluster and click Settings.
               </small>
             </div>
             <div
