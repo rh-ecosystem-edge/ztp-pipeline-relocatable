@@ -38,7 +38,7 @@ image::pipeline-hub-workflow.png[]
 - **Download the code**:
 This phase will be mandatory or not, depending the scenario, if the environemnt it's fully disconnected, this source code will be embbeded into the Container Image.
 
-- **Check the Hub cluster**: 
+- **Check the Hub cluster**:
 We will ensure all the things are ready to start the Hub provisioning, things like ClusterOperators, ClusterVersion and Nodes up and ready are basic to start working.
 
 - **Deploy HTTPD Server**:

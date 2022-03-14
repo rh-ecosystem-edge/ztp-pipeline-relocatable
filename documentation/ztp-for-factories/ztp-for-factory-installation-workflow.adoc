@@ -112,7 +112,7 @@ tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(ca
 
 | [[git-revision]] `git-revision`
 | This will download the ZTPFW code from a concrete branch. This is more for testing purposes. Default: `main`
-| No 
+| No
 
 | [[spokes-config]] `spokes-config`
 | This `spokes.yaml` file will contain the whole information about you wanna deploy at the same time. You need to put it with a `cat` command as we do in the example execution.
@@ -131,7 +131,7 @@ tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(ca
 | Yes
 |===
 
-This command will trigger the Pipeline, it's asynchronous, and will respond with another command which access the log directly. 
+This command will trigger the Pipeline, it's asynchronous, and will respond with another command which access the log directly.
 
 include::ztp-for-factory-pipeline-hub.adoc[leveloffset=+1]
 include::ztp-for-factory-pipeline-edge.adoc[leveloffset=+1]

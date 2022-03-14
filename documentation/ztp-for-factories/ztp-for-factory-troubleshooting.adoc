@@ -7,7 +7,7 @@ toc::[]
 
 == Troubleshooting a PipelineRun
 
-To debug the Hub Pipeline you just need to 
+To debug the Hub Pipeline you just need to
 
 - Grab PipelineRuns executed
 ```sh
