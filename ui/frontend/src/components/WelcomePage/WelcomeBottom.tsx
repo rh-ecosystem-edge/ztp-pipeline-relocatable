@@ -21,9 +21,11 @@ export const WelcomeBottom: React.FC<{ error?: string; nextPage?: string }> = ({
   return (
     <Stack className="welcome-bottom" hasGutter>
       <StackItem>
-        <Title headingLevel="h1">ZTPFW</Title>
+        <Title headingLevel="h1">Edge cluster</Title>
       </StackItem>
-      <StackItem isFilled>To set up the configuration of your ZTPFW, click Continue.</StackItem>
+      <StackItem isFilled>
+        To set up the configuration of your edge cluster, click Continue.
+      </StackItem>
       {error && (
         <StackItem>
           <Alert
