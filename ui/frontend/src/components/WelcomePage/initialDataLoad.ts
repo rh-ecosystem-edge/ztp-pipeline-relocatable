@@ -6,6 +6,7 @@ import {
 } from '../PersistPage/resourceTemplates';
 import { ipWithoutDots } from '../utils';
 import { getHtpasswdIdentityProvider, getOAuth } from '../../resources/oauth';
+import { workaroundUnmarshallObject } from '../../test-utils';
 
 export const initialDataLoad = async ({
   setNextPage,
@@ -37,6 +38,11 @@ export const initialDataLoad = async ({
       return;
     }
   }
+
+  // workarounds for tests
+  oauth = workaroundUnmarshallObject(oauth);
+  ingressService = workaroundUnmarshallObject(ingressService);
+  apiService = workaroundUnmarshallObject(apiService);
 
   if (ingressService?.spec?.loadBalancerIP) {
     handleSetIngressIp(ipWithoutDots(ingressService.spec?.loadBalancerIP));
