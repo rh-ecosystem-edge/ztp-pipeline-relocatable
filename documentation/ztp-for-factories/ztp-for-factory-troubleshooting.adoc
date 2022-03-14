@@ -5,13 +5,31 @@ include::modules/common-attributes.adoc[]
 
 toc::[]
 
-== Troubleshooting the installer workflow
+== Troubleshooting a PipelineRun
 
-This process doesn't fail... if it does.. you can keep the broken pieces!
+To debug the Hub Pipeline you just need to 
 
+- Grab PipelineRuns executed
 ```sh
-tkn XXXXX
+export KUBECONFIG=<PATH TO KUBECONFIG>
+tkn pr ls
 ```
+image::tkn-pr-ls.png[]
+
+- Grab the ID and find the task which failed
+```sh
+tkn pr describe deploy-ztp-spokes-run-wll7j
+```
+image::tkn-pr-describe-tasks.png[]
+
+- Grab the Task ID which failed and decribe it
+```sh
+tkn tr describe deploy-ztp-spokes-run-wll7j-detach-cluster-ptswr
+```
+image::tkn-tr-describe.png[]
+
+
+== Debugging a task execution from the container in the cluster
 
 ```console
 [root@flaper87-baremetal02 ~]# oc get pod -n spoke-deployer
