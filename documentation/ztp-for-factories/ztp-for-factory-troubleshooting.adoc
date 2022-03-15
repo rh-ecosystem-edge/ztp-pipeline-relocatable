@@ -9,20 +9,20 @@ toc::[]
 
 To debug the Hub Pipeline you just need to
 
-- Grab PipelineRuns executed
+- List the executed PipelineRuns
 ```sh
 export KUBECONFIG=<PATH TO KUBECONFIG>
 tkn pr ls
 ```
 image::tkn-pr-ls.png[]
 
-- Grab the ID and find the task which failed
+- Grab the failed PipelineRun Name and identify the failed Task
 ```sh
 tkn pr describe deploy-ztp-spokes-run-wll7j
 ```
 image::tkn-pr-describe-tasks.png[]
 
-- Grab the Task ID which failed and decribe it
+- Grab the failed Taskrun Name and examine it
 ```sh
 tkn tr describe deploy-ztp-spokes-run-wll7j-detach-cluster-ptswr
 ```
