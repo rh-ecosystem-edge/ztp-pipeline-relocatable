@@ -11,18 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: '--max-old-space-size=8192'
-    defaults:
-      run:
-        working-directory: ./ui
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+      - name: Yarn hack
+        run: mkdir -p /home/runner/.cache/yarn/v6
+      - name: Setup node
+        uses: actions/setup-node@v2.4.1
         with:
           node-version: '14'
+          cache: 'yarn'
+          cache-dependency-path: './ui/yarn.lock'
       - name: Install dependencies
-        run: yarn install --non-interactive --pure-lockfile
+        run: yarn install 
+        working-directory: ./ui
       - name: Build code (includes tests)
         run: yarn build
+        working-directory: ./ui
 
