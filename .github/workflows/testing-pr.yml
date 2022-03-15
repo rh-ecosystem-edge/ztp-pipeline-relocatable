@@ -1,11 +1,15 @@
 name: Tests before Merging PR
 on:
+  label:
+    types: [created, deleted]
   pull_request_review:
-    types: [submitted]
+    types: [submitted, edited]
+  pull_request:
+    types: [labeled]
   workflow_dispatch:
 jobs:
   clone-pr-branch:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
     runs-on: CI-pool
     steps:
       - name: Checkout
@@ -13,11 +17,10 @@ jobs:
         with:
           fetch-depth: 0
 
-
   remove-old-deployment:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
     needs: clone-pr-branch
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: remove all old deployments and vms
         run: |
@@ -33,11 +36,10 @@ jobs:
             tkn pr cancel $i -n spoke-deployer
           done
 
-
   create-new-vm:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
     needs: remove-old-deployment
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: create new vms and requirements
         run: |
@@ -46,9 +48,9 @@ jobs:
           ./build-spoke.sh ~/openshift_pull.json 1
 
   launch-spoke-pipeline:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
     needs: create-new-vm
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: launch the spoke pipeline
         run: |
@@ -56,9 +58,9 @@ jobs:
           tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 
   verify-pipe-success:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
     needs: launch-spoke-pipeline
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: verify if the pipe has been successful
         run: |

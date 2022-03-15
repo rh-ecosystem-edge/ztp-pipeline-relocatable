@@ -28,14 +28,14 @@ Installer-provisioned installation of {product-title} requires:
         . 1 for the Ingress entry (*.apps.<spoke-domain>.<net-domain>)
 
 == Storage
-- We need some Existant PVs on the HUB
-    . We cannot use `emptyDir` directive because between each step in the pipeline, the contents will be removed and we require them to further progress.
+- We need some existing PVs on the HUB
+    NOTE:: We cannot use `emptyDir` directive for runninng the pipeline, because between each step in the pipeline the contents will be removed and we require them to further progress.
     . 3 PVs for ACM (the expected size will depend on how many spokes will you deploy)
     . 1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 200Gb on the Hub
     side (Maybe more if you have ODF/OCS deployed).
     . 1 for the HTTPD server, which will host the RHCOS images.
-    . We need to fill the Openshift Storage requirements for the Hub like (SSD/NVME).
-    . LSO should be enough but we recommend to use a more reliable one like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
+    . We need to meet the Openshift Storage requirements for the Hub like (SSD/NVME).
+    . LSO should be enough but we recommend to use a more reliable storage backend like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
 
 == General
 - `spokes.yaml` file with the configuration for the spokes (In this initial version you will need to bake this file by hand)
