@@ -1,7 +1,7 @@
 name: Tests before Merging PR
 on:
   pull_request_review:
-    types: [submitted]
+    types: [submitted, edited]
   workflow_dispatch:
 jobs:
   clone-pr-branch:
