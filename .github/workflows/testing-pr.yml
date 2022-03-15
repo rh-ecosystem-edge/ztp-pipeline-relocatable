@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 jobs:
   clone-pr-branch:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     runs-on: CI-pool
     steps:
       - name: Checkout
@@ -18,7 +18,8 @@ jobs:
           fetch-depth: 0
 
   remove-old-deployment:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
+
     needs: clone-pr-branch
     runs-on: CI-pool
     steps:
@@ -37,7 +38,7 @@ jobs:
           done
 
   create-new-vm:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     needs: remove-old-deployment
     runs-on: CI-pool
     steps:
@@ -48,7 +49,7 @@ jobs:
           ./build-spoke.sh ~/openshift_pull.json 1
 
   launch-spoke-pipeline:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     needs: create-new-vm
     runs-on: CI-pool
     steps:
@@ -58,7 +59,7 @@ jobs:
           tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 
   verify-pipe-success:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci')
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     needs: launch-spoke-pipeline
     runs-on: CI-pool
     steps:
