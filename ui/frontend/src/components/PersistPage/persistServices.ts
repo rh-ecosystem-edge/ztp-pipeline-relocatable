@@ -5,13 +5,13 @@ import { PatchType } from '../../resources/patches';
 import { getService, Service } from '../../resources/service';
 import { addIpDots } from '../utils';
 import {
+  ADDRESS_POOL_ANNOTATION_KEY,
   ADDRESS_POOL_NAMESPACE,
   MISSING_VALUE,
   RESOURCE_CREATE_TITLE,
   RESOURCE_PATCH_TITLE,
 } from './constants';
 import {
-  ADDRESS_POOL_ANNOTATION_KEY,
   ADDRESS_POOL_TEMPLATE,
   SERVICE_TEMPLATE_API,
   SERVICE_TEMPLATE_METALLB_INGRESS,
@@ -22,12 +22,11 @@ const createAddressPool = async (
   setError: (error: PersistErrorType) => void,
   type: 'api' | 'ingress',
   serviceIp: string,
-  namespace: string,
 ): Promise<string | undefined> => {
   try {
     const object = cloneDeep(ADDRESS_POOL_TEMPLATE);
     object.metadata.generateName = `ztpfw-${type}-`;
-    object.metadata.namespace = namespace;
+    // object.metadata.namespace = namespace;
     object.spec.addresses = [`${serviceIp}-${serviceIp}`];
 
     const response = await createResource(object).promise;
@@ -38,7 +37,7 @@ const createAddressPool = async (
     console.error('Can not create resource: ', e);
     setError({
       title: RESOURCE_CREATE_TITLE,
-      message: `Can not create ${type} AddressPool in the ${namespace} namespace.`,
+      message: `Can not create ${type} AddressPool in the ${ADDRESS_POOL_NAMESPACE} namespace.`,
     });
   }
   return undefined;
@@ -55,7 +54,7 @@ const patchAddressPool = async (
     kind: ADDRESS_POOL_TEMPLATE.kind,
     metadata: {
       name: addressPoolName,
-      namespace: ADDRESS_POOL_NAMESPACE, // TODO(mlibra) Verify that the namespace is correct
+      namespace: ADDRESS_POOL_NAMESPACE,
     },
   };
   const addrPoolPatches = [
@@ -112,12 +111,7 @@ const saveService = async (
     }).promise;
   } catch (e) {
     // Service resource not found - create new one
-    const addressPoolName = await createAddressPool(
-      setError,
-      type,
-      serviceIp,
-      ADDRESS_POOL_NAMESPACE,
-    );
+    const addressPoolName = await createAddressPool(setError, type, serviceIp);
     if (!addressPoolName) {
       return false;
     }
@@ -143,8 +137,9 @@ const saveService = async (
     return true;
   }
 
+  // Patch existing Service
   if (object.spec?.loadBalancerIP !== serviceIp) {
-    // Patch existing resource if there's a change
+    // if there's a change
     const patches: PatchType[] = [
       {
         op: object.spec?.loadBalancerIP === undefined ? 'add' : 'replace',
@@ -162,12 +157,7 @@ const saveService = async (
       }
     } else {
       // The AddressPool resource does not exist yet, create it
-      addressPoolName = await createAddressPool(
-        setError,
-        type,
-        serviceIp,
-        ADDRESS_POOL_NAMESPACE /* TODO(mlibra): verify that */,
-      );
+      addressPoolName = await createAddressPool(setError, type, serviceIp);
       if (!addressPoolName) {
         return false;
       }

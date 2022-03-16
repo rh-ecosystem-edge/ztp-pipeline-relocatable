@@ -15,4 +15,5 @@ export const SSH_PRIVATE_KEY_SECRET = {
 export const SSH_PRIVATE_KEY_SECRET_TITLE = 'Missing SSH private key';
 export const SSH_PRIVATE_KEY_SECRET_INCORRECT = 'Incorrect SSH key secret';
 
+export const ADDRESS_POOL_ANNOTATION_KEY = 'metallb.universe.tf/address-pool';
 export const ADDRESS_POOL_NAMESPACE = 'metallb';
