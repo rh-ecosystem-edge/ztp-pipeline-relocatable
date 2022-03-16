@@ -117,7 +117,7 @@ function render_manifests() {
     echo ">> Rendering Manifests for Spoke ${index}"
 
     # Render NNCP Manifests
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
+    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
         export NODENAME=ztpfw-spoke-${index}-master-${master}
         echo "Rendering NNCP for: ${NODENAME}"
         export NIC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
