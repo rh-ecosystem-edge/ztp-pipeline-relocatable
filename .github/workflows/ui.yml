@@ -15,7 +15,7 @@ jobs:
       - name: Yarn hack
         run: mkdir -p /home/runner/.cache/yarn/v6
       - name: Setup node
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v3
         with:
           node-version: '14'
           cache: 'yarn'
