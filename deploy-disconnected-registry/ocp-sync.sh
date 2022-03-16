@@ -31,7 +31,7 @@ function mirror_ocp() {
         cluster=${2}
     fi
 
-    echo ">>>> Mirror Openshift Version"
+    echo ">>>> Mirror OpenShift Version"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Pull Secret: ${PULL_SECRET}"
     echo "OCP Release Image: ${OPENSHIFT_RELEASE_IMAGE}"

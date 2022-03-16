@@ -4,7 +4,7 @@ include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-pipeline-edge
 toc::[]
 
-The Edge Node Pipeline is an Openshift Object that will be used to deploy the Spoke clusters (Spokes only on the factory, after that they will be typical Edge nodes).
+The Edge Node Pipeline is an OpenShift Object that will be used to deploy the Spoke clusters (Spokes only on the factory, after that they will be typical Edge nodes).
 
 We will need some prerequisited here:
 
@@ -31,7 +31,7 @@ In order to track the PipelineRun progress run:
 tkn pipelinerun logs deploy-ztp-spokes-run-w5k7l -f -n spoke-deployer
 ```
 
-If you check the logs of just follow the PipelineRun on the Openshift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
+If you check the logs of just follow the PipelineRun on the OpenShift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
 
 == The Workflow
 
@@ -52,7 +52,7 @@ The Pipeline will start with the Edge cluster Provisioning. This process will en
 This is one of the Key steps, without this you will not be able to access the API/Ingress using the external address. This step deploys NMState and MetalLB operators which creates 1 profile per node to grab an IP from external's Network DHCP, then the MetalLB will create a resource called AddressPool to perform the relationship between the internal and external interface using a LoadBalancer interface. And finally creating a Service for the API and the Ingress.
 
 - **Deploy OCS/ODF**:
-This step will deploy Local Storage Operator and also Openshift Storage. Local Storage Operator will use the node disks (NVMEs) to create PVs, which OCS will use to deploy the StorageCluster on top of them, to generate the Storage Classes and Dynamic provisioning of the PVs.
+This step will deploy Local Storage Operator and also OpenShift Storage. Local Storage Operator will use the node disks (NVMEs) to create PVs, which OCS will use to deploy the StorageCluster on top of them, to generate the Storage Classes and Dynamic provisioning of the PVs.
 
 - **Deploy Quay**:
 We will deploy Quay Operator and components of Quay because the final customer will need a fully supported solution in the Edge and the factory (in the most probable scenario) will have their own internal registry in the factory. This Quay deployment has an small foot print enabling only the things needded to host an Internal Registry with basic functions.

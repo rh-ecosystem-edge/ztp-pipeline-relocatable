@@ -34,7 +34,7 @@ Installer-provisioned installation of {product-title} requires:
     . 1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 200Gb on the Hub
     side (Maybe more if you have ODF/OCS deployed).
     . 1 for the HTTPD server, which will host the RHCOS images.
-    . We need to meet the Openshift Storage requirements for the Hub like (SSD/NVME).
+    . We need to meet the OpenShift Storage requirements for the Hub like (SSD/NVME).
     . LSO should be enough but we recommend to use a more reliable storage backend like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
 
 == General

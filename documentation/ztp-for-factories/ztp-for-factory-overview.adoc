@@ -14,7 +14,7 @@ endif::[]
 
 ZTP for Factory Workflow provides a way for installing on top of {product-title} the required pieces that will enable it to be used as a disconnected Hub Cluster and able to deploy Spoke Clusters that will be configured as the last step of the installation as disconnected too.
 
-Using Openshift Container Agnostic Topology Integrated Chassis (OCATOPIC) to deploy ZTP for Factory Workflow, the whole procedure is managed and controlled end-to-end.
+Using OpenShift Container Agnostic Topology Integrated Chassis (OCATOPIC) to deploy ZTP for Factory Workflow, the whole procedure is managed and controlled end-to-end.
 
 In this document, we'll cover the procedure and the automation around the different products and components that are involved in the ZTP for Factory workflow and orchestrated by OCATOPIC for a successful load deployment.
 

@@ -47,7 +47,7 @@ cd ztp-pipeline-relocatable/hack/deploy-hub-local
 ./build-hub.sh ${HOME}/openshift_pull.json 1
 ```
 
-=== Bootstraping Openshift Pipelines
+=== Bootstraping OpenShift Pipelines
 
 Installs the necessary things to start executing the Pipelines
 

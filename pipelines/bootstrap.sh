@@ -115,7 +115,7 @@ function deploy_pipeline() {
 
 function deploy_openshift_pipelines() {
 
-    echo ">>>> Deploying Openshift Pipelines"
+    echo ">>>> Deploying OpenShift Pipelines"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${PIPELINES_DIR}/manifests/01-subscription.yaml
     sleep 30
@@ -132,7 +132,7 @@ function deploy_openshift_pipelines() {
 
 function clean_openshift_pipelines() {
 
-    echo ">>>> Cleaning Openshift Pipelines and their components"
+    echo ">>>> Cleaning OpenShift Pipelines and their components"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc delete subscriptions.operators.coreos.com -n openshift-operators openshift-pipelines-operator-rh
     oc delete csv -n openshift-operators $(oc get csv -n openshift-operators --no-headers | grep openshift-pipelines-operator | cut -f1 -d\ )

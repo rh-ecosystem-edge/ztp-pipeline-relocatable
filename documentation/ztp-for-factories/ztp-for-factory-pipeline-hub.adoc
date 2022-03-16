@@ -4,13 +4,13 @@ include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-pipeline-hub
 toc::[]
 
-The Hub pipeline is an Openshift Object that will be used to deploy the infrastructure for the HUB to be ready to deploy spokes. As we already explained before, it will need the following:
+The Hub pipeline is an OpenShift Object that will be used to deploy the infrastructure for the HUB to be ready to deploy spokes. As we already explained before, it will need the following:
 
-- An Openshift Hub Cluster available with 4.9 version
+- An OpenShift Hub Cluster available with 4.9 version
 - The proper DNS entries and the API/Ingress exposed in the factory Network (DHCP Ext Network)
 - At least 6 PVs available and ready to be bound.
 - Internet connectivity
-- Openshift Pipelines already created (explained in the previous section)
+- OpenShift Pipelines already created (explained in the previous section)
 
 Ok now we can continue with the Pipeline execution. It will be a command like this:
 
@@ -27,7 +27,7 @@ In order to track the PipelineRun progress run:
 tkn pipelinerun logs deploy-ztp-hub-run-w5k7l -f -n spoke-deployer
 ```
 
-If you check the logs of just follow the PipelineRun on the Openshift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
+If you check the logs of just follow the PipelineRun on the OpenShift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
 
 == The Workflow
 
