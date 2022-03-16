@@ -69,7 +69,7 @@ jobs:
 
           while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
             echo "Waiting for the pipeline to finish"
-            status=$(tkn pr ls | head -2 | grep -i running | awk '{print $1}')
+            status=$(tkn pr ls -n spoke-deployer | head -2 | grep -i running | awk '{print $1}')
             echo "Status: "
             echo "------- "
             tkn  pr describe -L -ojsonpath={.status.conditions[0].message}
