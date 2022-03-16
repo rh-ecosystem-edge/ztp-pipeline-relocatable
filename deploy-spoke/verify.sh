@@ -31,7 +31,7 @@ function check_aci() {
 
     if [ "${ready}" == "false" ]; then
         echo "Timeout waiting for AgentClusterInstall ${cluster} on condition .status.conditions.Completed"
-        echo "Expected: ${desired_status} Current: $(oc --kubeconfig=${KUBECONFIG_HUB} aci -n ${cluster} -o jsonpath='{.status.conditions[?(@.type=="Completed")].status}')"
+        echo "Expected: ${desired_status} Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} -o jsonpath='{.status.conditions[?(@.type=="Completed")].status}')"
         exit 1
     else
         echo "AgentClusterInstall for ${cluster} verified"
