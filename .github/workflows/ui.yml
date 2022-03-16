@@ -21,7 +21,7 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: './ui/yarn.lock'
       - name: Install dependencies
-        run: yarn install 
+        run: yarn install
         working-directory: ./ui
       - name: Build code (includes tests)
         run: yarn build

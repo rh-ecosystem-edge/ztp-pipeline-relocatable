@@ -6,7 +6,7 @@
   "scripts": {
     "setup": "./setup.sh",
     "clean": "(cd frontend && yarn clean) ; (cd backend && yarn clean)",
-    "postinstall": "concurrently 'cd frontend && yarn install' 'cd backend && yarn install' -n frontend,backend -c green,blue",
+    "postinstall": "cd frontend && yarn install && cd ../backend && yarn install",
     "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
     "deployprod": "./deployProd.sh",
     "prebuild": "yarn test",
