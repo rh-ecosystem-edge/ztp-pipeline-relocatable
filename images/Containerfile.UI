@@ -3,7 +3,10 @@ USER root
 
 RUN dnf install -y jq
 RUN curl --silent "https://api.github.com/repos/yarnpkg/yarn/releases/latest" | jq -r .tag_name | sed -e 's/^v//'> /yarn.version
-RUN echo https://github.com/yarnpkg/yarn/releases/download/v$(cat /yarn.version)/yarn-$(cat /yarn.version)-1.noarch.rpm > /yarn.url
+# Fix me: Make yarn's version detection dynamic. Unfortunately, the yarn project does not keep list of Assets consistent accross versions (sometimes without a published RPM or of non-deterministric name)
+#RUN echo https://github.com/yarnpkg/yarn/releases/download/v$(cat /yarn.version)/yarn-$(cat /yarn.version)-1.noarch.rpm > /yarn.url
+RUN echo https://github.com/yarnpkg/yarn/releases/download/v1.22.17/yarn-1.22.17-1.noarch.rpm > /yarn.url # Let's hardcode to be safe for now
+RUN echo Latest yarn version: $(cat /yarn.version). Actually using: $(cat /yarn.url)
 RUN curl -L --output /yarn.rpm $(cat /yarn.url)
 RUN dnf install -y /yarn.rpm
 
