@@ -1,12 +1,17 @@
 import { cloneDeep } from 'lodash';
 
-import { createResource, deleteResource, patchResource } from '../../resources';
+import { createResource, patchResource } from '../../resources';
 import { PatchType } from '../../resources/patches';
 import { getService, Service } from '../../resources/service';
 import { addIpDots } from '../utils';
-import { MISSING_VALUE, RESOURCE_CREATE_TITLE, RESOURCE_PATCH_TITLE } from './constants';
 import {
   ADDRESS_POOL_ANNOTATION_KEY,
+  ADDRESS_POOL_NAMESPACE,
+  MISSING_VALUE,
+  RESOURCE_CREATE_TITLE,
+  RESOURCE_PATCH_TITLE,
+} from './constants';
+import {
   ADDRESS_POOL_TEMPLATE,
   SERVICE_TEMPLATE_API,
   SERVICE_TEMPLATE_METALLB_INGRESS,
@@ -17,12 +22,11 @@ const createAddressPool = async (
   setError: (error: PersistErrorType) => void,
   type: 'api' | 'ingress',
   serviceIp: string,
-  namespace: string,
 ): Promise<string | undefined> => {
   try {
     const object = cloneDeep(ADDRESS_POOL_TEMPLATE);
     object.metadata.generateName = `ztpfw-${type}-`;
-    object.metadata.namespace = namespace;
+    // object.metadata.namespace = namespace;
     object.spec.addresses = [`${serviceIp}-${serviceIp}`];
 
     const response = await createResource(object).promise;
@@ -33,10 +37,49 @@ const createAddressPool = async (
     console.error('Can not create resource: ', e);
     setError({
       title: RESOURCE_CREATE_TITLE,
-      message: `Can not create ${type} AddressPool in the ${namespace} namespace.`,
+      message: `Can not create ${type} AddressPool in the ${ADDRESS_POOL_NAMESPACE} namespace.`,
     });
   }
   return undefined;
+};
+
+const patchAddressPool = async (
+  setError: (error: PersistErrorType) => void,
+  addressPoolName: string,
+  serviceIp: string,
+): Promise<boolean> => {
+  const addrPoolObj = {
+    // no need to fetch the resource, patch it right away
+    apiVersion: ADDRESS_POOL_TEMPLATE.apiVersion,
+    kind: ADDRESS_POOL_TEMPLATE.kind,
+    metadata: {
+      name: addressPoolName,
+      namespace: ADDRESS_POOL_NAMESPACE,
+    },
+  };
+  const addrPoolPatches = [
+    {
+      op: 'replace',
+      path: '/spec/addresses',
+      value: [`${serviceIp}-${serviceIp}`],
+    },
+  ];
+
+  try {
+    await patchResource(addrPoolObj, addrPoolPatches).promise;
+    console.log(
+      `Patched ${addressPoolName} AddressPool name in the ${ADDRESS_POOL_NAMESPACE} namespace`,
+    );
+  } catch (e) {
+    console.error('Can not patch resource: ', e, addrPoolObj, addrPoolPatches);
+    setError({
+      title: RESOURCE_PATCH_TITLE,
+      message: `Can not update ${addressPoolName} AddressPool in the ${ADDRESS_POOL_NAMESPACE} namespace.`,
+    });
+    return false;
+  }
+
+  return true;
 };
 
 const saveService = async (
@@ -61,77 +104,14 @@ const saveService = async (
   const serviceIp = addIpDots(_serviceIp);
 
   try {
-    // Try to find existing resource. Decide about Add/Patch
+    // Try to find existing service resource. To decide about Add/Patch
     object = await getService({
       name,
       namespace,
     }).promise;
-
-    if (object.spec?.loadBalancerIP !== serviceIp) {
-      // Patch existing resource
-
-      const addressPoolName = await createAddressPool(setError, type, serviceIp, namespace);
-      if (!addressPoolName) {
-        return false;
-      }
-      const oldAddressPoolName = object.metadata.annotations?.[ADDRESS_POOL_ANNOTATION_KEY];
-
-      const patches: PatchType[] = [
-        {
-          op: object.spec?.loadBalancerIP === undefined ? 'add' : 'replace',
-          path: '/spec/loadBalancerIP',
-          value: serviceIp,
-        },
-      ];
-
-      const annotations = object.metadata.annotations || {};
-      annotations[ADDRESS_POOL_ANNOTATION_KEY] = addressPoolName;
-      patches.push({
-        op: object.metadata.annotations === undefined ? 'add' : 'replace',
-        path: `/metadata/annotations`,
-        value: annotations,
-      });
-
-      try {
-        const response = await patchResource(object, patches).promise;
-        console.log(`Patched ${actionName} service: `, response);
-      } catch (e) {
-        console.error('Can not patch resource: ', e, object, patches);
-        setError({
-          title: RESOURCE_PATCH_TITLE,
-          message: `Can not update ${name} service in the ${namespace} namespace for ${actionName}.`,
-        });
-        return false;
-      }
-
-      // Do clean-up
-      try {
-        if (oldAddressPoolName?.startsWith(`ztpfw-${type}-`)) {
-          await deleteResource({
-            apiVersion: ADDRESS_POOL_TEMPLATE.apiVersion,
-            kind: ADDRESS_POOL_TEMPLATE.kind,
-            metadata: {
-              name: oldAddressPoolName,
-              namespace,
-            },
-          }).promise;
-        } else {
-          console.info(
-            `Skipping delete of "${oldAddressPoolName} AddressPool object. Is it still needed?`,
-          );
-        }
-      } catch (e) {
-        console.error(
-          `Can not delete old ${oldAddressPoolName} AddressPool resource in the ${namespace} namespace.`,
-        );
-        // silently swallow this error, it's just clean-up
-      }
-    } else {
-      console.log(`No changes to ${name} service detected. Skipping ${actionName}.`);
-    }
   } catch (e) {
-    // Create new resource
-    const addressPoolName = await createAddressPool(setError, type, serviceIp, namespace);
+    // Service resource not found - create new one
+    const addressPoolName = await createAddressPool(setError, type, serviceIp);
     if (!addressPoolName) {
       return false;
     }
@@ -152,6 +132,57 @@ const saveService = async (
       });
       return false;
     }
+
+    // New Service and AddressPool created
+    return true;
+  }
+
+  // Patch existing Service
+  if (object.spec?.loadBalancerIP !== serviceIp) {
+    // if there's a change
+    const patches: PatchType[] = [
+      {
+        op: object.spec?.loadBalancerIP === undefined ? 'add' : 'replace',
+        path: '/spec/loadBalancerIP',
+        value: serviceIp,
+      },
+    ];
+
+    const serviceAnnotations = object.metadata.annotations || {};
+    let addressPoolName: string | undefined = serviceAnnotations?.[ADDRESS_POOL_ANNOTATION_KEY];
+    if (addressPoolName) {
+      // The AddressPool resource already exists, patch it
+      if (!(await patchAddressPool(setError, addressPoolName, serviceIp))) {
+        return false;
+      }
+    } else {
+      // The AddressPool resource does not exist yet, create it
+      addressPoolName = await createAddressPool(setError, type, serviceIp);
+      if (!addressPoolName) {
+        return false;
+      }
+
+      serviceAnnotations[ADDRESS_POOL_ANNOTATION_KEY] = addressPoolName;
+      patches.push({
+        op: object.metadata.annotations === undefined ? 'add' : 'replace',
+        path: `/metadata/annotations`,
+        value: serviceAnnotations,
+      });
+    }
+
+    try {
+      const response = await patchResource(object, patches).promise;
+      console.log(`Patched ${actionName} service: `, response);
+    } catch (e) {
+      console.error('Can not patch resource: ', e, object, patches);
+      setError({
+        title: RESOURCE_PATCH_TITLE,
+        message: `Can not update ${name} service in the ${namespace} namespace for ${actionName}.`,
+      });
+      return false;
+    }
+  } else {
+    console.log(`No changes to ${name} service detected. Skipping ${actionName}.`);
   }
 
   return true;

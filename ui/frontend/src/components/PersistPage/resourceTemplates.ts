@@ -1,7 +1,6 @@
 import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret';
 import { Service, ServiceApiVersion, ServiceKind } from '../../resources/service';
-
-export const ADDRESS_POOL_ANNOTATION_KEY = 'metallb.universe.tf/address-pool';
+import { ADDRESS_POOL_NAMESPACE } from './constants';
 
 export const ADDRESS_POOL_TEMPLATE = {
   apiVersion: 'metallb.io/v1alpha1',
@@ -9,7 +8,7 @@ export const ADDRESS_POOL_TEMPLATE = {
   metadata: {
     generateName: 'ztpfw-', // To be filled
     name: '',
-    namespace: '', // To be filled
+    namespace: ADDRESS_POOL_NAMESPACE,
   },
   spec: {
     protocol: 'layer2',
