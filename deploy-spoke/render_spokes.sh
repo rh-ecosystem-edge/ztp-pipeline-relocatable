@@ -8,6 +8,10 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
+# Cleanup
+echo ">>>> Cleaning up the previous BUILD folder"
+rm -Rfv ${OUTPUTDIR}/*
+
 # Check first item only
 RESULT=$(yq eval ".spokes[0]" ${SPOKES_FILE})
 
