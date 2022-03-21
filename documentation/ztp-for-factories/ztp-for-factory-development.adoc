@@ -1,0 +1,110 @@
+[id="ztp-for-factory-development"]
+= Development
+include::modules/common-attributes.adoc[]
+:context: ztp-for-factory-development
+
+toc::[]
+
+NOTE:: This documentation it's mostly for the developers/qes etc... working in the project.
+
+== Deploying the environment in Virtual
+
+This is a very expensive option to work with all nodes in virtual, which means, you will need a big boy to make this work:
+
+=== Hardware requirements
+Hardware Reqs for the Hub (3 Nodes):
+
+- CPUs: 48 (16 each)
+- RAM: 54 Gbs (18 each)
+- Storage: 300 Gbs (each)
+
+Hardware Reqs for the Edge Cluster (3 Master + 1 Worker Nodes):
+
+Master Nodes:
+
+- CPUs: 72 (24 each)
+- RAM: 192 (64 each)
+- Storage: 4 extra disks with 200Gb each one
+
+Worker Node:
+- CPUs: 12
+- RAM: 16
+- Storage: 4 extra disks with 200Gb each one
+
+=== Software requirements
+
+- Libvirtd/Qemu/KVM
+- Kcli for the scripts.
+- Some binaries oc, kubectl, tkn, yq, jq and ketall (for debugging)
+
+=== Deploying the Base Hub
+
+Deploys the Hub cluster with an NFS as a Base Storage for the requirements
+
+```console
+git clone git@github.com:rh-ecosystem-edge/ztp-pipeline-relocatable.git
+cd ztp-pipeline-relocatable/hack/deploy-hub-local
+./build-hub.sh ${HOME}/openshift_pull.json 1
+```
+
+=== Bootstraping OpenShift Pipelines
+
+Installs the necessary things to start executing the Pipelines
+
+```sh
+export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s
+```
+
+=== Executing the Hub Pipeline
+
+You can customize the parameter `git-revision=<BRANCH>` to point to your own branch
+
+```sh
+export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+```
+
+=== Creating the Edge Cluster VMs
+
+Creates 4 VMs and the proper DNS entries for the involved network
+
+```sh
+./build-spoke.sh ${HOME}/openshift_pull.json 1
+```
+
+=== Executing the Edge Cluster Pipeline
+
+You can customize the parameter `git-revision=<BRANCH>` to point to your own branch
+
+```sh
+export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+```
+
+== Build Images
+
+You will need first access to the Quay Organization called **ZTPFW**, just ask whoever people involved in the project.
+
+You have some targets already in the Makefile, and today you just need to execute:
+
+```sh
+make
+```
+
+this will change in the future to add functionality to the Image building
+
+== Executing a Pipeline Step
+
+Imagine you have an environment already deployed and you need to test the step you are working on, think on for example the UI. For that you just need to:
+
+- First step you updates the code in the PVC (This can change in the futurte when we embed the code in the Container Image)
+
+```sh
+tkn task start -n spoke-deployer -p git-revision=<YOUR BRANCH> -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults fetch-from-git
+```
+
+- This second one executes the Pipeline Step
+```sh
+tkn task start -n spoke-deployer -p git-revision=<YOUR BRANCH> -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults spoke-deploy-ui
+```

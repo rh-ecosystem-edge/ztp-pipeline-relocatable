@@ -64,7 +64,7 @@ exports[`DomainPage can render 1`] = `
       <div
         class="page-header-middle"
       >
-        ZTPFW setup
+        Edge cluster setup
       </div>
     </div>
     <div
@@ -334,7 +334,7 @@ exports[`DomainPage can render 1`] = `
             <div
               class="pf-l-stack__item wizard-sublabel"
             >
-              Create unique URLs for your ZTPFW, such as device setup and console. 
+              Create unique URLs for your edge cluster, such as device setup and console.
               <span
                 class="pf-c-badge pf-m-read"
               >

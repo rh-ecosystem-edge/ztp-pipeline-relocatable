@@ -1,11 +1,15 @@
 name: Tests before Merging PR
 on:
+  label:
+    types: [created, deleted]
   pull_request_review:
-    types: [submitted]
+    types: [submitted, edited]
+  pull_request:
+    types: [labeled]
   workflow_dispatch:
 jobs:
   clone-pr-branch:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     runs-on: CI-pool
     steps:
       - name: Checkout
@@ -13,11 +17,11 @@ jobs:
         with:
           fetch-depth: 0
 
-
   remove-old-deployment:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
+
     needs: clone-pr-branch
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: remove all old deployments and vms
         run: |
@@ -33,11 +37,10 @@ jobs:
             tkn pr cancel $i -n spoke-deployer || true
           done
 
-
   create-new-vm:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     needs: remove-old-deployment
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: create new vms and requirements
         run: |
@@ -46,9 +49,9 @@ jobs:
           ./build-spoke.sh ~/openshift_pull.json 1
 
   launch-spoke-pipeline:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     needs: create-new-vm
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: launch the spoke pipeline
         run: |
@@ -56,9 +59,9 @@ jobs:
           tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 
   verify-pipe-success:
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     needs: launch-spoke-pipeline
-    runs-on: rh-flapper
+    runs-on: CI-pool
     steps:
       - name: verify if the pipe has been successful
         run: |
@@ -66,7 +69,7 @@ jobs:
 
           while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
             echo "Waiting for the pipeline to finish"
-            status=$(tkn pr ls | head -2 | grep -i running | awk '{print $1}')
+            status=$(tkn pr ls -n spoke-deployer | head -2 | grep -i running | awk '{print $1}')
             echo "Status: "
             echo "------- "
             tkn  pr describe -L -ojsonpath={.status.conditions[0].message}

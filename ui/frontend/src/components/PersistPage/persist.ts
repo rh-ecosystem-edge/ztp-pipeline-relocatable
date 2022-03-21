@@ -9,10 +9,10 @@ export const persist = async (
   onSuccess: () => void,
 ) => {
   if (
-    (await saveIngress(setError, state.ingressIp)) &&
-    (await saveApi(setError, state.apiaddr)) &&
+    (await persistIdentityProvider(setError, state.username, state.password)) &&
     /* TODO: save domain here */
-    (await persistIdentityProvider(setError, state.username, state.password))
+    (await saveIngress(setError, state.ingressIp)) &&
+    /* Persist API at last*/ (await saveApi(setError, state.apiaddr))
   ) {
     console.error('TODO: The domain is not persisted.');
     // finished with success

@@ -1,0 +1,22 @@
+# Add 'repo' label to any root file changes
+repo:
+  - ./*
+
+documentation:
+  - documentation/**/*
+  - website/**/*
+  - utils/**/*
+  - examples/**/*
+
+internal:
+  - hack/**/*
+
+pipelines:
+  - pipelines/**/*
+
+ui:
+  - ui/**/*
+
+
+GHA:
+  - .github/**/*

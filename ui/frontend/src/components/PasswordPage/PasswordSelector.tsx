@@ -45,7 +45,9 @@ export const PasswordSelector: React.FC<{
           Choose a password <RequiredBadge />
         </Title>
       </StackItem>
-      <StackItem className="wizard-sublabel">Keep your ZTPFW account safe and secure.</StackItem>
+      <StackItem className="wizard-sublabel">
+        Keep your edge cluster account safe and secure.
+      </StackItem>
       <StackItem>
         <FormGroup
           fieldId={fieldId}

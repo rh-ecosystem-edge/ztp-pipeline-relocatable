@@ -1,0 +1,57 @@
+[id="ztp-for-factory-pipeline-hub"]
+= The Hub Pipeline
+include::modules/common-attributes.adoc[]
+:context: ztp-for-factory-pipeline-hub
+toc::[]
+
+The Hub pipeline is an OpenShift Object that will be used to deploy the infrastructure for the HUB to be ready to deploy spokes. As we already explained before, it will need the following:
+
+- An OpenShift Hub Cluster available with 4.9 version
+- The proper DNS entries and the API/Ingress exposed in the factory Network (DHCP Ext Network)
+- At least 6 PVs available and ready to be bound.
+- Internet connectivity
+- OpenShift Pipelines already created (explained in the previous section)
+
+Ok now we can continue with the Pipeline execution. It will be a command like this:
+
+```sh
+tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+```
+
+After the above command you will see something like this on the prompt:
+
+```console
+PipelineRun started: deploy-ztp-hub-run-w5k7l
+
+In order to track the PipelineRun progress run:
+tkn pipelinerun logs deploy-ztp-hub-run-w5k7l -f -n spoke-deployer
+```
+
+If you check the logs of just follow the PipelineRun on the OpenShift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
+
+== The Workflow
+
+The Hub Workflow will be something like what you're seeing in the image, let's dig a bit on every step
+
+image::pipeline-hub-workflow.png[]
+
+- **Download the code**:
+This phase will be mandatory or not, depending on the scenario. If the environemnt is fully disconnected, this source code will be embbeded into the Container Image.
+
+- **Check the Hub cluster**:
+We will ensure all the things are ready to start the Hub provisioning. ClusterOperators, ClusterVersion and up and ready Nodes are all essential to start working.
+
+- **Deploy HTTPD Server**:
+In this step we will deploy an HTTPD server in order to host the RHCOS Images that will be used in the Spoke deployment as a base to bake the customized ISOS for the Bare Metal nodes.
+
+- **Deploy Image Registry**:
+We will host an internal registry in the Hub cluster, after that perform the Sync between the OCP and OLM images from Quay/RedHat registries to the internal one. This step will enable, in a future step, to change the ICSP and Catalog sources that allows us to use the this Hub cluster as an isolated one. Last step here is update the OCP global PullSecret to give the cluster the capability to access the images.
+
+- **Deploy ACM**:
+We will deploy the ACM into this Hub cluster which is the piece that allow us to deploy the Edge clusters
+
+- **Transition to Disconnected**:
+Here we will deploy the ICSP and the Catalog sources for the hub to point to himself as a source of the images and operators.
+
+- **Deploy Assisted Installer**:
+This is a part of ACM which is not deployed by default. Here we configure the way the Edge cluster will be deployed, certificates, image sources, cluster details, etc...
