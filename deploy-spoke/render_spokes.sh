@@ -24,7 +24,7 @@ create_kustomization() {
     NUM_M=$((${NUM_M}-1))
 
     echo ">> Rendering Kustomize for: ${cluster}"
-    for node in $(seq 0..${NUM_M})
+    for node in $(seq 0 ${NUM_M})
     do
         echo "  - ${cluster}-master-${node}.yaml" >> ${OUTPUT} 
     done
