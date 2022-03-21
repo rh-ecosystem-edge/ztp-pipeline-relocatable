@@ -291,7 +291,7 @@ for spoke in ${ALLSPOKES}; do
     # Internal error occurred: failed calling webhook "nodenetworkconfigurationpolicies-mutate.nmstate.io"
     sleep 60
 
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
+    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
         NODENAME="${spoke}-nncp-ztpfw-spoke-${index}-master-${master}"
         # I've been forced to do that, don't blame me :(
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
