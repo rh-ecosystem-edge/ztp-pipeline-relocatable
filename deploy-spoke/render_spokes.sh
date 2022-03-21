@@ -5,53 +5,36 @@ set -o pipefail
 set -o nounset
 set -m
 
-# Load common vars
-source ${WORKDIR}/shared-utils/common.sh
-
-# Cleanup
-echo ">>>> Cleaning up the previous BUILD folder"
-find ${OUTPUTDIR} -type f | grep -vE 'spokes.yaml|pull-secret.json|kubeconfig-hub' | xargs rm -fv
-
-# Check first item only
-RESULT=$(yq eval ".spokes[0]" ${SPOKES_FILE})
-
-if [ "${RESULT}" == "null" ]; then
-    echo "Couldn't evaluate name of first spoke in YAML at $SPOKES_FILE, please check and retry"
-    exit 1
-fi
 
 create_kustomization() {
     # Loop for spokes
     # Prepare loop for spokes
-    i=0
+    local cluster=${1}
+    local spokenumber=${2}
 
-    # Check first item
-    RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
     # Pregenerate kustomization.yaml and spoke cluster config
     OUTPUT="${OUTPUTDIR}/kustomization.yaml"
 
     # Write header
     echo "resources:" >${OUTPUT}
 
-    while [ "${RESULT}" != "null" ]; do
-        # Generate the 4 files for each spoke
-        cat <<EOF >>${OUTPUT}
-  - spoke-${i}-cluster.yaml
-  - spoke-${i}-master-0.yaml
-  - spoke-${i}-master-1.yaml
-  - spoke-${i}-master-2.yaml
-EOF
+    echo ">> Detecting number of masters"
+    NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
+    echo ">> Masters: ${NUM_M}"
+    NUM_M=$((${NUM_M}-1))
 
-        # Prepare for next loop
-        i=$((i + 1))
-        RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
+    echo ">> Rendering Kustomize for: ${cluster}"
+    for node in $(seq 0..${NUM_M})
+    do
+        echo "  - ${cluster}-master-${node}.yaml" >> ${OUTPUT} 
     done
+    echo "  - ${cluster}-cluster.yaml" >> ${OUTPUT} 
 }
 
 create_spoke_definitions() {
     # Reset loop for spoke general definition
-    i=0
-    RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
+    local cluster=${1}
+    local spokenumber=${2}
 
     # Generic vars for all spokes
     export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
@@ -64,21 +47,21 @@ create_spoke_definitions() {
     export CHANGE_SPOKE_SVC_NET_CIDR=172.30.0.0/16
     export CHANGE_RSA_HUB_PUB_KEY=$(oc get cm -n kube-system cluster-config-v1 -o yaml | grep -A 1 sshKey | tail -1)
 
-    while [ "${RESULT}" != "null" ]; do
-        SPOKE_NAME=$(echo $RESULT | cut -d ":" -f 1)
-        generate_rsa_spoke ${SPOKE_NAME}
-        export CHANGE_RSA_PUB_KEY=$(cat ${RSA_PUB_FILE})
-        export CHANGE_RSA_PRV_KEY=$(cat ${RSA_KEY_FILE})
-        # Set vars
-        export CHANGE_SPOKE_NAME=${SPOKE_NAME} # from input spoke-file
-        grab_api_ingress ${SPOKE_NAME}
-        export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
-        export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_SPOKE_API} ${SPOKE_API_NAME}" | base64)
-        export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
-        export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
-        export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
-        # Generate the spoke definition yaml
-        cat <<EOF >${OUTPUTDIR}/spoke-${i}-cluster.yaml
+    # RSA
+    generate_rsa_spoke ${cluster}
+    export CHANGE_RSA_PUB_KEY=$(cat ${RSA_PUB_FILE})
+    export CHANGE_RSA_PRV_KEY=$(cat ${RSA_KEY_FILE})
+
+    # Set vars
+    export CHANGE_SPOKE_NAME=${cluster}
+    grab_api_ingress ${cluster}
+    export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
+    export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_SPOKE_API} ${SPOKE_API_NAME}" | base64)
+    export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
+    export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
+    export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
+    # Generate the spoke definition yaml
+    cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
 apiVersion: v1
 kind: Namespace
@@ -193,37 +176,33 @@ spec:
  sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
 EOF
 
-        # Generic vars for all masters
-        export CHANGE_SPOKE_MASTER_PUB_INT_MASK=24
-        export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
-        export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
+    # Generic vars for all masters
+    export CHANGE_SPOKE_MASTER_PUB_INT_MASK=24
+    export CHANGE_SPOKE_MASTER_PUB_INT_GW=192.168.7.1
+    export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
 
-        # Now process blocks for each master
-        for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-
-            # Master loop
-            export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.nic_int_static" ${SPOKES_FILE})
-            export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
-
-            export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
-
-            export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.mac_int_static" ${SPOKES_FILE})
-            export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.bmc_user" ${SPOKES_FILE} | base64)
-            export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.bmc_pass" ${SPOKES_FILE} | base64)
-            export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.bmc_url" ${SPOKES_FILE})
-
-            export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
-
-            export CHANGE_SPOKE_MASTER_ROOT_DISK=$(yq eval ".spokes[${i}].${SPOKE_NAME}.master${master}.root_disk" ${SPOKES_FILE})
-            # Now, write the template to disk
-            OUTPUT="${OUTPUTDIR}/spoke-${i}-master-${master}.yaml"
-
-            cat <<EOF >${OUTPUT}
+    # Now process blocks for each master
+    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1))))
+    do
+        # Master loop
+        export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.nic_int_static" ${SPOKES_FILE})
+        export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
+        export CHANGE_SPOKE_MASTER_PUB_INT_IP=192.168.7.1${master}
+        export CHANGE_SPOKE_MASTER_PUB_INT_MAC=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.mac_int_static" ${SPOKES_FILE})
+        export CHANGE_SPOKE_MASTER_BMC_USERNAME=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.bmc_user" ${SPOKES_FILE} | base64)
+        export CHANGE_SPOKE_MASTER_BMC_PASSWORD=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.bmc_pass" ${SPOKES_FILE} | base64)
+        export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.bmc_url" ${SPOKES_FILE})
+        export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+        export CHANGE_SPOKE_MASTER_ROOT_DISK=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.root_disk" ${SPOKES_FILE})
+        
+        # Now, write the template to disk
+        OUTPUT="${OUTPUTDIR}/${cluster}-master-${master}.yaml"
+        cat <<EOF >${OUTPUT}
 ---
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
- name: ztpfw-spoke-${i}-master-${master}
+ name: ztpfw-${cluster}-master-${master}
  namespace: $CHANGE_SPOKE_NAME
  labels:
    nmstate_config_cluster_name: $CHANGE_SPOKE_NAME
@@ -272,7 +251,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
- name: 'ztpfw-spoke-${i}-master-${master}-bmc-secret'
+ name: 'ztpfw-${cluster}-master-${master}-bmc-secret'
  namespace: '$CHANGE_SPOKE_NAME'
 type: Opaque
 data:
@@ -282,13 +261,13 @@ data:
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
- name: 'ztpfw-spoke-${i}-master-${master}'
+ name: 'ztpfw-${cluster}-master-${master}'
  namespace: '$CHANGE_SPOKE_NAME'
  labels:
    infraenvs.agent-install.openshift.io: '$CHANGE_SPOKE_NAME'
  annotations:
    inspect.metal3.io: disabled
-   bmac.agent-install.openshift.io/hostname: 'ztpfw-spoke-${i}-master-${master}'
+   bmac.agent-install.openshift.io/hostname: 'ztpfw-${cluster}-master-${master}'
    bmac.agent-install.openshift.io/ignition-config-overrides: '${JSON_STRING_CFG_OVERRIDE_BMH}'
 spec:
  online: false
@@ -298,19 +277,38 @@ spec:
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_MASTER_BMC_URL'
-   credentialsName: 'ztpfw-spoke-${i}-master-${master}-bmc-secret'
-
+   credentialsName: 'ztpfw-${cluster}-master-${master}-bmc-secret'
 EOF
 
-        done
-
-        # Prepare for next loop
-        i=$((i + 1))
-        RESULT=$(yq eval ".spokes[${i}]" ${SPOKES_FILE})
     done
 }
 
-# Main code
 
-create_kustomization
-create_spoke_definitions
+## MAIN
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
+# Cleanup
+echo ">>>> Cleaning up the previous BUILD folder"
+find ${OUTPUTDIR} -type f | grep -vE 'spokes.yaml|pull-secret.json|kubeconfig-hub' | xargs rm -fv
+
+# Check first item only
+RESULT=$(yq eval ".spokes[0]" ${SPOKES_FILE})
+
+if [ "${RESULT}" == "null" ]; then
+    echo "Couldn't evaluate name of first spoke in YAML at $SPOKES_FILE, please check and retry"
+    exit 1
+fi
+
+if [[ -z ${ALLSPOKES} ]]; then
+    ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+fi
+
+index=0
+
+for spoke in ${ALLSPOKES}
+do
+    create_kustomization ${spoke} ${index}
+    create_spoke_definitions ${spoke} ${index}
+    index=$((index + 1))
+done

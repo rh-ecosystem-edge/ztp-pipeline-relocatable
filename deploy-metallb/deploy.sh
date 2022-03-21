@@ -118,8 +118,7 @@ function render_manifests() {
 
     # Render NNCP Manifests
     for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        SPOKENAME=$(yq r -j .spokes[${index}] ${SPOKENAMES_FILE})
-        export NODENAME=ztpfw-${SPOKENAME}-master-${master}
+        export NODENAME=ztpfw-${spoke}-master-${master}
         echo "Rendering NNCP for: ${NODENAME}"
         export NIC_EXT_DHCP=$(yq e ".spokes[${index}].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
         render_file manifests/nncp.yaml ${OUTPUTDIR}/${spoke}-nncp-${NODENAME}.yaml
@@ -294,11 +293,11 @@ for spoke in ${ALLSPOKES}; do
     sleep 60
 
     for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        SPOKENAME=$(yq r -j .spokes[${index}] ${SPOKENAMES_FILE})
-        NODENAME="${spoke}-nncp-ztpfw-${SPOKENAME}-master-${master}"
+        export NODENAME=ztpfw-${spoke}-master-${master}
+        export FILENAME=${spoke}-nncp-${NODENAME}
         # I've been forced to do that, don't blame me :(
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
-        verify_remote_resource ${spoke} "default" "nncp" "ztpfw-spoke-${index}-master-${master}-nncp" "Available"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${FILENAME}.yaml"
+        verify_remote_resource ${spoke} "default" "nncp" "${NODENAME}-nncp" "Available"
     done
     echo
 
