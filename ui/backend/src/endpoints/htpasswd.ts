@@ -1,5 +1,6 @@
 import { exec, ExecException } from 'child_process';
 import { Request, Response } from 'express';
+import { validateInput } from './utils';
 
 const logger = console;
 
@@ -7,17 +8,10 @@ const logger = console;
 const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
 const PWD_REGEX = /^[a-zA-Z]([-a-z-A-Z0-9]*[a-zA-Z0-9])?$/;
 
-const validate = (regexp: RegExp, input?: string) => {
-  if (input?.match(regexp)) {
-    return input;
-  }
-  return undefined;
-};
-
 function htpasswdImpl(res: Response, _username?: string, _password?: string): void {
-  const username = validate(USERNAME_REGEX, _username);
+  const username = validateInput(USERNAME_REGEX, _username);
   logger.debug('Htpasswd endpoint called, username:', username);
-  const password = validate(PWD_REGEX, _password);
+  const password = validateInput(PWD_REGEX, _password);
 
   if (!username || !password) {
     res.writeHead(422).end();

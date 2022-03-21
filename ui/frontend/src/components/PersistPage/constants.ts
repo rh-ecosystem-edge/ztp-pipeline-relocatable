@@ -4,6 +4,7 @@ export const MISSING_VALUE = 'Missing value';
 export const RESOURCE_FETCH_TITLE = 'Failed to read resource';
 export const PERSIST_IDP = 'Registering new identity HTPasswd provider failed.';
 export const KUBEADMIN_REMOVE = 'Kubeadmin removal failed.';
+export const PERSIST_DOMAIN = 'Changing domain failed.';
 
 export const IDENTITY_PROVIDER_NAME = 'ztpfw-htpasswd-idp';
 
@@ -18,3 +19,9 @@ export const SSH_PRIVATE_KEY_SECRET_INCORRECT = 'Incorrect SSH key secret';
 
 export const ADDRESS_POOL_ANNOTATION_KEY = 'metallb.universe.tf/address-pool';
 export const ADDRESS_POOL_NAMESPACE = 'metallb';
+
+export const TLS_SECRET_NAMESPACE = 'default'; // Do not merge, should be: openshift-config
+
+// Route-prefix for this application.
+// TODO: Make it dynamic, this might varry over deployments
+export const ZTPFW_UI_ROUTE_PREFIX = 'edge-cluster-setup';

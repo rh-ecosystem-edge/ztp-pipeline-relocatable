@@ -1,6 +1,6 @@
 import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret';
 import { Service, ServiceApiVersion, ServiceKind } from '../../resources/service';
-import { ADDRESS_POOL_NAMESPACE } from './constants';
+import { ADDRESS_POOL_NAMESPACE, TLS_SECRET_NAMESPACE } from './constants';
 
 export const ADDRESS_POOL_TEMPLATE = {
   apiVersion: 'metallb.io/v1alpha1',
@@ -72,6 +72,21 @@ export const HTPASSWD_SECRET: Secret = {
     namespace: 'openshift-config',
   },
   type: 'Opaque',
+};
+
+export const TLS_SECRET: Secret = {
+  apiVersion: SecretApiVersion,
+  data: {
+    'tls.crt': '', // To be filled
+    'tls.key': '', // To be filled
+  },
+  kind: SecretKind,
+  metadata: {
+    generateName: '', // To be filled
+    name: 'api-secret',
+    namespace: TLS_SECRET_NAMESPACE,
+  },
+  type: 'kubernetes.io/tls',
 };
 
 export const CLUSTER_ADMIN_ROLE_BINDING = {

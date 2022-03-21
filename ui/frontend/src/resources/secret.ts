@@ -13,8 +13,11 @@ export interface Secret extends IResource {
   kind: SecretKindType;
   metadata: Metadata;
   data?: {
-    htpasswd?: string; // all base64
+    // all base64
+    htpasswd?: string;
     'id_rsa.key'?: string;
+    'tls.crt'?: string;
+    'tls.key'?: string;
   };
   type?: string;
 }
