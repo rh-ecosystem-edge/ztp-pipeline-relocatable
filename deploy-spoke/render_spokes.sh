@@ -10,7 +10,7 @@ source ${WORKDIR}/shared-utils/common.sh
 
 # Cleanup
 echo ">>>> Cleaning up the previous BUILD folder"
-find ${OUTPUTDIR} -not -name 'spokes.yaml' -not -name 'kubeconfig-hub' -exec rm -Rfv '{}' \;
+find ${OUTPUTDIR} -type f -not -name 'spokes.yaml' -not name 'pull-secret.json' -not -name 'kubeconfig-hub' -exec rm -fv '{}' \;
 
 # Check first item only
 RESULT=$(yq eval ".spokes[0]" ${SPOKES_FILE})
