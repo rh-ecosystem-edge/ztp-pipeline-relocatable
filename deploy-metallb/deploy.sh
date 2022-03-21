@@ -118,9 +118,10 @@ function render_manifests() {
 
     # Render NNCP Manifests
     for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        export NODENAME=ztpfw-spoke-${index}-master-${master}
+        SPOKENAME=$(yq r -j .spokes[${index}] ${SPOKENAMES_FILE})
+        export NODENAME=ztpfw-${SPOKENAME}-master-${master}
         echo "Rendering NNCP for: ${NODENAME}"
-        export NIC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
+        export NIC_EXT_DHCP=$(yq e ".spokes[${index}].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
         render_file manifests/nncp.yaml ${OUTPUTDIR}/${spoke}-nncp-${NODENAME}.yaml
         files+=(${OUTPUTDIR}/${spoke}-nncp-${NODENAME}.yaml)
     done
@@ -162,12 +163,13 @@ function render_manifests() {
 
 function grab_master_ext_ips() {
     spoke=${1}
+    local spokenumber=${2}
 
     ## Grab 1 master and 1 IP
     agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
     export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
     master=${SPOKE_NODE_NAME##*-}
-    export MAC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+    export MAC_EXT_DHCP=$(yq e ".spokes[${spokenumber}].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
     ## HAY QUE PROBAR ESTO
     SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
     export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
@@ -250,7 +252,7 @@ for spoke in ${ALLSPOKES}; do
     echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
     echo ">> Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
-    grab_master_ext_ips ${spoke}
+    grab_master_ext_ips ${spoke} ${index}
     recover_spoke_rsa ${spoke}
     check_connectivity "${SPOKE_NODE_IP}"
     render_manifests ${index}
@@ -292,7 +294,8 @@ for spoke in ${ALLSPOKES}; do
     sleep 60
 
     for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        NODENAME="${spoke}-nncp-ztpfw-spoke-${index}-master-${master}"
+        SPOKENAME=$(yq r -j .spokes[${index}] ${SPOKENAMES_FILE})
+        NODENAME="${spoke}-nncp-ztpfw-${SPOKENAME}-master-${master}"
         # I've been forced to do that, don't blame me :(
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${NODENAME}.yaml"
         verify_remote_resource ${spoke} "default" "nncp" "ztpfw-spoke-${index}-master-${master}-nncp" "Available"
