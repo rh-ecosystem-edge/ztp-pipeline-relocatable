@@ -26,9 +26,9 @@ create_kustomization() {
     echo ">> Rendering Kustomize for: ${cluster}"
     for node in $(seq 0 ${NUM_M})
     do
-        echo "  - ${cluster}-master-${node}.yaml" >> ${OUTPUT} 
+        echo "  - ${cluster}-master-${node}.yaml" >> ${OUTPUT}
     done
-    echo "  - ${cluster}-cluster.yaml" >> ${OUTPUT} 
+    echo "  - ${cluster}-cluster.yaml" >> ${OUTPUT}
 }
 
 create_spoke_definitions() {
@@ -194,7 +194,7 @@ EOF
         export CHANGE_SPOKE_MASTER_BMC_URL=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.bmc_url" ${SPOKES_FILE})
         export CHANGE_SPOKE_MASTER_MGMT_INT_MAC=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
         export CHANGE_SPOKE_MASTER_ROOT_DISK=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.root_disk" ${SPOKES_FILE})
-        
+
         # Now, write the template to disk
         OUTPUT="${OUTPUTDIR}/${cluster}-master-${master}.yaml"
         cat <<EOF >${OUTPUT}
@@ -237,11 +237,36 @@ spec:
              prefix-length: $CHANGE_SPOKE_MASTER_PUB_INT_MASK
        mtu: 1500
        mac-address: '$CHANGE_SPOKE_MASTER_PUB_INT_MAC'
+EOF
+	echo ">> Checking Ignored Interfaces"
+	echo "Spoke: ${cluster}"
+	echo "Master: ${master}"
+	IGN_IFACES=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE})
+	if [[ "${IGN_IFACES}" != "null" ]];then
+		yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE;do
+			echo "Ignoring Interface: ${IFACE}"
+			echo "     - name: ${IFACE}" >> ${OUTPUT}
+
+		done
+	fi
+
+
+        cat <<EOF >>${OUTPUT}
    routes:
      config:
        - destination: $CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
+EOF
+
+	if [[ "${IGN_IFACES}" != "null" ]];then
+		yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE;do
+			echo "Ignoring route for: ${IFACE}"
+			echo "       - next-hop-interface: ${IFACE}" >> ${OUTPUT}
+			echo "         state: absent" >> ${OUTPUT}
+		done
+	fi
+        cat <<EOF >>${OUTPUT}
  interfaces:
    - name: "$CHANGE_SPOKE_MASTER_MGMT_INT"
      macAddress: '$CHANGE_SPOKE_MASTER_MGMT_INT_MAC'
@@ -282,7 +307,6 @@ EOF
 
     done
 }
-
 
 ## MAIN
 # Load common vars
