@@ -10,7 +10,7 @@ source ${WORKDIR}/shared-utils/common.sh
 
 # Cleanup
 echo ">>>> Cleaning up the previous BUILD folder"
-rm -Rfv ${OUTPUTDIR}/*
+rm -Rfv ${OUTPUTDIR}/spoke-*
 
 # Check first item only
 RESULT=$(yq eval ".spokes[0]" ${SPOKES_FILE})
