@@ -26,4 +26,3 @@ jobs:
       - name: Build code (includes tests)
         run: yarn build
         working-directory: ./ui
-
