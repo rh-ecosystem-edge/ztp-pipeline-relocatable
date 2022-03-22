@@ -37,7 +37,7 @@ function grab_master_ext_ips() {
     agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
     export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
     master=${SPOKE_NODE_NAME##*-}
-    export MAC_EXT_DHCP=$(yq e ".spokes[$spoke].${spokeitem}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+    export MAC_EXT_DHCP=$(yq e ".spokes[$spokeitem].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
     ## HAY QUE PROBAR ESTO
     SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
     export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
