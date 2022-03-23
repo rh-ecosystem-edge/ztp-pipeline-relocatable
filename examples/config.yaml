@@ -9,6 +9,7 @@ config:
 spokes:
   - spoke1-name:
       master0:
+        ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4 # ext_dhcp -> DHCP
         nic_int_static: eno5 # int_static -> Internal IP for cluster communication
         mac_ext_dhcp: "aa:ss:dd:ee:b0:10"
@@ -23,6 +24,7 @@ spokes:
           - sde
           - sdd
       master1:
+        ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:11"
@@ -37,6 +39,7 @@ spokes:
           - sde
           - sdd
       master2:
+        ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:12"
@@ -60,6 +63,7 @@ spokes:
         bmc_pass: "user-pass"
   - spoke2-name:
       master0:
+        ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:20"
@@ -74,6 +78,7 @@ spokes:
           - sde
           - sdd
       master1:
+        ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:21"
@@ -88,6 +93,7 @@ spokes:
           - sde
           - sdd
       master2:
+        ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:22"
@@ -102,6 +108,7 @@ spokes:
           - sde
           - sdd
       worker0:
+        ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:29"

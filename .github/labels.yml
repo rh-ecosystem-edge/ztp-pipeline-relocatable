@@ -14,9 +14,34 @@ internal:
 pipelines:
   - pipelines/**/*
 
-ui:
-  - ui/**/*
-
-
 GHA:
   - .github/**/*
+
+
+ui:
+  - deploy-ui/**/*
+
+acm:
+  - deploy-acm/**/*
+
+registry:
+  - deploy-disconnected-registry/**/*
+
+metallb:
+  - deploy-metallb/**/*
+
+spoke:
+  - deploy-spoke/**/*
+
+worker:
+  - deploy-worker/**/*
+
+ocs:
+  - deploy-ocs/**/*
+
+
+finalization:
+  - finish-deployment/**/*
+
+hubconfig:
+  - deploy-hub-config/**/*
