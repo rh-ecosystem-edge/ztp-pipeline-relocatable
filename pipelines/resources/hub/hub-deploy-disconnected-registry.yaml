@@ -44,37 +44,6 @@ spec:
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
         ./deploy.sh 'hub'
 
-    #- name: mirror-ocp
-    #  image: "$(params.ztp-container-image)"
-    #  imagePullPolicy: Always
-    #  securityContext:
-    #    privileged: false
-    #    runAsUser: 0
-    #  volumeMounts:
-    #  - mountPath: /var/lib/containers
-    #    name: lib-containers
-    #  script: |
-    #    #!/usr/bin/bash
-    #
-    #    cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-    #    echo "Starting OpenShift Image Mirroring"
-    #    ./ocp-sync.sh 'hub'
-    #
-    #- name: mirror-olm
-    #  image: "$(params.ztp-container-image)"
-    #  imagePullPolicy: Always
-    #  securityContext:
-    #    privileged: false
-    #    runAsUser: 0
-    #  volumeMounts:
-    #  - mountPath: /var/lib/containers
-    #    name: lib-containers
-    #  script: |
-    #    #!/usr/bin/bash
-    #
-    #    cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-    #    echo "Starting OLM Catalog Image Mirroring Step"
-    #    ./olm-sync.sh 'hub'
     - name: oc-mirror
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always

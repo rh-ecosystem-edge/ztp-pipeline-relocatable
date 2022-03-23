@@ -81,28 +81,52 @@ function mirror() {
         cp -rf ${PULL_SECRET} ~/.docker/config.json
     fi
 
-    echo "Copy credentails for opm index"
-    mkdir -p /var/run/user/0/containers
-    cp -f /workspace/ztp/build/pull-secret.json /var/run/user/0/containers/auth.json
+   # echo "Copy credentails for opm index"
+   # mkdir -p /var/run/user/0/containers
+   # cp -f /workspace/ztp/build/pull-secret.json /var/run/user/0/containers/auth.json
 
-    echo ">>>> Mirror OLM Operators"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo ">>>> Mirror OCP and OLM Operators and images"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Pull Secret: ${PULL_SECRET}"
     echo "Source Index: ${SOURCE_INDEX}"
-    echo "Source Packages: ${SOURCE_PACKAGES}"
-    echo "Destination Index: ${OLM_DESTINATION_INDEX}"
+    echo "Source Packages: ${PACKAGES_FORMATED}"
     echo "Destination Registry: ${DESTINATION_REGISTRY}"
-    echo "Destination Namespace: ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}"
+    echo "OCP Release and release full: ${OCP_RELEASE} --> ${OCP_RELEASE_FULL}"
+    echo "OCP_DESTINATION_REGISTRY_IMAGE_NS: ${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 
-    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
-    ####### using the vfs driver, and this causes errors.
-    export STORAGE_DRIVER=vfs
-    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
-    #######
+    # Create the yaml file
+    cat <<EOF > ${OUTPUTDIR}/oc-mirror-hub.yaml
+    apiVersion: mirror.openshift.io/v1alpha2
+    kind: ImageSetConfiguration
+    storageConfig:
+    apiVersion: mirror.openshift.io/v1alpha2
+      registry:
+        imageURL: $DESTINATION_REGISTRY/$OCP_DESTINATION_REGISTRY_IMAGE_NS
+    apiVersion: mirror.openshift.io/v1alpha2
+        skipTLS: true
+    mirror:
+      ocp: # OCP Releases we want to mirror
+        channels:
+          - name: stable-$OCP_RELEASE
+            minVersion: $OCP_RELEASE_FULL
+            maxVersion: $OCP_RELEASE_FULL
+      operators:
+        - catalog: registry.redhat.io/redhat/redhat-operator-index:v$OCP_RELEASE
+          headsOnly: false
+          packages:
+EOF
+for PACKAGE in ${PACKAGES_FORMATED}; do
+  echo "            - name: $PACKAGE" >> ${OUTPUTDIR}/oc-mirror-hub.yaml
+done
 
-    # Empty log file
+
+    echo "Launch the oc-mirror command to mirror ocp and olm operators and images"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "oc-mirror --dir=${OUTPUTDIR} --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
+
+
     >${OUTPUTDIR}/mirror.log
     SALIDA=1
 
@@ -112,85 +136,120 @@ function mirror() {
         echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 
         echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} >>${OUTPUTDIR}/mirror.log 2>&1
+        oc-mirror --dir=${OUTPUTDIR} --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls >>${OUTPUTDIR}/mirror.log 2>&1
         SALIDA=$?
 
         if [ ${SALIDA} -eq 0 ]; then
-            echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> Mirroring step finished"
             retry=0
         else
-            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Mirroring"
             echo ">>>> ERROR: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi
         if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Mirroring "
             echo ">>>> ERROR: Retry limit reached"
             exit 1
         fi
     done
 
-    retry=1
-    while [ ${retry} != 0 ]; do
-        echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    #export STORAGE_DRIVER=vfs
+    #sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    #######
 
-        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-        GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} >>${OUTPUTDIR}/mirror.log 2>&1
-        SALIDA=$?
-
-        if [ ${SALIDA} -eq 0 ]; then
-            echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
-            retry=0
-        else
-            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retrying in 10 seconds"
-            sleep 10
-            retry=$((retry + 1))
-        fi
-        if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retry limit reached"
-            exit 1
-        fi
-    done
-
-    # Mirror redhat-operator packages
-    echo ">>>> Trying to push OLM images to Internal Registry"
-    echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
-    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 >>${OUTPUTDIR}/mirror.log 2>&1
-
-    cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
-
-    # Patch to avoid issues on mirroring
-    # In order to match both / and - in the package name we replace them by . that grep with regexp mode can understand
-    FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sed 's#-#.#g' | sed 's#olm/##g' | sed 's#/#.#g' | sort -u | xargs echo)
-
-    echo ">> Packages that have failed START"
-    echo ${FAILEDPACKAGES}
-    echo ">> Packages that have failed END"
-
-    PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
-    for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
-        for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
-            for pkg in ${FAILEDPACKAGES}; do
-                echo $package | grep -qE $pkg
-                MATCH=$?
-                if [ ${MATCH} == 0 ]; then
-                    echo
-                    echo "Package: ${package}"
-                    echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
-                    skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-                    if [[ ${?} != 0 ]]; then
-                        echo "Error on Image Copy, retrying after 5 seconds..."
-                        sleep 10
-                        skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-                    fi
-                    sleep 1
-                fi
-            done
-        done
-    done
+    # Empty log file
+    #>${OUTPUTDIR}/mirror.log
+    #SALIDA=1
+    #
+    #retry=1
+    #while [ ${retry} != 0 ]; do
+    #    # Mirror redhat-operator index image
+    #    echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
+    #
+    #    echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+    #    opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} >>${OUTPUTDIR}/mirror.log 2>&1
+    #    SALIDA=$?
+    #
+    #    if [ ${SALIDA} -eq 0 ]; then
+    #        echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
+    #        retry=0
+    #    else
+    #        echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
+    #        echo ">>>> ERROR: Retrying in 10 seconds"
+    #        sleep 10
+    #        retry=$((retry + 1))
+    #    fi
+    #    if [ ${retry} == 12 ]; then
+    #        echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
+    #        echo ">>>> ERROR: Retry limit reached"
+    #        exit 1
+    #    fi
+    #done
+    #
+    #retry=1
+    #while [ ${retry} != 0 ]; do
+    #    echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
+    #
+    #    echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+    #    GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} >>${OUTPUTDIR}/mirror.log 2>&1
+    #    SALIDA=$?
+    #
+    #    if [ ${SALIDA} -eq 0 ]; then
+    #        echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
+    #        retry=0
+    #    else
+    #        echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
+    #        echo ">>>> ERROR: Retrying in 10 seconds"
+    #        sleep 10
+    #        retry=$((retry + 1))
+    #    fi
+    #    if [ ${retry} == 12 ]; then
+    #        echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
+    #        echo ">>>> ERROR: Retry limit reached"
+    #        exit 1
+    #    fi
+    #done
+    #
+    ## Mirror redhat-operator packages
+    #echo ">>>> Trying to push OLM images to Internal Registry"
+    #echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
+    #GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 >>${OUTPUTDIR}/mirror.log 2>&1
+    #
+    #cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
+    #
+    ## Patch to avoid issues on mirroring
+    ## In order to match both / and - in the package name we replace them by . that grep with regexp mode can understand
+    #FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sed 's#-#.#g' | sed 's#olm/##g' | sed 's#/#.#g' | sort -u | xargs echo)
+    #
+    #echo ">> Packages that have failed START"
+    #echo ${FAILEDPACKAGES}
+    #echo ">> Packages that have failed END"
+    #
+    #PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
+    #for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
+    #    for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
+    #        for pkg in ${FAILEDPACKAGES}; do
+    #            echo $package | grep -qE $pkg
+    #            MATCH=$?
+    #            if [ ${MATCH} == 0 ]; then
+    #                echo
+    #                echo "Package: ${package}"
+    #                echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
+    #                skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+    #                if [[ ${?} != 0 ]]; then
+    #                    echo "Error on Image Copy, retrying after 5 seconds..."
+    #                    sleep 10
+    #                    skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+    #                fi
+    #                sleep 1
+    #            fi
+    #        done
+    #    done
+    #done
 
     # Copy extra images to the destination registry
     for image in ${EXTRA_IMAGES}; do
@@ -203,13 +262,10 @@ function mirror() {
 
 if [[ ${1} == 'hub' ]]; then
     prepare_env 'hub'
-    create_cs 'hub'
+    #create_cs 'hub'
     trust_internal_registry 'hub'
-    if ! ./verify_olm_sync.sh 'hub'; then
-        mirror 'hub'
-    else
-        echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
-    fi
+    mirror 'hub'
+
 elif [[ ${1} == "spoke" ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -223,13 +279,9 @@ elif [[ ${1} == "spoke" ]]; then
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
         prepare_env 'spoke'
-        create_cs 'spoke' ${spoke}
+        #create_cs 'spoke' ${spoke}
         trust_internal_registry 'hub'
         trust_internal_registry 'spoke' ${spoke}
-        if ! ./verify_olm_sync.sh 'spoke'; then
-            mirror 'spoke'
-        else
-            echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
-        fi
+        mirror 'spoke'
     done
 fi
