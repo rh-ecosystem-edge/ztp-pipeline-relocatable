@@ -1,6 +1,7 @@
 import { constants } from 'http2';
 import { Agent } from 'https';
 import { HeadersInit } from 'node-fetch';
+import { IResource } from '../resources/resource';
 import { fetchRetry } from './fetch-retry';
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT } = constants;
@@ -35,6 +36,35 @@ export function jsonPost<T = unknown>(
     headers,
     agent,
     body: JSON.stringify(body),
+    compress: true,
+  }).then(async (response) => {
+    const result = {
+      statusCode: response.status,
+      body: (await response.json()) as unknown as T,
+    };
+    return result;
+  });
+}
+
+export function jsonPatch<T = unknown>(
+  url: string,
+  patches: unknown,
+  token: string,
+): Promise<PostResponse<T>> {
+  const headers: HeadersInit = {};
+  headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`;
+
+  if (Array.isArray(patches)) {
+    headers['Content-Type'] = 'application/json-patch+json';
+  } else {
+    headers['Content-Type'] = 'application/merge-patch+json';
+  }
+
+  return fetchRetry(url, {
+    method: 'PATCH',
+    headers,
+    agent,
+    body: JSON.stringify(patches),
     compress: true,
   }).then(async (response) => {
     const result = {
