@@ -18,6 +18,10 @@ RUN cd /tmp && \
     chmod +x /usr/bin/yq && \
     curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl >/usr/bin/kubectl && \
     chmod u+x /usr/bin/kubectl
+    curl -k -s https://mirror.openshift.com/pub/openshift-v4/amd64/clients/ocp-dev-preview/latest-4.11/oc-mirror.tar.gz >oc-mirror.tar.gz && \
+    tar zxf oc-mirror.tar.gz && \
+    rm -rf oc-mirror.tar.gz && \
+    mv oc-mirror /usr/bin && \
 
 RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils && dnf clean all
 
