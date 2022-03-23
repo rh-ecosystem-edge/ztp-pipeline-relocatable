@@ -26,7 +26,7 @@ create_worker_definitions() {
     echo ">> Workers: ${NUM_W}"
     NUM_W=$((${NUM_W}-1))
 
-    for worker in $(seq 0 ${NUM_W}})
+    for worker in $(seq 0 ${NUM_W})
     do
         export CHANGE_SPOKE_WORKER_PUB_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.nic_int_static" ${SPOKES_FILE})
         export CHANGE_SPOKE_WORKER_MGMT_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.nic_ext_dhcp" ${SPOKES_FILE})
