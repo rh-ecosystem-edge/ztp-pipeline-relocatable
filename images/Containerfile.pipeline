@@ -21,7 +21,8 @@ RUN cd /tmp && \
     curl -k -s https://mirror.openshift.com/pub/openshift-v4/amd64/clients/ocp-dev-preview/latest-4.11/oc-mirror.tar.gz >oc-mirror.tar.gz && \
     tar zxf oc-mirror.tar.gz && \
     rm -rf oc-mirror.tar.gz && \
-    mv oc-mirror /usr/bin && \
+    mv oc-mirror /usr/bin &&    \
+    chmod +x /usr/bin/oc-mirror
 
 RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils && dnf clean all
 
