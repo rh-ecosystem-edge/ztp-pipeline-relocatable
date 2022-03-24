@@ -93,9 +93,22 @@ function generate_mapping() {
     echo ">>>> Loading Common file"
     ## Not fully sure but we create the base mapping file using the hub definition and then, when it makes sense we mutate it changing the destination registry
     source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
+
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    #######
+    echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
+    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+    echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
+    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+
     echo ">>>> Creating Mirror Manifests with oc-mirror"
-    echo "DEBUG: oc-mirror --dir=${OUTPUTDIR} --max-per-registry=100 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run"
-    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=100 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run
+    echo "DEBUG: oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run"
+    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run
     #echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
     #GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
     echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
@@ -105,9 +118,9 @@ function generate_mapping() {
 
 function recover_mapping() {
     MAP_FILENAME='mapping.txt'
-    echo ">>>> Finding Map file for OLM Sync"
+    echo ">>>> Finding Map file for the Mirror Sync"
     if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]]; then
-        echo ">>>> No mapping file found for OLM Sync"
+        echo ">>>> No mapping file found for the Mirror Sync"
         MAP="${OUTPUTDIR}/${MAP_FILENAME}"
         find ${OUTPUTDIR} -name "${MAP_FILENAME}*" -exec cp {} ${MAP} \;
         if [[ ! -f ${MAP} ]]; then
