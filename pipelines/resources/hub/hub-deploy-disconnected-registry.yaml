@@ -51,13 +51,13 @@ spec:
         privileged: false
         runAsUser: 0
       volumeMounts:
-        - mountPath: /var/lib/containers
-          name: lib-containers
+      - mountPath: /var/lib/containers
+        name: lib-containers
       script: |
         #!/usr/bin/bash
         
         cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-        echo "Starting OLM Catalog Image Mirroring Step"
+        echo "Starting Mirroring Step using oc-mirror"
         ./oc-mirror.sh 'hub'
 
     - name: update-global-pullsecret
