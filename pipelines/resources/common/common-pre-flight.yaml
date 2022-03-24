@@ -18,6 +18,9 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
+    - name: mock
+      type: bool
+      default: false
   stepTemplate:
     env:
       - name: WORKDIR
@@ -28,6 +31,8 @@ spec:
         value: $(params.spokes-config)
       - name: SHARED_DIR
         value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
   steps:
     - name: common-pre-flight
       image: "$(params.ztp-container-image)"
@@ -35,6 +40,10 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        mkdir -p ${WORKDIR}/build
-        cd ${WORKDIR}/${SHARED_DIR}
-        ./verify_preflight.sh
+        if [[ ! ${MOCK} ]]; then
+          mkdir -p ${WORKDIR}/build
+          cd ${WORKDIR}/${SHARED_DIR}
+          ./verify_preflight.sh
+        else
+          echo "Common Preflight Hub: Mock mode on"
+        fi

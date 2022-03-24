@@ -18,6 +18,9 @@ spec:
     - name: spokes-config
       type: string
       default: ""
+    - name: mock
+      type: bool
+      default: false
   stepTemplate:
     env:
       - name: WORKDIR
@@ -30,6 +33,8 @@ spec:
         value: "/root/ztp-build-hub/"
       - name: SHARED_DIR
         value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
   steps:
     - name: save-hub-config
       image: "$(params.ztp-container-image)"
@@ -39,4 +44,8 @@ spec:
         # TODO: We need to mount a volume in the pod in order to have those files available among
         # different steps.
 
-        rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}
+        if [[ ! ${MOCK} ]]; then
+          rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}
+        else
+          echo "Save Hub Configuration: Mock mode on"
+        fi
