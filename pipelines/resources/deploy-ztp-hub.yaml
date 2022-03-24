@@ -12,8 +12,8 @@ spec:
       type: string
       default: "main"
     - name: git-flow
-      type: bool
-      default: false
+      type: string
+      default: "false"
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
@@ -22,8 +22,8 @@ spec:
     - name: spokes-config
       type: string
     - name: mock
-      type: bool
-      default: false
+      type: string
+      default: "false"
   workspaces:
     - name: ztp
   tasks:
@@ -34,7 +34,7 @@ spec:
       - input: $(params.git-flow)
         operator: in
         values:
-          - true
+          - "true"
     taskRef:
       name: git-clone
     params:

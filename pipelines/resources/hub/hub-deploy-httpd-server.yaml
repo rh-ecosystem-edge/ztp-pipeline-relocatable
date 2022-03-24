@@ -19,8 +19,8 @@ spec:
       type: string
       default: ""
     - name: mock
-      type: bool
-      default: false
+      type: string
+      default: "false"
   stepTemplate:
     env:
       - name: WORKDIR
@@ -42,7 +42,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ ! ${MOCK} ]];then
           cd ${WORKDIR}/${DEPLOY_HTTPD_SERVER_DIR}
           ./deploy.sh
         else
