@@ -31,14 +31,13 @@ if ./verify.sh; then
     echo ">>>> Deploy ACM cr manifest"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 04-acm-cr.yml
-    sleep 60
+    sleep 120
 
     echo ">>>> Wait until acm ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    sleep 240
-    while [ "${timeout}" -lt "120" ]; do
+    while [ "${timeout}" -lt "10000" ]; do
         if [[ $(oc get pod -n open-cluster-management | grep -i running | wc -l) -eq $(oc get pod -n open-cluster-management | grep -v NAME | wc -l) ]]; then
             ready=true
             break

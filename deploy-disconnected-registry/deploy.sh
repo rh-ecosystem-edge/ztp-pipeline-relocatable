@@ -86,7 +86,7 @@ function check_mcp() {
         cluster=${2}
     fi
     echo ">> Waiting for the MCO to grab the new MachineConfig for the certificate..."
-    sleep 120
+    sleep 240
 
     echo ">>>> Waiting for MCP Updated field on: ${1}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
