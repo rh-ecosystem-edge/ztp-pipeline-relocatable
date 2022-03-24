@@ -1,5 +1,11 @@
-import { Secret, SecretApiVersion, SecretKind } from '../../resources/secret';
-import { Service, ServiceApiVersion, ServiceKind } from '../../resources/service';
+import {
+  Service,
+  ServiceApiVersion,
+  ServiceKind,
+  Secret,
+  SecretApiVersion,
+  SecretKind,
+} from '../../common';
 import { ADDRESS_POOL_NAMESPACE } from './constants';
 
 export const ADDRESS_POOL_TEMPLATE = {

@@ -1,7 +1,5 @@
+import { IResource, Metadata, PatchType } from '../frontend-shared';
 import { getClusterApiUrl, jsonPatch, jsonRequest } from '../k8s';
-import { Metadata } from './metadata';
-import { PatchType } from './patches';
-import { IResource } from './resource';
 
 export type ApiServerVersionType = 'config.openshift.io/v1';
 export const ApiServerVersion: ApiServerVersionType = 'config.openshift.io/v1';
@@ -18,6 +16,7 @@ export interface ApiServer extends IResource {
   apiVersion: ApiServerVersionType;
   kind: ApiServerKindType;
   metadata: Metadata;
+  message?: string;
   spec?: {
     servingCerts?: { namedCertificates?: NamedCertificate[] };
   };

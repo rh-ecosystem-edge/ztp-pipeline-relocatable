@@ -1,5 +1,5 @@
-import { TLS_SECRET_NAMESPACE } from "../constants";
-import { Secret, SecretApiVersion, SecretKind } from "./secret";
+import { TLS_SECRET_NAMESPACE } from '../constants';
+import { Secret, SecretApiVersion, SecretKind } from '../frontend-shared';
 
 export const TLS_SECRET: Secret = {
   apiVersion: SecretApiVersion,

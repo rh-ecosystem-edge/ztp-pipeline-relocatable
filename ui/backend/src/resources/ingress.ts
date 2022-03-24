@@ -1,7 +1,5 @@
+import { IResource, Metadata, PatchType } from '../frontend-shared';
 import { getClusterApiUrl, jsonPatch, jsonRequest } from '../k8s';
-import { Metadata } from './metadata';
-import { PatchType } from './patches';
-import { IResource } from './resource';
 
 export type IngressVersionType = 'config.openshift.io/v1';
 export const IngressVersion: IngressVersionType = 'config.openshift.io/v1';
@@ -30,6 +28,9 @@ export interface Ingress extends IResource {
 export const getIngressConfig = (token: string) =>
   jsonRequest<Ingress>(`${getClusterApiUrl()}/apis/${IngressVersion}/ingresses/cluster`, token);
 
-export const patchIngressConfig = (token: string, patches: PatchType[]) => 
-  jsonPatch<Ingress>(`${getClusterApiUrl()}/apis/${IngressVersion}/ingresses/cluster`, patches, token);
-
+export const patchIngressConfig = (token: string, patches: PatchType[]) =>
+  jsonPatch<Ingress>(
+    `${getClusterApiUrl()}/apis/${IngressVersion}/ingresses/cluster`,
+    patches,
+    token,
+  );

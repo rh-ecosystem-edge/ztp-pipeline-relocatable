@@ -1,17 +1,12 @@
 import { cloneDeep } from 'lodash';
 import { Response } from 'express';
 import { rmdirSync } from 'fs';
+import { exec } from 'promisify-child-process';
 import { TLS_SECRET } from '../resources/resourceTemplates';
-import { createSecret, Secret, SecretApiVersion } from '../resources/secret';
-import { execPromise } from '../utils';
-import { getClusterApiUrl, jsonPost } from '../k8s';
+import { createSecret } from '../resources/secret';
+import { Secret, TlsCertificate } from '../frontend-shared';
 
 const logger = console;
-
-type TlsCertificate = {
-  'tls.crt': string;
-  'tls.key': string;
-};
 
 export const generateCertificate = async (
   res: Response,
@@ -20,7 +15,8 @@ export const generateCertificate = async (
   logger.debug('generateCertificate called for domain:', domain);
 
   try {
-    const { stdout } = await execPromise('mktemp -d /tmp/generateCertificate-XXXXXX');
+    const { stdout: _stdout } = await exec('mktemp -d /tmp/generateCertificate-XXXXXX');
+    const stdout = _stdout?.toString();
 
     const tmpdir = stdout?.trim() || '/tmp';
     const keyFile = `${tmpdir}/api-key.pem`;
@@ -28,14 +24,20 @@ export const generateCertificate = async (
     const delimiter = '-----generateCertificateDelimiter-----';
 
     try {
-      const { stdout } = await execPromise(
+      const { stdout: _stdout } = await exec(
         `/usr/bin/openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ${keyFile} -out ${certFile} -subj "/CN=${domain}" -addext "subjectAltName = DNS:${domain}" && cat ${keyFile} && echo ${delimiter} && cat ${certFile}`,
       );
-
-      const tlsKey = stdout.substr(0, stdout.indexOf(delimiter));
-      const tlsCrt = stdout.substr(stdout.indexOf(delimiter) + delimiter.length);
-
       rmdirSync(tmpdir, { recursive: true, maxRetries: 5 });
+
+      const stdout = _stdout?.toString();
+      const tlsKey = stdout?.substr(0, stdout.indexOf(delimiter));
+      const tlsCrt = stdout?.substr(stdout.indexOf(delimiter) + delimiter.length);
+
+      if (!tlsKey || !tlsCrt) {
+        logger.error('Error getting certificate via openssl, stdout: ', stdout);
+        res.writeHead(500, 'Failed to generate certificate (openssl), empty key or cert').end();
+        return;
+      }
 
       return {
         'tls.crt': Buffer.from(tlsCrt).toString('base64'),
@@ -64,7 +66,7 @@ export const createCertSecret = async (
     const object = cloneDeep(TLS_SECRET);
     object.metadata.generateName = namePrefix;
     object.data = certificate;
-    
+
     // TODO: what about clean-up?
     const response = await createSecret(token, object);
     if (response.statusCode === 201) {
@@ -75,14 +77,18 @@ export const createCertSecret = async (
     res
       .writeHead(
         response.statusCode,
-        `Can not create ${namePrefix} TLS secret in the ${TLS_SECRET.metadata.namespace} namespace.`,
+        `Can not create ${namePrefix} TLS secret in the ${
+          TLS_SECRET.metadata.namespace || ''
+        } namespace.`,
       )
       .end();
   } catch (e) {
     res
       .writeHead(
         500,
-        `Can not create ${namePrefix} TLS secret in the ${TLS_SECRET.metadata.namespace} namespace. Internal error.`,
+        `Can not create ${namePrefix} TLS secret in the ${
+          TLS_SECRET.metadata.namespace || ''
+        } namespace. Internal error.`,
       )
       .end();
   }

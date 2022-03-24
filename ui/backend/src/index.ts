@@ -4,9 +4,16 @@ import fs from 'fs';
 import cors from 'cors';
 
 import { login, loginCallback, logout } from './k8s/oauth';
-import { liveness, ping, proxy, readiness, SA_TOKEN_FILE, serve } from './endpoints';
-import { htpasswd } from './endpoints/htpasswd';
-import { changeDomain } from './endpoints/changeDomain';
+import {
+  liveness,
+  ping,
+  proxy,
+  readiness,
+  SA_TOKEN_FILE,
+  serve,
+  htpasswd,
+  changeDomain,
+} from './endpoints';
 
 const PORT = process.env.BACKEND_PORT || 3001;
 

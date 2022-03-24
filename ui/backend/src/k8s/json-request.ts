@@ -1,7 +1,6 @@
 import { constants } from 'http2';
 import { Agent } from 'https';
 import { HeadersInit } from 'node-fetch';
-import { IResource } from '../resources/resource';
 import { fetchRetry } from './fetch-retry';
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT } = constants;

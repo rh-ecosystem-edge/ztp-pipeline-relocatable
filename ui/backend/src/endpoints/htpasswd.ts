@@ -1,12 +1,9 @@
 import { exec, ExecException } from 'child_process';
 import { Request, Response } from 'express';
+import { PWD_REGEX, USERNAME_REGEX } from '../frontend-shared';
 import { validateInput } from './utils';
 
 const logger = console;
-
-// Keep in sync with the frontend
-const USERNAME_REGEX = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-const PWD_REGEX = /^[a-zA-Z]([-a-z-A-Z0-9]*[a-zA-Z0-9])?$/;
 
 function htpasswdImpl(res: Response, _username?: string, _password?: string): void {
   const username = validateInput(USERNAME_REGEX, _username);

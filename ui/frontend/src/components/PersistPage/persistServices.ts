@@ -1,8 +1,8 @@
 import { cloneDeep } from 'lodash';
 
 import { createResource, patchResource } from '../../resources';
-import { PatchType } from '../../resources/patches';
-import { getService, Service } from '../../resources/service';
+import { PatchType, Service } from '../../common';
+import { getService } from '../../resources/service';
 import { addIpDots } from '../utils';
 import {
   ADDRESS_POOL_ANNOTATION_KEY,

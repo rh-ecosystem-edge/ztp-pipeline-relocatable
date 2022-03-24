@@ -1,18 +1,14 @@
 import { Request, Response } from 'express';
-import { TLS_SECRET_NAMESPACE, ZTPFW_NAMESPACE, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
+import { ZTPFW_NAMESPACE, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
+import { DNS_NAME_REGEX, PatchType } from '../frontend-shared';
 import { getToken, unauthorized } from '../k8s';
-import { getApiServerConfig } from '../resources/apiserver';
+import { getApiServerConfig, patchApiServerConfig } from '../resources/apiserver';
 import { ComponentRoute, getIngressConfig, patchIngressConfig } from '../resources/ingress';
-import { PatchType } from '../resources/patches';
 import { createCertSecret, generateCertificate } from './generateCertificate';
 
 import { validateInput } from './utils';
 
 const logger = console;
-
-// Keep in sync with the frontend
-const DNS_NAME_REGEX =
-  /^(((?!\\-))(xn\\-\\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\\-\\-)?([a-z0-9\\-]{1,61}|[a-z0-9\\-]{1,30})\.[a-z]{2,}$/;
 
 const createSelfSignedTlsSecret = async (
   res: Response,
@@ -99,7 +95,7 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     // This is potentially buggy in case the ApiServer cluster has already namedCertificates present
     { names: [apiDomain], servingCertificate: { name: apiCertSecretName } },
   ];
-  const apiServerPatches = [
+  const apiServerPatches: PatchType[] = [
     {
       op: apiServer.spec?.servingCerts?.namedCertificates ? 'replace' : 'add',
       path: '/spec/servingCerts/namedCertificates',
@@ -169,7 +165,12 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   try {
     const result = await patchIngressConfig(token, ingressPatches);
     if (result.statusCode !== 200) {
-      res.writeHead(result.statusCode, 'Failed to patch Ingress cluster resource. ' + result.body?.message).end();  
+      res
+        .writeHead(
+          result.statusCode,
+          `Failed to patch Ingress cluster resource: ${result.body?.message || ''}`,
+        )
+        .end();
     }
   } catch (e) {
     res.writeHead(500, 'Failed to patch Ingress cluster resource.').end();
@@ -180,7 +181,12 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     const result = await patchApiServerConfig(token, apiServerPatches);
     logger.debug('Patched ApiServer result: ', result);
     if (result.statusCode !== 200) {
-      res.writeHead(result.statusCode, 'Failed to patch ApiServer cluster resource. ' + result.body?.message).end();  
+      res
+        .writeHead(
+          result.statusCode,
+          `Failed to patch ApiServer cluster resource: ${result.body?.message || ''}`,
+        )
+        .end();
     }
   } catch (e) {
     res.writeHead(500, 'Failed to patch ApiServer cluster resource.').end();
