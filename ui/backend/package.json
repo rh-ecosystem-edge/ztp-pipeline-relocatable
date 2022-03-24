@@ -17,7 +17,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.2",
     "lodash": "^4.17.21",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "promisify-child-process": "^4.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
