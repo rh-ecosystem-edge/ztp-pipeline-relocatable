@@ -130,7 +130,7 @@ EOF
 
     echo "Launch the oc-mirror command to mirror ocp and olm operators and images"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "oc-mirror --dir=${OUTPUTDIR} --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
+    echo "oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
 
     >${OUTPUTDIR}/mirror.log
     SALIDA=1
@@ -139,7 +139,7 @@ EOF
     while [ ${retry} != 0 ]; do
 
         echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-        oc-mirror --dir=${OUTPUTDIR} --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls >>${OUTPUTDIR}/mirror.log 2>&1
+        oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls >>${OUTPUTDIR}/mirror.log 2>&1
         SALIDA=$?
 
         if [ ${SALIDA} -eq 0 ]; then
