@@ -99,6 +99,19 @@ function generate_mapping() {
     export STORAGE_DRIVER=vfs
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
+
+    if [ ! -f ~/.docker/config.json ]; then
+            echo "ERROR: missing ~/.docker/config.json config"
+            echo "Creating file"
+            unalias cp &>/dev/null || echo "Unaliased cp: Done!"
+            mkdir -p ~/.docker/
+            cp -rf ${PULL_SECRET} ~/.docker/config.json
+    fi
+
+    echo "Copy credentails for opm index"
+    mkdir -p /var/run/user/0/containers
+    cp -f /workspace/ztp/build/pull-secret.json /var/run/user/0/containers/auth.json
+
     echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
     ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
     ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
