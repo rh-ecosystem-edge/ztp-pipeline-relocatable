@@ -2,7 +2,6 @@ import { postRequest } from '../../resources';
 import { PERSIST_DOMAIN } from './constants';
 import { PersistErrorType } from './types';
 
-// Due to complexity, the flow has been moved to backend to decrease risks related to network communication
 export const persistDomain = async (
   setError: (error: PersistErrorType) => void,
   domain?: string,
@@ -13,6 +12,7 @@ export const persistDomain = async (
   }
 
   try {
+    // Due to complexity, the flow has been moved to backend to decrease risks related to network communication
     await postRequest('/changeDomain', {
       domain,
     }).promise;

@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { ZTPFW_NAMESPACE, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
-import { DNS_NAME_REGEX, PatchType } from '../frontend-shared';
+import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
 import { getToken, unauthorized } from '../k8s';
 import { getApiServerConfig, patchApiServerConfig } from '../resources/apiserver';
-import { ComponentRoute, getIngressConfig, patchIngressConfig } from '../resources/ingress';
+import { getIngressConfig, patchIngressConfig } from '../resources/ingress';
 import { createCertSecret, generateCertificate } from './generateCertificate';
 
 import { validateInput } from './utils';
