@@ -136,7 +136,7 @@ elif [[ ${1} == "spoke" ]]; then
         ## OCP Sync vars
         export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers $(yq eval ".config.clusterimageset" ${SPOKES_FILE}) -o jsonpath={.spec.releaseImage})"
         ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
-        export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
+        export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4
         ## OCP INDEX IMAGE
         export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 

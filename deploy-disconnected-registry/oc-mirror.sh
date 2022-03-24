@@ -101,10 +101,8 @@ function mirror() {
     apiVersion: mirror.openshift.io/v1alpha2
     kind: ImageSetConfiguration
     storageConfig:
-    apiVersion: mirror.openshift.io/v1alpha2
       registry:
         imageURL: $DESTINATION_REGISTRY/$OCP_DESTINATION_REGISTRY_IMAGE_NS
-    apiVersion: mirror.openshift.io/v1alpha2
         skipTLS: true
     mirror:
       ocp: # OCP Releases we want to mirror
@@ -140,16 +138,16 @@ done
         SALIDA=$?
 
         if [ ${SALIDA} -eq 0 ]; then
-            echo ">>>> Mirroring step finished"
+            echo ">>>> Mirroring with oc-mirror step finished"
             retry=0
         else
-            echo ">>>> ERROR: Mirroring"
+            echo ">>>> ERROR: Mirroring with oc-mirror failed"
             echo ">>>> ERROR: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi
         if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Mirroring "
+            echo ">>>> ERROR: Mirroring with oc-mirror failed"
             echo ">>>> ERROR: Retry limit reached"
             exit 1
         fi
