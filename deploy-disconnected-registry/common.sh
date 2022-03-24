@@ -97,7 +97,7 @@ export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operat
 export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
 export EXTRA_IMAGES=('quay.io/jparrill/registry:3' 'registry.access.redhat.com/rhscl/httpd-24-rhel7:latest' 'quay.io/ztpfw/ui:latest')
 export OCP_RELEASE=${OC_OCP_VERSION}
-export OCP_RELEASE_FULL=$( echo ${OCP_RELEASE} |  cut -d"-" -f 1)
+export OCP_RELEASE_FULL=$( echo ${OC_OCP_TAG} |  cut -d"-" -f 1)
 # TODO: Change static passwords by dynamic ones
 export REG_US=dummy
 export REG_PASS=dummy123
