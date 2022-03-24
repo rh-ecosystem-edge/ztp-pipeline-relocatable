@@ -103,7 +103,6 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     },
   ];
 
-  logger.debug('Remove me: going on Ingress now');
   // Ingress
   const consoleDomain = `console-openshift-console.${ingressDomain}`;
   const oauthDomain = `oauth-openshift.${ingressDomain}`;
