@@ -260,7 +260,7 @@ done
 
 if [[ ${1} == 'hub' ]]; then
     prepare_env 'hub'
-    #create_cs 'hub'
+    create_cs 'hub'
     trust_internal_registry 'hub'
     mirror 'hub'
 
@@ -277,7 +277,7 @@ elif [[ ${1} == "spoke" ]]; then
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
         prepare_env 'spoke'
-        #create_cs 'spoke' ${spoke}
+        create_cs 'spoke' ${spoke}
         trust_internal_registry 'hub'
         trust_internal_registry 'spoke' ${spoke}
         mirror 'spoke'
