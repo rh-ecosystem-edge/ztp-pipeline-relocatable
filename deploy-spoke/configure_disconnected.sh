@@ -108,7 +108,7 @@ function generate_mapping() {
 
     echo ">>>> Creating Mirror Manifests with oc-mirror"
     echo "DEBUG: oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run"
-    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run
+    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run --dest-skip-tls
     #echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
     #GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
     echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
