@@ -53,6 +53,13 @@ function check_registry() {
 }
 
 function mirror() {
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    #######
+
+
     # Check for credentials for OPM
     if [[ ${1} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
@@ -66,11 +73,6 @@ function mirror() {
         check_registry ${DESTINATION_REGISTRY}
     fi
 
-    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
-    ####### using the vfs driver, and this causes errors.
-    export STORAGE_DRIVER=vfs
-    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
-    #######
 
     echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
     ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
