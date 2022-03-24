@@ -111,9 +111,9 @@ function generate_mapping() {
     oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --config=${OUTPUTDIR}/oc-mirror-hub.yaml --dry-run --dest-skip-tls
     #echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
     #GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
-    echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
-    unalias cp &>/dev/null || echo "Unaliased cp: Done!"
-    cp -f ${OUTPUTDIR}/olm-manifests/mapping.txt ${OUTPUTDIR}/mapping.txt
+    #echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
+    #unalias cp &>/dev/null || echo "Unaliased cp: Done!"
+    #cp -f ${OUTPUTDIR}/olm-manifests/mapping.txt ${OUTPUTDIR}/mapping.txt
 }
 
 function recover_mapping() {
