@@ -115,23 +115,20 @@ function mirror() {
           headsOnly: false
           packages:
 EOF
-for PACKAGE in ${PACKAGES_FORMATED}; do
-  echo "            - name: $PACKAGE" >> ${OUTPUTDIR}/oc-mirror-hub.yaml
-done
+    for PACKAGE in ${PACKAGES_FORMATED}; do
+      echo "            - name: $PACKAGE" >> ${OUTPUTDIR}/oc-mirror-hub.yaml
+    done
 
 
     echo "Launch the oc-mirror command to mirror ocp and olm operators and images"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "oc-mirror --dir=${OUTPUTDIR} --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
 
-
     >${OUTPUTDIR}/mirror.log
     SALIDA=1
 
     retry=1
     while [ ${retry} != 0 ]; do
-        # Mirror redhat-operator index image
-        echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 
         echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
         oc-mirror --dir=${OUTPUTDIR} --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls >>${OUTPUTDIR}/mirror.log 2>&1
@@ -155,8 +152,8 @@ done
 
     ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
     ####### using the vfs driver, and this causes errors.
-    #export STORAGE_DRIVER=vfs
-    #sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
 
     # Empty log file
