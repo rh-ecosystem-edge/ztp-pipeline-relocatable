@@ -160,6 +160,9 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -eu
+        # TODO: We remove options ndots becase it was causing issues in ALPINE image
+        sed -i "s/^options.*//g" /etc/resolv.conf
+
         if [ "${PARAM_VERBOSE}" = "true" ] ; then
           set -x
         fi
