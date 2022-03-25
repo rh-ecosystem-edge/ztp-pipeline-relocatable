@@ -5,13 +5,13 @@
       location = "quay.io/openshift-release-dev/ocp-release"
       mirror-by-digest-only = true
       [[registry.mirror]]
-        location = "CHANGEDOMAIN/ocp4/openshift4"
+        location = "CHANGEDOMAIN/olm/openshift/release-images"
     [[registry]]
       prefix = ""
       location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
       mirror-by-digest-only = true
       [[registry.mirror]]
-        location = "CHANGEDOMAIN/ocp4/openshift4"
+        location = "CHANGEDOMAIN/olm/openshift/release"
     [[registry]]
       prefix = ""
       location = "quay.io/jparrill/registry"
