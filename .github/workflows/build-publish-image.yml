@@ -14,12 +14,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Login to Quay
-        uses: docker/login-action@v1
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_TOKEN }}
+      - name: Install env
+        run: |
+          sudo apt-get -y install podman
+          mkdir -p ~/.docker
+
+      #- name: Login to Quay
+      #  uses: docker/login-action@v1
+      #  with:
+      #    registry: quay.io
+      #    username: ${{ secrets.QUAY_USERNAME }}
+      #    password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Get Image Tag
         id: image_tags
