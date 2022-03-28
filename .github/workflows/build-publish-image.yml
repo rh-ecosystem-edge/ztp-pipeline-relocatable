@@ -31,8 +31,8 @@ jobs:
         run: |
           echo -n ::set-output name=IMAGE_TAGS::
           cd ${GITHUB_WORKSPACE}
-          export BRANCH=$(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
-          export HASH=$(shell git rev-parse HEAD)
+          export BRANCH=$(git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$(git rev-parse HEAD)/ {print $2}")
+          export HASH=$(git rev-parse HEAD)
           export RELEASE=${BRANCH}-${HASH}
           make 
 
