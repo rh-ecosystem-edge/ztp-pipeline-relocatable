@@ -130,7 +130,7 @@ EOF
     echo "Launch the oc-mirror command to mirror ocp and olm operators and images"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
-    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls
+    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls --skip-cleanup
     SALIDA=$?
 
     if [ ${SALIDA} -eq 0 ]; then
