@@ -282,8 +282,8 @@ if [[ ${1} == 'hub' ]]; then
     #    create_cs 'hub'
     #fi
     export DIR_HUB_ICSP_CS=$(ls -rtc ${OUTPUTDIR} | grep result-* | tail -1)
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${DIR_HUB_ICSP_CS}/catalogSource-redhat-operator-index.yaml
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${DIR_HUB_ICSP_CS}/imageContentSourcePolicy.yaml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/${DIR_HUB_ICSP_CS}/catalogSource-redhat-operator-index.yaml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/${DIR_HUB_ICSP_CS}/imageContentSourcePolicy.yaml
     wait_for_mcp_ready ${KUBECONFIG_HUB} 'hub' 240
 
 elif [[ ${1} == 'spoke' ]]; then
