@@ -1,0 +1,55 @@
+name: Build and Publish
+on:
+  push:
+    branches: [make-images]
+  pull_request:
+
+jobs:
+  build-and-push-docker-image:
+    name: Build Docker image and push to repositories
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Login to Quay
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Get Image Tag
+        id: image_tags
+        run: |
+          echo -n ::set-output name=IMAGE_TAGS::
+          cd ${GITHUB_WORKSPACE}
+          export BRANCH=$(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
+          export HASH=$(shell git rev-parse HEAD)
+          export RELEASE=${BRANCH}-${HASH}
+          make 
+
+
+      #- name: Login to Github Packages
+      #  uses: docker/login-action@v1
+      #  with:
+      #    registry: ghcr.io
+      #    username: ${{ github.actor }}
+      #    password: ${{ secrets.GHCR_PAT }}
+      
+      #- name: Build image and push to Docker Hub and GitHub Container Registry
+      #  uses: docker/build-push-action@v2
+      #  with:
+      #    # relative path to the place where source code with Dockerfile is located
+      #    context: ./workspace/ztp
+      #    # Note: tags has to be all lower-case
+      #    tags: |
+      #      oskardudycz/eventsourcing.nodejs.simple:latest 
+      #      ghcr.io/oskardudycz/eventsourcing.nodejs/simple:latest
+      #    # build on feature branches, push only on main branch
+      #    push: ${{ github.ref == 'refs/heads/main' }}
+
+      #- name: Image digest
+      #  run: echo ${{ steps.docker_build.outputs.digest }}
