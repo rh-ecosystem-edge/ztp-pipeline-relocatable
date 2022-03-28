@@ -20,6 +20,7 @@ GHA:
 
 ui:
   - deploy-ui/**/*
+  - ui/**/*
 
 acm:
   - deploy-acm/**/*
