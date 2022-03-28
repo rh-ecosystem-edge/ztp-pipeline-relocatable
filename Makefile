@@ -6,6 +6,9 @@ HASH := $(shell git rev-parse HEAD)
 RELEASE ?= $(BRANCH)
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
+UI_TAG = latest
+PULL_SECRET = ${PWD}/pull_secret.json
+NUM_SPOKES = 1
 
 .PHONY: build-pipe build-ui push-pipe push-ui doc
 .EXPORT_ALL_VARIABLES:
@@ -27,3 +30,7 @@ push-ui: build-ui
 
 doc:
 	bash build.sh
+
+create-hub:
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-hub.sh ${PULL_SECRET} ${NUM_SPOKES}
