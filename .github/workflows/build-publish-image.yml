@@ -39,7 +39,11 @@ jobs:
             export HASH=$(git rev-parse HEAD)
             export RELEASE=${BRANCH}-${HASH}
           fi
-          make 
+
+      - name: Build Images
+        id: build
+        run: |
+          make
 
 
       #- name: Login to Github Packages
