@@ -160,8 +160,9 @@ function add_icsp_entry() {
     ## Add entry for every image on the packageManifests
     SRC_IMG=${1}
     DST_IMG=${2}
+    ICSP_FILE_PATH=${3}
 
-    cat <<EOF >>${ICSP_OUTFILE}
+    cat <<EOF >>${ICSP_FILE_PATH}
   - mirrors:
     - ${DST_IMG}
     source: ${SRC_IMG}
@@ -298,12 +299,17 @@ elif [[ ${1} == 'spoke' ]]; then
     #    if you didn't synced from Hub to Spoke you need to put 'pre'
     #    if you already synced from Hub to Spoke you need to put 'post'
     STAGE=${2}
-
+    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
     echo ">>>> Get the hub catalog source and icsp into output dir"
     oc --kubeconfig=${KUBECONFIG_HUB} get catalogsource redhat-operator-index -n openshift-marketplace -o yaml > ${OUTPUTDIR}/catalogsource-hub.yaml
     oc --kubeconfig=${KUBECONFIG_HUB} get imageContentSourcePolicy operator-0 -n openshift-marketplace -o yaml > ${OUTPUTDIR}/icsp-hub.yaml
-    echo "---\n" >> ${OUTPUTDIR}/icsp-hub.yaml
-    oc --kubeconfig=${KUBECONFIG_HUB} get imageContentSourcePolicy release-0 -n openshift-marketplace -o yaml >> ${OUTPUTDIR}/icsp-hub.yaml
+    oc --kubeconfig=${KUBECONFIG_HUB} get imageContentSourcePolicy release-0 -n openshift-marketplace -o yaml | yq .spec.repositoryDigestMirrors | sed 's/^/ /' >> ${OUTPUTDIR}/icsp-hub.yaml
+    yq -i '(.metadata.name) |= "ztpfw-hub"' ${OUTPUTDIR}/icsp-hub.yaml
+    echo ">>>> Creating the ICSP for extra images"
+    for image in ${EXTRA_IMAGES}; do
+       add_icsp_entry ${image} ${DESTINATION_REGISTRY}/${image#*/} ${OUTPUTDIR}/icsp-hub.yaml
+    done
+
 
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
