@@ -260,7 +260,7 @@ function wait_for_mcp_ready() {
 # #########
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
-export MAP_FILENAME='mapping.txt'
+#export MAP_FILENAME='mapping.txt'
 
 if [[ ${1} == 'hub' ]]; then
     # Validation
@@ -274,15 +274,16 @@ if [[ ${1} == 'hub' ]]; then
     source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
     # Recover mapping calls the source over the common.sh file under deploy-disconnected
     trust_internal_registry 'hub'
-    recover_mapping
-    icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
+    #recover_mapping
+    #icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
     oc --kubeconfig=${KUBECONFIG_HUB} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-    if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
-        echo "CatalogSource File does not exists, generating a new one..."
-        create_cs 'hub'
-    fi
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/icsp-hub.yaml
+    #if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
+    #    echo "CatalogSource File does not exists, generating a new one..."
+    #    create_cs 'hub'
+    #fi
+    export DIR_HUB_ICSP_CS=$(ls -rtc ${OUTPUTDIR} | grep result-* | tail -1)
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${DIR_HUB_ICSP_CS}/catalogSource-redhat-operator-index.yaml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${DIR_HUB_ICSP_CS}/imageContentSourcePolicy.yaml
     wait_for_mcp_ready ${KUBECONFIG_HUB} 'hub' 240
 
 elif [[ ${1} == 'spoke' ]]; then
@@ -297,6 +298,12 @@ elif [[ ${1} == 'spoke' ]]; then
     #    if you didn't synced from Hub to Spoke you need to put 'pre'
     #    if you already synced from Hub to Spoke you need to put 'post'
     STAGE=${2}
+
+    echo ">>>> Get the hub catalog source and icsp into output dir"
+    oc --kubeconfig=${KUBECONFIG_HUB} get catalogsource redhat-operator-index -n openshift-marketplace -o yaml > ${OUTPUTDIR}/catalogsource-hub.yaml)
+    oc --kubeconfig=${KUBECONFIG_HUB} get imageContentSourcePolicy operator-0 -n openshift-marketplace -o yaml > ${OUTPUTDIR}/icsp-hub.yaml
+    echo "---\n" >> ${OUTPUTDIR}/icsp-hub.yaml
+    oc --kubeconfig=${KUBECONFIG_HUB} get imageContentSourcePolicy release-0 -n openshift-marketplace -o yaml >> ${OUTPUTDIR}/icsp-hub.yaml
 
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -318,17 +325,17 @@ elif [[ ${1} == 'spoke' ]]; then
 
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
             trust_internal_registry 'hub'
-            recover_mapping
+            #recover_mapping
 
-            if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
-                echo "CatalogSource Hub File does not exists, generating a new one..."
-                create_cs 'hub'
-            fi
+            #if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
+            #    echo "CatalogSource Hub File does not exists, generating a new one..."
+            #    create_cs 'hub'
+            #fi
 
-            if [[ ! -f ${OUTPUTDIR}/icsp-hub.yaml ]]; then
-                echo "ICSP Hub File does not exists, generating a new one..."
-                icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
-            fi
+            #if [[ ! -f ${OUTPUTDIR}/icsp-hub.yaml ]]; then
+            #    echo "ICSP Hub File does not exists, generating a new one..."
+            #    icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
+            #fi
             recover_spoke_rsa ${spoke}
 
             # In this stage the spoke's registry does not exist, so we need to trust the Hub's ingress cert
@@ -376,11 +383,11 @@ elif [[ ${1} == 'spoke' ]]; then
 
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
             trust_internal_registry 'spoke' ${spoke}
-            if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]]; then
-                echo "CatalogSource File does not exists, generating a new one..."
-                create_cs 'spoke' ${spoke}
-            fi
-            recover_mapping
+            #if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]]; then
+            #    echo "CatalogSource File does not exists, generating a new one..."
+            #    create_cs 'spoke' ${spoke}
+            #fi
+            #recover_mapping
             recover_spoke_rsa ${spoke}
 
             RCICSP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${spoke} | wc -l || true)
@@ -390,8 +397,8 @@ elif [[ ${1} == 'spoke' ]]; then
                 echo ">>>> Creating ICSP for: ${spoke}"
                 # Use the Spoke's registry as a source
                 source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'spoke'
-                icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
-                icsp_maker ${SPOKE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
+                sed "s%${SOURCE_REGISTRY}%${DESTINATION_REGISTRY}%g" ${OUTPUTDIR}/icsp-hub.yaml > ${OUTPUTDIR}/icsp-${spoke}.yaml
+                sed "s%${SOURCE_REGISTRY}%${DESTINATION_REGISTRY}%g" ${OUTPUTDIR}/catalogsource-hub.yaml > ${OUTPUTDIR}/catalogsource-${spoke}.yaml
 
                 # Clean Old stuff
                 oc --kubeconfig=${SPOKE_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml || echo "CatalogSoruce already deleted!"

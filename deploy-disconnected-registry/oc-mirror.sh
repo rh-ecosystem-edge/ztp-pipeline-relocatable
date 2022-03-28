@@ -130,123 +130,16 @@ EOF
     echo "Launch the oc-mirror command to mirror ocp and olm operators and images"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
+    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls
+    SALIDA=$?
 
-    >${OUTPUTDIR}/mirror.log
-    SALIDA=1
+    if [ ${SALIDA} -eq 0 ]; then
+        echo ">>>> Mirroring with oc-mirror step finished"
+    else
+        echo ">>>> ERROR: Mirroring with oc-mirror failed"
+        exit 1
+    fi
 
-    retry=1
-    while [ ${retry} != 0 ]; do
-
-        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-        oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls >>${OUTPUTDIR}/mirror.log 2>&1
-        SALIDA=$?
-
-        if [ ${SALIDA} -eq 0 ]; then
-            echo ">>>> Mirroring with oc-mirror step finished"
-            retry=0
-        else
-            echo ">>>> ERROR: Mirroring with oc-mirror failed"
-            echo ">>>> ERROR: Retrying in 10 seconds"
-            sleep 10
-            retry=$((retry + 1))
-        fi
-        if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Mirroring with oc-mirror failed"
-            echo ">>>> ERROR: Retry limit reached"
-            exit 1
-        fi
-    done
-
-
-    # Empty log file
-    #>${OUTPUTDIR}/mirror.log
-    #SALIDA=1
-    #
-    #retry=1
-    #while [ ${retry} != 0 ]; do
-    #    # Mirror redhat-operator index image
-    #    echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
-    #
-    #    echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-    #    opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} >>${OUTPUTDIR}/mirror.log 2>&1
-    #    SALIDA=$?
-    #
-    #    if [ ${SALIDA} -eq 0 ]; then
-    #        echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
-    #        retry=0
-    #    else
-    #        echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
-    #        echo ">>>> ERROR: Retrying in 10 seconds"
-    #        sleep 10
-    #        retry=$((retry + 1))
-    #    fi
-    #    if [ ${retry} == 12 ]; then
-    #        echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
-    #        echo ">>>> ERROR: Retry limit reached"
-    #        exit 1
-    #    fi
-    #done
-    #
-    #retry=1
-    #while [ ${retry} != 0 ]; do
-    #    echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
-    #
-    #    echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-    #    GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} >>${OUTPUTDIR}/mirror.log 2>&1
-    #    SALIDA=$?
-    #
-    #    if [ ${SALIDA} -eq 0 ]; then
-    #        echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
-    #        retry=0
-    #    else
-    #        echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
-    #        echo ">>>> ERROR: Retrying in 10 seconds"
-    #        sleep 10
-    #        retry=$((retry + 1))
-    #    fi
-    #    if [ ${retry} == 12 ]; then
-    #        echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
-    #        echo ">>>> ERROR: Retry limit reached"
-    #        exit 1
-    #    fi
-    #done
-    #
-    ## Mirror redhat-operator packages
-    #echo ">>>> Trying to push OLM images to Internal Registry"
-    #echo "DEBUG: GODEBUG=x509ignoreCN=0 oc adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET}"
-    #GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TARGET_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --max-per-registry=100 >>${OUTPUTDIR}/mirror.log 2>&1
-    #
-    #cat ${OUTPUTDIR}/mirror.log | grep 'error:' >${OUTPUTDIR}/mirror-error.log
-    #
-    ## Patch to avoid issues on mirroring
-    ## In order to match both / and - in the package name we replace them by . that grep with regexp mode can understand
-    #FAILEDPACKAGES=$(cat ${OUTPUTDIR}/mirror-error.log | tr ": " "\n" | grep ${DESTINATION_REGISTRY} | sed "s/${DESTINATION_REGISTRY}//g" | sed "s#^/##g" | sed 's#-#.#g' | sed 's#olm/##g' | sed 's#/#.#g' | sort -u | xargs echo)
-    #
-    #echo ">> Packages that have failed START"
-    #echo ${FAILEDPACKAGES}
-    #echo ">> Packages that have failed END"
-    #
-    #PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
-    #for packagemanifest in $(oc --kubeconfig=${KUBECONFIG_HUB} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
-    #    for package in $(oc --kubeconfig=${KUBECONFIG_HUB} get $packagemanifest -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
-    #        for pkg in ${FAILEDPACKAGES}; do
-    #            echo $package | grep -qE $pkg
-    #            MATCH=$?
-    #            if [ ${MATCH} == 0 ]; then
-    #                echo
-    #                echo "Package: ${package}"
-    #                echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
-    #                skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-    #                if [[ ${?} != 0 ]]; then
-    #                    echo "Error on Image Copy, retrying after 5 seconds..."
-    #                    sleep 10
-    #                    skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-    #                fi
-    #                sleep 1
-    #            fi
-    #        done
-    #    done
-    #done
 
     # Copy extra images to the destination registry
     for image in ${EXTRA_IMAGES}; do
@@ -259,7 +152,7 @@ EOF
 
 if [[ ${1} == 'hub' ]]; then
     prepare_env 'hub'
-    create_cs 'hub'
+    #create_cs 'hub'
     trust_internal_registry 'hub'
     mirror 'hub'
 
@@ -276,7 +169,7 @@ elif [[ ${1} == "spoke" ]]; then
             export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
         fi
         prepare_env 'spoke'
-        create_cs 'spoke' ${spoke}
+        #create_cs 'spoke' ${spoke}
         trust_internal_registry 'hub'
         trust_internal_registry 'spoke' ${spoke}
         mirror 'spoke'
