@@ -31,9 +31,14 @@ jobs:
         run: |
           echo -n ::set-output name=IMAGE_TAGS::
           cd ${GITHUB_WORKSPACE}
-          export BRANCH=$(git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | grep $(git rev-parse HEAD) | cut -f2 -d\ )
-          export HASH=$(git rev-parse HEAD)
-          export RELEASE=${BRANCH}-${HASH}
+
+          if [[ "${GITHUB_REF##*/}"" == 'main' ]];then
+            export RELEASE=latest
+          else
+            export BRANCH=$(git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | grep $(git rev-parse HEAD) | cut -f2 -d\ )
+            export HASH=$(git rev-parse HEAD)
+            export RELEASE=${BRANCH}-${HASH}
+          fi
           make 
 
 
