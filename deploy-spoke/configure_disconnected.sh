@@ -300,7 +300,7 @@ elif [[ ${1} == 'spoke' ]]; then
     STAGE=${2}
 
     echo ">>>> Get the hub catalog source and icsp into output dir"
-    oc --kubeconfig=${KUBECONFIG_HUB} get catalogsource redhat-operator-index -n openshift-marketplace -o yaml > ${OUTPUTDIR}/catalogsource-hub.yaml)
+    oc --kubeconfig=${KUBECONFIG_HUB} get catalogsource redhat-operator-index -n openshift-marketplace -o yaml > ${OUTPUTDIR}/catalogsource-hub.yaml
     oc --kubeconfig=${KUBECONFIG_HUB} get imageContentSourcePolicy operator-0 -n openshift-marketplace -o yaml > ${OUTPUTDIR}/icsp-hub.yaml
     echo "---\n" >> ${OUTPUTDIR}/icsp-hub.yaml
     oc --kubeconfig=${KUBECONFIG_HUB} get imageContentSourcePolicy release-0 -n openshift-marketplace -o yaml >> ${OUTPUTDIR}/icsp-hub.yaml
