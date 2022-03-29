@@ -23,7 +23,11 @@ export interface Service extends IResource {
     selector?: Record<string, string>;
     type?: string;
   };
-  status?: unknown;
+  status?: {
+    loadBalancer?: {
+      ingress?: { ip?: string }[];
+    };
+  };
 }
 
 export const getService = (metadata: { name: string; namespace: string }) =>
