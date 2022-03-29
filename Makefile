@@ -7,7 +7,7 @@ RELEASE ?= $(BRANCH)-$(HASH)
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 
-.PHONY: build-pipe build-ui push-pipe push-ui
+.PHONY: build-pipe build-ui push-pipe push-ui doc
 .EXPORT_ALL_VARIABLES:
 all: pipe ui
 pipe: build-pipe push-pipe
@@ -24,3 +24,6 @@ push-pipe: build-pipe
 
 push-ui: build-ui
 	podman push $(FULL_UI_IMAGE_TAG)
+
+doc:
+	bash build.sh
