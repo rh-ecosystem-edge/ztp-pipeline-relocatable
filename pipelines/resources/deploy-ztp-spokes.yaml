@@ -11,6 +11,9 @@ spec:
     - name: git-revision
       type: string
       default: "main"
+    - name: git-flow
+      type: string
+      default: "false"
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
@@ -24,6 +27,11 @@ spec:
 
   # Git Pull
   - name: fetch-from-git
+    when:
+      - input: $(params.git-flow)
+        operator: in
+        values:
+          - "true"
     taskRef:
       name: git-clone
     params:
