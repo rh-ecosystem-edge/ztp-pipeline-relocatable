@@ -18,6 +18,9 @@ spec:
     - name: spokes-config
       type: string
       default: ""
+    - name: mock
+      type: string
+      default: "false"
   stepTemplate:
     env:
       - name: WORKDIR
@@ -30,6 +33,8 @@ spec:
         value: "deploy-ocs"
       - name: SHARED_DIR
         value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
   steps:
     - name: deploy-ocs
       image: "$(params.ztp-container-image)"
@@ -37,5 +42,9 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_OCS_DIR}
-        ./deploy.sh
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_OCS_DIR}
+          ./deploy.sh
+        else
+          echo "Deploy OCS: Mock mode on"
+        fi

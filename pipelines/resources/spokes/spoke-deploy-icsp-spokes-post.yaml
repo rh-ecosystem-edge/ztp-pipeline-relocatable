@@ -18,6 +18,9 @@ spec:
     - name: spokes-config
       type: string
       default: ""
+    - name: mock
+      type: string
+      default: "false"
   stepTemplate:
     env:
       - name: WORKDIR
@@ -32,6 +35,8 @@ spec:
         value: "deploy-disconnected-registry"
       - name: SHARED_DIR
         value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
   steps:
     - name: deploy-icsp-spokes-post
       image: "$(params.ztp-container-image)"
@@ -39,5 +44,9 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
-        ./configure_disconnected.sh 'spoke' 'post'
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
+          ./configure_disconnected.sh 'spoke' 'post'
+        else
+          echo "Deploy ICSP Post: Mock mode on"
+        fi
