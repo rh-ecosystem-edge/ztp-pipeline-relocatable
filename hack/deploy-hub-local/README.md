@@ -35,6 +35,14 @@ To deploy baremetal using `bare minimum` on the provisioning node
 - kcli installed (for RHEL 8/CentOS 8/Fedora, look [here](https://kcli.readthedocs.io/en/latest/#package-install-method)) `curl -1sLf https://dl.cloudsmith.io/public/karmab/kcli/cfg/setup/bash.deb.sh | sudo -E bash`
 - an OpenShift pull secret (stored by default in `openshift_pull.json`)
 
+Once installed, execute:
+
+~~~sh
+kcli download image centos8stream
+~~~
+
+To download the image used for the installation
+
 ### on the provisioning node
 
 - `libvirt` daemon (with `fw_cfg` support)
