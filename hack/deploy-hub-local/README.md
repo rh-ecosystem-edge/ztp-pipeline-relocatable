@@ -56,7 +56,7 @@ We'll divide this in several steps:
 
 ```sh
 cd hack/deploy-hub-local
-./build-hub.sh /root/openshift_pull.json
+./build-hub.sh /root/openshift_pull.json 1
 ```
 
 After a while, Kcli would have created the different machines (installer, and 3 masters) for the OpenShift Setup.
