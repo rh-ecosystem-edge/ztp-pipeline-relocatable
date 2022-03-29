@@ -1,4 +1,4 @@
-import { getResource } from './resource-request';
+import { deleteResource, getResource } from './resource-request';
 import { Metadata } from './metadata';
 import { IResource } from './resource';
 
@@ -21,6 +21,13 @@ export interface Secret extends IResource {
 
 export const getSecret = (metadata: { name: string; namespace: string }) =>
   getResource<Secret>({
+    apiVersion: SecretApiVersion,
+    kind: SecretKind,
+    metadata,
+  });
+
+export const deleteSecret = (metadata: { name: string; namespace: string }) =>
+  deleteResource<Secret>({
     apiVersion: SecretApiVersion,
     kind: SecretKind,
     metadata,
