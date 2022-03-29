@@ -1,20 +1,29 @@
 CI_FOLDER = images
 PIPE_IMAGE = quay.io/ztpfw/pipeline
-PIPE_TAG = latest
 UI_IMAGE = quay.io/ztpfw/ui
-UI_TAG = latest
+BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
+HASH := $(shell git rev-parse HEAD)
+RELEASE ?= $(BRANCH)-$(HASH)
+FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
+FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 
-.PHONY: build push doc
+.PHONY: build-pipe build-ui push-pipe push-ui doc
+.EXPORT_ALL_VARIABLES:
+all: pipe ui
+pipe: build-pipe push-pipe
+ui: build-ui push-ui
 
-all: build push
+build-pipe:
+	podman build --platform linux/amd64 -t $(FULL_PIPE_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .
 
-build:
-	podman build --platform linux/amd64 -t $(PIPE_IMAGE):$(PIPE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .
-	podman build --platform linux/amd64 -t $(UI_IMAGE):$(UI_TAG) -f $(CI_FOLDER)/Containerfile.UI .
+build-ui:
+	podman build --platform linux/amd64 -t $(FULL_UI_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.UI .
 
-push: build
-	podman push $(PIPE_IMAGE):$(PIPE_TAG)
-	podman push $(UI_IMAGE):$(UI_TAG)
+push-pipe: build-pipe
+	podman push $(FULL_PIPE_IMAGE_TAG)
+
+push-ui: build-ui
+	podman push $(FULL_UI_IMAGE_TAG)
 
 doc:
 	bash build.sh

@@ -19,7 +19,6 @@ jobs:
 
   remove-old-deployment:
     if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
-
     needs: clone-pr-branch
     runs-on: CI-pool
     steps:
@@ -34,7 +33,7 @@ jobs:
           kcli delete vm spoke0-cluster-w0 -y || true
           list=$(tkn pr ls -n spoke-deployer |grep -i running | cut -d' ' -f1)
           for i in $list; do
-            tkn pr cancel $i -n spoke-deployer
+            tkn pr cancel $i -n spoke-deployer || true
           done
 
   create-new-vm:
@@ -88,3 +87,64 @@ jobs:
             echo "The pipeline has not finished"
             exit 1
           fi
+
+  build-and-push-docker-image:
+    if: github.event.review.state == 'approved' || github.event_name == 'workflow_dispatch' && !failure()
+    needs: verify-pipe-success 
+    name: Build Container images and push to repositories
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install env
+        run: |
+          sudo apt-get -y install podman
+          mkdir -p ~/.docker
+
+      - name: Login to Quay
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_ROBOT_USER }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+
+      - name: Build and Push Pipeline Image
+        id: build-pipe
+        run: |
+          cd ${{ github.workspace }}
+
+          if [[ "${{ github.ref_name }}" == 'main' ]];then
+            RELEASE=latest
+          else
+            RELEASE=${{ github.ref_name }}-${{ github.sha }}
+          fi
+
+          echo ">>>> Building Pipe Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make pipe
+
+      - name: Build and Push UI Image
+        id: build-ui
+        run: |
+          cd ${{ github.workspace }}
+
+          if [[ "${{ github.ref_name }}" == 'main' ]];then
+            RELEASE=latest
+          else
+            RELEASE=${{ github.ref_name }}-${{ github.sha }}
+          fi
+
+          echo ">>>> Building UI Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make ui
