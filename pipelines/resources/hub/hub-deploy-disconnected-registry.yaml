@@ -45,7 +45,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
           ./deploy.sh 'hub'
         else
@@ -64,7 +64,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
           echo "Starting OpenShift Image Mirroring"
           ./ocp-sync.sh 'hub'
@@ -84,7 +84,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
           echo "Starting OLM Catalog Image Mirroring Step"
           ./olm-sync.sh 'hub'
@@ -98,7 +98,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
           ./update-global-pullsecret.sh 'hub'
         else

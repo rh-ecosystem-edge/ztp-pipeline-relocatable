@@ -44,7 +44,7 @@ spec:
         # TODO: We need to mount a volume in the pod in order to have those files available among
         # different steps.
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ "${MOCK}" == 'false' ]]; then
           rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}
         else
           echo "Save Hub Configuration: Mock mode on"

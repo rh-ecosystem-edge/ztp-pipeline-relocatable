@@ -40,7 +40,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ "${MOCK}" == 'false' ]]; then
           mkdir -p ${WORKDIR}/build
           cd ${WORKDIR}/${SHARED_DIR}
           ./verify_preflight.sh

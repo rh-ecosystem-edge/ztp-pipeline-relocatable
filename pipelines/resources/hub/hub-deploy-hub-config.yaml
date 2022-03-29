@@ -42,7 +42,7 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ ! ${MOCK} ]]; then
+        if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_HUB_CONFIGS_DIR}
           ./deploy.sh
         else
