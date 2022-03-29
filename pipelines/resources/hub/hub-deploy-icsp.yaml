@@ -45,7 +45,6 @@ spec:
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-        if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
           ./configure_disconnected.sh 'hub'
         else
