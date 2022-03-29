@@ -127,19 +127,33 @@ EOF
     done
 
 
-    echo "Launch the oc-mirror command to mirror ocp and olm operators and images"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
-    oc-mirror --dir=${OUTPUTDIR} --max-per-registry=100 --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls --skip-cleanup
-    SALIDA=$?
+    # Empty log file
+    >${OUTPUTDIR}/mirror.log
+    SALIDA=1
 
-    if [ ${SALIDA} -eq 0 ]; then
-        echo ">>>> Mirroring with oc-mirror step finished"
-    else
-        echo ">>>> ERROR: Mirroring with oc-mirror failed"
-        exit 1
-    fi
+    retry=1
+    while [ ${retry} != 0 ]; do
+        echo "Launch the oc-mirror command to mirror ocp and olm operators and images"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        echo "oc-mirror --dir=${OUTPUTDIR} --max-per-registry=150 --config ${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls"
+        oc-mirror --dir=${OUTPUTDIR} --max-per-registry=100 --config=${OUTPUTDIR}/oc-mirror-hub.yaml  docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --dest-skip-tls --skip-cleanup
+        SALIDA=$?
 
+        if [ ${SALIDA} -eq 0 ]; then
+            echo ">>>> Mirror finished successfully"
+            retry=0
+        else
+            echo ">>>> ERROR: Mirroring failed"
+            echo ">>>> ERROR: Retrying in 10 seconds"
+            sleep 10
+            retry=$((retry + 1))
+        fi
+        if [ ${retry} == 12 ]; then
+            echo ">>>> ERROR: Mirror failed"
+            echo ">>>> ERROR: Retry limit reached"
+            exit 1
+        fi
+    done
 
     # Copy extra images to the destination registry
     for image in ${EXTRA_IMAGES}; do
