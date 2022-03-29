@@ -9,13 +9,13 @@ FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 
 .PHONY: build-pipe build-ui push-pipe push-ui
 .EXPORT_ALL_VARIABLES:
-all: build-pipe
+all: build-pipe build-ui
 
 build-pipe:
-	echo "podman build --platform linux/amd64 -t $(FULL_PIPE_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline ."
+	podman build --platform linux/amd64 -t $(FULL_PIPE_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .
 
 build-ui:
-	echo "podman build --platform linux/amd64 -t $(FULL_UI_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.UI ."
+	podman build --platform linux/amd64 -t $(FULL_UI_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.UI .
 
 push-pipe: build-pipe
 	podman push $(FULL_PIPE_IMAGE_TAG)
