@@ -30,7 +30,7 @@ if ./verify.sh; then
     echo -n "${CABUNDLE}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
     echo "" >>01_Mirror_ConfigMap.yml
     cat registryconf.txt >>01_Mirror_ConfigMap.yml
-    NEWTAG=${LOCAL_REG}/olm/openshift/release:${OC_OCP_TAG}
+    NEWTAG=${LOCAL_REG}/olm/openshift/release-images:${OC_OCP_TAG}
     sed -i "s/CHANGE_SPOKE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
     sed -i "s%TAG_OCP_IMAGE_RELEASE%${NEWTAG}%g" 02-cluster_imageset.yml
 
