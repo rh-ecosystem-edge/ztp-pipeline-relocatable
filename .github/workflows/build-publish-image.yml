@@ -30,13 +30,13 @@ jobs:
         id: image_tags
         run: |
           echo -n ::set-output name=IMAGE_TAGS::
-          cd ${GITHUB_WORKSPACE}
+          cd ${{ github.workspace }}
 
-          if [[ "${GITHUB_REF##*/}" == 'main' ]];then
+          if [[ "${{ github.ref_name }}" == 'main' ]];then
             export RELEASE=latest
           else
-            export BRANCH=${GITHUB_REF_NAME}
-            export HASH=${GITHUB_SHA}
+            export BRANCH=${{ github.ref_name }}
+            export HASH=${{ github.sha }}
             export RELEASE=${BRANCH}-${HASH}
           fi
 
