@@ -69,13 +69,13 @@ cd hack/deploy-hub-local
 
 After a while, Kcli would have created the different machines (installer, and 3 masters) for the OpenShift Setup.
 
-If you ssh into the installer machine, you can grab the kube config secret (or copy it)
+If you ssh into the installer machine, you can grab the Kube config secret (or copy it)
 
 ```sh
 kcli scp root@test-ci-installer:/root/ocp/auth/kubeconfig  ~/.kube/config
 ```
 
-Once `watch -d "oc get clusterversion; oc get nodes; oc get co" report no changes, you're ready to continue was the host has been fully setup for the next step.
+Once `watch -d "oc get clusterversion; oc get nodes; oc get co"` reports no changes, you're ready to continue was the host has been fully setup for the next step.
 
 ### Deploy OpenShift Pipelines
 
