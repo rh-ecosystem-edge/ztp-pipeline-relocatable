@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ZTPFW_NAMESPACE, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
 import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
 import { getToken, unauthorized } from '../k8s';
-import { getApiServerConfig, patchApiServerConfig } from '../resources/apiserver';
+import { ApiServerSpec, getApiServerConfig, patchApiServerConfig } from '../resources/apiserver';
 import { getIngressConfig, patchIngressConfig } from '../resources/ingress';
 import { createCertSecret, generateCertificate } from './generateCertificate';
 
@@ -75,13 +75,14 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   /* TODO: avoid auto-generating of self-signed certificates if the user has provided them */
 
   const ingress = await getIngressConfig(token);
-  const apiServer = await getApiServerConfig(token);
 
   const apiDomain = `api.${domain}`;
   const ingressDomain = `apps.${domain}`;
 
   if (ingressDomain === ingress?.spec?.domain) {
-    console.info('Domain stays unchanged, skipping persistence of it.');
+    console.info(
+      'Domain stays unchanged (based on the Ingress config), skipping persistence of it.',
+    );
     res.writeHead(200).end(); // All good
     return;
   }
@@ -95,13 +96,14 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     // This is potentially buggy in case the ApiServer cluster has already namedCertificates present
     { names: [apiDomain], servingCertificate: { name: apiCertSecretName } },
   ];
-  const apiServerPatches: PatchType[] = [
-    {
-      op: apiServer.spec?.servingCerts?.namedCertificates ? 'replace' : 'add',
-      path: '/spec/servingCerts/namedCertificates',
-      value: namedCertificates,
+  const apiServerPatches: { spec: ApiServerSpec } = {
+    // We will merge in that case
+    spec: {
+      servingCerts: {
+        namedCertificates,
+      },
     },
-  ];
+  };
 
   // Ingress
   const consoleDomain = `console-openshift-console.${ingressDomain}`;
@@ -163,7 +165,10 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   // Persist the changes (patch)
   try {
     const result = await patchIngressConfig(token, ingressPatches);
-    if (result.statusCode !== 200) {
+    if (result.statusCode === 200) {
+      logger.debug('Ingress config patched');
+    } else {
+      logger.info('Failed to patch Ingress cluster resource: ', result.body);
       res
         .writeHead(
           result.statusCode,
@@ -178,8 +183,11 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
 
   try {
     const result = await patchApiServerConfig(token, apiServerPatches);
-    logger.debug('Patched ApiServer result: ', result);
-    if (result.statusCode !== 200) {
+    logger.debug('ApiServer config patched');
+    if (result.statusCode === 200) {
+      logger.debug('ApiServer config patched');
+    } else {
+      logger.info('Failed to patch ApiServer cluster resource: ', result.body);
       res
         .writeHead(
           result.statusCode,

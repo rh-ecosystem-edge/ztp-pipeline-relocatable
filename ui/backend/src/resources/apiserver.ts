@@ -12,14 +12,15 @@ export interface NamedCertificate {
   servingCertificate: { name: string };
 }
 
+export interface ApiServerSpec {
+  servingCerts?: { namedCertificates?: NamedCertificate[] };
+}
 export interface ApiServer extends IResource {
   apiVersion: ApiServerVersionType;
   kind: ApiServerKindType;
   metadata: Metadata;
   message?: string;
-  spec?: {
-    servingCerts?: { namedCertificates?: NamedCertificate[] };
-  };
+  spec?: ApiServerSpec;
 }
 
 export const getApiServerConfig = (token: string) =>
@@ -28,9 +29,9 @@ export const getApiServerConfig = (token: string) =>
     token,
   );
 
-export const patchApiServerConfig = (token: string, patches: PatchType[]) =>
+export const patchApiServerConfig = (token: string, patch: { spec: ApiServerSpec }) =>
   jsonPatch<ApiServer>(
     `${getClusterApiUrl()}/apis/${ApiServerVersion}/apiservers/cluster`,
-    patches,
+    patch,
     token,
   );
