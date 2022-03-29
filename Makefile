@@ -9,7 +9,9 @@ FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 
 .PHONY: build-pipe build-ui push-pipe push-ui
 .EXPORT_ALL_VARIABLES:
-all: build-pipe build-ui
+all: pipe ui
+pipe: build-pipe push-pipe
+ui: build-ui push-ui
 
 build-pipe:
 	podman build --platform linux/amd64 -t $(FULL_PIPE_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .

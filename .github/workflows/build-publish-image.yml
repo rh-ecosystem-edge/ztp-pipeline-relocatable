@@ -35,22 +35,32 @@ jobs:
           if [[ "${GITHUB_REF##*/}" == 'main' ]];then
             export RELEASE=latest
           else
-            export BRANCH=${GITHUB_REF##*/}
-            export HASH=$(git rev-parse HEAD)
+            export BRANCH=${GITHUB_REF_NAME}
+            export HASH=${GITHUB_SHA}
             export RELEASE=${BRANCH}-${HASH}
           fi
 
       - name: Build and Push Pipeline Image
         id: build-pipe
         run: |
-          make build-pipe
-          make push-pipe
+          echo ">>>> Building Pipe Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${BRANCH}"
+          echo "Git hash: ${HASH}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make pipe
 
       - name: Build and Push UI Image
         id: build-ui
         run: |
-          make build-ui
-          make push-ui
+          echo ">>>> Building UI Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${BRANCH}"
+          echo "Git hash: ${HASH}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make ui
 
       #- name: Login to Github Packages
       #  uses: docker/login-action@v1
