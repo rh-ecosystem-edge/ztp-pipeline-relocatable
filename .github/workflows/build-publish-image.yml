@@ -26,27 +26,21 @@ jobs:
           username: ${{ secrets.QUAY_ROBOT_USER }}
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
 
-      - name: Get Image Tag
-        id: image_tags
-        run: |
-          echo -n ::set-output name=IMAGE_TAGS::
-          cd ${{ github.workspace }}
-
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
-            export RELEASE=latest
-          else
-            export BRANCH=${{ github.ref_name }}
-            export HASH=${{ github.sha }}
-            export RELEASE=${BRANCH}-${HASH}
-          fi
-
       - name: Build and Push Pipeline Image
         id: build-pipe
         run: |
+          cd ${{ github.workspace }}
+
+          if [[ "${{ github.ref_name }}" == 'main' ]];then
+            RELEASE=latest
+          else
+            RELEASE=${{ github.ref_name }}-${{ github.sha }}
+          fi
+
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
-          echo "Image Branch: ${BRANCH}"
-          echo "Git hash: ${HASH}"
+          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
           RELEASE=${RELEASE} make pipe
@@ -54,10 +48,18 @@ jobs:
       - name: Build and Push UI Image
         id: build-ui
         run: |
+          cd ${{ github.workspace }}
+
+          if [[ "${{ github.ref_name }}" == 'main' ]];then
+            RELEASE=latest
+          else
+            RELEASE=${{ github.ref_name }}-${{ github.sha }}
+          fi
+
           echo ">>>> Building UI Release"
           echo "Release: ${RELEASE}"
-          echo "Image Branch: ${BRANCH}"
-          echo "Git hash: ${HASH}"
+          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
           RELEASE=${RELEASE} make ui
