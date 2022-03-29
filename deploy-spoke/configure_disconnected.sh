@@ -31,12 +31,13 @@ function copy_files() {
 
 function grab_master_ext_ips() {
     spoke=${1}
+    spokeitem=${2}
 
     ## Grab 1 master and 1 IP
     agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
     export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
     master=${SPOKE_NODE_NAME##*-}
-    export MAC_EXT_DHCP=$(yq e ".spokes[\$i].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+    export MAC_EXT_DHCP=$(yq e ".spokes[$spokeitem].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
     ## HAY QUE PROBAR ESTO
     SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
     export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
@@ -272,7 +273,7 @@ elif [[ ${1} == 'spoke' ]]; then
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
     fi
-
+    _index=0
     for spoke in ${ALLSPOKES}; do
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
@@ -310,7 +311,7 @@ elif [[ ${1} == 'spoke' ]]; then
             # If not API
             if [[ -z ${RCAPI} ]]; then
                 # Grab SPOKE IP
-                grab_master_ext_ips ${spoke}
+                grab_master_ext_ips ${spoke} ${_index}
                 check_connectivity "${SPOKE_NODE_IP}"
                 # Execute commands and Copy files
                 ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
@@ -378,5 +379,6 @@ elif [[ ${1} == 'spoke' ]]; then
                 wait_for_mcp_ready ${SPOKE_KUBECONFIG} ${spoke} 120
             fi
         fi
+        _index=$((_index + 1))
     done
 fi

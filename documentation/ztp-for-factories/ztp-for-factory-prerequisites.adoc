@@ -102,6 +102,9 @@ endif::[]
 |[[mastername]] `mastername`
 | This value must match `master0`, `master1` or `master2`.
 
+|[[ignore_ifaces]] `ignore_ifaces`
+| (Optional) Interfaces to ignore in the host
+
 |[[nic_ext_dhcp]] `nic_ext_dhcp`
 | NIC connected to the external DHCP
 
