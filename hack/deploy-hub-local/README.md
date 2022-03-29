@@ -11,6 +11,7 @@ Table of contents:
   - [Deploy the Base OpenShift](#deploy-the-base-openshift)
   - [Deploy OpenShift Pipelines](#deploy-openshift-pipelines)
   - [Pipeline for deploying the `Hub`](#pipeline-for-deploying-the-hub)
+  - [Create the Spoke/Edge Cluster](#create-the-spokeedge-cluster)
   - [Pipeline for deploying the Spoke/Edge Cluster](#pipeline-for-deploying-the-spokeedge-cluster)
 
 <!-- /TOC -->
@@ -54,7 +55,7 @@ We'll divide this in several steps:
 ### Deploy the Base OpenShift
 
 ```sh
-cd hacks/deploy-hub-local
+cd hack/deploy-hub-local
 ./build-hub.sh /root/openshift_pull.json
 ```
 
@@ -83,15 +84,23 @@ After a while, the required components are in place and ready to rock!
 
 Let's use Tekton CLI to deploy the HUB (optionally we can append `-p git-revision=new-oc-mirror` to use a specific branch )
 
-~~~sh
+```sh
 tkn pipeline start -n spoke-deployer -p spokes-config="$(cat /root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
-~~~
+```
 
 The task might fail as MCP restarts the nodes, rerun it again until it's finished
 
+### Create the Spoke/Edge Cluster
+
+For deploying the virtual infrastructure to deploy the Spoke/Edge Cluster:
+
+```sh
+cd hack/deploy-hub-local
+./build-spoke.sh /root/openshift_pull.json 1
+```
+
 ### Pipeline for deploying the Spoke/Edge Cluster
 
-~~~sh
+```sh
 tkn pipeline start -n spoke-deployer -p spokes-config="$(cat /root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
-~~~
-
+```
