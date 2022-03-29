@@ -8,9 +8,10 @@ import {
 } from '../../resources/oauth';
 import { PatchType } from '../../resources/patches';
 import { IResource } from '../../resources/resource';
-import { Secret } from '../../resources/secret';
+import { deleteSecret, getSecret, Secret } from '../../resources/secret';
 import {
   IDENTITY_PROVIDER_NAME,
+  KUBEADMIN_REMOVE,
   PERSIST_IDP,
   RESOURCE_CREATE_TITLE,
   RESOURCE_FETCH_TITLE,
@@ -127,14 +128,20 @@ const bindClusterAdminRole = async (
   return undefined;
 };
 
+export enum PersistIdentityProviderResult {
+  error = 'error',
+  skipped = 'skipped',
+  userCreated = 'userCreated',
+}
+
 export const persistIdentityProvider = async (
   setError: (error: PersistErrorType) => void,
   username: string,
   password: string,
-): Promise<boolean> => {
+): Promise<PersistIdentityProviderResult> => {
   if (!username || !password) {
     console.log('persistIdentityProvider: username or password missing, so skipping that step.');
-    return true; // skip
+    return PersistIdentityProviderResult.skipped;
   }
 
   let oauth;
@@ -144,7 +151,7 @@ export const persistIdentityProvider = async (
   } catch (e) {
     console.error(e);
     setError({ title: RESOURCE_FETCH_TITLE, message: 'Failed to get the OAuth resource.' });
-    return false;
+    return PersistIdentityProviderResult.error;
   }
 
   const htpasswdIdentityProvider = getHtpasswdIdentityProvider(oauth);
@@ -155,29 +162,52 @@ export const persistIdentityProvider = async (
     );
 
     // skip username/passwod wizard steps for that case
-    return true;
+    return PersistIdentityProviderResult.skipped;
   }
 
   // encode password
   const htPasswdDataB64 = await getHtpasswdData(setError, username, password);
   if (!htPasswdDataB64) {
-    return false;
+    return PersistIdentityProviderResult.error;
   }
 
   // create HTPasswd Secret
   const secret = await createSecret(setError, htPasswdDataB64);
   if (!secret) {
-    return false;
+    return PersistIdentityProviderResult.error;
   }
 
   // Patch (add) new IDP record
   if (!(await patchIDP(setError, oauth, secret))) {
-    return false;
+    return PersistIdentityProviderResult.error;
   }
 
   // grant cluster-admin privileges
   if (!(await bindClusterAdminRole(setError, username))) {
-    return false;
+    return PersistIdentityProviderResult.error;
+  }
+
+  return PersistIdentityProviderResult.userCreated;
+};
+
+export const deleteKubeAdmin = async (
+  setError: (error: PersistErrorType) => void,
+): Promise<boolean> => {
+  let secret;
+  try {
+    const kubeadmin = { name: 'kubeadmin', namespace: 'kube-system' };
+    // The 404 is a valid state in this flow
+    secret = await getSecret(kubeadmin).promise;
+
+    // Ok, it is still there, so remove it
+    await deleteSecret(kubeadmin).promise;
+  } catch (e) {
+    if (secret) {
+      // It is not a failure if the secret is already missing
+      console.error(e);
+      setError({ title: KUBEADMIN_REMOVE, message: 'Failed to remove the kubeadmin user.' });
+      return false;
+    }
   }
 
   return true;
