@@ -84,7 +84,7 @@ After a while, the required components are in place and ready to rock!
 Let's use Tekton CLI to deploy the HUB (optionally we can append `-p git-revision=new-oc-mirror` to use a specific branch )
 
 ~~~sh
-tkn pipeline start -n spoke-deployer -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+tkn pipeline start -n spoke-deployer -p spokes-config="$(cat /root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ~~~
 
 The task might fail as MCP restarts the nodes, rerun it again until it's finished
@@ -92,6 +92,6 @@ The task might fail as MCP restarts the nodes, rerun it again until it's finishe
 ### Pipeline for deploying the Spoke/Edge Cluster
 
 ~~~sh
-tkn pipeline start -n spoke-deployer -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+tkn pipeline start -n spoke-deployer -p spokes-config="$(cat /root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 ~~~
 
