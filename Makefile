@@ -9,6 +9,8 @@ FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 UI_TAG = latest
 PULL_SECRET = ${PWD}/pull_secret.json
 NUM_SPOKES = 1
+KUBECONFIG ?= ${PWD}/kubeconfig
+GIT_BRANCH ?= main
 
 .PHONY: build-pipe build-ui push-pipe push-ui doc
 .EXPORT_ALL_VARIABLES:
@@ -33,4 +35,24 @@ doc:
 
 create-hub:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-hub.sh ${PULL_SECRET} ${NUM_SPOKES}
+		./build-hub.sh ${PULL_SECRET} ${NUM_SPOKES}
+
+bootstrap-tekton:
+	echo "Getting Kubeconfig: "
+	kcli scp root@test-ci-installer:/root/ocp/auth/kubeconfig .
+	KUBECONFIG=./kubeconfig ./pipelines/bootstrap.sh
+
+create-spokes:
+	cd ${PWD}/hack/deploy-hub-local && \
+		./build-spoke.sh ${PULL_SECRET} ${NUM_SPOKES}
+
+deploy-pipe-hub:
+	tkn pipeline start -n spoke-deployer \
+					   -p git-revision=${GIT_BRANCH} \
+					   -p spokes-config="$(cat ./hack/deploy-hub-local/spokes.yaml)" \
+					   -p kubeconfig=${KUBECONFIG} \
+					   -w name=ztp,claimName=ztp-pvc \
+					   --timeout 5h \
+					   --use-param-defaults deploy-ztp-hub | tail -n1
+	tkn pipelinerun list -n spoke-deployer --reverse | tail -n1 | cut -d' ' -f1 | xargs tkn pipelinerun logs -f -n spoke-deployer
+	
