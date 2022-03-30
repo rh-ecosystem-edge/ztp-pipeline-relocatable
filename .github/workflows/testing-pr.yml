@@ -91,7 +91,7 @@ jobs:
           fi
 
   build-and-push-docker-image:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) && !failure()|| github.event_name == 'workflow_dispatch'
     needs: verify-pipe-success
     name: Build Container images and push to repositories
     runs-on: ubuntu-latest
