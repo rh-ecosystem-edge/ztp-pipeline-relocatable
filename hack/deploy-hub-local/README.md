@@ -39,6 +39,8 @@ Once installed, execute:
 
 ~~~sh
 kcli download image centos8stream
+cd /usr/bin/
+kcli download oc
 ~~~
 
 To download the image used for the installation
