@@ -10,10 +10,6 @@ on:
     types: [labeled]
   workflow_dispatch:
 
-env:
-  QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
-  QUAY_PASS: ${{ secrets.QUAY_ROBOT_TOKEN }}
-
 jobs:
   clone-pr-branch:
     if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
@@ -112,6 +108,9 @@ jobs:
           mkdir -p ~/.docker
 
       - name: Login to Quay
+        env:
+          QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
+          QUAY_PASS: ${{ secrets.QUAY_ROBOT_TOKEN }}
         uses: redhat-actions/podman-login@v1
         with:
           registry: quay.io
@@ -133,8 +132,6 @@ jobs:
           echo "Release: ${RELEASE}"
           echo "Image Branch: ${{ github.ref_name }}"
           echo "Git hash: ${{ github.sha }}"
-          echo "User: ${{ env.QUAY_USER }}"
-          echo "Pass: ${{ env.QUAY_PASS }}"
           echo ">>>>"
 
           RELEASE=${RELEASE} make pipe
