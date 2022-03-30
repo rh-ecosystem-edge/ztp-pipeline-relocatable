@@ -93,7 +93,7 @@ After a while, the required components are in place and ready to rock!
 
 ### Pipeline for deploying the `Hub`
 
-Let's use Tekton CLI to deploy the HUB (optionally we can append `-p git-revision=new-oc-mirror` to use a specific branch )
+Let's use Tekton CLI to deploy the HUB (optionally we can append `-p git-revision=$BRANCH` to use a specific branch )
 
 ```sh
 tkn pipeline start -n spoke-deployer -p spokes-config="$(cat /root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
