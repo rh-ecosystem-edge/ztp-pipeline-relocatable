@@ -18,12 +18,14 @@ build-pipe:
 
 build-ui:
 	podman build --platform linux/amd64 -t $(FULL_UI_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.UI .
+	podman tag $(FULL_UI_IMAGE_TAG) $(UI_IMAGE):latest
 
 push-pipe: build-pipe
 	podman push $(FULL_PIPE_IMAGE_TAG)
 
 push-ui: build-ui
 	podman push $(FULL_UI_IMAGE_TAG)
+	podman push $(UI_IMAGE):latest
 
 doc:
 	bash build.sh
