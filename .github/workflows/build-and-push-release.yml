@@ -39,7 +39,7 @@ jobs:
           if [[ "${{ github.ref_name }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.ref_name }}-${{ github.sha }}
+            RELEASE=${{ github.ref_name }}
           fi
           
           echo ">>>> Building Pipe Release"
@@ -58,7 +58,7 @@ jobs:
           if [[ "${{ github.ref_name }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.ref_name }}-${{ github.sha }}
+            RELEASE=${{ github.ref_name }}
           fi
 
           echo ">>>> Building UI Release"
