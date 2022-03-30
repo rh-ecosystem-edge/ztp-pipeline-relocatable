@@ -5,7 +5,6 @@ set -o pipefail
 set -o nounset
 set -m
 
-
 create_kustomization() {
     # Loop for spokes
     # Prepare loop for spokes
@@ -21,14 +20,13 @@ create_kustomization() {
     echo ">> Detecting number of masters"
     NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
     echo ">> Masters: ${NUM_M}"
-    NUM_M=$((${NUM_M}-1))
+    NUM_M=$((NUM_M - 1))
 
     echo ">> Rendering Kustomize for: ${cluster}"
-    for node in $(seq 0 ${NUM_M})
-    do
-        echo "  - ${cluster}-master-${node}.yaml" >> ${OUTPUT}
+    for node in $(seq 0 ${NUM_M}); do
+        echo "  - ${cluster}-master-${node}.yaml" >>${OUTPUT}
     done
-    echo "  - ${cluster}-cluster.yaml" >> ${OUTPUT}
+    echo "  - ${cluster}-cluster.yaml" >>${OUTPUT}
 }
 
 create_spoke_definitions() {
@@ -182,8 +180,7 @@ EOF
     export CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST=192.168.7.0/24
 
     # Now process blocks for each master
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1))))
-    do
+    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
         # Master loop
         export CHANGE_SPOKE_MASTER_PUB_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.nic_int_static" ${SPOKES_FILE})
         export CHANGE_SPOKE_MASTER_MGMT_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
@@ -238,18 +235,17 @@ spec:
        mtu: 1500
        mac-address: '$CHANGE_SPOKE_MASTER_PUB_INT_MAC'
 EOF
-	echo ">> Checking Ignored Interfaces"
-	echo "Spoke: ${cluster}"
-	echo "Master: ${master}"
-	IGN_IFACES=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE})
-	if [[ "${IGN_IFACES}" != "null" ]];then
-		yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE;do
-			echo "Ignoring Interface: ${IFACE}"
-			echo "     - name: ${IFACE}" >> ${OUTPUT}
+        echo ">> Checking Ignored Interfaces"
+        echo "Spoke: ${cluster}"
+        echo "Master: ${master}"
+        IGN_IFACES=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE})
+        if [[ ${IGN_IFACES} != "null" ]]; then
+            yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE; do
+                echo "Ignoring Interface: ${IFACE}"
+                echo "     - name: ${IFACE}" >>${OUTPUT}
 
-		done
-	fi
-
+            done
+        fi
 
         cat <<EOF >>${OUTPUT}
    routes:
@@ -259,13 +255,13 @@ EOF
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
 EOF
 
-	if [[ "${IGN_IFACES}" != "null" ]];then
-		yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE;do
-			echo "Ignoring route for: ${IFACE}"
-			echo "       - next-hop-interface: ${IFACE}" >> ${OUTPUT}
-			echo "         state: absent" >> ${OUTPUT}
-		done
-	fi
+        if [[ ${IGN_IFACES} != "null" ]]; then
+            yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE; do
+                echo "Ignoring route for: ${IFACE}"
+                echo "       - next-hop-interface: ${IFACE}" >>${OUTPUT}
+                echo "         state: absent" >>${OUTPUT}
+            done
+        fi
         cat <<EOF >>${OUTPUT}
  interfaces:
    - name: "$CHANGE_SPOKE_MASTER_MGMT_INT"
@@ -330,8 +326,7 @@ fi
 
 index=0
 
-for spoke in ${ALLSPOKES}
-do
+for spoke in ${ALLSPOKES}; do
     create_kustomization ${spoke} ${index}
     create_spoke_definitions ${spoke} ${index}
     index=$((index + 1))

@@ -24,10 +24,9 @@ create_worker_definitions() {
     echo ">> Detecting number of workers"
     NUM_W=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep worker | wc -l | xargs)
     echo ">> Workers: ${NUM_W}"
-    NUM_W=$((${NUM_W}-1))
+    NUM_W=$((NUM_W - 1))
 
-    for worker in $(seq 0 ${NUM_W})
-    do
+    for worker in $(seq 0 ${NUM_W}); do
         export CHANGE_SPOKE_WORKER_PUB_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.nic_int_static" ${SPOKES_FILE})
         export CHANGE_SPOKE_WORKER_MGMT_INT=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.nic_ext_dhcp" ${SPOKES_FILE})
         export CHANGE_SPOKE_WORKER_PUB_INT_IP=192.168.7.13
@@ -178,8 +177,7 @@ fi
 
 index=0
 
-for SPOKE in ${ALLSPOKES}
-do
+for SPOKE in ${ALLSPOKES}; do
     create_worker_definitions ${SPOKE} ${index}
     verify_worker ${SPOKE}
     index=$((index + 1))
