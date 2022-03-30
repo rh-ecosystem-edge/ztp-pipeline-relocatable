@@ -62,6 +62,8 @@ We'll divide this in several steps:
 
 ### Deploy the Base OpenShift
 
+Note: Ensure to have a generated ssh key via `ssh-keygen` to have it injected via KCLI into the vm's to be able to log in and operate.
+
 ```sh
 cd hack/deploy-hub-local
 ./build-hub.sh /root/openshift_pull.json 1
