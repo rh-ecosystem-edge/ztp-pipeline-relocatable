@@ -2,17 +2,14 @@ Table of contents:
 
 <!-- TOC depthfrom:1 orderedlist:false -->
 
-- [Purpose](#purpose)
-- [Why](#why)
-- [Requirements](#requirements)
-  - [for kcli](#for-kcli)
-  - [on the provisioning node](#on-the-provisioning-node)
-- [Usage](#usage)
-  - [Deploy the Base OpenShift](#deploy-the-base-openshift)
-  - [Deploy OpenShift Pipelines](#deploy-openshift-pipelines)
-  - [Pipeline for deploying the `Hub`](#pipeline-for-deploying-the-hub)
-  - [Create the Spoke/Edge Cluster](#create-the-spokeedge-cluster)
-  - [Pipeline for deploying the Spoke/Edge Cluster](#pipeline-for-deploying-the-spokeedge-cluster)
+- [Entry for OC to work](#entry-for-oc-to-work)
+    - [on the provisioning node](#on-the-provisioning-node)
+  - [Usage](#usage)
+    - [Deploy the Base OpenShift](#deploy-the-base-openshift)
+    - [Deploy OpenShift Pipelines](#deploy-openshift-pipelines)
+    - [Pipeline for deploying the `Hub`](#pipeline-for-deploying-the-hub)
+    - [Create the Spoke/Edge Cluster](#create-the-spokeedge-cluster)
+    - [Pipeline for deploying the Spoke/Edge Cluster](#pipeline-for-deploying-the-spokeedge-cluster)
 
 <!-- /TOC -->
 
@@ -41,6 +38,8 @@ Once installed, execute:
 kcli download image centos8stream
 cd /usr/bin/
 kcli download oc
+# Entry for OC to work
+echo "192.168.150.253 api.test-ci.alklabs.com" >> /etc/hosts
 ~~~
 
 To download the image used for the installation
