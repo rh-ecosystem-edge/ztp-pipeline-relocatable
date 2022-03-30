@@ -5,3 +5,4 @@ export * from './secret';
 export * from './service';
 export * from './status';
 export * from './ingress';
+export * from './route';

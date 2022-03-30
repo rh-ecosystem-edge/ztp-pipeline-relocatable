@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { ZTPFW_NAMESPACE, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
-import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
-import { getToken, unauthorized } from '../k8s';
-import { ApiServerSpec, getApiServerConfig, patchApiServerConfig } from '../resources/apiserver';
+import { DNS_NAME_REGEX, PatchType, ComponentRoute, Route } from '../frontend-shared';
+import { getToken, PostResponse, unauthorized } from '../k8s';
+import { ApiServerSpec, patchApiServerConfig } from '../resources/apiserver';
 import { getIngressConfig, patchIngressConfig } from '../resources/ingress';
+import { getAllRoutes, patchRoute } from '../resources/route';
 import { createCertSecret, generateCertificate } from './generateCertificate';
 
 import { validateInput } from './utils';
@@ -57,10 +58,87 @@ const updateIngressComponentRoutes = async (
       });
     }
 
+    logger.debug(
+      'Will update Ingress component route, hostname: ',
+      domain,
+      ', serving certificate: ',
+      secretName,
+    );
     return true;
   }
 
   return false;
+};
+
+const updateRoutes = async (
+  token: string,
+  _ingressDomain: string,
+  _oldIngressDomain?: string,
+): Promise<boolean> => {
+  if (!_oldIngressDomain) {
+    logger.info('Missing old Ingress domain - skipping update of Route resources.');
+    return false;
+  }
+  const oldIngressDomain = `.${_oldIngressDomain}`;
+  const ingressDomain = `.${_ingressDomain}`;
+  logger.debug(`Updating all Route resources. From "${oldIngressDomain}" to "${ingressDomain}" wherever possible.`);
+
+  try {
+    const allRoutes = await getAllRoutes(token);
+    if (!allRoutes?.length) {
+      logger.error('Failed to retrieve list of all routes.');
+      return false;
+    }
+
+    let promises: Promise<void>[] = [];
+    allRoutes.forEach((route) => {
+      if (route.spec?.host) {
+        const newHost = route.spec.host.replace(oldIngressDomain, ingressDomain);
+        if (newHost === route.spec.host) {
+          logger.debug(
+            `No change for the ${route.metadata.namespace}/${route.metadata.name} route, keeping host: "${newHost}".`,
+          );
+        } else {
+          const patch: PatchType[] = [
+            {
+              op: 'replace',
+              path: '/spec/host',
+              value: newHost,
+            },
+          ];
+
+          const patching = async () => {
+            try {
+              await patchRoute(
+                token,
+                { name: route.metadata.name || '', namespace: route.metadata.namespace || '' },
+                patch,
+              );
+              logger.debug(
+                `Route ${route.metadata.namespace}/${route.metadata.name} is patched, new host: ${newHost}`,
+              );
+            } catch (e) {
+              logger.error(
+                `Failed to patch ${route.metadata.namespace}/${route.metadata.name} route: `,
+                e,
+              );
+            }
+          };
+          promises.push(patching());
+        }
+      } else {
+        logger.debug(
+          `Skipping update of ${route.metadata.namespace}/${route.metadata.name} route, missing host there.`,
+        );
+      }
+    });
+
+    await Promise.allSettled(promises);
+  } catch (e) {
+    logger.error('Failed to patch routes: ', e);
+    return false;
+  }
+  return true;
 };
 
 const changeDomainImpl = async (res: Response, token: string, _domain?: string): Promise<void> => {
@@ -76,16 +154,20 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
 
   const ingress = await getIngressConfig(token);
 
+  const oldIngressDomain = ingress.spec?.domain;
   const apiDomain = `api.${domain}`;
   const ingressDomain = `apps.${domain}`;
 
   if (ingressDomain === ingress?.spec?.domain) {
-    console.info(
+    logger.info(
       'Domain stays unchanged (based on the Ingress config), skipping persistence of it.',
     );
     res.writeHead(200).end(); // All good
     return;
   }
+  logger.debug(
+    `About to change domain from "${oldIngressDomain}" to "${ingressDomain}" (api: "${apiDomain}")`,
+  );
 
   // Api
   const apiCertSecretName = await createSelfSignedTlsSecret(res, token, apiDomain, 'api-secret-');
@@ -149,6 +231,9 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     return;
   }
 
+  // Keep going even if a route fails to be updated. To have at least something
+  await updateRoutes(token, ingressDomain, oldIngressDomain);
+
   const ingressPatches: PatchType[] = [
     {
       op: ingress?.spec?.domain ? 'replace' : 'add',
@@ -203,7 +288,6 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   res.writeHead(200).end(); // All good
 };
 
-// https://issues.redhat.com/browse/MGMT-9524
 export function changeDomain(req: Request, res: Response): void {
   logger.debug('ChangeDomain endpoint called');
   const token = getToken(req);
