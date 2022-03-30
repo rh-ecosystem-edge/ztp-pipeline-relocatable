@@ -22,3 +22,7 @@ RUN cd /tmp && \
 
 
 RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils && dnf clean all
+
+RUN mkdir -p /workspace/ztp
+
+COPY . /workspace/ztp

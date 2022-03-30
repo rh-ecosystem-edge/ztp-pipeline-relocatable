@@ -7,5 +7,4 @@ resources:
   - spoke-deploy-spoke.yaml
   - spoke-deploy-workers.yaml
   - spoke-detach-cluster.yaml
-  - spoke-restore-hub-config.yaml
   - spoke-deploy-ui.yaml

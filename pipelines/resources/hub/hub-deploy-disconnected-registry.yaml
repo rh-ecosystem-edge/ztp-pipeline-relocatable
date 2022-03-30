@@ -21,6 +21,9 @@ spec:
     - name: spokes-config
       type: string
       default: ""
+    - name: mock
+      type: string
+      default: "false"
   stepTemplate:
     env:
       - name: WORKDIR
@@ -33,7 +36,8 @@ spec:
         value: "deploy-disconnected-registry"
       - name: SHARED_DIR
         value: "shared-utils"
-
+      - name: MOCK
+        value: $(params.mock)
   steps:
     - name: deploy-disconnected-registry
       image: "$(params.ztp-container-image)"
@@ -41,8 +45,12 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-        ./deploy.sh 'hub'
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+          ./deploy.sh 'hub'
+        else
+          echo "Deploy Registry Hub: Mock mode on"
+        fi
 
     - name: mirror-ocp
       image: "$(params.ztp-container-image)"
@@ -56,9 +64,13 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-        echo "Starting OpenShift Image Mirroring"
-        ./ocp-sync.sh 'hub'
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+          echo "Starting OpenShift Image Mirroring"
+          ./ocp-sync.sh 'hub'
+        else
+          echo "Mirror OCP: Mock mode on"
+        fi
 
     - name: mirror-olm
       image: "$(params.ztp-container-image)"
@@ -72,9 +84,13 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-        echo "Starting OLM Catalog Image Mirroring Step"
-        ./olm-sync.sh 'hub'
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+          echo "Starting OLM Catalog Image Mirroring Step"
+          ./olm-sync.sh 'hub'
+        else
+          echo "Mirror OLM: Mock mode on"
+        fi
 
     - name: update-global-pullsecret
       image: "$(params.ztp-container-image)"
@@ -82,8 +98,12 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-        ./update-global-pullsecret.sh 'hub'
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+          ./update-global-pullsecret.sh 'hub'
+        else
+          echo "Mirror Update Pull Secret: Mock mode on"
+        fi
 
   volumes:
   - name: lib-containers

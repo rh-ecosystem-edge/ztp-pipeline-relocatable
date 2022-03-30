@@ -11,6 +11,9 @@ spec:
     - name: git-revision
       type: string
       default: "main"
+    - name: git-clone
+      type: string
+      default: "true"
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
@@ -24,6 +27,11 @@ spec:
 
   # Git Pull
   - name: fetch-from-git
+    when:
+      - input: $(params.git-clone)
+        operator: in
+        values:
+          - "true"
     taskRef:
       name: git-clone
     params:
@@ -51,23 +59,6 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
-
-          #  # Restore Hub Config
-          #  - name: restore-hub-config
-          #    taskRef:
-          #      name: spoke-restore-hub-config
-          #    params:
-          #      - name: spokes-config
-          #        value: $(params.spokes-config)
-          #      - name: kubeconfig
-          #        value: $(params.kubeconfig)
-          #      - name: ztp-container-image
-          #        value: $(params.ztp-container-image)
-          #    runAfter:
-          #      - pre-flight
-          #    workspaces:
-          #      - name: ztp
-          #        workspace: ztp
 
   # Deploy Spokes
   - name: deploy-spokes
