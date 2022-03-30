@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
 
   remove-old-deployment:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) ) || github.event_name == 'workflow_dispatch'
     needs: clone-pr-branch
     runs-on: CI-pool
     steps:
@@ -92,7 +92,7 @@ jobs:
 
   build-and-push-docker-image:
     if: github.event.review.state == 'approved' || github.event_name == 'workflow_dispatch' && !failure()
-    needs: verify-pipe-success 
+    needs: verify-pipe-success
     name: Build Container images and push to repositories
     runs-on: ubuntu-latest
     steps:
