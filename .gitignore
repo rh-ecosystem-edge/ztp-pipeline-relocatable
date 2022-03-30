@@ -20,3 +20,7 @@ node_modules
 output/
 website/_site/
 .vscode/
+
+# vim
+*.swp
+
