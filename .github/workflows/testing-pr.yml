@@ -9,6 +9,11 @@ on:
   pull_request_target:
     types: [labeled]
   workflow_dispatch:
+
+env:
+  QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
+  QUAY_PASS: ${{ secrets.QUAY_ROBOT_TOKEN }}
+
 jobs:
   clone-pr-branch:
     if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
@@ -110,8 +115,8 @@ jobs:
         uses: redhat-actions/podman-login@v1
         with:
           registry: quay.io
-          username: ${{ secrets.QUAY_ROBOT_USER }}
-          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+          username: ${{ env.QUAY_USER }}
+          password: ${{ env.QUAY_PASS }}
 
       - name: Build and Push Pipeline Image
         id: build-pipe
@@ -123,11 +128,13 @@ jobs:
           else
             RELEASE=${{ github.ref_name }}-${{ github.sha }}
           fi
-
+          
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
           echo "Image Branch: ${{ github.ref_name }}"
           echo "Git hash: ${{ github.sha }}"
+          echo "User: ${{ env.QUAY_USER }}"
+          echo "Pass: ${{ env.QUAY_PASS }}"
           echo ">>>>"
 
           RELEASE=${RELEASE} make pipe
