@@ -13,7 +13,7 @@ spec:
       default: "main"
     - name: git-clone
       type: string
-      default: "true"
+      default: "false"
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
