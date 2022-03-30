@@ -74,6 +74,12 @@ spec:
     - name: mirror-olm
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
+      requests:
+        memory: 2Gi
+        cpu: 1000m
+      limits:
+        memory: 16Gi
+        cpu: 10000m
       securityContext:
         privileged: false
         runAsUser: 0
