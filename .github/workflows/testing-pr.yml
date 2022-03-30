@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
 
   remove-old-deployment:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) ) || github.event_name == 'workflow_dispatch'
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
     needs: clone-pr-branch
     runs-on: CI-pool
     steps:
