@@ -56,4 +56,4 @@ jobs:
             @semantic-release/git
             @semantic-release/github
         env:
-          GITHUB_TOKEN: ${{ secrets.GHA }}
+          GITHUB_TOKEN: ${{ secrets.GHAREPO }}
