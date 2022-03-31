@@ -58,6 +58,7 @@ jobs:
       - name: create new vms and requirements
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          cd hack/deploy-hub-local
           ./build-spoke.sh ~/openshift_pull.json 1
 
   build-and-push-docker-image:
