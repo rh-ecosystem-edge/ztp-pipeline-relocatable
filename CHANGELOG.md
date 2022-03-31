@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.0.1...1.0.2) (2022-03-31)
+
+### Bug Fixes
+
+- **common-git-fetch.yaml:** remove ndots option in resolv.conf to avoid issues in DNS resolution ([d17d6de](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/d17d6decb28dca293d9dc6eeb5b6c7918bdc5296))
+
 ## [0.0.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/0.0.4...0.0.5) (2021-12-23)
 
 ### Reverts
