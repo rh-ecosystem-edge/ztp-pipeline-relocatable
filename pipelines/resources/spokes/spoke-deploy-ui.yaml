@@ -4,7 +4,7 @@ metadata:
   name: spoke-deploy-ui
   annotations:
     description: |
-      This task will deploy the ZTPFW UI into the spoke  clsuters
+      This task will deploy the ZTPFW UI into the spoke clsuters
 spec:
   workspaces:
     - name: ztp
@@ -21,6 +21,9 @@ spec:
     - name: mock
       type: string
       default: "false"
+    - name: ztpui-container-image
+      type: string
+      default: "quay.io/ztpfw/ui:latest"
   stepTemplate:
     env:
       - name: WORKDIR
@@ -35,6 +38,8 @@ spec:
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
+      - name: UI_IMAGE
+        value: $(params.ztpui-container-image)
   steps:
     - name: deploy-ui
       image: "$(params.ztp-container-image)"
