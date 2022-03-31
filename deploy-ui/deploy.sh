@@ -85,7 +85,7 @@ function fill_ui_vars() {
     echo ">>>> Filling Vars for UI deployment on: ${spoke}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     export UI_NS=ztpfw-ui
-    export UI_IMAGE="quay.io/ztpfw/ui:latest"
+    export UI_IMAGE=${UI_IMAGE:-"quay.io/ztpfw/ui:latest"}
     export UI_ROUTE_HOST="edge-cluster-setup.${SPOKE_INGRESS_NAME}"
     export UI_APP_URL="https://${UI_ROUTE_HOST}"
 
