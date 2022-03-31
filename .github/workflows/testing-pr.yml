@@ -127,7 +127,7 @@ jobs:
           else
             RELEASE=${{ github.ref_name }}
           fi
-          
+
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
           echo "Image Branch: ${{ github.ref_name }}"
