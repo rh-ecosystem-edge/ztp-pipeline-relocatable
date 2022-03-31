@@ -78,15 +78,15 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
+          if [[ "${{ github.head_ref }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.ref_name }}
+            RELEASE=${{ github.head_ref }}
           fi
 
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Image Branch: ${{ github.head_ref }}"
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
@@ -97,15 +97,15 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
+          if [[ "${{ github.head_ref }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.ref_name }}
+            RELEASE=${{ github.head_ref }}
           fi
 
           echo ">>>> Building UI Release"
           echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Image Branch: ${{ github.head_ref }}"
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
