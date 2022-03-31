@@ -55,6 +55,14 @@ spec:
     - name: mirror-ocp
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
+      resources:
+        requests:
+          memory: 2Gi
+          cpu: 2000m
+        limits:
+          memory: 16Gi
+          cpu: 20000m
+
       securityContext:
         privileged: false
         runAsUser: 0
