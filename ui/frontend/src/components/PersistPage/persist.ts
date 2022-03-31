@@ -1,6 +1,10 @@
 import { K8SStateContextData } from '../types';
 import { persistDomain } from './persistDomain';
-import { deleteKubeAdmin, persistIdentityProvider, PersistIdentityProviderResult } from './persistIdentityProvider';
+import {
+  deleteKubeAdmin,
+  persistIdentityProvider,
+  PersistIdentityProviderResult,
+} from './persistIdentityProvider';
 import { saveApi, saveIngress } from './persistServices';
 import { PersistErrorType } from './types';
 
@@ -14,7 +18,8 @@ export const persist = async (
     persistIdpResult !== PersistIdentityProviderResult.error &&
     (await saveIngress(setError, state.ingressIp)) &&
     (await persistDomain(setError, state.domain)) &&
-    (persistIdpResult !== PersistIdentityProviderResult.userCreated || (await deleteKubeAdmin(setError))) &&
+    (persistIdpResult !== PersistIdentityProviderResult.userCreated ||
+      (await deleteKubeAdmin(setError))) &&
     (await saveApi(setError, state.apiaddr))
   ) {
     // finished with success

@@ -1,4 +1,4 @@
-import { IResource, Metadata, PatchType } from '../frontend-shared';
+import { IResource, Metadata } from '../frontend-shared';
 import { getClusterApiUrl, jsonPatch, jsonRequest } from '../k8s';
 
 export type ApiServerVersionType = 'config.openshift.io/v1';

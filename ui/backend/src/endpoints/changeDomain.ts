@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { Request, Response } from 'express';
 import { ZTPFW_NAMESPACE, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
-import { DNS_NAME_REGEX, PatchType, ComponentRoute, Route } from '../frontend-shared';
-import { getToken, PostResponse, unauthorized } from '../k8s';
+import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
+import { getToken, unauthorized } from '../k8s';
 import { ApiServerSpec, patchApiServerConfig } from '../resources/apiserver';
 import { getIngressConfig, patchIngressConfig } from '../resources/ingress';
 import { getAllRoutes, patchRoute } from '../resources/route';
@@ -90,7 +91,7 @@ const updateRoutes = async (
       return false;
     }
 
-    let promises: Promise<void>[] = [];
+    const promises: Promise<void>[] = [];
     allRoutes.forEach((route) => {
       if (route.spec?.host) {
         const newHost = route.spec.host.replace(oldIngressDomain, ingressDomain);
