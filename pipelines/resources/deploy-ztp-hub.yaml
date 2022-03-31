@@ -5,15 +5,6 @@ metadata:
 spec:
   description: Tekton Pipeline to deploy ZTPFW Hub Cluster
   params:
-    - name: git-url
-      type: string
-      default: "https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git"
-    - name: git-revision
-      type: string
-      default: "main"
-    - name: git-clone
-      type: string
-      default: "false"
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
@@ -28,24 +19,6 @@ spec:
     - name: ztp
   tasks:
 
-  # Git Pull
-  - name: fetch-from-git
-    when:
-      - input: $(params.git-clone)
-        operator: in
-        values:
-          - "true"
-    taskRef:
-      name: git-clone
-    params:
-      - name: url
-        value: $(params.git-url)
-      - name: revision
-        value: $(params.git-revision)
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
   # Preflight
   - name: pre-flight
     taskRef:
@@ -59,8 +32,6 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
-    runAfter:
-      - fetch-from-git
     workspaces:
       - name: ztp
         workspace: ztp

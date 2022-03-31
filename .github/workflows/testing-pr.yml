@@ -20,6 +20,18 @@ jobs:
         with:
           fetch-depth: 0
 
+  redeploy-branch-pipelines:
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
+    needs: clone-pr-branch
+    runs-on: CI-pool
+    steps:
+      - name: Load Pipelines
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          cd pipelines
+          ./bootstrap.sh ${{ github.head_ref }}
+          cd ..
+
   remove-old-deployment:
     if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
     needs: clone-pr-branch
@@ -50,50 +62,9 @@ jobs:
           cd hack/deploy-hub-local
           ./build-spoke.sh ~/openshift_pull.json 1
 
-  launch-spoke-pipeline:
+  build-and-push-docker-image:
     if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
     needs: create-new-vm
-    runs-on: CI-pool
-    steps:
-      - name: launch the spoke pipeline
-        run: |
-          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
-
-  verify-pipe-success:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
-    needs: launch-spoke-pipeline
-    runs-on: CI-pool
-    steps:
-      - name: verify if the pipe has been successful
-        run: |
-          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-
-          while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
-            echo "Waiting for the pipeline to finish"
-            status=$(tkn pr ls -n spoke-deployer | head -2 | grep -i running | awk '{print $1}')
-            echo "Status: "
-            echo "------- "
-            tkn  pr describe -L -ojsonpath={.status.conditions[0].message}
-            echo
-            echo "---------"
-            sleep 60
-          done
-
-          if [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
-            echo "The pipeline has failed"
-            exit 1
-          elif [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i succeeded | wc -l) -gt 0 ]; then
-            echo "The pipeline has succeeded"
-            exit 0
-          else
-            echo "The pipeline has not finished"
-            exit 1
-          fi
-
-  build-and-push-docker-image:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) && !failure()|| github.event_name == 'workflow_dispatch'
-    needs: verify-pipe-success
     name: Build Container images and push to repositories
     runs-on: ubuntu-latest
     steps:
@@ -154,3 +125,45 @@ jobs:
           echo ">>>>"
 
           RELEASE=${RELEASE} make ui
+
+  launch-spoke-pipeline:
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
+    needs: build-and-push-docker-image
+    runs-on: CI-pool
+    steps:
+      - name: launch the spoke pipeline
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:${{ github.head_ref }}" -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+
+  verify-pipe-success:
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
+    needs: launch-spoke-pipeline
+    runs-on: CI-pool
+    steps:
+      - name: verify if the pipe has been successful
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+
+          while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
+            echo "Waiting for the pipeline to finish"
+            status=$(tkn pr ls -n spoke-deployer | head -2 | grep -i running | awk '{print $1}')
+            echo "Status: "
+            echo "------- "
+            tkn  pr describe -L -ojsonpath={.status.conditions[0].message}
+            echo
+            echo "---------"
+            sleep 60
+          done
+
+          if [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
+            echo "The pipeline has failed"
+            exit 1
+          elif [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i succeeded | wc -l) -gt 0 ]; then
+            echo "The pipeline has succeeded"
+            exit 0
+          else
+            echo "The pipeline has not finished"
+            exit 1
+          fi
+
