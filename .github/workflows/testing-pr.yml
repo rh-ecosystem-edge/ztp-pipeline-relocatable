@@ -156,4 +156,3 @@ jobs:
             echo "The pipeline has not finished"
             exit 1
           fi
-
