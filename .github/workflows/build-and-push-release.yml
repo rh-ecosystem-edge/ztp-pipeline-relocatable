@@ -13,11 +13,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare env
-        run: |
-          sudo apt-get -y install podman
-          mkdir -p ~/.docker
-
       - name: Login to Quay
         env:
           QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
