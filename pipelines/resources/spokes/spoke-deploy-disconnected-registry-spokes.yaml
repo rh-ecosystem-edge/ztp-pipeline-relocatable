@@ -77,10 +77,10 @@ spec:
       resources:
         requests:
           memory: 2Gi
-          cpu: 1000m
+          cpu: 2000m
         limits:
           memory: 16Gi
-          cpu: 10000m
+          cpu: 20000m
       securityContext:
         privileged: false
         runAsUser: 0
