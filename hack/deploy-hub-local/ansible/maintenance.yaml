@@ -1,0 +1,9 @@
+---
+- hosts: all
+  user: root
+
+  tasks:
+    - name: Include base tasks
+      include_tasks: "{{item}}"
+      with_fileglob:
+        - "tasks/upgrade.yaml"
