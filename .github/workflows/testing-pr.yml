@@ -66,7 +66,7 @@ jobs:
     if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
     needs: create-new-vm
     name: Build Container images and push to repositories
-    runs-on: ubuntu-latest
+    runs-on: kni4
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -77,16 +77,6 @@ jobs:
         run: |
           sudo apt-get -y install podman
           mkdir -p ~/.docker
-
-      - name: Login to Quay
-        env:
-          QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
-          QUAY_PASS: ${{ secrets.QUAY_ROBOT_TOKEN }}
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: quay.io
-          username: ${{ env.QUAY_USER }}
-          password: ${{ env.QUAY_PASS }}
 
       - name: Build and Push Pipeline Image
         id: build-pipe
