@@ -28,10 +28,8 @@ jobs:
       - name: Load Pipelines
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          export HOME=$(pwd)
-          cd pipelines
-          ./bootstrap.sh ${{ github.event.pull_request.head.ref }}
-          cd ..
+          cd hack/deploy-hub-local
+          ./bootstrap-ci.sh
 
   remove-old-deployment:
     if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
@@ -60,7 +58,6 @@ jobs:
       - name: create new vms and requirements
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          cd hack/deploy-hub-local
           ./build-spoke.sh ~/openshift_pull.json 1
 
   build-and-push-docker-image:
