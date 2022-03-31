@@ -101,23 +101,11 @@
     - make
     - wget
     - git
-
     - mailutils
-    - monit
-    - aptitude
-    - rake
-    - ruby-dev
-    - libcurl4-openssl-dev
-    - docker.io
     - jq
-
     - mlocate
-    - docker-compose
-    - apt-config-auto-update
-    - landscape-common
 
   ignore_errors: true
-
 
 - name: Enable helpful services
   service: name={{ item }} enabled=yes state=started
@@ -141,7 +129,6 @@
     - /root/anaconda-ks.cfg
     - /root/setup.retry
     - /var/tmp/abrt
-
 
 - name: Check if platform is Virtual
   lineinfile:
@@ -219,7 +206,6 @@
 - name: Set tuned profile to latency-performance
   shell: /usr/sbin/tuned-adm profile latency-performance
 
-
 - name: Configure logrotate.conf
   lineinfile:
     dest: /etc/logrotate.conf
@@ -244,12 +230,11 @@
   with_items:
     - { regexp: "^export GOPATH", line: "export GOPATH=~/go" }
     - { regexp: "^export PATH.*", line: "export PATH=$PATH:$GOPATH/bin" }
- 
+
     - {
         regexp: "^source /etc/profile.d/powerline.sh",
         line: "source /etc/profile.d/powerline.sh",
       }
-
 
 - name: Limit Journal file size
   ini_file:
@@ -257,4 +242,3 @@
     section: Journal
     option: SystemMaxUse
     value: 200M
-
