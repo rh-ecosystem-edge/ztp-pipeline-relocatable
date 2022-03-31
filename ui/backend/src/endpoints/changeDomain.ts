@@ -82,7 +82,9 @@ const updateRoutes = async (
   }
   const oldIngressDomain = `.${_oldIngressDomain}`;
   const ingressDomain = `.${_ingressDomain}`;
-  logger.debug(`Updating all Route resources. From "${oldIngressDomain}" to "${ingressDomain}" wherever possible.`);
+  logger.debug(
+    `Updating all Route resources. From "${oldIngressDomain}" to "${ingressDomain}" wherever possible.`,
+  );
 
   try {
     const allRoutes = await getAllRoutes(token);
@@ -142,6 +144,29 @@ const updateRoutes = async (
   return true;
 };
 
+/**
+ * Will perform cluster domain change.
+ * Intentionally executed on the backend to decrease risks of network issues during the complex flow.
+ *
+ * In a nutshell:
+ * - skip if no change is actually needed
+ *
+ * - the apiserver/cluster resource
+ *   - create Secret with new TLS certificate
+ *   - prepare PATCH request
+ *
+ * - prepare PATCH request for the ingress/cluster resource
+ *   - update spec.componentRoutes of a few selected routes
+ *     - create Secret with new TLS certificate
+ *     - update relevant item of the spec.componentRoutes
+ *   - update spec.domain
+ *
+ * - update spec.host of all routes (in _all_ namespaces) if old value matches old domain (skip otherwise)
+ *
+ * - at last (to mitigate the risks), call HTTP PATCH on
+ *   - apiserver/cluster
+ *   - ingress/cluster
+ */
 const changeDomainImpl = async (res: Response, token: string, _domain?: string): Promise<void> => {
   const domain = validateInput(DNS_NAME_REGEX, _domain);
   logger.debug('ChangeDomain endpoint called, domain:', domain);
@@ -170,7 +195,7 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     `About to change domain from "${oldIngressDomain}" to "${ingressDomain}" (api: "${apiDomain}")`,
   );
 
-  // Api
+  // Prepare patch to change API certificate (apiserver/cluster resource) - will be executed at the end of the flow
   const apiCertSecretName = await createSelfSignedTlsSecret(res, token, apiDomain, 'api-secret-');
   if (!apiCertSecretName) {
     return;
@@ -180,7 +205,7 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     { names: [apiDomain], servingCertificate: { name: apiCertSecretName } },
   ];
   const apiServerPatches: { spec: ApiServerSpec } = {
-    // We will merge in that case
+    // It will result in a MERGE patch
     spec: {
       servingCerts: {
         namedCertificates,
@@ -188,7 +213,7 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     },
   };
 
-  // Ingress
+  // Prepare ingress /cluster resource patch - will be executed at the end of the flow
   const consoleDomain = `console-openshift-console.${ingressDomain}`;
   const oauthDomain = `oauth-openshift.${ingressDomain}`;
   const ztpfwDomain = `${ZTPFW_UI_ROUTE_PREFIX}.${ingressDomain}`;
@@ -232,9 +257,6 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     return;
   }
 
-  // Keep going even if a route fails to be updated. To have at least something
-  await updateRoutes(token, ingressDomain, oldIngressDomain);
-
   const ingressPatches: PatchType[] = [
     {
       op: ingress?.spec?.domain ? 'replace' : 'add',
@@ -248,7 +270,10 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     },
   ];
 
-  // Persist the changes (patch)
+  // Keep going even if a route fails to be updated. To have at least something
+  await updateRoutes(token, ingressDomain, oldIngressDomain);
+
+  // Persist the changes (call PATCH)
   try {
     const result = await patchIngressConfig(token, ingressPatches);
     if (result.statusCode === 200) {
