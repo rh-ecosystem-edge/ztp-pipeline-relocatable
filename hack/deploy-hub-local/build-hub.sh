@@ -43,6 +43,7 @@ export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_OCS_VERSION="${ocs_version}"
+export OC_ARCHITECTURE="sno"
 
 echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
@@ -54,11 +55,21 @@ echo ">>>>>>>>>>>>>>>>>>>>>"
 if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     if [ "${OC_NET_CLASS}" = "ipv4" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
-            echo "Metal3 + Ipv4 + connected"
-            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            git pull
-            kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            if [ "${OC_ARCHITECTURE}" = "sno" ]; then
+		    echo "SNO + Metal3 + Ipv4 + connected"
+		    t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+		    git pull
+		    kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
+		    echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+		    kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+		    oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
+            else
+		    echo "Metal3 + Ipv4 + connected"
+		    t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+		    git pull
+		    kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
+		    kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            fi
         else
             echo "Metal3 + ipv4 + disconnected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
@@ -87,13 +98,21 @@ config:
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
   OC_OCS_VERSION: '${OC_OCS_VERSION}'
 EOF
+
 # Create header for spokes.yaml
 cat <<EOF >>spokes.yaml
 spokes:
 EOF
 
-kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
+CHANGE_IP=$(kcli info vm test-ci-sno | grep ip | awk '{print $2}')
+
+if [ "${OC_ARCHITECTURE}" = "sno" ]; then
+	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+else
+	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
+	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
+fi
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
