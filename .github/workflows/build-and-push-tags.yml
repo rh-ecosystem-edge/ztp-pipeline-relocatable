@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - '*.*.*'
+
+  release:
+     types:
+       - published
+
+
 jobs:
   build-and-push-container-images:
     name: Build Container images and push to repositories
