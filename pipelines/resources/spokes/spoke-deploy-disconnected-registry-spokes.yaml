@@ -59,8 +59,8 @@ spec:
           memory: "250Mi"
           cpu: "250m"
         limits:
-          memory: 16Gi
-          cpu: 20000m
+          memory: 8Gi
+          cpu: 10000m
       securityContext:
         privileged: false
         runAsUser: 0
@@ -86,8 +86,8 @@ spec:
           memory: "250Mi"
           cpu: "250m"
         limits:
-          memory: 16Gi
-          cpu: 20000m
+          memory: 8Gi
+          cpu: 10000m
       securityContext:
         privileged: false
         runAsUser: 0
