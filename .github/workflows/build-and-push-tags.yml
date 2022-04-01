@@ -43,8 +43,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          RELEASE=${{ github.event.ref }}
-          RELEASE="${RELEASE#*/*/}" # Workaround to remove refs/tags/
+          RELEASE=${{ github.ref_name }}
 
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
@@ -59,8 +58,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          RELEASE=${{ github.event.ref }}
-          RELEASE="${RELEASE#*/*/}" # Workaround to remove refs/tags/
+          RELEASE=${{ github.ref_name }}
 
           echo ">>>> Building UI Release"
           echo "Release: ${RELEASE}"
