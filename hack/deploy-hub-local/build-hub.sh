@@ -7,6 +7,10 @@ set -m
 
 usage() { echo "Usage: $0 [-pull_secret <file>] [-ocp_version <4.10.6>] [-acm_version <2.4>] [-ocs_version <4.8>]" 1>&2; exit 1; }
 
+if [ $# -eq 0 ]; then
+    usage
+fi
+
 while getopts ":pull_secret:ocp_version:ocs_version:" o; do
     case "${o}" in
         pull_secret)
