@@ -5,42 +5,50 @@ set -o pipefail
 set -o nounset
 set -m
 
+usage() { echo "Usage: $0 [-pull_secret <file>] [-ocp_version <4.10.6>] [-acm_version <2.4>] [-ocs_version <4.8>]" 1>&2; exit 1; }
+
+while getopts ":pull_secret:ocp_version:ocs_version:" o; do
+    case "${o}" in
+        pull_secret)
+            export pull_secret=${OPTARG}
+            ;;
+        ocp_version)
+            export ocp_version=${OPTARG}
+            [[ "$ocp_version" =~ [0-9].[0-9].[0-9] ]] || usage
+            ;;
+        acm_version)
+            export acm_version=${OPTARG}
+            [[ "$acm_version" =~ [0-9].[0-9] ]] || usage
+            ;;
+        ocs_version)
+            export ocs_version=${OPTARG}
+            [[ "$ocs_version" =~ [0-9].[0-9] ]] || usage
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" || [ -z "${acm_version}" || [ -z "${ocs_version}" ]; then
+    usage
+fi
+
 # variables
 # #########
 export DEPLOY_OCP_DIR="./"
-export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:4.9.13-x86_64"
+export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:$ocp_version-x86_64"
 export OC_CLUSTER_NAME="test-ci"
 export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
 export VERSION="ci"
-
-
-if [ $# -eq 0 ]; then
-  echo "No arguments supplied. Usage $0 <pull-secret.json> [<clusters-number>]"
-  echo "  - Params:"
-  echo "    1 - Pull secret file path (Mandatory)"
-  echo "    2 - Clusters Spokes number to deploy (Optional: default 1)"
-  exit 1
-fi
-if [ $2 != "" ]; then
-    export CLUSTERS=$2
-else
-    export CLUSTERS=0
-fi
-
-export OC_PULL_SECRET="'$(cat $1)'"
-
-# Only complain when there's less than one cluster
-if [ ${CLUSTERS} -lt 0 ]; then
-    echo "Usage: $0 <# of clusters>"
-    exit 1
-fi
+export CLUSTERS=0
+export OC_PULL_SECRET="'$(cat $pull_secret)'"
 
 echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
-
-
 echo $OC_PULL_SECRET | tr -d [:space:] | sed -e 's/^.//' -e 's/.$//' >./openshift_pull.json
 
 echo ">>>> kcli create plan"
@@ -76,22 +84,13 @@ fi
 
 >spokes.yaml
 
-CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
 # Default configuration
-cat <<EOF >>spokes.yaml
-config:
-  clusterimageset: 'openshift-v4.9.13'
-  OC_OCP_VERSION: '4.9'
-  OC_OCP_TAG: '4.9.13-x86_64'
-  OC_RHCOS_RELEASE: '49.84.202110081407-0'  # TODO automate it to get it automated using binary
-  OC_ACM_VERSION: '2.4'
-  OC_OCS_VERSION: '4.8'
-EOF
+echo "config: " >> spokes.yaml
+echo "  OC_OCP_VERSION: '"${OC_OCP_VERSION}"'" >> spokes.yaml
+echo "  OC_ACM_VERSION: '"${OC_ACM_VERSION}"'" >> spokes.yaml
+echo "  OC_OCS_VERSION: '"${OC_OCS_VERSION}"'" >> spokes.yaml
+echo "spokes: " >> spokes.yaml
 
-# Create header for spokes.yaml
-cat <<EOF >>spokes.yaml
-spokes:
-EOF
 
 kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
