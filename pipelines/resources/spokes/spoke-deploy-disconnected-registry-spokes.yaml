@@ -56,12 +56,11 @@ spec:
       imagePullPolicy: Always
       resources:
         requests:
-          memory: 1Gi
-          cpu: 1000m
+          memory: "250Mi"
+          cpu: "250m"
         limits:
-          memory: 8Gi
-          cpu: 10000m
-
+          memory: 16Gi
+          cpu: 20000m
       securityContext:
         privileged: false
         runAsUser: 0
@@ -84,11 +83,11 @@ spec:
       imagePullPolicy: Always
       resources:
         requests:
-          memory: 1Gi
-          cpu: 1000m
+          memory: "250Mi"
+          cpu: "250m"
         limits:
-          memory: 8Gi
-          cpu: 10000m
+          memory: 16Gi
+          cpu: 20000m
       securityContext:
         privileged: false
         runAsUser: 0

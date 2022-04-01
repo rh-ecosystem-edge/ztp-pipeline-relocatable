@@ -28,9 +28,8 @@ jobs:
       - name: Load Pipelines
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          cd pipelines
-          ./bootstrap.sh ${{ github.event.pull_request.base.ref }}
-          cd ..
+          cd hack/deploy-hub-local
+          ./bootstrap-ci.sh
 
   remove-old-deployment:
     if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
@@ -78,15 +77,15 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          if [[ "${{ github.event.pull_request.base.ref }}" == 'main' ]];then
+          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.event.pull_request.base.ref }}
+            RELEASE=${{ github.event.pull_request.head.ref }}
           fi
 
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.event.pull_request.base.ref }}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
@@ -97,15 +96,15 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          if [[ "${{ github.event.pull_request.base.ref }}" == 'main' ]];then
+          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.event.pull_request.base.ref }}
+            RELEASE=${{ github.event.pull_request.head.ref }}
           fi
 
           echo ">>>> Building UI Release"
           echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.event.pull_request.base.ref }}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
@@ -119,7 +118,7 @@ jobs:
       - name: launch the spoke pipeline
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:${{ github.event.pull_request.base.ref }}" -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+          tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:${{ github.event.pull_request.head.ref }}" -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 
   verify-pipe-success:
     if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
@@ -135,7 +134,7 @@ jobs:
             status=$(tkn pr ls -n spoke-deployer | head -2 | grep -i running | awk '{print $1}')
             echo "Status: "
             echo "------- "
-            tkn  pr describe -L -ojsonpath={.status.conditions[0].message}
+            tkn  pr describe -n spoke-deployer -L -ojsonpath={.status.conditions[0].message}
             echo
             echo "---------"
             sleep 60
