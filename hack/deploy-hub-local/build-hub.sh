@@ -16,7 +16,7 @@ export ocp_version=${2}
 export acm_version=${3}
 export ocs_version=${4}
 
-if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" || [ -z "${acm_version}" || [ -z "${ocs_version}" ]; then
+if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" ] || [ -z "${acm_version}" ] || [ -z "${ocs_version}" ]; then
     usage
 fi
 
