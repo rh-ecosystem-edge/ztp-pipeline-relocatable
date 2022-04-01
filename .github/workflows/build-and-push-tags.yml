@@ -1,0 +1,63 @@
+
+name: Build and Publish Tags
+on:
+  push:
+    tags:
+      - '*.*.*'
+jobs:
+  build-and-push-container-images:
+    name: Build Container images and push to repositories
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Prepare env
+        run: |
+          sudo apt-get -y install podman
+          mkdir -p ~/.docker
+
+      - name: Login to Quay
+        env:
+          QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
+          QUAY_PASS: ${{ secrets.QUAY_ROBOT_TOKEN }}
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: quay.io
+          username: ${{ env.QUAY_USER }}
+          password: ${{ env.QUAY_PASS }}
+
+      - name: Build and Push Pipeline Image
+        env:
+          QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
+          QUAY_PASS: ${{ secrets.QUAY_ROBOT_TOKEN }}
+        id: build-pipe
+        run: |
+          cd ${{ github.workspace }}
+
+          RELEASE=${{ github.event.ref }}
+
+          echo ">>>> Building Pipe Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make pipe
+
+      - name: Build and Push UI Image
+        id: build-ui
+        run: |
+          cd ${{ github.workspace }}
+
+          RELEASE=${{ github.event.ref }}
+
+          echo ">>>> Building UI Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make ui
