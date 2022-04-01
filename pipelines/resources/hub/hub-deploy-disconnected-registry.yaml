@@ -56,10 +56,12 @@ spec:
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       resources:
+        requests:
+          memory: "250Mi"
+          cpu: "250m"
         limits:
           memory: 16Gi
           cpu: 20000m
-
       securityContext:
         privileged: false
         runAsUser: 0
@@ -81,6 +83,9 @@ spec:
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       resources:
+        requests:
+          memory: "250Mi"
+          cpu: "250m"
         limits:
           memory: 16Gi
           cpu: 20000m
