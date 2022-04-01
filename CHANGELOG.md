@@ -1,3 +1,9 @@
+## [1.1.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.3...1.1.4) (2022-04-01)
+
+### Bug Fixes
+
+- use right variable name ([bc2a957](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/bc2a95707ddf6feb7900df870e638e8ae600f5b5))
+
 ## [1.1.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.2...1.1.3) (2022-04-01)
 
 ### Bug Fixes
