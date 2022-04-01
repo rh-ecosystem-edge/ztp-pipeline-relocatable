@@ -38,6 +38,7 @@ jobs:
           cd ${{ github.workspace }}
 
           RELEASE=${{ github.event.ref }}
+          RELEASE="${RELEASE#*/*/}" # Workaround to remove refs/tags/
 
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
@@ -53,6 +54,7 @@ jobs:
           cd ${{ github.workspace }}
 
           RELEASE=${{ github.event.ref }}
+          RELEASE="${RELEASE#*/*/}" # Workaround to remove refs/tags/
 
           echo ">>>> Building UI Release"
           echo "Release: ${RELEASE}"
