@@ -5,41 +5,28 @@ set -o pipefail
 set -o nounset
 set -m
 
-usage() { echo "Usage: $0 [-pull_secret <file>] [-ocp_version <4.10.6>] [-acm_version <2.4>] [-ocs_version <4.8>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <ocs_version(4.8)>" 1>&2; exit 1; }
 
-if [ $# -eq 0 ]; then
-    echo "entra aqui"
+if [ $# -ne 4 ]; then
     usage
 fi
 
-while getopts ":pull_secret:ocp_version:acm_version:ocs_version:" o; do
-    case "${o}" in
-        pull_secret)
-            export pull_secret=${OPTARG}
-            ;;
-        ocp_version)
-            export ocp_version=${OPTARG}
-            [[ "$ocp_version" =~ [0-9].[0-9].[0-9] ]] || usage
-            ;;
-        acm_version)
-            export acm_version=${OPTARG}
-            [[ "$acm_version" =~ [0-9].[0-9] ]] || usage
-            ;;
-        ocs_version)
-            export ocs_version=${OPTARG}
-            [[ "$ocs_version" =~ [0-9].[0-9] ]] || usage
-            ;;
-        *)
-            echo "entra aqui 2"
-            usage
-            ;;
-    esac
-done
-shift $((OPTIND-1))
+export pull_secret=${1}
+export ocp_version=${2}
+export acm_version=${3}
+export ocs_version=${4}
 
 if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" || [ -z "${acm_version}" || [ -z "${ocs_version}" ]; then
     usage
 fi
+
+if [[ "$ocp_version" =~ [0-9].[0-9].[0-9] ]]; then
+    echo "ocp_version is valid"
+else
+    echo "ocp_version is not valid"
+    usage
+fi
+
 
 # variables
 # #########
