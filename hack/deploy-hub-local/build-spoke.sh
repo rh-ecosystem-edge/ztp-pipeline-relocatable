@@ -20,7 +20,7 @@ if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" ] || [ -z "${acm_version}" ]
     usage
 fi
 
-if [[ "$ocp_version" =~ [0-9].[0-9].[0-9] ]]; then
+if [[ "$ocp_version" =~ [0-9]+.[0-9]+.[0-9]+ ]]; then
     echo "ocp_version is valid"
 else
     echo $ocp_version
