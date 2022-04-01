@@ -23,6 +23,7 @@ fi
 if [[ "$ocp_version" =~ [0-9].[0-9].[0-9] ]]; then
     echo "ocp_version is valid"
 else
+    echo $ocp_version
     echo "ocp_version is not valid"
     usage
 fi
