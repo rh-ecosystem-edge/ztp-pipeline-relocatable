@@ -1,3 +1,9 @@
+## [1.1.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.2...1.1.3) (2022-04-01)
+
+### Bug Fixes
+
+- Listen to new published releases ([8c68e61](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c68e61ccd9c0946537d55fd32b4ad4f2832c490))
+
 # [1.1.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.0.2...1.1.0) (2022-04-01)
 
 ### Features
