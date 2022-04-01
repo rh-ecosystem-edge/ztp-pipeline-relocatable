@@ -1,3 +1,9 @@
+# [1.1.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.0.2...1.1.0) (2022-04-01)
+
+### Features
+
+- add gh workflow to publish container image on tags ([ae774f0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/ae774f0f527b8d2717b5c7a015754539231675ff))
+
 ## [1.0.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.0.1...1.0.2) (2022-03-31)
 
 ### Bug Fixes
