@@ -40,6 +40,10 @@ export OC_TYPE_ENV="connected"
 export VERSION="ci"
 export CLUSTERS=0
 export OC_PULL_SECRET="'$(cat $pull_secret)'"
+export OC_OCP_VERSION="${ocp_version}"
+export OC_ACM_VERSION="${acm_version}"
+export OC_OCS_VERSION="${ocs_version}"
+
 
 
 echo ">>>> Set the Pull Secret"
