@@ -11,7 +11,7 @@ if [ $# -eq 0 ]; then
     usage
 fi
 
-while getopts ":pull_secret:ocp_version:ocs_version:" o; do
+while getopts ":pull_secret:ocp_version:acm_version:ocs_version:" o; do
     case "${o}" in
         pull_secret)
             export pull_secret=${OPTARG}
