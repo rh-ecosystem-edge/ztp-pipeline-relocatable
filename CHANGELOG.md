@@ -1,3 +1,9 @@
+## [1.1.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.4...1.1.5) (2022-04-04)
+
+### Bug Fixes
+
+- run tekton task without git clone ([c7a52ba](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/c7a52ba2025d49c0aa6642d163d42178f1c2befb))
+
 ## [1.1.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.3...1.1.4) (2022-04-01)
 
 ### Bug Fixes
