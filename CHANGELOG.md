@@ -1,3 +1,21 @@
+## [1.1.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.3...1.1.4) (2022-04-01)
+
+### Bug Fixes
+
+- use right variable name ([bc2a957](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/bc2a95707ddf6feb7900df870e638e8ae600f5b5))
+
+## [1.1.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.2...1.1.3) (2022-04-01)
+
+### Bug Fixes
+
+- Listen to new published releases ([8c68e61](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c68e61ccd9c0946537d55fd32b4ad4f2832c490))
+
+# [1.1.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.0.2...1.1.0) (2022-04-01)
+
+### Features
+
+- add gh workflow to publish container image on tags ([ae774f0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/ae774f0f527b8d2717b5c7a015754539231675ff))
+
 ## [1.0.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.0.1...1.0.2) (2022-03-31)
 
 ### Bug Fixes
