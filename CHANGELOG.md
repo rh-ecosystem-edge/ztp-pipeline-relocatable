@@ -1,3 +1,9 @@
+## [1.1.7](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.6...1.1.7) (2022-04-04)
+
+### Bug Fixes
+
+- set the correct path on copy ([a5e9f22](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a5e9f22fd695da250f96106997aa29d6a3ee2aa9))
+
 ## [1.1.6](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.5...1.1.6) (2022-04-04)
 
 ### Bug Fixes
