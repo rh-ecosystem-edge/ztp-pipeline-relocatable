@@ -1,3 +1,9 @@
+## [1.1.6](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.5...1.1.6) (2022-04-04)
+
+### Bug Fixes
+
+- use container image without git clone ([a07804a](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a07804ac7d71ea091f27c1baf4a4e3a47fced32b))
+
 ## [1.1.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.4...1.1.5) (2022-04-04)
 
 ### Bug Fixes
