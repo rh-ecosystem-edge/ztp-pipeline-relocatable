@@ -81,13 +81,16 @@ fi
 
 >spokes.yaml
 
-# Default configuration
-echo "config: " >> spokes.yaml
-echo "  OC_OCP_VERSION: '"${OC_OCP_VERSION}"'" >> spokes.yaml
-echo "  OC_ACM_VERSION: '"${OC_ACM_VERSION}"'" >> spokes.yaml
-echo "  OC_OCS_VERSION: '"${OC_OCS_VERSION}"'" >> spokes.yaml
-echo "spokes: " >> spokes.yaml
-
+cat <<EOF >>spokes.yaml
+config:
+  OC_OCP_VERSION: '"${OC_OCP_VERSION}"'
+  OC_ACM_VERSION: '"${OC_ACM_VERSION}"'
+  OC_OCS_VERSION: '"${OC_OCS_VERSION}"'
+EOF
+# Create header for spokes.yaml
+cat <<EOF >>spokes.yaml
+spokes:
+EOF
 
 kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252

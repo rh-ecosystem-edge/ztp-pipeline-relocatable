@@ -81,59 +81,68 @@ fi
 >spokes.yaml
 
 CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
-# Default configuration
-echo "config: " >> spokes.yaml
-echo "  OC_OCP_VERSION: '"${OC_OCP_VERSION}"'" >> spokes.yaml
-echo "  OC_ACM_VERSION: '"${OC_ACM_VERSION}"'" >> spokes.yaml
-echo "  OC_OCS_VERSION: '"${OC_OCS_VERSION}"'" >> spokes.yaml
-echo "spokes: " >> spokes.yaml
 
+cat <<EOF >>spokes.yaml
+config:
+  OC_OCP_VERSION: '"${OC_OCP_VERSION}"'
+  OC_ACM_VERSION: '"${OC_ACM_VERSION}"'
+  OC_OCS_VERSION: '"${OC_OCS_VERSION}"'
+EOF
+
+# Create header for spokes.yaml
+cat <<EOF >>spokes.yaml
+spokes:
+EOF
 # Create header for spokes.yaml
 
 for spoke in $(seq 0 $((CLUSTERS - 1))); do
-    echo "  - spoke${spoke}-cluster:" >>spokes.yaml
+    cat <<EOF >>spokes.yaml
+  - spoke${spoke}-cluster:
+EOF
     for master in 0 1 2; do
         # Stanza generation for each master
         MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} -f id -v)
-
-        echo "      master${master}: " >> spokes.yaml
-        echo "        nic_ext_dhcp: enp1s0" >> spokes.yaml
-        echo "        nic_int_static: enp2s0" >> spokes.yaml
-        echo "        mac_ext_dhcp: \"ee:ee:ee:ee:${master}${spoke}:${master}e\"" >> spokes.yaml
-        echo "        mac_int_static: \"aa:aa:aa:aa:${master}${spoke}:${master}a\"" >> spokes.yaml
-        echo "        bmc_url: \"redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}\"" >> spokes.yaml
-        echo "        bmc_user: \"amorgant\"" >> spokes.yaml
-        echo "        bmc_pass: \"alknopfler\"" >> spokes.yaml
-        echo "        root_disk: vda" >> spokes.yaml
-        echo "        storage_disk:" >> spokes.yaml
-        echo "          - vdb" >> spokes.yaml
-        echo "          - vdc" >> spokes.yaml
-        echo "          - vdd" >> spokes.yaml
-        echo "          - vde" >> spokes.yaml
-
+        cat <<EOF >>spokes.yaml
+      master${master}:
+        nic_ext_dhcp: enp1s0
+        nic_int_static: enp2s0
+        mac_ext_dhcp: "ee:ee:ee:ee:${master}${spoke}:${master}e"
+        mac_int_static: "aa:aa:aa:aa:${master}${spoke}:${master}a"
+        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
+        bmc_user: "amorgant"
+        bmc_pass: "alknopfler"
+        root_disk: vda
+        storage_disk:
+          - vdb
+          - vdc
+          - vdd
+          - vde
+EOF
     done
-    
+
     # Add the single worker
     worker=0
     WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} -f id -v)
 
-    echo "      worker${worker}: " >> spokes.yaml
-    echo "        nic_ext_dhcp: enp1s0" >> spokes.yaml
-    echo "        nic_int_static: enp2s0" >> spokes.yaml
-    echo "        mac_ext_dhcp: \"ee:ee:ee:${worker}${spoke}:${worker}${spoke}:${worker}e\"" >> spokes.yaml
-    echo "        mac_int_static: \"aa:aa:aa:${worker}${spoke}:${worker}${spoke}:${worker}a\"" >> spokes.yaml
-    echo "        bmc_url: \"redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}\"" >> spokes.yaml
-    echo "        bmc_user: \"amorgant\"" >> spokes.yaml
-    echo "        bmc_pass: \"alknopfler\"" >> spokes.yaml
-    echo "        root_disk: vda" >> spokes.yaml
-    echo "        storage_disk:" >> spokes.yaml
-    echo "          - vdb" >> spokes.yaml
-    echo "          - vdc" >> spokes.yaml
-    echo "          - vde" >> spokes.yaml
-    echo "          - vde" >> spokes.yaml
-
+    cat <<EOF >>spokes.yaml
+      worker${worker}:
+        nic_ext_dhcp: enp1s0
+        nic_int_static: enp2s0
+        mac_ext_dhcp: "ee:ee:ee:${worker}${spoke}:${worker}${spoke}:${worker}e"
+        mac_int_static: "aa:aa:aa:${worker}${spoke}:${worker}${spoke}:${worker}a"
+        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
+        bmc_user: "amorgant"
+        bmc_pass: "alknopfler"
+        root_disk: vda
+        storage_disk:
+          - vdb
+          - vdc
+          - vdd
+          - vde
+EOF
 
 done
+
 
 kcli create dns -n bare-net api.spoke0-cluster.alklabs.com -i 192.168.150.201
 kcli create dns -n bare-net api-int.spoke0-cluster.alklabs.com -i 192.168.150.201
