@@ -26,6 +26,7 @@ function extract_vars() {
     DISKS_PATH=${1}
     raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)
     disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,#g | sed 's/,*//' | sed 's/,*//')
+    disks_count=$(echo ${disks} |sed 's/,/\n/g'|wc -l)
 
     for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
         nodes+="${node},"
@@ -36,6 +37,7 @@ function extract_vars() {
     # Final Variables
     export CHANGEME_NODES="[${nodes}]"
     export CHANGEME_DEVICES="[${disks}]"
+    export CHANGEME_STORAGE_DEVICE_SET_COUNT="${disks_count}"
 }
 
 function extract_kubeconfig() {
@@ -163,9 +165,9 @@ if ! ./verify.sh; then
         done
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-        echo ">>>> Deploy OCS StorageCluster"
+        echo ">>>> Render and apply manifest to deploy OCS StorageCluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/04-OCS-StorageCluster.yaml
+        render_file manifests/04-OCS-StorageCluster.yaml
         sleep 60
 
         echo ">>>> Waiting for: OCS Cluster"
