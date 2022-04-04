@@ -95,6 +95,7 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
     for master in 0 1 2; do
         # Stanza generation for each master
         MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} -f id -v)
+
         echo "      master${master}: " >> spokes.yaml
         echo "        nic_ext_dhcp: enp1s0" >> spokes.yaml
         echo "        nic_int_static: enp2s0" >> spokes.yaml
@@ -103,11 +104,13 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
         echo "        bmc_url: \"redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}\"" >> spokes.yaml
         echo "        bmc_user: \"amorgant\"" >> spokes.yaml
         echo "        bmc_pass: \"alknopfler\"" >> spokes.yaml
+        echo "        root_disk: vda" >> spokes.yaml
         echo "        storage_disk:" >> spokes.yaml
-        echo "          - vda" >> spokes.yaml
         echo "          - vdb" >> spokes.yaml
         echo "          - vdc" >> spokes.yaml
         echo "          - vdd" >> spokes.yaml
+        echo "          - vde" >> spokes.yaml
+
     done
     
     # Add the single worker
@@ -122,11 +125,13 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
     echo "        bmc_url: \"redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}\"" >> spokes.yaml
     echo "        bmc_user: \"amorgant\"" >> spokes.yaml
     echo "        bmc_pass: \"alknopfler\"" >> spokes.yaml
+    echo "        root_disk: vda" >> spokes.yaml
     echo "        storage_disk:" >> spokes.yaml
-    echo "          - vda" >> spokes.yaml
     echo "          - vdb" >> spokes.yaml
     echo "          - vdc" >> spokes.yaml
-    echo "          - vdd" >> spokes.yaml
+    echo "          - vde" >> spokes.yaml
+    echo "          - vde" >> spokes.yaml
+
 
 done
 
