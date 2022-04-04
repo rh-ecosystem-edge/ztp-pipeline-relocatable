@@ -131,7 +131,7 @@ elif [[ ${1} == "spoke" ]]; then
         ## Common
         export DESTINATION_REGISTRY="$(oc --kubeconfig=${SPOKE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
         ## OCP Sync vars
-        export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers $(yq eval ".config.clusterimageset" ${SPOKES_FILE}) -o jsonpath={.spec.releaseImage})"
+        export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
         ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
         export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
         ## OCP INDEX IMAGE
