@@ -19,6 +19,7 @@ spoke{{ i }}-cluster-m{{ j }}:
   - size: 200
   - size: 200
   - size: 200
+  - size: 200  
 {% endfor %}
 {% endfor %}
 
@@ -39,4 +40,5 @@ spoke{{ i }}-cluster-w0:
   - size: 200
   - size: 200
   - size: 200
+  - size: 200  
 {% endfor %}
