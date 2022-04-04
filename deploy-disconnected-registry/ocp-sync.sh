@@ -41,8 +41,32 @@ function mirror_ocp() {
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo
-    echo DEBUG: "oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${OCP_DESTINATION_INDEX} --to=${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
-    oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
+    # Empty log file
+    >${OUTPUTDIR}/mirror-ocp.log
+    SALIDA=1
+
+    retry=1
+    while [ ${retry} != 0 ]; do
+        # Mirror ocp release with retry strategy
+        echo DEBUG: "oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${OCP_DESTINATION_INDEX} --to=${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}"
+        oc --kubeconfig=${TARGET_KUBECONFIG} adm release mirror -a ${PULL_SECRET} --from="${OPENSHIFT_RELEASE_IMAGE}" --to-release-image="${OCP_DESTINATION_INDEX}" --to="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}" >> ${OUTPUTDIR}/mirror-ocp.log 2>&1
+        SALIDA=$?
+
+        if [ ${SALIDA} -eq 0 ]; then
+            echo ">>>> OCP release image mirror step finished: ${OPENSHIFT_RELEASE_IMAGE}"
+            retry=0
+        else
+            echo ">>>> ERROR: Mirroring the release image: ${OPENSHIFT_RELEASE_IMAGE}"
+            echo ">>>> ERROR: Retrying in 10 seconds"
+            sleep 10
+            retry=$((retry + 1))
+        fi
+        if [ ${retry} == 12 ]; then
+            echo ">>>> ERROR: Mirroring the release image: ${OPENSHIFT_RELEASE_IMAGE}"
+            echo ">>>> ERROR: Retry limit reached"
+            exit 1
+        fi
+    done
 }
 
 if [[ ${1} == 'hub' ]]; then
