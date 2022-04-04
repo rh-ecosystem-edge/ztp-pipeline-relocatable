@@ -84,9 +84,9 @@ CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
 
 cat <<EOF >>spokes.yaml
 config:
-  OC_OCP_VERSION: ${OC_OCP_VERSION}
-  OC_ACM_VERSION: ${OC_ACM_VERSION}
-  OC_OCS_VERSION: ${OC_OCS_VERSION}
+  OC_OCP_VERSION: '${OC_OCP_VERSION}'
+  OC_ACM_VERSION: '${OC_ACM_VERSION}'
+  OC_OCS_VERSION: '${OC_OCS_VERSION}'
 EOF
 
 # Create header for spokes.yaml
