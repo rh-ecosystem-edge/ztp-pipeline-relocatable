@@ -14,12 +14,12 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc" #TODO  may be clear test and render with script
         bmc_pass: "user-pass" #TODO  may be clear test and render with script
-        root_disk: "sda"
+        root_disk: "/dev/sda"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master1:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -29,12 +29,12 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: "sda"
+        root_disk: "/dev/sda"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master2:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -44,12 +44,12 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: "sda"
+        root_disk: "/dev/sda"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       worker0:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
@@ -58,7 +58,7 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: "sda"
+        root_disk: "/dev/sda"
   - spoke2-name:
       master0:
         ignore_ifaces: eno1 eno2
@@ -69,12 +69,12 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: "sda"
+        root_disk: "/dev/sda"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master1:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -84,12 +84,12 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: "sda"
+        root_disk: "/dev/sda"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master2:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -99,12 +99,12 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: "sda"
+        root_disk: "/dev/sda"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       worker0:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -114,4 +114,4 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: "sda"
+        root_disk: "/dev/sda"
