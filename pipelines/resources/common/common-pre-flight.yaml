@@ -41,6 +41,7 @@ spec:
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
+          rsync -avr /opt/ztp/ ${WORKDIR}/ --progress
           mkdir -p ${WORKDIR}/build
           cd ${WORKDIR}/${SHARED_DIR}
           ./verify_preflight.sh
