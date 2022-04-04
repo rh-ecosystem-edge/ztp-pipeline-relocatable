@@ -30,7 +30,6 @@ echo ">>>> Verify the Mandatory root_disk requirements"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 index=0
 for spoke in ${ALLSPOKES}; do
-    .spokes.[0].[].master0
     for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
         root_disk=$(yq e ".spokes[${index}].[].master${master}.root_disk" $SPOKES_FILE)
         if [[ ${root_disk} == "" ]] || [[ ${root_disk} == "null" ]]; then
