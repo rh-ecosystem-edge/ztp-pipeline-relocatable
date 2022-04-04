@@ -55,7 +55,37 @@ if ! ./verify.sh; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
     fi
 
+    index=0
     for spoke in ${ALLSPOKES}; do
+        echo ">>>> Nuking storage disks for: ${spoke}"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+        cluster=$(yq eval ".spokes[${index}]|keys" $SPOKES_FILE | awk '{print $2}' | xargs echo)
+
+        for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
+            EXT_MAC_ADDR=$(yq eval ".spokes[${index}].[].master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+            echo ""
+            echo ">>>> Nuking storage disks for Master ${master} Node"
+            for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
+                NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
+                if [[ -n ${NODE_IP} ]]; then
+                    echo "Master Node: ${master}"
+                    echo "AGENT: ${agent}"
+                    echo "IP: ${NODE_IP%%/*}"
+                    echo ">>>>"
+
+                    storage_disks=$(yq e ".spokes[${index}].[].master${master}.storage_disk" $SPOKES_FILE | awk '{print $2}' | xargs echo)
+
+                    for disk in ${storage_disks}; do
+                        echo ">>> Nuking disk ${disk} at ${master} ${NODE_IP%%/*}"
+                        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sgdisk --zap-all /dev/$disk;dd if=/dev/zero of=/dev/$disk bs=1M count=100 oflag=direct,dsync; blkdiscard /dev/$disk"
+                    done
+                fi
+            done
+        done
+
+        index=$((index + 1))
+
         echo ">>>> Deploy manifests to install LSO and LocalVolume: ${spoke}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo "Extract Kubeconfig for ${spoke}"
