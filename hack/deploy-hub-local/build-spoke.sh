@@ -106,12 +106,12 @@ EOF
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
-        root_disk: vda
+        root_disk: /dev/vda
         storage_disk:
-          - vdb
-          - vdc
-          - vdd
-          - vde
+          - /dev/vdb
+          - /dev/vdc
+          - /dev/vdd
+          - /dev/vde
 EOF
     done
     
@@ -128,12 +128,12 @@ EOF
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
-        root_disk: vda
+        root_disk: /dev/vda
         storage_disk:
-          - vdb
-          - vdc
-          - vdd
-          - vde
+          - /dev/vdb
+          - /dev/vdc
+          - /dev/vdd
+          - /dev/vde
 EOF
 
 done
