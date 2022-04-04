@@ -168,7 +168,9 @@ export OC_RHCOS_RELEASE=$(curl -s https://mirror.openshift.com/pub/openshift-v4/
 export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})
 export OC_OCS_VERSION=$(yq eval ".config.OC_OCS_VERSION" ${SPOKES_FILE})
 export OC_OCP_TAG=${OC_OCP_VERSION_FULL}"-x86_64"
-export CLUSTERIMAGESET="openshift-v"${OC_OCP_VERSION_FULL}
+VERSION_WITHOUT_QUOTES="${OC_OCP_VERSION_FULL%\"}"
+VERSION_WITHOUT_QUOTES="${VERSION_WITHOUT_QUOTES#\"}"
+export CLUSTERIMAGESET="openshift-v"${VERSION_WITHOUT_QUOTES}
 
 if [ -z ${KUBECONFIG+x} ]; then
     echo "Please, provide a path for the hub's KUBECONFIG: It will be created if it doesn't exist"
