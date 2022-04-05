@@ -1,8 +1,15 @@
 
-name: Build and Publish
+name: Build and Publish Tags
 on:
   push:
-    branches: [main]
+    tags:
+      - '*.*.*'
+
+  release:
+     types:
+       - published
+
+
 jobs:
   build-and-push-container-images:
     name: Build Container images and push to repositories
@@ -12,6 +19,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Prepare env
+        run: |
+          sudo apt-get -y install podman
+          mkdir -p ~/.docker
 
       - name: Login to Quay
         env:
@@ -31,11 +43,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
-            RELEASE=latest
-          else
-            RELEASE=${{ github.ref_name }}
-          fi
+          RELEASE=${{ github.ref_name }}
 
           echo ">>>> Building Pipe Release"
           echo "Release: ${RELEASE}"
@@ -50,11 +58,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
-            RELEASE=latest
-          else
-            RELEASE=${{ github.ref_name }}
-          fi
+          RELEASE=${{ github.ref_name }}
 
           echo ">>>> Building UI Release"
           echo "Release: ${RELEASE}"

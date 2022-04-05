@@ -1,0 +1,13 @@
+- name: Install helpful packages
+  package: name={{ item }} state=present
+  with_items:
+    - firewalld
+  ignore_errors: true
+  when: sshpassword==True
+
+- name: SSH Firewall rule
+  firewalld:
+    service: ssh
+    permanent: true
+    state: enabled
+    immediate: yes

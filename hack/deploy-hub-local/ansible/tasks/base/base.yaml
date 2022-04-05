@@ -1,0 +1,244 @@
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Create resolv.conf
+  copy:
+    dest: "/etc/resolv.conf"
+    content: |
+      nameserver 8.8.8.8
+      nameserver 8.8.4.4
+
+- name: Remove rescue images
+  file: path={{ item }} state=absent
+  with_fileglob: /boot/*rescue*
+
+- name: Configure console
+  copy:
+    dest: /etc/vconsole.conf
+    content: |
+      KEYMAP="{{ console_keymap }}"
+      FONT="{{ console_font }}"
+
+- name: Configure locale
+  copy:
+    dest: /etc/locale.conf
+    content: |
+      LANG="{{ system_locale }}"
+
+- name: Set timezone
+  timezone: name="{{ system_timezone }}"
+
+- name: Remove unhelpful packages
+  package: name={{ item }} state=absent
+  with_items:
+    - "abrt*"
+  ignore_errors: true
+
+- name: Use DNF fastest mirror
+  ini_file:
+    path: /etc/dnf/dnf.conf
+    section: main
+    option: fastestmirror
+    value: 1
+  when: os == "fedora"
+
+- name: Use DNF drpm
+  ini_file:
+    path: /etc/dnf/dnf.conf
+    section: main
+    option: deltarpm
+    value: true
+  when: os == "fedora"
+
+- name: Use DNF parallel downloads
+  ini_file:
+    path: /etc/dnf/dnf.conf
+    section: main
+    option: max_parallel_downloads
+    value: 20
+  when: os == "fedora"
+
+- name: Create go bin path
+  file:
+    path: /root/go/bin
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Uninstall packages
+  package: name={{ item }} state=absent
+  with_items:
+    - golang
+    - motd-news-config
+    - command-not-found
+    - update-notifier-common
+  ignore_errors: true
+
+- name: Install helpful packages
+  package: name={{ item }} state=present
+  with_items:
+    - bash-completion
+    - bc
+    - sysstat
+    - tmux
+    - curl
+    - ansible
+    - util-linux
+    - tuned
+    - cmake
+    - powerline
+    - mc
+    - pipsi
+    - nmap
+    - tar
+    - unzip
+    - rsync
+    - net-tools
+    - logrotate
+    - joe
+    - make
+    - wget
+    - git
+    - mailutils
+    - jq
+    - mlocate
+
+  ignore_errors: true
+
+- name: Enable helpful services
+  service: name={{ item }} enabled=yes state=started
+  with_items:
+    - tuned
+    - fstrim.timer
+    - chrony
+    - chronyd
+    - firewalld
+  ignore_errors: true
+
+- name: Change root shell
+  user: name=root shell={{ root_shell }}
+
+- name: Cleaning up
+  file: path={{ item }} state=absent
+  with_items:
+    - /root/.cache
+    - /root/.lesshst
+    - /root/.rnd
+    - /root/anaconda-ks.cfg
+    - /root/setup.retry
+    - /var/tmp/abrt
+
+- name: Check if platform is Virtual
+  lineinfile:
+    dest: /sys/devices/virtual/dmi/id/sys_vendor
+    line: "QEMU"
+  check_mode: yes
+  register: virtual
+  failed_when: (virtual is changed) or (virtual is failed)
+  ignore_errors: true
+
+- name: Check if platform is Physical
+  set_fact:
+    physical: true
+    virtual: false
+  when: virtual is changed
+
+- name: Set fact for Virtual
+  set_fact:
+    physical: false
+    virtual: true
+  when: virtual
+
+- name: Get system Chassis
+  shell: hostnamectl status | grep Chassis | cut -f2 -d ":" | tr -d ' '
+  register: chassis
+
+- name: Workaround Proliant
+  lineinfile:
+    dest: /sys/devices/virtual/dmi/id/product_name
+    line: "ProLiant"
+  check_mode: yes
+  register: proliant
+  failed_when: (proliant is changed) or (proliant is failed)
+  ignore_errors: true
+
+- name: Set Server facts
+  set_fact:
+    physical: true
+    virtual: false
+    chassis: "server"
+  when: proliant
+
+- name: link powerline so is loaded Debian
+  file:
+    dest: /etc/profile.d/powerline.sh
+    force: yes
+    state: link
+    src: /usr/share/powerline/bindings/bash/powerline.sh
+  when: os == 'debian'
+
+- name: link powerline so is loaded Fedora
+  file:
+    dest: /etc/profile.d/powerline.sh
+    force: yes
+    state: link
+    src: /usr/share/powerline/bash/powerline.sh
+  when: os == 'fedora'
+
+- name: Configure systemd for ignoring closed lid on power
+  ini_file:
+    path: /etc/systemd/logind.conf
+    section: Login
+    option: HandleLidSwitchExternalPower
+    value: ignore
+  when: physical and chassis == 'laptop'
+
+- name: Configure systemd for ignoring closed lid on Docked
+  ini_file:
+    path: /etc/systemd/logind.conf
+    section: Login
+    option: HandleLidSwitchDocked
+    value: ignore
+  when: physical and chassis == 'laptop'
+
+- name: Set tuned profile to latency-performance
+  shell: /usr/sbin/tuned-adm profile latency-performance
+
+- name: Configure logrotate.conf
+  lineinfile:
+    dest: /etc/logrotate.conf
+    create: true
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "^compress", line: "compress" }
+    - { regexp: "^rotate.*", line: "rotate 14" }
+    - { regexp: "^daily", line: "daily" }
+    - { regexp: "^weekly.*", line: "" }
+    - { regexp: "^dateext.*", line: "" }
+
+- name: Configure User environment
+  lineinfile:
+    dest: /root/.bashrc
+    create: true
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "^export GOPATH", line: "export GOPATH=~/go" }
+    - { regexp: "^export PATH.*", line: "export PATH=$PATH:$GOPATH/bin" }
+
+    - {
+        regexp: "^source /etc/profile.d/powerline.sh",
+        line: "source /etc/profile.d/powerline.sh",
+      }
+
+- name: Limit Journal file size
+  ini_file:
+    path: /etc/systemd/journald.conf
+    section: Journal
+    option: SystemMaxUse
+    value: 200M

@@ -212,10 +212,11 @@ function wait_for_mcp_ready() {
     export TIMEOUT=${3}
 
     echo ">>>> Waiting for ${CLUSTER} to be ready"
+    TMC=$(oc --kubeconfig=${KUBECONF} get mcp master -o jsonpath={'.status.machineCount'})
     for i in $(seq 1 ${TIMEOUT}); do
         echo ">>>> Showing nodes in cluster: ${CLUSTER}"
         oc --kubeconfig=${KUBECONF} get nodes
-        if [[ $(oc --kubeconfig=${KUBECONF} get mcp master -o jsonpath={'.status.readyMachineCount'}) -eq 3 ]]; then
+        if [[ $(oc --kubeconfig=${KUBECONF} get mcp master -o jsonpath={'.status.readyMachineCount'}) -eq ${TMC} ]]; then
             echo ">>>> MCP ${CLUSTER} is ready"
             return 0
         fi
