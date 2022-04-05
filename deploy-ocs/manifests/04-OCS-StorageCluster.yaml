@@ -12,7 +12,7 @@ spec:
   manageNodes: false
   monDataDirHostPath: /var/lib/rook
   storageDeviceSets:
-  - count: 1
+  - count: $CHANGEME_STORAGE_DEVICE_SET_COUNT
     dataPVCTemplate:
       spec:
         accessModes:
