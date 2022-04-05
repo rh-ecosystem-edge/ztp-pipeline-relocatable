@@ -81,7 +81,7 @@ if ! ./verify.sh; then
 
                     for disk in ${storage_disks}; do
                         echo ">>> Nuking disk ${disk} at ${master} ${NODE_IP%%/*}"
-                        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo sgdisk --zap-all /dev/$disk;sudo dd if=/dev/zero of=/dev/$disk bs=1M count=100 oflag=direct,dsync; sudo blkdiscard /dev/$disk"
+                        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo sgdisk --zap-all $disk;sudo dd if=/dev/zero of=$disk bs=1M count=100 oflag=direct,dsync; sudo blkdiscard $disk"
                     done
                 fi
             done
