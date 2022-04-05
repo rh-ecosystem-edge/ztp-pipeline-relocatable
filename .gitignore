@@ -23,3 +23,10 @@ website/_site/
 
 # vim
 *.swp
+
+build/*
+/opt/ztp/build/*
+/workspace/ztp/build/*
+pull_secret.json
+pull-secret.json
+openshift_pull.json
