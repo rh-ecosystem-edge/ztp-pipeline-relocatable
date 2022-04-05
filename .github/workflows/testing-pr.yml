@@ -11,20 +11,71 @@ on:
   workflow_dispatch:
 
 jobs:
-  clone-pr-branch:
+  build-and-push-docker-image:
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
+    name: Build Container images and push to repositories
+    runs-on: kni4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build and Push Pipeline Image
+        id: build-pipe
+        run: |
+          cd ${{ github.workspace }}
+
+          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            RELEASE=latest
+          else
+            RELEASE=${{ github.event.pull_request.head.ref }}
+          fi
+
+          echo ">>>> Building Pipe Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make pipe
+
+      - name: Build and Push UI Image
+        id: build-ui
+        run: |
+          cd ${{ github.workspace }}
+
+          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            RELEASE=latest
+          else
+            RELEASE=${{ github.event.pull_request.head.ref }}
+          fi
+
+          echo ">>>> Building UI Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make ui
+
+
+  full-stack-testing:
     if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
     runs-on: CI-pool
+    needs: build-and-push-docker-image
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-  remove-old-deployment:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
-    needs: clone-pr-branch
-    runs-on: CI-pool
-    steps:
+      - name: Load Pipelines
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          cd hack/deploy-hub-local
+          ./bootstrap-ci.sh
+
       - name: remove all old deployments and vms
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
@@ -39,32 +90,17 @@ jobs:
             tkn pr cancel $i -n spoke-deployer || true
           done
 
-  create-new-vm:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
-    needs: remove-old-deployment
-    runs-on: CI-pool
-    steps:
       - name: create new vms and requirements
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
           cd hack/deploy-hub-local
           ./build-spoke.sh ~/openshift_pull.json 1
 
-  launch-spoke-pipeline:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
-    needs: create-new-vm
-    runs-on: CI-pool
-    steps:
       - name: launch the spoke pipeline
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          tkn pipeline start -n spoke-deployer -p git-revision=${{ github.head_ref }} -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+          tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:${{ github.event.pull_request.head.ref }}" -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
 
-  verify-pipe-success:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
-    needs: launch-spoke-pipeline
-    runs-on: CI-pool
-    steps:
       - name: verify if the pipe has been successful
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
@@ -74,7 +110,7 @@ jobs:
             status=$(tkn pr ls -n spoke-deployer | head -2 | grep -i running | awk '{print $1}')
             echo "Status: "
             echo "------- "
-            tkn  pr describe -L -ojsonpath={.status.conditions[0].message}
+            tkn  pr describe -n spoke-deployer -L -ojsonpath={.status.conditions[0].message}
             echo
             echo "---------"
             sleep 60
@@ -90,67 +126,3 @@ jobs:
             echo "The pipeline has not finished"
             exit 1
           fi
-
-  build-and-push-docker-image:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) && !failure()|| github.event_name == 'workflow_dispatch'
-    needs: verify-pipe-success
-    name: Build Container images and push to repositories
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Install env
-        run: |
-          sudo apt-get -y install podman
-          mkdir -p ~/.docker
-
-      - name: Login to Quay
-        env:
-          QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
-          QUAY_PASS: ${{ secrets.QUAY_ROBOT_TOKEN }}
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: quay.io
-          username: ${{ env.QUAY_USER }}
-          password: ${{ env.QUAY_PASS }}
-
-      - name: Build and Push Pipeline Image
-        id: build-pipe
-        run: |
-          cd ${{ github.workspace }}
-
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
-            RELEASE=latest
-          else
-            RELEASE=${{ github.ref_name }}
-          fi
-          
-          echo ">>>> Building Pipe Release"
-          echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.ref_name }}"
-          echo "Git hash: ${{ github.sha }}"
-          echo ">>>>"
-
-          RELEASE=${RELEASE} make pipe
-
-      - name: Build and Push UI Image
-        id: build-ui
-        run: |
-          cd ${{ github.workspace }}
-
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
-            RELEASE=latest
-          else
-            RELEASE=${{ github.ref_name }}
-          fi
-
-          echo ">>>> Building UI Release"
-          echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.ref_name }}"
-          echo "Git hash: ${{ github.sha }}"
-          echo ">>>>"
-
-          RELEASE=${RELEASE} make ui

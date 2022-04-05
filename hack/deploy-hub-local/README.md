@@ -75,7 +75,8 @@ After a while, Kcli would have created the different machines (installer, and 3 
 If you ssh into the installer machine, you can grab the Kube config secret (or copy it)
 
 ```sh
-kcli scp root@test-ci-installer:/root/ocp/auth/kubeconfig  ~/.kube/config
+mkdir -p /root/.kcli/clusters/test-ci/auth/
+kcli scp root@test-ci-installer:/root/ocp/auth/kubeconfig /root/.kcli/clusters/test-ci/auth/kubeconfig
 ```
 
 Once `watch -d "oc get clusterversion; oc get nodes; oc get co"` reports no changes, you're ready to continue was the host has been fully setup for the next step.
