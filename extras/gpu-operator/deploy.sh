@@ -11,14 +11,15 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-export SPOKE_KUBECONFIG="'$(cat $1)'"
+export SPOKE_KUBECONFIG=$1
+export SPOKE=$(oc config get-clusters | sed 1d)
 
 # Load common vars
-source ${WORKDIR}/shared-utils/common.sh
+# source ${WORKDIR}/shared-utils/common.sh
 
 if ./verify.sh; then
 
-    echo "Installing NFD operator for ${spoke}"
+    echo "Installing NFD operator for ${SPOKE}"
     oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-nfd-namespace.yaml
     sleep 2
     oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-nfd-operator-group.yaml

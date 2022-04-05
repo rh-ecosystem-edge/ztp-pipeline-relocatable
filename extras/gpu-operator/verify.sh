@@ -10,6 +10,6 @@ set -m
 # export KUBECONFIG=/root/admin.kubeconfig
 
 # Load common vars
-source ${WORKDIR}/shared-utils/common.sh
+# source ${WORKDIR}/shared-utils/common.sh
 exit 0
 
