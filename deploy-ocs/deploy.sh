@@ -151,7 +151,7 @@ if ! ./verify.sh; then
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-OCS-OperatorGroup.yaml
         sleep 2
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-OCS-Subscription.yaml
-        sleep 60
+        sleep 120
 
         echo ">>>> Labeling nodes for OCS"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -166,7 +166,7 @@ if ! ./verify.sh; then
         echo ">>>> Deploy OCS StorageCluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/04-OCS-StorageCluster.yaml
-        sleep 60
+        sleep 120
 
         echo ">>>> Waiting for: OCS Cluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
