@@ -38,7 +38,7 @@ export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
 export VERSION="ci"
-export CLUSTERS=0
+export CLUSTERS=1
 export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
@@ -83,9 +83,9 @@ fi
 
 cat <<EOF >>spokes.yaml
 config:
-  OC_OCP_VERSION: '"${OC_OCP_VERSION}"'
-  OC_ACM_VERSION: '"${OC_ACM_VERSION}"'
-  OC_OCS_VERSION: '"${OC_OCS_VERSION}"'
+  OC_OCP_VERSION: '${OC_OCP_VERSION}'
+  OC_ACM_VERSION: '${OC_ACM_VERSION}'
+  OC_OCS_VERSION: '${OC_OCS_VERSION}'
 EOF
 # Create header for spokes.yaml
 cat <<EOF >>spokes.yaml
