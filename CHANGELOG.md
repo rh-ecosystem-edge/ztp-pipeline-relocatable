@@ -1,3 +1,9 @@
+## [1.1.9](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.8...1.1.9) (2022-04-05)
+
+### Bug Fixes
+
+- **deploy-ocs/deploy.sh:** commit e669b8636a9667cc304c9f8d6ebb033abae07a7a introduced /dev/ in the spokes.yaml but didn't update OCS wipe disk script ([2c4e345](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/2c4e34544109629e820afc9fd95cac0f2f500139))
+
 ## [1.1.8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.7...1.1.8) (2022-04-04)
 
 ### Bug Fixes

@@ -25,7 +25,7 @@ function extract_vars() {
     # Extract variables from config file
     DISKS_PATH=${1}
     raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)
-    disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,/dev/#g | sed 's/,*//' | sed 's/,*//')
+    disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,#g | sed 's/,*//' | sed 's/,*//')
 
     for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
         nodes+="${node},"
@@ -64,6 +64,9 @@ if ! ./verify.sh; then
 
         for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
             EXT_MAC_ADDR=$(yq eval ".spokes[${index}].[].master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+
+            recover_spoke_rsa ${cluster}
+
             echo ""
             echo ">>>> Nuking storage disks for Master ${master} Node"
             for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
@@ -78,7 +81,7 @@ if ! ./verify.sh; then
 
                     for disk in ${storage_disks}; do
                         echo ">>> Nuking disk ${disk} at ${master} ${NODE_IP%%/*}"
-                        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sgdisk --zap-all /dev/$disk;dd if=/dev/zero of=/dev/$disk bs=1M count=100 oflag=direct,dsync; blkdiscard /dev/$disk"
+                        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo sgdisk --zap-all /dev/$disk;sudo dd if=/dev/zero of=/dev/$disk bs=1M count=100 oflag=direct,dsync; sudo blkdiscard /dev/$disk"
                     done
                 fi
             done
