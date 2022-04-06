@@ -63,7 +63,15 @@ if ./verify.sh; then
     oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-gpu-subscription.yaml
     sleep 2
 
-    # wait_for_crd ${SPOKE_KUBECONFIG} ${SPOKE} "gpusubscription.network.openshift.io"
+    wait_for_crd ${SPOKE_KUBECONFIG} ${SPOKE} "clusterpolicies.nvidia.com"
+
+    echo "Adding GPU node labels with NFD for ${SPOKE}"
+    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/04-nfd-gpu-feature.yaml
+    sleep 2
+
+    echo "Adding GPU Cluster Policy for ${SPOKE}"
+    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/05-gpu-cluster-policy.yaml
+    sleep 2
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
