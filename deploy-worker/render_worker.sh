@@ -36,7 +36,7 @@ create_worker_definitions() {
         export CHANGE_SPOKE_WORKER_BMC_PASSWORD=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.bmc_pass" ${SPOKES_FILE} | base64)
         export CHANGE_SPOKE_WORKER_BMC_URL=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.bmc_url" ${SPOKES_FILE})
         export CHANGE_SPOKE_WORKER_MGMT_INT_MAC=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.mac_ext_dhcp" ${SPOKES_FILE})
-        export CHANGE_SPOKE_MASTER_ROOT_DISK=$(yq eval ".spokes[${spokenumber}].${cluster}.master${master}.root_disk" ${SPOKES_FILE})
+        export CHANGE_SPOKE_WORKER_ROOT_DISK=$(yq eval ".spokes[${spokenumber}].${cluster}.worker${worker}.root_disk" ${SPOKES_FILE})
 
         # Now, write the template to disk
         OUTPUT="${OUTPUTDIR}/${cluster}-worker${worker}.yaml"
@@ -122,7 +122,7 @@ spec:
  online: false
  bootMACAddress: '$CHANGE_SPOKE_WORKER_MGMT_INT_MAC'
  rootDeviceHints:
-   deviceName: '$CHANGE_SPOKE_MASTER_ROOT_DISK'
+   deviceName: '%CHANGE_SPOKE_WORKER_ROOT_DISK'
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_WORKER_BMC_URL'
