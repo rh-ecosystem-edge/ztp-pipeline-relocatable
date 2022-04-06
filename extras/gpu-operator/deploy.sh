@@ -4,10 +4,36 @@ set -o pipefail
 set -o nounset
 set -m
 
+function wait_for_crd() {
+    SPOKE_KUBECONFIG=${1}
+    SPOKE_NAME=${2}
+    CRD=${3}
+
+    echo ">>>> Waiting for subscription and crd on: ${SPOKE_NAME}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+
+    while [ "$timeout" -lt "1000" ]; do
+        echo KUBESPOKE=${SPOKE_KUBECONFIG}
+        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep ${CRD} | wc -l) -eq 1 ]]; then
+            ready=true
+            break
+        fi
+        echo "Waiting for CRD ${CRD} to be created"
+        sleep 5
+        timeout=$((timeout + 5))
+    done
+    if [ "$ready" == "false" ]; then
+        echo timeout waiting for CRD ${CRD}
+        exit 1
+    fi
+}
+
 # Parse args
 if [ $# -eq 0 ]; then
   echo "No arguments supplied. Usage $0 <Kubeconfig file path> "
-  echo "  - Ej.: ./deploy.sh /home/user/spoke1-kubeconfig"
+  echo "  e.g.: ./deploy.sh /home/user/spoke1-kubeconfig"
   exit 1
 fi
 
@@ -26,25 +52,18 @@ if ./verify.sh; then
     sleep 2
     oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-nfd-subscription.yaml
     sleep 2
-    # echo ">>>> Waiting for subscription and crd on: ${spoke}"
-    # echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    # timeout=0
-    # ready=false
-    # while [ "$timeout" -lt "1000" ]; do
-    #     echo KUBESPOKE=${SPOKE_KUBECONFIG}
-    #     if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep localvolumes.local.storage.openshift.io | wc -l) -eq 1 ]]; then
-    #         ready=true
-    #         break
-    #     fi
-    #     echo "Waiting for CRD localvolumes.local.storage.openshift.io to be created"
-    #     sleep 5
-    #     timeout=$((timeout + 5))
-    # done
-    # if [ "$ready" == "false" ]; then
-    #     echo timeout waiting for CRD localvolumes.local.storage.openshift.io
-    #     exit 1
-    # fi
+    
+    wait_for_crd ${SPOKE_KUBECONFIG} ${SPOKE} "nodefeaturediscoveries.nfd.openshift.io"
 
+    echo "Installing GPU operator for ${SPOKE}"
+    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-gpu-namespace.yaml
+    sleep 2
+    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-gpu-operator-group.yaml
+    sleep 2
+    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-gpu-subscription.yaml
+    sleep 2
+
+    # wait_for_crd ${SPOKE_KUBECONFIG} ${SPOKE} "gpusubscription.network.openshift.io"
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
