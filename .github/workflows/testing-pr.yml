@@ -94,7 +94,7 @@ jobs:
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
           cd hack/deploy-hub-local
-          ./build-spoke.sh ~/openshift_pull.json 1
+          ./build-spoke.sh ~/openshift_pull.json 4.10.5 2.4 4.9
 
       - name: launch the spoke pipeline
         run: |
