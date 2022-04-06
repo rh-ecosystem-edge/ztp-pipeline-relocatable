@@ -52,6 +52,7 @@ if ! ./verify.sh; then
     echo ">>>> Modify files to replace with pipeline info gathered"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     sed -i "s/CHANGEME/$OC_OCS_VERSION/g" manifests/03-OCS-Subscription.yaml
+    sed -i "s/CHANGEME/$OC_OCS_VERSION/g" manifests/03-MCG-Subscription.yaml
 
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -153,6 +154,9 @@ if ! ./verify.sh; then
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-OCS-OperatorGroup.yaml
         sleep 2
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-OCS-Subscription.yaml
+        sleep 2
+        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-MCG-Subscription.yaml
+
         sleep 60
 
         echo ">>>> Labeling nodes for OCS"

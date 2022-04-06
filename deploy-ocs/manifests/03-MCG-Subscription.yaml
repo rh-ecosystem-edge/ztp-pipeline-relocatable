@@ -1,0 +1,10 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: mcg-operator
+  namespace: openshift-storage
+spec:
+  channel: "stable-CHANGEME"
+  name: mcg-operator
+  source: ztpfw-catalog
+  sourceNamespace: openshift-marketplace
