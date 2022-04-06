@@ -122,7 +122,7 @@ spec:
  online: false
  bootMACAddress: '$CHANGE_SPOKE_WORKER_MGMT_INT_MAC'
  rootDeviceHints:
-   deviceName: '%CHANGE_SPOKE_WORKER_ROOT_DISK'
+   deviceName: '$CHANGE_SPOKE_WORKER_ROOT_DISK'
  bmc:
    disableCertificateVerification: true
    address: '$CHANGE_SPOKE_WORKER_BMC_URL'
