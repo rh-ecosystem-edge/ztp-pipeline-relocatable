@@ -156,6 +156,7 @@ if ! ./verify.sh; then
 
         sleep 60
 
+
         echo ">>>> Labeling nodes for OCS"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
         counter=0
