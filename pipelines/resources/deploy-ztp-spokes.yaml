@@ -266,3 +266,22 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
+
+  # Deploy GPU Operator
+  - name: deploy-gpu
+    taskRef:
+      name: spoke-deploy-gpu
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - spoke-detach-cluster
+    workspaces:
+      - name: ztp
+        workspace: ztp

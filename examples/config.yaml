@@ -5,6 +5,9 @@ config:
 
 spokes:
   - spoke1-name:
+      contrib:
+        gpu-operator:
+          version: "v1.9.0"
       master0:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4 # ext_dhcp -> DHCP
@@ -60,6 +63,9 @@ spokes:
         bmc_pass: "user-pass"
         root_disk: "/dev/sda"
   - spoke2-name:
+      contrib:
+        gpu-operator:
+          version: "v1.9.0"
       master0:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
