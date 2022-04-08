@@ -58,10 +58,10 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
 		    echo "SNO + Metal3 + Ipv4 + connected"
 		    t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-		    kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-		    echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-		    kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-		    oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
+#		    kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
+#		    echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+#		    kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+#		    oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             else
 		    echo "Metal3 + Ipv4 + connected"
 		    t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
@@ -85,10 +85,9 @@ else
     kcli create kube openshift --force --paramfile lab-withoutMetal3.yml -P tag="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 fi
 
-# Spokes.yaml file generation
+echo ">>>> Spokes.yaml file generation"
 
 #Empty file before we start
-
 >spokes.yaml
 
 cat <<EOF >>spokes.yaml
@@ -103,7 +102,7 @@ cat <<EOF >>spokes.yaml
 spokes:
 EOF
 
-
+echo ">>>> Create the dns entries"
 if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
 	CHANGE_IP=$(kcli info vm test-ci-sno -vf ip)
 	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i ${CHANGE_IP}
@@ -112,6 +111,9 @@ else
 	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
 fi
+
+echo ">>>> Create the PV"
+./lab-nfs.sh
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
