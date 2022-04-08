@@ -7,7 +7,7 @@ set -m
 
 usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <ocs_version(4.8)>" 1>&2; exit 1; }
 
-if [ $# -ne 4 ]; then
+if [ $# -lt 4 ]; then
     usage
 fi
 
@@ -37,13 +37,13 @@ export OC_CLUSTER_NAME="test-ci"
 export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
-export VERSION="ci"
+export VERSION="stable"
 export CLUSTERS=1
 export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_OCS_VERSION="${ocs_version}"
-export OC_ARCHITECTURE="sno"
+export HUB_ARCHITECTURE="${5:-installer}"
 
 echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
@@ -55,10 +55,9 @@ echo ">>>>>>>>>>>>>>>>>>>>>"
 if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     if [ "${OC_NET_CLASS}" = "ipv4" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
-            if [ "${OC_ARCHITECTURE}" = "sno" ]; then
+            if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
 		    echo "SNO + Metal3 + Ipv4 + connected"
 		    t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-		    git pull
 		    kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
 		    echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 		    kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
@@ -104,9 +103,9 @@ cat <<EOF >>spokes.yaml
 spokes:
 EOF
 
-CHANGE_IP=$(kcli info vm test-ci-sno | grep ip | awk '{print $2}')
 
-if [ "${OC_ARCHITECTURE}" = "sno" ]; then
+if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
+	CHANGE_IP=$(kcli info vm test-ci-sno -vf ip)
 	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i ${CHANGE_IP}
 	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i ${CHANGE_IP}
 else

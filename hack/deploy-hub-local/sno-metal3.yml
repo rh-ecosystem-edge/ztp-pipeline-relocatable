@@ -10,14 +10,3 @@ numcpus: 16
 disk_size: 100
 network: bare-net
 metal3: true
-disconnected_operators:
-  - local-storage-operator
-#- advanced-cluster-management
-#- ocs-operator
-#- performance-addon-operator
-#- ptp-operator
-#- sriov-network-operator
-vmrules:
-- test-ci-sno:
-   reservedip: true
-   ip: 192.168.150.48
