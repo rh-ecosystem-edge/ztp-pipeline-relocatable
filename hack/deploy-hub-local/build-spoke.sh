@@ -5,9 +5,9 @@ set -o pipefail
 set -o nounset
 set -m
 
-usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <ocs_version(4.8)>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <ocs_version(4.8)> <hub_architecture(installer|sno)>" 1>&2; exit 1; }
 
-if [ $# -ne 4 ]; then
+if [ $# -lt 4 ]; then
     usage
 fi
 
@@ -43,6 +43,7 @@ export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_OCS_VERSION="${ocs_version}"
+export HUB_ARCHITECTURE="${5:-installer}"
 
 
 
@@ -80,8 +81,9 @@ fi
 
 >spokes.yaml
 
-CHANGE_IP=$(kcli info vm test-ci-installer | grep ip | awk '{print $2}')
+CHANGE_IP=$(kcli info vm test-ci-${HUB_ARCHITECTURE} -vf ip)
 
+# Default configuration
 cat <<EOF >>spokes.yaml
 config:
 
