@@ -5,7 +5,7 @@ sno_virtual: true
 network_type: OVNKubernetes
 cluster: test-ci
 domain: alklabs.com
-memory: 25000
+memory: 40000
 numcpus: 16
 disk_size: 100
 network: bare-net
