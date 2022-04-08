@@ -30,7 +30,7 @@ spec:
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_GPU_DIR
-        value: "contrib/deploy/gpu-operator"
+        value: "contrib/gpu-operator"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
