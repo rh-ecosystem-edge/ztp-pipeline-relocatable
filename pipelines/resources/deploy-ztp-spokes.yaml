@@ -281,7 +281,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - spoke-detach-cluster
+      - detach-cluster
     workspaces:
       - name: ztp
         workspace: ztp
