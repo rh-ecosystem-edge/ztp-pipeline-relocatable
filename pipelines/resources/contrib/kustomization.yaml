@@ -1,3 +1,7 @@
 resources:
+<<<<<<< HEAD
   - contrib-template.yaml
   - spoke-deploy-gpu.yaml
+=======
+  - contrib-deploy-gpu.yaml
+>>>>>>> 8e64ce5 (naming refactor of gpu operator contrib)

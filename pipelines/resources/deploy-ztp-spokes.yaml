@@ -268,9 +268,9 @@ spec:
         workspace: ztp
 
   # Deploy GPU Operator
-  - name: deploy-gpu
+  - name: gpu-operator
     taskRef:
-      name: spoke-deploy-gpu
+      name: contrib-gpu-operator
     params:
       - name: spokes-config
         value: $(params.spokes-config)

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-gpu
+  name: contrib-gpu-operator
   annotations:
     description: |
       This task will deploy GPU/NFD on the Spoke Cluster.
@@ -30,13 +30,13 @@ spec:
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_GPU_DIR
-        value: "contrib/deploy-gpu"
+        value: "contrib/deploy/gpu-operator"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-gpu
+    - name: gpu-operator
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
