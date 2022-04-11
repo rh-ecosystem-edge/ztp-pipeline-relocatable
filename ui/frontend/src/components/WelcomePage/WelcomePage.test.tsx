@@ -40,7 +40,7 @@ describe('Settings', () => {
       container = c;
       await delay(1000);
     });
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(4);
 
     expect(screen.getByTestId('welcome-button-continue')).not.toBeDisabled();
     expect(container).toMatchSnapshot();
@@ -50,7 +50,8 @@ describe('Settings', () => {
     fetch
       .once(JSON.stringify({ spec: {} })) /* OAuth */
       .once(JSON.stringify({ spec: { loadBalancerIP: undefined } }) /* ingress service */)
-      .once(JSON.stringify({ spec: { loadBalancerIP: '123.1.2.3' } }) /* api service */);
+      .once(JSON.stringify({ spec: { loadBalancerIP: '123.1.2.3' } }) /* api service */)
+      .once(JSON.stringify({ spec: { domain: 'apps.test.domain.com' } }) /* Ingress resource */);
 
     let container;
     // eslint-disable-next-line testing-library/no-unnecessary-act
@@ -59,7 +60,7 @@ describe('Settings', () => {
       container = c;
       await delay(1000);
     });
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(4);
     expect(container).toMatchSnapshot();
     expect(screen.getByTestId('welcome-button-continue')).not.toBeDisabled();
     screen.getByTestId('welcome-button-continue').click();
@@ -89,7 +90,8 @@ describe('Settings', () => {
         }),
       )
       .once(JSON.stringify({ spec: { loadBalancerIP: undefined } }) /* ingress service */)
-      .once(JSON.stringify({ spec: { loadBalancerIP: '123.1.2.3' } }) /* api service */);
+      .once(JSON.stringify({ spec: { loadBalancerIP: '123.1.2.3' } }) /* api service */)
+      .once(JSON.stringify({ spec: { domain: 'apps.test.domain.com' } }) /* Ingress resource */);
 
     let container;
     // eslint-disable-next-line testing-library/no-unnecessary-act
@@ -98,7 +100,7 @@ describe('Settings', () => {
       container = c;
       await delay(1000);
     });
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(4);
     expect(container).toMatchSnapshot();
     expect(screen.getByTestId('welcome-button-continue')).not.toBeDisabled();
     screen.getByTestId('welcome-button-continue').click();

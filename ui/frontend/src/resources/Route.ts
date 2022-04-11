@@ -1,5 +1,4 @@
-import { Metadata } from './metadata';
-import { IResource } from './resource';
+import { IResource, Metadata } from '../common';
 
 export interface Route extends IResource {
   apiVersion: 'route.openshift.io/v1';

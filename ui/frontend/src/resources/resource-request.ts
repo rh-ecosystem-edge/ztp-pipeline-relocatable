@@ -4,8 +4,9 @@ import {
   getResourceNameApiPath,
   IResource,
   ResourceList,
-} from './resource';
-import { Status, StatusKind } from './status';
+  Status,
+  StatusKind,
+} from '../common';
 
 export interface IRequestResult<ResultType = unknown> {
   promise: Promise<ResultType>;
