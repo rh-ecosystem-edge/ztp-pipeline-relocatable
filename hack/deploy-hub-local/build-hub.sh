@@ -62,6 +62,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
 		          kcli create network  -c 192.168.150.0/24 bare-net
 		          echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 		          kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+		          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 		          oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             else
 		          echo "Metal3 + Ipv4 + connected"
