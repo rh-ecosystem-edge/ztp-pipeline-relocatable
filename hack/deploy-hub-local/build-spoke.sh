@@ -80,9 +80,11 @@ fi
 #Empty file before we start
 
 >spokes.yaml
-
-CHANGE_IP=$(kcli info vm test-ci-${HUB_ARCHITECTURE} -vf ip)
-
+if [ "${HUB_ARCHITECTURE}" = "installer" ]; then
+  CHANGE_IP=$(kcli info vm test-ci-${HUB_ARCHITECTURE} -vf ip)
+else
+  CHANGE_IP=192.168.150.1  # hypervisor ip for this network
+fi
 # Default configuration
 cat <<EOF >>spokes.yaml
 config:
