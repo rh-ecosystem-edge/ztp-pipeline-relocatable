@@ -1,4 +1,5 @@
 import { K8SStateContextData } from '../types';
+import { persistDomain } from './persistDomain';
 import {
   deleteKubeAdmin,
   persistIdentityProvider,
@@ -15,15 +16,13 @@ export const persist = async (
   const persistIdpResult = await persistIdentityProvider(setError, state.username, state.password);
   if (
     persistIdpResult !== PersistIdentityProviderResult.error &&
-    /* TODO: save domain here */
     (await saveIngress(setError, state.ingressIp)) &&
-    /* Persist API at last*/ (await saveApi(setError, state.apiaddr)) &&
+    (await persistDomain(setError, state.domain)) &&
     (persistIdpResult !== PersistIdentityProviderResult.userCreated ||
-      (await deleteKubeAdmin(setError)))
+      (await deleteKubeAdmin(setError))) &&
+    (await saveApi(setError, state.apiaddr))
   ) {
-    console.error('TODO: The domain is not persisted.');
     // finished with success
-
     setError(null); // show the green circle of success
     onSuccess();
   }

@@ -7,19 +7,22 @@ import {
 import { ipWithoutDots } from '../utils';
 import { getHtpasswdIdentityProvider, getOAuth } from '../../resources/oauth';
 import { workaroundUnmarshallObject } from '../../test-utils';
+import { getIngressConfig } from '../../resources/ingress';
 
 export const initialDataLoad = async ({
   setNextPage,
   setError,
   handleSetApiaddr,
   handleSetIngressIp,
+  handleSetDomain,
 }: {
   setNextPage?: (href: string) => void;
   setError: (message?: string) => void;
   handleSetApiaddr: K8SStateContextData['handleSetApiaddr'];
   handleSetIngressIp: K8SStateContextData['handleSetIngressIp'];
+  handleSetDomain: K8SStateContextData['handleSetDomain'];
 }) => {
-  let ingressService, apiService, oauth;
+  let ingressService, apiService, oauth, ingressConfig;
   try {
     oauth = await getOAuth().promise;
     ingressService = await getService({
@@ -30,6 +33,7 @@ export const initialDataLoad = async ({
       name: SERVICE_TEMPLATE_API.metadata.name || '',
       namespace: SERVICE_TEMPLATE_API.metadata.namespace || '',
     }).promise;
+    ingressConfig = await getIngressConfig().promise;
   } catch (_e) {
     const e = _e as { message: string; code: number };
     if (e.code !== 404) {
@@ -43,6 +47,7 @@ export const initialDataLoad = async ({
   oauth = workaroundUnmarshallObject(oauth);
   ingressService = workaroundUnmarshallObject(ingressService);
   apiService = workaroundUnmarshallObject(apiService);
+  ingressConfig = workaroundUnmarshallObject(ingressConfig);
 
   if (ingressService?.spec?.loadBalancerIP) {
     handleSetIngressIp(
@@ -59,7 +64,14 @@ export const initialDataLoad = async ({
       ),
     );
   }
-  // TODO: read & set the domain
+
+  let domain = ingressConfig?.spec?.domain?.trim();
+  if (domain?.startsWith('apps.')) {
+    domain = domain.substring('apps.'.length);
+  }
+  if (domain) {
+    handleSetDomain(domain);
+  }
 
   if (getHtpasswdIdentityProvider(oauth)) {
     // The Edit flow for the 2nd and later run

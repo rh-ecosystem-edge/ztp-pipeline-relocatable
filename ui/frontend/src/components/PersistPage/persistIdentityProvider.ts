@@ -6,9 +6,8 @@ import {
   IndetityProviderType,
   OAuth,
 } from '../../resources/oauth';
-import { PatchType } from '../../resources/patches';
-import { IResource } from '../../resources/resource';
-import { deleteSecret, getSecret, Secret } from '../../resources/secret';
+import { deleteSecret, getSecret } from '../../resources/secret';
+import { IResource, Secret, PatchType } from '../../common';
 import {
   IDENTITY_PROVIDER_NAME,
   KUBEADMIN_REMOVE,

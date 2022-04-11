@@ -1,0 +1,12 @@
+version: stable
+tag: 4.10
+sno: true
+sno_virtual: true
+network_type: OVNKubernetes
+cluster: test-ci
+domain: alklabs.com
+memory: 40000
+numcpus: 16
+disk_size: 100
+network: bare-net
+metal3: true

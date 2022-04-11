@@ -23,5 +23,5 @@ jobs:
 
     - uses: iranzo/gh-pages-jekyll-action@1.0.1
       env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        GITHUB_TOKEN: ${{ secrets.GHAREPO }}
         SOURCE_FOLDER: website
