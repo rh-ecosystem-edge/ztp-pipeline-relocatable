@@ -1,3 +1,9 @@
+## [1.1.11](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.10...1.1.11) (2022-04-05)
+
+### Bug Fixes
+
+- Changing OCS version from 4.8 to 4.9 ([c1cd9ac](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/c1cd9ac9df9acbf7742485b95612ca510b96eb9c))
+
 ## [1.1.9](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.8...1.1.9) (2022-04-05)
 
 ### Bug Fixes

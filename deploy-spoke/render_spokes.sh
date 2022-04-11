@@ -37,7 +37,7 @@ create_spoke_definitions() {
     # Generic vars for all spokes
     export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
     export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
-    export CHANGE_SPOKE_CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
+    export CHANGE_SPOKE_CLUSTERIMAGESET=${CLUSTERIMAGESET}
     export CHANGE_SPOKE_API=192.168.7.243
     export CHANGE_SPOKE_INGRESS=192.168.7.242
     export CHANGE_SPOKE_CLUSTER_NET_PREFIX=23

@@ -80,10 +80,10 @@ if [ ! -f "${KUBECONFIG}" ]; then
     exit 1
 fi
 
-echo ">>>> Verify ocp server version ${OC_OCP_VERSION}"
+echo ">>>> Verify ocp server version ${OC_OCP_VERSION_FULL}"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-if [[ $(oc version | grep -i server | grep ${OC_OCP_VERSION} | wc -l) -ne 1 ]]; then
+if [[ $(oc version | grep -i server | grep ${OC_OCP_VERSION_FULL} | wc -l) -ne 1 ]]; then
     echo "Error: OCP version not supported"
     exit 2
 fi

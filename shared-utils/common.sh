@@ -162,12 +162,15 @@ if [ ! -f "${SPOKES_FILE}" ]; then
     exit 1
 fi
 
-export OC_RHCOS_RELEASE=$(yq eval ".config.OC_RHCOS_RELEASE" ${SPOKES_FILE})
+export OC_OCP_VERSION_FULL=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
+export OC_OCP_VERSION_MIN=${OC_OCP_VERSION_FULL%.*}
+export OC_RHCOS_RELEASE=$(curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OC_OCP_VERSION_FULL}/release.txt | grep 'CoreOS' | cut -d' ' -f4)
 export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${SPOKES_FILE})
 export OC_OCS_VERSION=$(yq eval ".config.OC_OCS_VERSION" ${SPOKES_FILE})
-export OC_OCP_TAG=$(yq eval ".config.OC_OCP_TAG" ${SPOKES_FILE})
-export OC_OCP_VERSION=$(yq eval ".config.OC_OCP_VERSION" ${SPOKES_FILE})
-export CLUSTERIMAGESET=$(yq eval ".config.clusterimageset" ${SPOKES_FILE})
+export OC_OCP_TAG=${OC_OCP_VERSION_FULL}"-x86_64"
+VERSION_WITHOUT_QUOTES="${OC_OCP_VERSION_FULL%\"}"
+VERSION_WITHOUT_QUOTES="${VERSION_WITHOUT_QUOTES#\"}"
+export CLUSTERIMAGESET="openshift-v"${VERSION_WITHOUT_QUOTES}
 
 if [ -z ${KUBECONFIG+x} ]; then
     echo "Please, provide a path for the hub's KUBECONFIG: It will be created if it doesn't exist"

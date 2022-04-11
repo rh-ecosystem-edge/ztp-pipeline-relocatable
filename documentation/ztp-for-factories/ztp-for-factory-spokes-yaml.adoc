@@ -1,6 +1,6 @@
 xref:config[config]:
   xref:clusterimageset[clusterimageset]: openshift-v4.9.0
-  xref:OC_OCP_VERSION[OC_OCP_VERSION]: "4.9"
+  xref:OC_OCP_VERSION[OC_OCP_VERSION]: "4.9.13"
   xref:OC_OCP_TAG[OC_OCP_TAG]: "4.9.0-x86_64"
   xref:OC_RHCOS_RELEASE[OC_RHCOS_RELEASE]: "49.84.202110081407-0"
   xref:OC_ACM_VERSION[OC_ACM_VERSION]: "2.4"

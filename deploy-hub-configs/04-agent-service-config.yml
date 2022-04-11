@@ -22,8 +22,8 @@ spec:
   mirrorRegistryRef:
     name: "mirror-ref"
   osImages:
-    - openshiftVersion: "OC_OCP_VERSION"
+    - openshiftVersion: "OC_OCP_VERSION_MIN"
       version: "CHANGEME"
-      url: "http://HTTPD_SERVICE/OC_OCP_VERSION/rhcos-live.x86_64.iso"
-      rootFSUrl: "http://HTTPD_SERVICE/OC_OCP_VERSION/rhcos-live-rootfs.x86_64.img"
+      url: "http://HTTPD_SERVICE/OC_OCP_VERSION_MIN/rhcos-live.x86_64.iso"
+      rootFSUrl: "http://HTTPD_SERVICE/OC_OCP_VERSION_MIN/rhcos-live-rootfs.x86_64.img"
       cpuArchitecture: x86_64
