@@ -6,7 +6,7 @@ if [ -z "$PS_SUSHY" ]; then
   pip3 install sushy-tools
   systemctl enable --now sushy
 
-  python3 /root/bin/sushy.py
+  python3 ./helpers/sushy.py
 
   firewall-cmd --zone=libvirt --permanent --add-port=8000/tcp
 
