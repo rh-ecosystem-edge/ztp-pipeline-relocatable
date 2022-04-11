@@ -115,8 +115,10 @@ else
 	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
 fi
 
-echo ">>>> Create the PV"
-./lab-nfs.sh
-
+echo ">>>> Create the PV and sushy only if SNO "
+if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
+  ./lab-nfs.sh
+  ./lab-sushy.sh
+fi
 echo ">>>> EOF"
 echo ">>>>>>>>"
