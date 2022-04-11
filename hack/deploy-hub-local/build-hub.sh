@@ -58,7 +58,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
 		          echo "SNO + Metal3 + Ipv4 + connected"
 		          t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-		          kcli delete vm test-ci-sno -y; kcli delete network bare-net -y
+		          kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
 		          kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
 		          kcli create network  -c 192.168.150.0/24 bare-net
 		          echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
