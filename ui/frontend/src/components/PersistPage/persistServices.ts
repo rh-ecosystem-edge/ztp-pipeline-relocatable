@@ -1,7 +1,7 @@
 import { cloneDeep } from 'lodash';
 
 import { createResource, patchResource } from '../../resources';
-import { PatchType, Service } from '../../common';
+import { PatchType, Service } from '../../backend-shared';
 import { getService } from '../../resources/service';
 import { addIpDots } from '../utils';
 import {

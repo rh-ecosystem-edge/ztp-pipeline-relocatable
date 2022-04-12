@@ -1,4 +1,4 @@
-import { Secret, SecretApiVersion, SecretKind } from '../common';
+import { Secret, SecretApiVersion, SecretKind } from '../backend-shared';
 import { deleteResource, getResource } from './resource-request';
 
 export const getSecret = (metadata: { name: string; namespace: string }) =>
