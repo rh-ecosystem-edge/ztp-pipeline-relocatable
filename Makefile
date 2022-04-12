@@ -8,7 +8,7 @@ PIPE_IMAGE = quay.io/takinosh/ztpfw-pipeline
 ## prod image name 
 ## quay.io/ztpfw/ui
 ###
-UI_IMAGE = quay.io/ztpfw/ui
+UI_IMAGE = quay.io/takinosh/ztpfw-ui
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
 HASH := $(shell git rev-parse HEAD)
 RELEASE ?= $(BRANCH)
