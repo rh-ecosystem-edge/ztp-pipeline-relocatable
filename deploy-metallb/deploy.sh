@@ -2,7 +2,7 @@
 
 set -o pipefail
 set -o nounset
-set -o errexit
+#set -o errexit
 set -m
 
 function extract_kubeconfig() {
@@ -328,4 +328,4 @@ if ! ./verify.sh; then
 else
     echo ">>>> This is step is not needed. Skipping..."
 fi
-#exit 0
+exit 0
