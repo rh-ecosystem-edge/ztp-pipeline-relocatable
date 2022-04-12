@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-and-push-docker-image:
-    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch'
+    if: github.event.review.state == 'approved'  && (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.label.name, 'test-ci') || contains(github.event.pull_request.labels.*.name, 'test-ci')
     name: Build Container images and push to repositories
     runs-on: kni4
     steps:
@@ -61,7 +61,7 @@ jobs:
 
 
   full-stack-testing:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch'
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch' || contains(github.event.label.name, 'test-ci') || contains(github.event.pull_request.labels.*.name, 'test-ci')
     runs-on: CI-pool
     needs: build-and-push-docker-image
     steps:
