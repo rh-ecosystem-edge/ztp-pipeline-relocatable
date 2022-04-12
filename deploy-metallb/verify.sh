@@ -24,41 +24,16 @@ fi
 for spoke in ${ALLSPOKES}; do
     echo "Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
-    echo ">>>> Verifying LSO and LocalVolume: ${spoke}"
+    echo ">>>> Verifying the MetalLb ${spoke}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "Check Pods..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-local-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-local-storage --no-headers | grep -v Completed | wc -l) ]]; then
-        #ocs in the spoke not exists so we need to create it
+    echo ">> Checking external access to the spoke ${spoke}"
+    oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
+    if [[ ${?} != 0 ]]; then
+        echo "ERROR: You cannot access ${spoke} spoke cluster externally"
         exit 1
     fi
-
-    echo "Check LocalVolume..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} LocalVolume -n openshift-local-storage localstorage-disks-block --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
-    fi
-
-    echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc localstorage-sc-block --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
-    fi
-
-    echo ">>>> Verifying OCS and StorageCluster: ${spoke}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "Check Pods..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | grep -v Completed | wc -l) ]]; then
-        #ocs in the spoke not exists so we need to create it
-        exit 1
-    fi
-
-    echo "Check StorageCluster..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} StorageCluster -n openshift-storage ocs-storagecluster --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
-    fi
-
-    echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} sc ocs-storagecluster-cephfs --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
-    fi
+    echo ">> external access with spoke ${spoke} Verified"
+    echo
 done
 
 echo ">>>>EOF"

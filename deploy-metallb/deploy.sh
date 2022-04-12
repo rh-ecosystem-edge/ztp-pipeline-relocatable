@@ -2,6 +2,7 @@
 
 set -o pipefail
 set -o nounset
+set -o errexit
 set -m
 
 function extract_kubeconfig() {
@@ -236,92 +237,95 @@ function check_connectivity() {
 source ${WORKDIR}/shared-utils/common.sh
 export DEBUG=false
 
-echo ">>>> Deploying NMState and MetalLB operators"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+if ! ./verify.sh; then
+    echo ">>>> Deploying NMState and MetalLB operators"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-if [[ -z ${ALLSPOKES} ]]; then
-    export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+    if [[ -z ${ALLSPOKES} ]]; then
+        export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+    fi
+
+    # This var reflects the spoke cluster you're working with
+    index=0
+    wait_time=240
+
+    for spoke in ${ALLSPOKES}; do
+        echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
+        echo ">> Extract Kubeconfig for ${spoke}"
+        extract_kubeconfig ${spoke}
+        grab_master_ext_ips ${spoke} ${index}
+        recover_spoke_rsa ${spoke}
+        check_connectivity "${SPOKE_NODE_IP}"
+        render_manifests ${index}
+
+        # Remote working
+        echo ">> Copying files to the Spoke ${spoke}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+        for _file in ${files[@]}; do
+            copy_files "${_file}" "${SPOKE_NODE_IP}" "./manifests/"
+        done
+        copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"
+        copy_files "${SPOKE_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
+        echo
+
+        echo ">> Deploying NMState and MetalLB for ${spoke}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
+        sleep 2
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
+        sleep 10
+        echo
+
+        verify_remote_pod ${spoke} "openshift-nmstate" "pod" "name=kubernetes-nmstate-operator"
+        # This empty quotes is because we don't know the pod name for MetalLB
+        verify_remote_pod ${spoke} "metallb" "pod" "control-plane=controller-manager"
+        # These empty quotes (down bellow) are just to verify the CRDs and we don't want a 'running'
+        verify_remote_resource ${spoke} "default" "crd" "nmstates.nmstate.io" "."
+        verify_remote_resource ${spoke} "default" "crd" "metallbs.metallb.io" "."
+        echo
+
+        echo ">>>> Deploying NMState Operand for ${spoke}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
+        sleep 2
+        for dep in {nmstate-cert-manager,nmstate-webhook}; do
+            verify_remote_resource ${spoke} "openshift-nmstate" "deployment.apps" ${dep} "."
+        done
+
+        # Waiting a bit to avoid webhook readyness issue
+        # Internal error occurred: failed calling webhook "nodenetworkconfigurationpolicies-mutate.nmstate.io"
+        sleep 60
+
+        for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
+            export NODENAME=ztpfw-${spoke}-master-${master}
+            export FILENAME=${spoke}-nncp-${NODENAME}
+            # I've been forced to do that, don't blame me :(
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${FILENAME}.yaml"
+            verify_remote_resource ${spoke} "default" "nncp" "${NODENAME}-nncp" "Available"
+        done
+        echo
+
+        echo ">> Deploying MetalLB Operand for ${spoke}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
+        sleep 2
+        verify_remote_resource ${spoke} "metallb" "deployment.apps" "controller" "."
+        verify_remote_pod ${spoke} "metallb" "pod" "component=speaker"
+
+        echo ">> Deploying MetalLB AddressPools and Services for ${spoke}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-api-svc.yaml -f manifests/${spoke}-metallb-ingress-svc.yaml -f manifests/${spoke}-metallb-ingress.yaml"
+        echo
+
+        sleep 2
+        verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" "."
+        verify_remote_resource ${spoke} "openshift-kube-apiserver" "service" "metallb-api" "."
+        verify_remote_resource ${spoke} "metallb" "AddressPool" "ingress-public-ip" "."
+        verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
+        echo
+        check_external_access ${spoke}
+        echo 'Patch external CatalogSources'
+        oc --kubeconfig=${SPOKE_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+        echo ">>>> Spoke ${spoke} finished!"
+        let index++
+    done
+else
+    echo ">>>> This is step is not needed. Skipping..."
 fi
-
-# This var reflects the spoke cluster you're working with
-index=0
-wait_time=240
-
-for spoke in ${ALLSPOKES}; do
-    echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
-    echo ">> Extract Kubeconfig for ${spoke}"
-    extract_kubeconfig ${spoke}
-    grab_master_ext_ips ${spoke} ${index}
-    recover_spoke_rsa ${spoke}
-    check_connectivity "${SPOKE_NODE_IP}"
-    render_manifests ${index}
-
-    # Remote working
-    echo ">> Copying files to the Spoke ${spoke}"
-    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
-    for _file in ${files[@]}; do
-        copy_files "${_file}" "${SPOKE_NODE_IP}" "./manifests/"
-    done
-    copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"
-    copy_files "${SPOKE_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
-    echo
-
-    echo ">> Deploying NMState and MetalLB for ${spoke}"
-    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
-    sleep 2
-    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
-    sleep 10
-    echo
-
-    verify_remote_pod ${spoke} "openshift-nmstate" "pod" "name=kubernetes-nmstate-operator"
-    # This empty quotes is because we don't know the pod name for MetalLB
-    verify_remote_pod ${spoke} "metallb" "pod" "control-plane=controller-manager"
-    # These empty quotes (down bellow) are just to verify the CRDs and we don't want a 'running'
-    verify_remote_resource ${spoke} "default" "crd" "nmstates.nmstate.io" "."
-    verify_remote_resource ${spoke} "default" "crd" "metallbs.metallb.io" "."
-    echo
-
-    echo ">>>> Deploying NMState Operand for ${spoke}"
-    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
-    sleep 2
-    for dep in {nmstate-cert-manager,nmstate-webhook}; do
-        verify_remote_resource ${spoke} "openshift-nmstate" "deployment.apps" ${dep} "."
-    done
-
-    # Waiting a bit to avoid webhook readyness issue
-    # Internal error occurred: failed calling webhook "nodenetworkconfigurationpolicies-mutate.nmstate.io"
-    sleep 60
-
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        export NODENAME=ztpfw-${spoke}-master-${master}
-        export FILENAME=${spoke}-nncp-${NODENAME}
-        # I've been forced to do that, don't blame me :(
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${FILENAME}.yaml"
-        verify_remote_resource ${spoke} "default" "nncp" "${NODENAME}-nncp" "Available"
-    done
-    echo
-
-    echo ">> Deploying MetalLB Operand for ${spoke}"
-    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
-    sleep 2
-    verify_remote_resource ${spoke} "metallb" "deployment.apps" "controller" "."
-    verify_remote_pod ${spoke} "metallb" "pod" "component=speaker"
-
-    echo ">> Deploying MetalLB AddressPools and Services for ${spoke}"
-    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-api-svc.yaml -f manifests/${spoke}-metallb-ingress-svc.yaml -f manifests/${spoke}-metallb-ingress.yaml"
-    echo
-
-    sleep 2
-    verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" "."
-    verify_remote_resource ${spoke} "openshift-kube-apiserver" "service" "metallb-api" "."
-    verify_remote_resource ${spoke} "metallb" "AddressPool" "ingress-public-ip" "."
-    verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
-    echo
-    check_external_access ${spoke}
-    echo 'Patch external CatalogSources'
-    oc --kubeconfig=${SPOKE_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-    echo ">>>> Spoke ${spoke} finished!"
-    let index++
-done
-
 exit 0
