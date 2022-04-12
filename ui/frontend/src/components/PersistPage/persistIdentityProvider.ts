@@ -7,7 +7,7 @@ import {
   OAuth,
 } from '../../resources/oauth';
 import { deleteSecret, getSecret } from '../../resources/secret';
-import { IResource, Secret, PatchType } from '../../common';
+import { IResource, Secret, PatchType } from '../../backend-shared';
 import {
   IDENTITY_PROVIDER_NAME,
   KUBEADMIN_REMOVE,

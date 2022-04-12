@@ -6,7 +6,7 @@ import {
   ResourceList,
   Status,
   StatusKind,
-} from '../common';
+} from '../backend-shared';
 
 export interface IRequestResult<ResultType = unknown> {
   promise: Promise<ResultType>;
