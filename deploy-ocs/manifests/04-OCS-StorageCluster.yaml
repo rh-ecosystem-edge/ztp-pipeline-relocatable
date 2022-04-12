@@ -25,5 +25,5 @@ spec:
     name: ocs-deviceset
     placement: {}
     portable: False
-    replica: 3
+    replica: 1
     resources: {}
