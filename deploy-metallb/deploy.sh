@@ -328,4 +328,4 @@ if ! ./verify.sh; then
 else
     echo ">>>> This is step is not needed. Skipping..."
 fi
-exit 0
+#exit 0
