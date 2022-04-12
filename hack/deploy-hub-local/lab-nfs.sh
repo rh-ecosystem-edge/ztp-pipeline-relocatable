@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+#clean before
+> /etc/exports
+rm -fr /pv*
+
+# install the nfs
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 export PRIMARY_IP=192.168.150.1
 dnf -y install nfs-utils

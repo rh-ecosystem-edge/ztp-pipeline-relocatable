@@ -58,7 +58,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
 		          echo "SNO + Metal3 + Ipv4 + connected"
 		          t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-		          kcli delete plan test-ci -y || true
+		          kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
 		          kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
 		          kcli create network  -c 192.168.150.0/24 bare-net
 		          echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
@@ -108,8 +108,17 @@ EOF
 echo ">>>> Create the dns entries"
 if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
 	CHANGE_IP=$(kcli info vm test-ci-sno -vf ip)
+	kcli create dns -n bare-net api.test-ci.alklabs.com -i ${CHANGE_IP}
+  kcli create dns -n bare-net api-int.test-ci.alklabs.com -i ${CHANGE_IP}
+	kcli create dns -n bare-net console-openshift-console.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+	kcli create dns -n bare-net oauth-openshift.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+	kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+	kcli create dns -n bare-net multicloud-console.apps.test-ci.alklabs.com -i ${CHANGE_IP}
 	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i ${CHANGE_IP}
 	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+	kcli create dns -n bare-net assisted-service-open-cluster-management.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+	kcli create dns -n bare-net assisted-service-assisted-installer.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+
 else
 	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
 	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
