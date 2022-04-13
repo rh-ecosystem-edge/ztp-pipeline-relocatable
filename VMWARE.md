@@ -6,14 +6,15 @@
 * OpenShift Pipelines Installed
 * RHEL/CENTOS jumpbox
 
+
 **Execute the bootstrap script file pipelines/bootstrap.sh ${KUBECONFIG} you can do that using this command:**
 ```
-export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+export KUBECONFIG=$(find  $HOME  -type f -name "kubeconfig")
 curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh ${KUBECONFIG} | bash -s
 ```
 **Export SPOKEFILE env variable**
 ```
-export SPOKEFILE=/home/admin/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml
+export SPOKEFILE=/home/${USER}/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml
 ```
 
 **Populate SPOKEFILE with the items below**
@@ -22,7 +23,7 @@ export SPOKEFILE=/home/admin/ztp-pipeline-relocatable/hack/deploy-hub-local/spok
 cat >${SPOKEFILE}<<EOF
 config:
   clusterimageset: openshift-v4.9.0
-  OC_OCP_VERSION: "4.9.27"
+  OC_OCP_VERSION: "4.9.0" # Change to match your cluster version
   OC_OCP_TAG: "4.9.0-x86_64"
   OC_RHCOS_RELEASE: "49.83.202103251640-0"
   OC_ACM_VERSION: "2.4"
@@ -30,6 +31,15 @@ config:
   VSPHERE_DEPLOYMENT: "true"
 EOF
 ```
+## Change pipeline image
+> change your pipeline to point to `quay.io/takinosh/ztpfw-pipeline`
+```
+spec:
+  description: Tekton Pipeline to deploy ZTPFW Hub Cluster
+  params:
+    - default: 'quay.io/takinosh/ztpfw-pipeline:dev'
+```
+
 ## Start the deploy-ztp-hub against the ACM hub cluster
 ```
 TEST=$(find  $HOME  -type f -name "kubeconfig")
