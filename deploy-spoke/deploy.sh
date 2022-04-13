@@ -16,10 +16,10 @@ if ! ./verify.sh 1; then
     echo ">>>> Deploy all the manifests using kustomize"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-    oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
-
     cd ${OUTPUTDIR}
     oc apply -k .
+
+    oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
 
     echo "Verifying again the clusterDeployment"
     # Waiting for 166 min to have the cluster deployed
