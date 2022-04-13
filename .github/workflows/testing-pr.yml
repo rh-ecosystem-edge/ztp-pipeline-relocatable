@@ -1,7 +1,7 @@
 name: Tests before Merging PR
 on:
-  label:
-    types: [created, deleted]
+  #label:
+  #  types: [created, deleted]
   pull_request_review:
     types: [submitted, edited]
   pull_request:
