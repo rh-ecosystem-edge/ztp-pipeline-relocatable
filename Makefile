@@ -21,10 +21,10 @@ FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 FULL_CLOUD_IMAGE_TAG=$(CLOUD_IMAGE):$(RELEASE)
 .PHONY: build-pipe build-ui push-pipe push-ui doc
 .EXPORT_ALL_VARIABLES:
-all: pipe ui
+all: pipe ui cloud
 pipe: build-pipe push-pipe
 ui: build-ui push-ui
-cloud: build-cloud
+cloud: build-cloud push-cloud
 
 build-pipe:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(FULL_PIPE_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .
@@ -40,6 +40,9 @@ push-pipe: build-pipe
 
 push-ui: build-ui
 	podman push $(FULL_UI_IMAGE_TAG)
+
+push-cloud: build-cloud
+	podman push $(FULL_CLOUD_IMAGE_TAG)
 
 doc:
 	bash build.sh
