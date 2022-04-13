@@ -1,4 +1,4 @@
-import { DNS_NAME_REGEX, USERNAME_REGEX } from '../common';
+import { DNS_NAME_REGEX, USERNAME_REGEX } from '../backend-shared';
 import { isPasswordPolicyMet } from './PasswordPage/utils';
 import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
 

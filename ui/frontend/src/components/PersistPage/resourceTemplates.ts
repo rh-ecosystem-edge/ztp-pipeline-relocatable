@@ -5,7 +5,7 @@ import {
   Secret,
   SecretApiVersion,
   SecretKind,
-} from '../../common';
+} from '../../backend-shared';
 import { ADDRESS_POOL_NAMESPACE } from './constants';
 
 export const ADDRESS_POOL_TEMPLATE = {
