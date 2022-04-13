@@ -26,6 +26,7 @@ create_kustomization() {
     for node in $(seq 0 ${NUM_M}); do
         echo "  - ${cluster}-master-${node}.yaml" >>${OUTPUT}
     done
+    echo "  - ${cluster}-worker0.yaml" >>${OUTPUT}
     echo "  - ${cluster}-cluster.yaml" >>${OUTPUT}
 }
 
@@ -58,6 +59,13 @@ create_spoke_definitions() {
     export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
     export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
     export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
+
+    mkdir -p $OUTPUTDIR/manifests/
+    cat <<EOF >${OUTPUTDIR}/manifests/cluster-infrastructure-02-config.yml
+status:
+  infrastructureTopology: HighlyAvailable
+EOF
+
     # Generate the spoke definition yaml
     cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
@@ -96,6 +104,7 @@ spec:
       - "$CHANGE_SPOKE_SVC_NET_CIDR"
   provisionRequirements:
     controlPlaneAgents: 3
+    workerAgents: 1
   sshPublicKey: '$CHANGE_RSA_PUB_KEY'
 ---
 apiVersion: hive.openshift.io/v1
@@ -300,7 +309,6 @@ spec:
    address: '$CHANGE_SPOKE_MASTER_BMC_URL'
    credentialsName: 'ztpfw-${cluster}-master-${master}-bmc-secret'
 EOF
-
     done
 }
 

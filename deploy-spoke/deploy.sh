@@ -18,6 +18,9 @@ if ! ./verify.sh 1; then
 
     cd ${OUTPUTDIR}
     oc apply -k .
+    echo "Pushing custom manifests"
+    ${WORKDIR}/${DEPLOY_SPOKES_DIR}/push-manifest-override.sh
+    
 
     oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
 

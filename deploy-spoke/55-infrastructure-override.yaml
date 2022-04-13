@@ -1,0 +1,23 @@
+apiVersion: config.openshift.io/v1
+kind: Infrastructure
+metadata:
+  creationTimestamp: null
+  name: cluster
+spec:
+  cloudConfig:
+    name: ""
+  platformSpec:
+    type: BareMetal
+status:
+  apiServerInternalURI: https://api-int.spoke0-cluster.alklabs.com:6443
+  apiServerURL: https://api.spoke0-cluster.alklabs.com:6443
+  controlPlaneTopology: HighlyAvailable
+  etcdDiscoveryDomain: ""
+  infrastructureName: spoke0-cluster-5lvg9
+  infrastructureTopology: HighlyAvailable
+  platform: BareMetal
+  platformStatus:
+    baremetal:
+      apiServerInternalIP: 192.168.7.243
+      ingressIP: 192.168.7.242
+    type: BareMetal
