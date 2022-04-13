@@ -34,9 +34,6 @@ fi
 export DEPLOY_OCP_DIR="./"
 export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:$ocp_version-x86_64"
 export OC_CLUSTER_NAME="test-ci"
-export OC_DEPLOY_METAL="yes"
-export OC_NET_CLASS="ipv4"
-export OC_TYPE_ENV="connected"
 export VERSION="stable"
 export CLUSTERS=1
 export OC_PULL_SECRET="'$(cat $pull_secret)'"
@@ -44,6 +41,8 @@ export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_OCS_VERSION="${ocs_version}"
 export HUB_ARCHITECTURE="${5:-installer}"
+# export DEPLOY_KCLI_PLAN_COMMIT="master"
+
 
 echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
@@ -52,40 +51,28 @@ echo $OC_PULL_SECRET | tr -d [:space:] | sed -e 's/^.//' -e 's/.$//' >./openshif
 echo ">>>> kcli create plan"
 echo ">>>>>>>>>>>>>>>>>>>>>"
 
-if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
-    if [ "${OC_NET_CLASS}" = "ipv4" ]; then
-        if [ "${OC_TYPE_ENV}" = "connected" ]; then
-            if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
-		          echo "SNO + Metal3 + Ipv4 + connected"
-		          t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-		          kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
-		          kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-		          kcli create network  -c 192.168.150.0/24 bare-net
-		          echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-		          kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-		          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-		          oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
-            else
-		          echo "Metal3 + Ipv4 + connected"
-		          t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-		          git pull
-		          kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-		          kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-            fi
-        else
-            echo "Metal3 + ipv4 + disconnected"
-            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-        fi
-    else
-        echo "Metal3 + ipv6 + disconnected"
-        t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-        kcli create plan --force --paramfile=lab_ipv6.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-
-    fi
+if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
+  echo "SNO + Metal3 + Ipv4 + connected"
+  t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+  kcli delete vm test-ci-sno -y || true
+  kcli delete network bare-net -y || true
+  kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
+  kcli create network  -c 192.168.150.0/24 bare-net
+  echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+  kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+  export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+  oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
 else
-    echo "Without Metal3 + ipv4 + connected"
-    kcli create kube openshift --force --paramfile lab-withoutMetal3.yml -P tag="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+  echo "Metal3 + Ipv4 + connected"
+  [ -d kcli-openshift4-baremetal ] && rm -rf kcli-openshift4-baremetal
+  echo "Cloning kcli-openshift4-baremetal repo"
+  git clone https://github.com/karmab/kcli-openshift4-baremetal
+  cp openshift_pull.json kcli-openshift4-baremetal
+  git -C kcli-openshift4-baremetal checkout ${DEPLOY_KCLI_PLAN_COMMIT:-master}
+  t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}' | awk -F- '{print $1}')
+  git pull
+  kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
+  kcli create plan -f kcli-openshift4-baremetal --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 fi
 
 echo ">>>> Spokes.yaml file generation"

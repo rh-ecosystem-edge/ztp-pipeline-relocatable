@@ -1,7 +1,6 @@
 version: stable
-tag: 4.10
-sno: true
-sno_virtual: true
+tag: "4.10"
+masters: 1
 network_type: OVNKubernetes
 cluster: test-ci
 domain: alklabs.com
