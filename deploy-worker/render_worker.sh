@@ -64,7 +64,7 @@ spec:
        ipv4:
          enabled: true
          dhcp: true
-         auto-dns: false
+         auto-dns: true
          auto-gateway: true
          auto-routes: true
        mtu: 1500
@@ -82,10 +82,6 @@ spec:
              prefix-length: $CHANGE_SPOKE_WORKER_PUB_INT_MASK
        mtu: 1500
        mac-address: '$CHANGE_SPOKE_WORKER_PUB_INT_MAC'
-   dns-resolver:
-     config:
-       server:
-         - $SPOKE_MASTER_0_INT_IP
    routes:
      config:
        - destination: $CHANGE_SPOKE_WORKER_PUB_INT_ROUTE_DEST
