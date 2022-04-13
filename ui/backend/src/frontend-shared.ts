@@ -1,1 +1,1 @@
-export * from '../../frontend/src/common';
+export * from './common';

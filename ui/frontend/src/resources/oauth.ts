@@ -1,5 +1,5 @@
 import { getResource } from './resource-request';
-import { Metadata, IResource } from '../common';
+import { Metadata, IResource } from '../backend-shared';
 import { IDENTITY_PROVIDER_NAME } from '../components/PersistPage/constants';
 
 export type OAuthApiVersionType = 'config.openshift.io/v1';

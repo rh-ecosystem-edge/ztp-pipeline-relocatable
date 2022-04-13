@@ -1,4 +1,4 @@
-import { Ingress, IngressKind, IngressPlural, IngressVersion } from '../common';
+import { Ingress, IngressKind, IngressPlural, IngressVersion } from '../backend-shared';
 import { getResource } from './resource-request';
 
 export const getIngressConfig = () =>
