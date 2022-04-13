@@ -67,3 +67,18 @@ jobs:
           echo ">>>>"
 
           RELEASE=${RELEASE} make ui
+
+      - name: Build and Push Cloud Image
+        id: build-cloud-openshift-ztp
+        run: |
+          cd ${{ github.workspace }}
+
+          RELEASE=${{ github.ref_name }}
+
+          echo ">>>> Building Cloud Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.ref_name }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make cloud

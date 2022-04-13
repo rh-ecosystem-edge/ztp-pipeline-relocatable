@@ -81,4 +81,4 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make build-cloud
+          RELEASE=${RELEASE} make cloud
