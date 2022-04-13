@@ -28,7 +28,7 @@ config:
   OC_RHCOS_RELEASE: "49.83.202103251640-0"
   OC_ACM_VERSION: "2.4"
   OC_OCS_VERSION: "4.8"
-  VSPHERE_DEPLOYMENT: "true"
+  CLOUD_DEPLOYMENT: "true"
 EOF
 ```
 ## Change pipeline image

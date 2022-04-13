@@ -171,7 +171,7 @@ export OC_OCP_TAG=${OC_OCP_VERSION_FULL}"-x86_64"
 VERSION_WITHOUT_QUOTES="${OC_OCP_VERSION_FULL%\"}"
 VERSION_WITHOUT_QUOTES="${VERSION_WITHOUT_QUOTES#\"}"
 export CLUSTERIMAGESET="openshift-v"${VERSION_WITHOUT_QUOTES}
-export VSPHERE_DEPLOYMENT=$(yq eval ".config.VSPHERE_DEPLOYMENT" ${SPOKES_FILE})
+export CLOUD_DEPLOYMENT=$(yq eval ".config.CLOUD_DEPLOYMENT" ${SPOKES_FILE})
 
 if [ -z ${KUBECONFIG+x} ]; then
     echo "Please, provide a path for the hub's KUBECONFIG: It will be created if it doesn't exist"

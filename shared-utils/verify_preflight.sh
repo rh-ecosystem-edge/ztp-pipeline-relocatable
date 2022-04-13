@@ -90,7 +90,7 @@ fi
 
 echo ">>>> Verify oc get nodes"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-if [ -f "${VSPHERE_DEPLOYMENT}" ];
+if [ -f "${CLOUD_DEPLOYMENT}" ];
 then 
     if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]]; then
         echo "Error: Nodes are not ready"
