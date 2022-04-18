@@ -44,15 +44,15 @@ function check_bmhs() {
     spokenumber=${3}
     timeout=0
     ready=false
-    NUM_M_MAX=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
-    NUM_M_MIN=$((NUM_M_MAX - 1))
+    NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
+    NUM_M_MAX=$((NUM_M + 1))
 
 
 
     while [ "${timeout}" -lt "${wait_time}" ]; do
         RCBMH=$(oc --kubeconfig=${KUBECONFIG_HUB} get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')
         # Check state
-        if [[ $(echo ${RCBMH} | grep provisioned | wc -w) -eq ${NUM_M_MIN} || $(echo ${RCBMH} | grep provisioned | wc -w) -eq ${NUM_M_MAX} ]]; then
+        if [[ $(echo ${RCBMH} | grep provisioned | wc -w) -eq ${NUM_M} || $(echo ${RCBMH} | grep provisioned | wc -w) -eq ${NUM_M_MAX} ]]; then
             ready=true
             break
         fi
