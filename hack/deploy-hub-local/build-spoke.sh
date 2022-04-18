@@ -43,7 +43,7 @@ export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_OCS_VERSION="${ocs_version}"
-export HUB_ARCHITECTURE="${5:-installer}"
+export HUB_ARCHITECTURE="${5:-compact}"
 
 
 
@@ -83,7 +83,7 @@ fi
 #Empty file before we start
 
 >spokes.yaml
-if [ "${HUB_ARCHITECTURE}" = "installer" ]; then
+if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
   CHANGE_IP=$(kcli info vm test-ci-${HUB_ARCHITECTURE} -vf ip)
   MASTERS=3
 else
