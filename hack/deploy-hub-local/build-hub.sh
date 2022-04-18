@@ -61,31 +61,23 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
 		          kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
 		          kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
 		          kcli create network  -c 192.168.150.0/24 bare-net
-		          echo kcli create cluster openshift --force --paramfile=sno-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-		          kcli create cluster openshift --force --paramfile=sno-metal3.yml -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+		          echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+		          kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 		          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 		          oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             else
-		          echo "Metal3 + Ipv4 + connected"
-		          t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-		          git pull
-		          kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-		          kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+		          echo "Multinode + Metal3 + Ipv4 + connected"
+             	t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+             	kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
+             	kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
+             	kcli create network  -c 192.168.150.0/24 bare-net
+             	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=18000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+             	export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+             	oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             fi
-        else
-            echo "Metal3 + ipv4 + disconnected"
-            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan --force --paramfile=lab-metal3.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
         fi
-    else
-        echo "Metal3 + ipv6 + disconnected"
-        t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-        kcli create plan --force --paramfile=lab_ipv6.yml -P disconnected="true" -P version="${VERSION}" -P tag="${t}" -P openshift_image="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-
     fi
-else
-    echo "Without Metal3 + ipv4 + connected"
-    kcli create kube openshift --force --paramfile lab-withoutMetal3.yml -P tag="${OC_RELEASE}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 fi
 
 echo ">>>> Spokes.yaml file generation"
@@ -106,28 +98,21 @@ spokes:
 EOF
 
 echo ">>>> Create the dns entries"
-if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
-	CHANGE_IP=$(kcli info vm test-ci-sno -vf ip)
-	kcli create dns -n bare-net api.test-ci.alklabs.com -i ${CHANGE_IP}
-  kcli create dns -n bare-net api-int.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net console-openshift-console.apps.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net oauth-openshift.apps.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net multicloud-console.apps.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net assisted-service-open-cluster-management.apps.test-ci.alklabs.com -i ${CHANGE_IP}
-	kcli create dns -n bare-net assisted-service-assisted-installer.apps.test-ci.alklabs.com -i ${CHANGE_IP}
+kcli create dns -n bare-net api.test-ci.alklabs.com -i 192.168.150.253
+kcli create dns -n bare-net api-int.test-ci.alklabs.com -i 192.168.150.253
+kcli create dns -n bare-net console-openshift-console.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net oauth-openshift.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net multicloud-console.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net assisted-service-open-cluster-management.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net assisted-service-assisted-installer.apps.test-ci.alklabs.com -i 192.168.150.252
 
-else
-	kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
-	kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
-fi
 
 echo ">>>> Create the PV and sushy only if SNO "
-if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
-  ./lab-nfs.sh
-  ./lab-sushy.sh
-fi
+./lab-nfs.sh
+./lab-sushy.sh
+
 echo ">>>> EOF"
 echo ">>>>>>>>"
