@@ -41,6 +41,7 @@ function check_aci() {
 function check_bmhs() {
     cluster=${1}
     wait_time=${2}
+    spokenumber=${3}
     timeout=0
     ready=false
     NUM_M_MAX=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
@@ -83,11 +84,13 @@ if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
 
+index=0
 for SPOKE in ${ALLSPOKES}; do
     echo ">>>> Starting the validation until finish the installation"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    check_bmhs "${SPOKE}" "${wait_time}"
+    check_bmhs "${SPOKE}" "${wait_time}" ${index}
     check_aci "${SPOKE}" "${wait_time}" "True"
+    index=$((index + 1))
     echo ">>>>EOF"
     echo ">>>>>>>"
 done
