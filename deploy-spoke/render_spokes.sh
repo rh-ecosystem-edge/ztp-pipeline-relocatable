@@ -18,9 +18,9 @@ create_kustomization() {
     echo "resources:" >${OUTPUT}
 
     echo ">> Detecting number of masters"
-    NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
+    export NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
     echo ">> Masters: ${NUM_M}"
-    NUM_M=$((NUM_M - 1))
+    export NUM_M=$((NUM_M - 1))
 
     echo ">> Rendering Kustomize for: ${cluster}"
     for node in $(seq 0 ${NUM_M}); do
@@ -35,6 +35,7 @@ create_spoke_definitions() {
     local spokenumber=${2}
 
     # Generic vars for all spokes
+    export CHANGE_MACHINE_CIDR=192.168.150.0/24
     export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
     export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
     export CHANGE_SPOKE_CLUSTERIMAGESET=${CLUSTERIMAGESET}
@@ -86,6 +87,9 @@ spec:
   imageSetRef:
     name: $CHANGE_SPOKE_CLUSTERIMAGESET
   fips: true
+EOF
+    if [ "${NUM_M_MAX}" -eq "3"]; then
+        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   apiVIP: "$CHANGE_SPOKE_API"
   ingressVIP: "$CHANGE_SPOKE_INGRESS"
   networking:
@@ -96,6 +100,22 @@ spec:
       - "$CHANGE_SPOKE_SVC_NET_CIDR"
   provisionRequirements:
     controlPlaneAgents: 3
+EOF
+    else # SNO
+        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+  networking:
+    clusterNetwork:
+      - cidr: "$CHANGE_SPOKE_CLUSTER_NET_CIDR"
+        hostPrefix: $CHANGE_SPOKE_CLUSTER_NET_PREFIX
+    serviceNetwork:
+      - "$CHANGE_SPOKE_SVC_NET_CIDR"
+    machineNetwork:
+      - cidr: "$CHANGE_MACHINE_CIDR"
+  provisionRequirements:
+    controlPlaneAgents: 1
+EOF
+    fi
+    cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   sshPublicKey: '$CHANGE_RSA_PUB_KEY'
 ---
 apiVersion: hive.openshift.io/v1
