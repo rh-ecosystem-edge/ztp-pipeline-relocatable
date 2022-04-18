@@ -93,7 +93,6 @@ fi
 # Default configuration
 cat <<EOF >>spokes.yaml
 config:
-
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
   OC_OCS_VERSION: '${OC_OCS_VERSION}'
