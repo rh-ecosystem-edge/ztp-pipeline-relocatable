@@ -57,19 +57,22 @@ echo ">>>>>>>>>>>>>>>>>>>>>"
 if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     if [ "${OC_NET_CLASS}" = "ipv4" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
+          if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
+            echo "Metal3 + Ipv4 + connected"
+            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+            kcli create plan -k -f create-vm-sno.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
+          else
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
             kcli create plan -k -f create-vm.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
-
+          fi
         else
             echo "Metal3 + ipv4 + disconnected"
-            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            
+            #t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
         fi
     else
         echo "Metal3 + ipv6 + disconnected"
-        t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-
+        #t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
     fi
 else
     echo "Without Metal3 + ipv4 + connected"
@@ -82,8 +85,10 @@ fi
 >spokes.yaml
 if [ "${HUB_ARCHITECTURE}" = "installer" ]; then
   CHANGE_IP=$(kcli info vm test-ci-${HUB_ARCHITECTURE} -vf ip)
+  MASTERS=3
 else
   CHANGE_IP=192.168.150.1  # hypervisor ip for this network
+  MASTERS=1
 fi
 # Default configuration
 cat <<EOF >>spokes.yaml
@@ -105,7 +110,7 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
     cat <<EOF >>spokes.yaml
   - spoke${spoke}-cluster:
 EOF
-    for master in 0 1 2; do
+    for master in $(seq 0 $((MASTERS - 1))); do
         # Stanza generation for each master
         MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} -f id -v)
         cat <<EOF >>spokes.yaml
@@ -126,6 +131,7 @@ EOF
 EOF
     done
 
+  if [ "${HUB_ARCHITECTURE}" = "installer" ]; then
     # Add the single worker
     worker=0
     WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} -f id -v)
@@ -146,6 +152,7 @@ EOF
           - /dev/vdd
           - /dev/vde
 EOF
+  fi
 
 done
 
