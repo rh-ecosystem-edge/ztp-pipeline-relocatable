@@ -83,11 +83,10 @@ fi
 #Empty file before we start
 
 >spokes.yaml
+CHANGE_IP=192.168.150.1  # hypervisor ip for this network
 if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
-  CHANGE_IP=$(kcli info vm test-ci-${HUB_ARCHITECTURE} -vf ip)
   MASTERS=3
 else
-  CHANGE_IP=192.168.150.1  # hypervisor ip for this network
   MASTERS=1
 fi
 # Default configuration
@@ -130,7 +129,7 @@ EOF
 EOF
     done
 
-  if [ "${HUB_ARCHITECTURE}" = "installer" ]; then
+  if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
     # Add the single worker
     worker=0
     WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} -f id -v)
