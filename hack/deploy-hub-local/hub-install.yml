@@ -1,12 +1,11 @@
 version: stable
-tag: 4.10
-sno: true
-sno_virtual: true
 network_type: OVNKubernetes
+kvm_openstack: true
 cluster: test-ci
-domain: alklabs.com
-memory: 40000
+domain: alklabs.local
 numcpus: 16
 disk_size: 100
 network: bare-net
 metal3: true
+api_ip: 192.168.150.253
+ingress_ip: 192.168.150.252
