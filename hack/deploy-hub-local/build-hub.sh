@@ -62,7 +62,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
 		          kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
 		          kcli create network  -c 192.168.150.0/24 bare-net
 		          echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-		          kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+		          kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
 		          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 		          oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             else
@@ -72,7 +72,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
              	kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
              	kcli create network  -c 192.168.150.0/24 bare-net
              	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=18000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=18000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
              	export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
              	oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             fi
