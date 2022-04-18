@@ -88,7 +88,7 @@ spec:
     name: $CHANGE_SPOKE_CLUSTERIMAGESET
   fips: true
 EOF
-    if [ "${NUM_M}" -eq "3"]; then
+    if [ "${NUM_M}" -eq "3" ]; then
         cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   apiVIP: "$CHANGE_SPOKE_API"
   ingressVIP: "$CHANGE_SPOKE_INGRESS"
