@@ -1,5 +1,6 @@
 version: stable
 network_type: OVNKubernetes
+kvm_openstack: true
 cluster: test-ci
 domain: alklabs.com
 numcpus: 16
