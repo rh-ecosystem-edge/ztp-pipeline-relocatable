@@ -3,7 +3,7 @@ PIPE_IMAGE = quay.io/ztpfw/pipeline
 UI_IMAGE = quay.io/ztpfw/ui
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")
 HASH := $(shell git rev-parse HEAD)
-RELEASE ?= $(BRANCH)
+RELEASE := $(shell git branch --show-current)
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 
