@@ -6,7 +6,7 @@ if [ -z "$PS_SUSHY" ]; then
   cp ./lab-sushy.service /etc/systemd/system/sushy-emulator.service
 
   dnf -y install pkgconf-pkg-config libvirt-devel gcc python3-libvirt python3 git python3-netifaces
-
+  pip3 install sushy-tools --ignore-installed PyYAML || true
   systemctl daemon-reload
   systemctl enable --now sushy-emulator.service
 
