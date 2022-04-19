@@ -155,16 +155,16 @@ EOF
 done
 
 
-kcli create dns -n bare-net api.spoke0-cluster.alklabs.com -i 192.168.150.201
-kcli create dns -n bare-net api-int.spoke0-cluster.alklabs.com -i 192.168.150.201
-kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net ztpfw-ui-ztpfw-ui.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net edge-cluster-setup.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net ztpfw-registry-quay-ztpfw-registry.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net noobaa-mgmt-openshift-storage.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net console-openshift-console.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net oauth-openshift.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
-kcli create dns -n bare-net httpd-server.apps.spoke0-cluster.alklabs.com -i 192.168.150.200
+kcli create dns -n bare-net api.spoke0-cluster.alklabs.local -i 192.168.150.201
+kcli create dns -n bare-net api-int.spoke0-cluster.alklabs.local -i 192.168.150.201
+kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net ztpfw-ui-ztpfw-ui.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net edge-cluster-setup.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net ztpfw-registry-quay-ztpfw-registry.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net noobaa-mgmt-openshift-storage.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net console-openshift-console.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net oauth-openshift.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
+kcli create dns -n bare-net httpd-server.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
 echo ">>>> EOF"
 echo ">>>>>>>>"
