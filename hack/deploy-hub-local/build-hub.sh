@@ -98,16 +98,16 @@ spokes:
 EOF
 
 echo ">>>> Create the dns entries"
-kcli create dns -n bare-net api.test-ci.alklabs.com -i 192.168.150.253
-kcli create dns -n bare-net api-int.test-ci.alklabs.com -i 192.168.150.253
-kcli create dns -n bare-net console-openshift-console.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net oauth-openshift.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net multicloud-console.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net assisted-service-open-cluster-management.apps.test-ci.alklabs.com -i 192.168.150.252
-kcli create dns -n bare-net assisted-service-assisted-installer.apps.test-ci.alklabs.com -i 192.168.150.252
+kcli create dns -n bare-net api.test-ci.alklabs.local -i 192.168.150.253
+kcli create dns -n bare-net api-int.test-ci.alklabs.local -i 192.168.150.253
+kcli create dns -n bare-net console-openshift-console.apps.test-ci.alklabs.local -i 192.168.150.252
+kcli create dns -n bare-net oauth-openshift.apps.test-ci.alklabs.local -i 192.168.150.252
+kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.test-ci.alklabs.local -i 192.168.150.252
+kcli create dns -n bare-net multicloud-console.apps.test-ci.alklabs.local -i 192.168.150.252
+kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.local -i 192.168.150.252
+kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.local -i 192.168.150.252
+kcli create dns -n bare-net assisted-service-open-cluster-management.apps.test-ci.alklabs.local -i 192.168.150.252
+kcli create dns -n bare-net assisted-service-assisted-installer.apps.test-ci.alklabs.local -i 192.168.150.252
 
 
 echo ">>>> Create the PV and sushy only if SNO "
