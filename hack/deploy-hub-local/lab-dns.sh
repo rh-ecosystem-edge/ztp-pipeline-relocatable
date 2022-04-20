@@ -90,6 +90,7 @@ function restart_services(){
 }
 
 function checks() {
+    echo 
     local fail=0
     local success=0
     echo ">> DNS Checks"
@@ -131,3 +132,4 @@ set_firewall
 disable_nm_dnsmasq
 set_dnsmasq
 restart_services
+checks
