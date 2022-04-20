@@ -23,6 +23,7 @@ function disable_nm_dnsmasq(){
     echo "[main]
 dns=none" > /etc/NetworkManager/conf.d/00-no-dnsmasq.conf
 
+    export hostname=$(hostname -f)
     echo ">>>> Configuring Dispatcher"
     cat <<EOF >/etc/NetworkManager/dispatcher.d/00-forcedns.sh
 #!/bin/bash
@@ -35,7 +36,6 @@ options edns0 trust-ad
 
 export IP="$(hostname -I | cut -f1 -d\ )"
 export BASE_RESOLV_CONF=/run/NetworkManager/resolv.conf
-export hostname=$(hostname -f)
 if [ "\$2" = "dhcp4-change" ] || [ "\$2" = "dhcp6-change" ] || [ "\$2" = "up" ] || [ "\$2" = "connectivity-change" ]; then
     if ! grep -q "\$IP" /etc/resolv.conf; then
       export TMP_FILE=\$(mktemp /etc/forcedns_resolv.conf.XXXXXX)
