@@ -60,8 +60,8 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
                 echo "SNO + Metal3 + Ipv4 + connected"
                 t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
                 kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
-                kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-                kcli create network -c 192.168.150.0/24 --domain alklabs.local bare-net
+                kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
+                kcli create network -c 192.168.150.0/24 bare-net
                 echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
                 kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
                 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
@@ -70,8 +70,8 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
                 echo "Multinode + Metal3 + Ipv4 + connected"
              	t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
              	kcli delete vm test-ci-sno -y || true; kcli delete vm test-ci-master-0 -y || true; kcli delete vm test-ci-master-1 -y || true; kcli delete vm test-ci-master-2 -y || true; kcli delete network bare-net -y || true
-             	kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-             	kcli create network -c 192.168.150.0/24 --domain alklabs.local bare-net
+             	kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
+             	kcli create network -c 192.168.150.0/24 bare-net
              	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
              	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
              	export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
@@ -111,7 +111,7 @@ kcli create dns -n bare-net assisted-service-open-cluster-management.apps.test-c
 kcli create dns -n bare-net assisted-service-assisted-installer.apps.test-ci.alklabs.local -i 192.168.150.252
 
 
-echo ">>>> Create the PV and sushy only if SNO "
+echo ">>>> Create the PV and sushy and nfs"
 ./lab-nfs.sh
 ./lab-sushy.sh
 
