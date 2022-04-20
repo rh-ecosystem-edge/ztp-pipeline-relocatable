@@ -52,9 +52,20 @@ EOF
     chmod 644 /etc/resolv.conf
 
     echo ">>>> Configuring IPTables"
-    iptables -I FORWARD 2 -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24
-    iptables -I FORWARD 1 -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24
-    
+    iptables -C FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24 2&>1 > /dev/null
+    if [[ $? == 0 ]];then
+            echo "Adding Rule..."
+            iptables -I FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24
+            firewall-cmd --reload
+    fi
+
+    iptables -C FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24 2&>1 > /dev/null
+    if [[ $? == 0 ]];then
+            echo "Adding Rule..."
+            iptables -I FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24
+            firewall-cmd --reload
+    fi 
+
     echo ">>>> Prunning /etc/hosts"
     echo "127.0.0.1 localhost.localdomain localhost" > /etc/hosts
 }
