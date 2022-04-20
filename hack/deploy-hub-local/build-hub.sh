@@ -62,8 +62,8 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
                 kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
                 kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
                 kcli create network -c 192.168.150.0/24 bare-net
-                echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-                kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+                echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
+                kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
                 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
                 oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             else
@@ -72,8 +72,8 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
              	kcli delete vm test-ci-sno -y || true; kcli delete vm test-ci-master-0 -y || true; kcli delete vm test-ci-master-1 -y || true; kcli delete vm test-ci-master-2 -y || true; kcli delete network bare-net -y || true
              	kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
              	kcli create network -c 192.168.150.0/24 bare-net
-             	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+             	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
+             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
              	export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
              	oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             fi
@@ -98,20 +98,7 @@ cat <<EOF >>spokes.yaml
 spokes:
 EOF
 
-echo ">>>> Create the dns entries"
-kcli create dns -n bare-net api.test-ci.alklabs.local -i 192.168.150.253
-kcli create dns -n bare-net api-int.test-ci.alklabs.local -i 192.168.150.253
-kcli create dns -n bare-net console-openshift-console.apps.test-ci.alklabs.local -i 192.168.150.252
-kcli create dns -n bare-net oauth-openshift.apps.test-ci.alklabs.local -i 192.168.150.252
-kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.test-ci.alklabs.local -i 192.168.150.252
-kcli create dns -n bare-net multicloud-console.apps.test-ci.alklabs.local -i 192.168.150.252
-kcli create dns -n bare-net httpd-server.apps.test-ci.alklabs.local -i 192.168.150.252
-kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.test-ci.alklabs.local -i 192.168.150.252
-kcli create dns -n bare-net assisted-service-open-cluster-management.apps.test-ci.alklabs.local -i 192.168.150.252
-kcli create dns -n bare-net assisted-service-assisted-installer.apps.test-ci.alklabs.local -i 192.168.150.252
-
-
-echo ">>>> Create the PV and sushy and nfs"
+echo ">>>> Create the PV and sushy and dns"
 ./lab-nfs.sh
 ./lab-sushy.sh
 
