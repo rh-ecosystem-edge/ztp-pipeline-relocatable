@@ -35,7 +35,7 @@ create_spoke_definitions() {
     local spokenumber=${2}
 
     # Generic vars for all spokes
-    export CHANGE_MACHINE_CIDR=192.168.7.0/24
+    export CHANGE_MACHINE_CIDR=192.168.150.0/24
     export CHANGE_SPOKE_PULL_SECRET_NAME=pull-secret-spoke-cluster
     export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
     export CHANGE_SPOKE_CLUSTERIMAGESET=${CLUSTERIMAGESET}
