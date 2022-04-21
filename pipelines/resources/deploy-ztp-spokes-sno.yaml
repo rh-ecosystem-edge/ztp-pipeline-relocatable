@@ -56,23 +56,23 @@ spec:
         workspace: ztp
 
   # Deploy ICSP Spokes Pre
-  - name: deploy-icsp-spokes-pre
-    taskRef:
-      name: spoke-deploy-icsp-spokes-pre
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-spokes
-    workspaces:
-      - name: ztp
-        workspace: ztp
+  #- name: deploy-icsp-spokes-pre
+  #  taskRef:
+  #    name: spoke-deploy-icsp-spokes-pre
+  #  params:
+  #    - name: spokes-config
+  #      value: $(params.spokes-config)
+  #    - name: kubeconfig
+  #      value: $(params.kubeconfig)
+  #    - name: ztp-container-image
+  #      value: $(params.ztp-container-image)
+  #    - name: mock
+  #      value: $(params.mock)
+  #  runAfter:
+  #    - deploy-spokes
+  #  workspaces:
+  #    - name: ztp
+  #      workspace: ztp
 
   # Deploy MetalLB
   - name: deploy-metallb
@@ -94,61 +94,61 @@ spec:
         workspace: ztp
 
   # Deploy OCS
-  - name: deploy-ocs
-    taskRef:
-      name: spoke-deploy-ocs
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-metallb
-    workspaces:
-      - name: ztp
-        workspace: ztp
+  #- name: deploy-ocs
+  #  taskRef:
+  #    name: spoke-deploy-ocs
+  #  params:
+  #    - name: spokes-config
+  #      value: $(params.spokes-config)
+  #    - name: kubeconfig
+  #      value: $(params.kubeconfig)
+  #    - name: ztp-container-image
+  #      value: $(params.ztp-container-image)
+  #    - name: mock
+  #      value: $(params.mock)
+  #  runAfter:
+  #    - deploy-metallb
+  #  workspaces:
+  #    - name: ztp
+  #      workspace: ztp
 
   # Deploy Disconnected Registry
-  - name: deploy-disconnected-registry
-    taskRef:
-      name: spoke-deploy-disconnected-registry-spokes
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-ocs
-    workspaces:
-      - name: ztp
-        workspace: ztp
+  #- name: deploy-disconnected-registry
+  #  taskRef:
+  #    name: spoke-deploy-disconnected-registry-spokes
+  #  params:
+  #    - name: spokes-config
+  #      value: $(params.spokes-config)
+  #    - name: kubeconfig
+  #      value: $(params.kubeconfig)
+  #    - name: ztp-container-image
+  #      value: $(params.ztp-container-image)
+  #    - name: mock
+  #      value: $(params.mock)
+  #  runAfter:
+  #    - deploy-ocs
+  #  workspaces:
+  #    - name: ztp
+  #      workspace: ztp
 
   # Deploy ICSP Spokes Post
-  - name: deploy-icsp-spokes-post
-    taskRef:
-      name: spoke-deploy-icsp-spokes-post
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-disconnected-registry
-    workspaces:
-      - name: ztp
-        workspace: ztp
+  #- name: deploy-icsp-spokes-post
+  #  taskRef:
+  #    name: spoke-deploy-icsp-spokes-post
+  #  params:
+  #    - name: spokes-config
+  #      value: $(params.spokes-config)
+  #    - name: kubeconfig
+  #      value: $(params.kubeconfig)
+  #    - name: ztp-container-image
+  #      value: $(params.ztp-container-image)
+  #    - name: mock
+  #      value: $(params.mock)
+  #  runAfter:
+  #    - deploy-disconnected-registry
+  #  workspaces:
+  #    - name: ztp
+  #      workspace: ztp
 
   # Deploy ZTPFWUI
   - name: deploy-ui
