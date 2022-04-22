@@ -5,7 +5,7 @@ function set_dnsmasq_spoke(){
     if [[ $(hostname |grep flavio) ]];then
       export ROUTE_DEST=/etc/dnsmasq.d/01-spoke0-cluster.con
     else
-      export ROUTE_DEST=/etc/NetworkManager/dnsmasq.d/00-test-ci.conf
+      export ROUTE_DEST=/etc/NetworkManager/dnsmasq.d/01-spoke0-cluster.conf
     fi
     if [[ "$1" == "compact" ]]; then
        echo "resolv-file=/etc/resolv.upstream.conf
