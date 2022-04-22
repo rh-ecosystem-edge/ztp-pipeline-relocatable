@@ -92,7 +92,7 @@ nameserver 8.8.4.4" > /etc/resolv.upstream.conf
 }
 
 function set_dnsmasq_spoke(){
-    if [ "$1" = "compact" ]; then
+    if [[ "$1" == "compact" ]]; then
        echo "domain=test-ci.alklabs.local,192.168.150.0/24,local
       resolv-file=/etc/resolv.upstream.conf
       # Hub Cluster
@@ -104,7 +104,7 @@ function set_dnsmasq_spoke(){
       address=/api.spoke0-cluster.alklabs.local/192.168.150.201
       address=/api-int.spoke0-cluster.alklabs.local/192.168.150.201" > /etc/dnsmasq.d/00-test-ci.conf
     fi
-    if [ "$1" = "sno" ]; then
+    if [[ "$1" == "sno" ]]; then
        echo "domain=test-ci.alklabs.local,192.168.150.0/24,local
       resolv-file=/etc/resolv.upstream.conf
       # Hub Cluster
@@ -122,6 +122,7 @@ function restart_services(){
     echo ">> Restarting Services"
     systemctl restart NetworkManager
     systemctl enable --now dnsmasq
+    systemctl restart dnsmasq
     systemctl restart libvirtd
     systemctl restart sushy
 }
@@ -184,10 +185,11 @@ function checks() {
 
 }
 if [[ $# -eq 0 ]];then
-    echo "Usage: $0 <hub|spoke> [compact|sno]"
+    echo "Usage: $0 <hub|spokes> [compact|sno]"
     exit 1
 fi
 if [[ $1 == "hub" ]];then
+      echo ">> Configuring Hub"
     set_hostname
     set_firewall
     disable_nm_dnsmasq
@@ -196,6 +198,7 @@ if [[ $1 == "hub" ]];then
     checks "hub"
 fi
 if [[ $1 == "spokes" ]];then
+      echo ">> Configuring Spokes with $2"
     set_dnsmasq_spoke $2
     restart_services
     checks "spokes"
