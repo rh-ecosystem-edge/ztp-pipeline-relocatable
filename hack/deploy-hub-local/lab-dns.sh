@@ -69,7 +69,7 @@ EOF
     echo "127.0.0.1 localhost.localdomain localhost" > /etc/hosts
 }
 
-function set_dnsmasq(){
+function set_dnsmasq_hub(){
     echo ">> Configuring dnsmasq"
     echo "user=dnsmasq
 group=dnsmasq
@@ -89,6 +89,33 @@ address=/api-int.test-ci.alklabs.local/192.168.150.253" > /etc/dnsmasq.d/00-test
 
     echo "nameserver 8.8.8.8
 nameserver 8.8.4.4" > /etc/resolv.upstream.conf
+}
+
+function set_dnsmasq_spoke(){
+    if [ "$2" = "compact" ]; then
+       echo "domain=test-ci.alklabs.local,192.168.150.0/24,local
+      resolv-file=/etc/resolv.upstream.conf
+      # Hub Cluster
+      address=/.apps.test-ci.alklabs.local/192.168.150.252
+      address=/api.test-ci.alklabs.local/192.168.150.253
+      address=/api-int.test-ci.alklabs.local/192.168.150.253
+      # Spoke Cluster
+      address=/.apps.spoke0-cluster.alklabs.local/192.168.150.200
+      address=/api.spoke0-cluster.alklabs.local/192.168.150.201
+      address=/api-int.spoke0-cluster.alklabs.local/192.168.150.201" > /etc/dnsmasq.d/00-test-ci.conf
+    fi
+    if [ "$2" = "sno" ]; then
+       echo "domain=test-ci.alklabs.local,192.168.150.0/24,local
+      resolv-file=/etc/resolv.upstream.conf
+      # Hub Cluster
+      address=/.apps.test-ci.alklabs.local/192.168.150.252
+      address=/api.test-ci.alklabs.local/192.168.150.253
+      address=/api-int.test-ci.alklabs.local/192.168.150.253
+      # Spoke Cluster
+      address=/.apps.spoke0-cluster.alklabs.local/192.168.150.201
+      address=/api.spoke0-cluster.alklabs.local/192.168.150.201
+      address=/api-int.spoke0-cluster.alklabs.local/192.168.150.201" > /etc/dnsmasq.d/00-test-ci.conf
+    fi
 }
 
 function restart_services(){
@@ -117,29 +144,59 @@ function checks() {
         fi
     done
 
-    echo
-    echo ">>>> Checking Hub Routes Internal resolution"
-    for dns_name in "test.apps.test-ci.alklabs.local" "api.test-ci.alklabs.local" "api-int.test-ci.alklabs.local"
-    do
-        echo -n "${dns_name}: "
-        dig +short @192.168.150.1 ${dns_name} | grep -v -e '^$'
-        if [[ $? == 0 ]];then
-            let success++
-        else
-            echo "Failed!"
-            let fail++
+    if [[ $1 == "hub" ]];then
+        echo ">>>> Checking Hub Routes Internal resolution"
+        for dns_name in "test.apps.test-ci.alklabs.local" "api.test-ci.alklabs.local" "api-int.test-ci.alklabs.local"
+        do
+            echo -n "${dns_name}: "
+            dig +short @192.168.150.1 ${dns_name} | grep -v -e '^$'
+            if [[ $? == 0 ]];then
+                let success++
+            else
+                echo "Failed!"
+                let fail++
+            fi
+        done
+
+        if [[ $fail > 0 ]];then
+            echo "ERROR: DNS Configuration has issues, check before continue"
+            exit 1
         fi
-    done
+    else
+        echo ">>>> Checking Spoke Routes Internal resolution"
+        for dns_name in "test.apps.spoke0-cluster.alklabs.local" "api.spoke0-cluster.alklabs.local" "api-int.spoke0-cluster.alklabs.local"
+        do
+            echo -n "${dns_name}: "
+            dig +short @192.168.150.1 ${dns_name} | grep -v -e '^$'
+            if [[ $? == 0 ]];then
+                let success++
+            else
+                echo "Failed!"
+                let fail++
+            fi
+        done
 
-    if [[ $fail > 0 ]];then
-        echo "ERROR: DNS Configuration has issues, check before continue"
-        exit 1
+        if [[ $fail > 0 ]];then
+            echo "ERROR: DNS Configuration has issues, check before continue"
+            exit 1
+        fi
     fi
-}
 
-set_hostname
-set_firewall
-disable_nm_dnsmasq
-set_dnsmasq
-restart_services
-checks
+}
+if [[ $# -eq 0 ]];then
+    echo "Usage: $0 <hub|spoke> [compact|sno]"
+    exit 1
+fi
+if [[ $1 == "hub" ]];then
+    set_hostname
+    set_firewall
+    disable_nm_dnsmasq
+    set_dnsmasq_hub
+    restart_services
+    checks "hub"
+fi
+if [[ $1 == "spokes" ]];then
+    set_dnsmasq_spoke $2
+    restart_services
+    checks "spokes"
+fi

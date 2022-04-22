@@ -154,6 +154,8 @@ EOF
 
 done
 
+echo ">>>> Create the dns entries"
+./lab-dns.sh "spokes"
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
