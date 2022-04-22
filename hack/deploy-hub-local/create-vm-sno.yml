@@ -11,6 +11,8 @@ spoke{{ i }}-cluster-m{{ j }}:
   nets:
   - name: bare-net
     mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
+    reserveip: true
+    ip: 192.168.150.201
   - name: ztpfw
     nic: enp2s0
     mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a

@@ -270,9 +270,11 @@ EOF
         cat <<EOF >>${OUTPUT}
    routes:
      config:
-       - destination: $CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST
+       - destination: 0.0.0.0/0
          next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
+         metric: 99
+         table-id: 254
 EOF
 
         if [[ ${IGN_IFACES} != "null" ]]; then
