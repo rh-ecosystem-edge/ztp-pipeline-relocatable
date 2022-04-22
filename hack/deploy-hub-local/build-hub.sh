@@ -101,7 +101,6 @@ EOF
 echo ">>>> Create the PV and sushy and dns"
 ./lab-nfs.sh
 ./lab-sushy.sh
-./lab-dns.sh "hub"
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
