@@ -196,7 +196,7 @@ if [[ $1 == "hub" ]];then
     checks "hub"
 fi
 if [[ $1 == "spokes" ]];then
-    set_dnsmasq_spoke $1
+    set_dnsmasq_spoke $2
     restart_services
     checks "spokes"
 fi
