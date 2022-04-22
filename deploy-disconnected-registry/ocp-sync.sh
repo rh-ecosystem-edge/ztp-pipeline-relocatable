@@ -41,6 +41,13 @@ function mirror_ocp() {
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo
+
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    #######
+    
     # Empty log file
     >${OUTPUTDIR}/mirror-ocp.log
     SALIDA=1

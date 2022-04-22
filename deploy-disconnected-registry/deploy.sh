@@ -227,7 +227,7 @@ function deploy_registry() {
 
         echo ">> Creating organizations for mirror to succeed"
         APIURL="https://${ROUTE}/api/v1/organization/"
-        for organization in ocp4 olm jparrill ocatopic ztpfw; do
+        for organization in ocp4 olm olm-certified jparrill ocatopic ztpfw ; do
             echo ">> Creating organization ${organization}"
             curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"${organization}@redhat.com\"}"
         done
