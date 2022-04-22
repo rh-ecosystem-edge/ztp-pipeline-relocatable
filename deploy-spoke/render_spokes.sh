@@ -33,6 +33,8 @@ create_spoke_definitions() {
     # Reset loop for spoke general definition
     local cluster=${1}
     local spokenumber=${2}
+    echo ">> Detecting number of masters"
+    export NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
 
     # Generic vars for all spokes
     export CHANGE_MACHINE_CIDR=192.168.7.0/24
