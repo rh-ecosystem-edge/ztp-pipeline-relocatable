@@ -92,7 +92,7 @@ nameserver 8.8.4.4" > /etc/resolv.upstream.conf
 }
 
 function set_dnsmasq_spoke(){
-    if [ "$2" = "compact" ]; then
+    if [ "$1" = "compact" ]; then
        echo "domain=test-ci.alklabs.local,192.168.150.0/24,local
       resolv-file=/etc/resolv.upstream.conf
       # Hub Cluster
@@ -104,7 +104,7 @@ function set_dnsmasq_spoke(){
       address=/api.spoke0-cluster.alklabs.local/192.168.150.201
       address=/api-int.spoke0-cluster.alklabs.local/192.168.150.201" > /etc/dnsmasq.d/00-test-ci.conf
     fi
-    if [ "$2" = "sno" ]; then
+    if [ "$1" = "sno" ]; then
        echo "domain=test-ci.alklabs.local,192.168.150.0/24,local
       resolv-file=/etc/resolv.upstream.conf
       # Hub Cluster
@@ -196,7 +196,7 @@ if [[ $1 == "hub" ]];then
     checks "hub"
 fi
 if [[ $1 == "spokes" ]];then
-    set_dnsmasq_spoke $2
+    set_dnsmasq_spoke $1
     restart_services
     checks "spokes"
 fi
