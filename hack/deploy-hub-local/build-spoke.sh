@@ -155,7 +155,7 @@ EOF
 done
 
 echo ">>>> Create the dns entries"
-./lab-dns.sh "spokes"
+./lab-dns.sh "spokes" ${HUB_ARCHITECTURE}
 
 echo ">>>> EOF"
 echo ">>>>>>>>"
