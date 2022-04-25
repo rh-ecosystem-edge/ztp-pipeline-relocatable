@@ -86,7 +86,9 @@ source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-export REGISTRY=ztpfw-registry
+# ? moved to shared util
+# export REGISTRY=ztpfw-registry 
+
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
 export QUAY_MANIFESTS=quay-manifests
@@ -106,7 +108,7 @@ if [[ ${1} == "hub" ]]; then
     export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OC_OCP_TAG}"
     export SOURCE_REGISTRY="quay.io"
     export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
-    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+    export DESTINATION_REGISTRY=${LOCAL_REG}
     ## OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
