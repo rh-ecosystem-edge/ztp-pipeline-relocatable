@@ -172,6 +172,7 @@ VERSION_WITHOUT_QUOTES="${OC_OCP_VERSION_FULL%\"}"
 VERSION_WITHOUT_QUOTES="${VERSION_WITHOUT_QUOTES#\"}"
 export CLUSTERIMAGESET="openshift-v"${VERSION_WITHOUT_QUOTES}
 
+
 if [ -z ${KUBECONFIG+x} ]; then
     echo "Please, provide a path for the hub's KUBECONFIG: It will be created if it doesn't exist"
     exit 1
@@ -197,3 +198,9 @@ if [[ ! -f ${PULL_SECRET} ]]; then
 fi
 
 export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+
+REGISTRY=$(yq  ".config.registry" ${SPOKES_FILE} || null )
+if [[ ${REGISTRY} == "" || ${REGISTRY} == null ]]; then
+    REGISTRY=ztpfw-registry
+    LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+fi
