@@ -33,6 +33,28 @@ spec:
       interval: 30m
 EOF
     echo
+
+    if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
+        echo ">>>> There are no certified operators to be mirrored"
+    else
+           cat >>${CS_OUTFILE} <<EOF
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ${OC_DIS_CATALOG}-certfied
+  namespace: ${MARKET_NS}
+spec:
+  sourceType: grpc
+  image: ${OLM_CERTIFIED_DESTINATION_INDEX}
+  displayName: Disconnected Lab Certified
+  publisher: disconnected-lab-certified
+  updateStrategy:
+    registryPoll:
+      interval: 30m
+EOF
+    fi
+    echo
 }
 
 function trust_internal_registry() {
