@@ -117,6 +117,14 @@ function render_manifests() {
     index=${1}
     echo ">> Rendering Manifests for Spoke ${index}"
 
+    # Render the subscription to be connected or disconnected (assuming sno is connected)
+    export NUM_M=$(yq e ".spokes[0].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
+    if [ "${NUM_M}" -eq "3" ]; then  # 3 masters and disconnected
+        sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" 03-MLB-Subscription.yaml
+    else  # sno is connected so the source should be upstream
+        sed -i "s/CHANGE_SOURCE/redhat-operators/g" 03-MLB-Subscription.yaml
+    fi
+
     # Render NNCP Manifests
     for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
         export NODENAME=ztpfw-${spoke}-master-${master}
