@@ -7,5 +7,5 @@ metadata:
 spec:
   channel: "stable"
   name: metallb-operator
-  source: ztpfw-catalog
+  source: CHANGE_SOURCE
   sourceNamespace: openshift-marketplace
