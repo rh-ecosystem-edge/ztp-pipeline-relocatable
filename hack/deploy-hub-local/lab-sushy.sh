@@ -12,7 +12,7 @@ if [ -z "$PS_SUSHY" ]; then
 
   firewall-cmd --zone=libvirt --permanent --add-port=8000/tcp
   firewall-cmd --reload
-  systemctl start sushy.service
+  systemctl restart sushy.service
 else
   echo "Sushy is already running"
 fi

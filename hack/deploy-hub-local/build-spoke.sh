@@ -68,14 +68,17 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
           fi
         else
             echo "Metal3 + ipv4 + disconnected"
+            echo "Not implemented yet"
             #t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
         fi
     else
         echo "Metal3 + ipv6 + disconnected"
+        echo "Not implemented yet"
         #t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
     fi
 else
     echo "Without Metal3 + ipv4 + connected"
+    echo "Not implemented yet"
 fi
 
 # Spokes.yaml file generation
