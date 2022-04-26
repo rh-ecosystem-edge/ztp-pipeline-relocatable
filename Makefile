@@ -9,29 +9,31 @@ FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
 OCP_VERSION ?= 4.10.9
 ACM_VERSION ?= 2.4
 OCS_VERSION ?= 4.9
-TYPE ?= sno
 
 
-
-.PHONY: build-image-pipe build-image-ui push-image-pipe push-image-ui doc build-hub deploy-pipe-hub build-spoke deploye-pipe-spoke boostrap
+.PHONY: all-images pipe-image ui-image all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact deploy-pipe-hub build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact boostrap
 .EXPORT_ALL_VARIABLES:
 
-image-all: image-pipe image-ui
+all-images: pipe-image ui-image
+pipe-image: build-pipe-image push-pipe-image
+ui-image: build-ui-image push-ui-image
 
-image-pipe: build-image-pipe push-image-pipe
+all-hub-sno: build-hub-sno boostrap deploy-pipe-hub
+all-hub-compact: build-hub-compact boostrap deploy-pipe-hub
+all-spoke-sno: build-spoke-sno boostrap deploy-pipe-spoke-sno
+all-spoke-compact: build-spoke-compact boostrap deploy-pipe-spoke-compact
 
-image-ui: build-image-ui push-image-ui
 
-build-image-pipe:
+build-pipe-image:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(FULL_PIPE_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .
 
-build-image-ui:
+build-ui-image:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(FULL_UI_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.UI .
 
-push-image-pipe: build-pipe
+push-pipe-image: build-pipe
 	podman push $(FULL_PIPE_IMAGE_TAG)
 
-push-image-ui: build-ui
+push-ui-image: build-ui
 	podman push $(FULL_UI_IMAGE_TAG)
 
 doc:
