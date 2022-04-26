@@ -40,7 +40,11 @@ resolv-file=/etc/resolv.upstream.conf
 # Hub Cluster
 address=/.apps.test-ci.alklabs.local/192.168.150.252
 address=/api.test-ci.alklabs.local/192.168.150.253
-address=/api-int.test-ci.alklabs.local/192.168.150.253" > /etc/NetworkManager/dnsmasq.d/00-test-ci.conf
+address=/api-int.test-ci.alklabs.local/192.168.150.253
+# Spoke Cluster
+address=/.apps.test-ci.alklabs.local/192.168.150.200
+address=/api.test-ci.alklabs.local/192.168.150.201
+address=/api-int.test-ci.alklabs.local/192.168.150.201" > /etc/NetworkManager/dnsmasq.d/00-test-ci.conf
 
     cat /etc/resolv.conf | grep nameserver > /etc/resolv.upstream.conf
 }
