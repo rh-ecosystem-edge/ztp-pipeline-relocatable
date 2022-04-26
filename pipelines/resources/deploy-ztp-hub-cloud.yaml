@@ -93,10 +93,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy ICSP Hub
-  - name: deploy-icsp-hub
+  # Deploy vSphere Configs 
+  - name: deploy-vsphere-configs
     taskRef:
-      name: hub-deploy-icsp-hub
+      name: hub-deploy-vsphere-configs
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -108,25 +108,6 @@ spec:
         value: $(params.mock)
     runAfter:
       - deploy-acm
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # Deploy Hub Config
-  - name: deploy-hub-config
-    taskRef:
-      name: hub-deploy-hub-config
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-icsp-hub
     workspaces:
       - name: ztp
         workspace: ztp
