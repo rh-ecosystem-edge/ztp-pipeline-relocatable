@@ -18,10 +18,10 @@ all-images: pipe-image ui-image
 pipe-image: build-pipe-image push-pipe-image
 ui-image: build-ui-image push-ui-image
 
-all-hub-sno: build-hub-sno boostrap deploy-pipe-hub
-all-hub-compact: build-hub-compact boostrap deploy-pipe-hub
-all-spoke-sno: build-spoke-sno boostrap deploy-pipe-spoke-sno
-all-spoke-compact: build-spoke-compact boostrap deploy-pipe-spoke-compact
+all-hub-sno: build-hub-sno bootstrap deploy-pipe-hub
+all-hub-compact: build-hub-compact bootstrap deploy-pipe-hub
+all-spoke-sno: build-spoke-sno bootstrap deploy-pipe-spoke-sno
+all-spoke-compact: build-spoke-compact bootstrap deploy-pipe-spoke-compact
 
 
 build-pipe-image:
@@ -55,7 +55,8 @@ deploy-pipe-hub:
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub
+			--use-param-defaults deploy-ztp-hub  && \
+	tkn pr logs -L -n spoke-deployer -f
 
 build-spoke-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
@@ -73,7 +74,8 @@ deploy-pipe-spoke-sno:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-spokes-sno
+    			--use-param-defaults deploy-ztp-spokes-sno && \
+	tkn pr logs -L -n spoke-deployer -f
 
 deploy-pipe-spoke-compact:
 	tkn pipeline start -n spoke-deployer \
@@ -83,9 +85,10 @@ deploy-pipe-spoke-compact:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-spokes
+    			--use-param-defaults deploy-ztp-spokes && \
+	tkn pr logs -L -n spoke-deployer -f
 
-boostrap:
+bootstrap:
 	cd ${PWD}/pipelines && \
 	./bootstrap.sh $(BRANCH)
 
