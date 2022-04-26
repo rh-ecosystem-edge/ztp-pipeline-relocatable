@@ -99,6 +99,6 @@ function checks() {
 set_hostname
 set_firewall
 disable_nm_dnsmasq
-set_dnsmasq
+set_nm_dnsmasq
 restart_services
 checks
