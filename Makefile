@@ -40,10 +40,10 @@ doc:
 	bash build.sh
 
 build-hub-sno:
-	./hack/deploy-local-hub/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./hack/deploy-hub-local/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
 
 build-hub-compact:
-	./hack/deploy-local-hub/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./hack/deploy-hub-local/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-hub:
 	tkn pipeline start -n spoke-deployer \
@@ -56,10 +56,10 @@ deploy-pipe-hub:
 			--use-param-defaults deploy-ztp-hub
 
 build-spoke-sno:
-	./hack/deploy-local-hub/build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./hack/deploy-hub-local/build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
 
 build-spoke-compact:
-	./hack/deploy-local-hub/build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./hack/deploy-hub-local/build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-spoke-sno:
 	tkn pipeline start -n spoke-deployer \
