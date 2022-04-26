@@ -52,13 +52,16 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
           title: SSH_PRIVATE_KEY_SECRET_TITLE,
           message: 'Failed to load secret with the ssh private key.',
         });
+
+        // Do not let the user stuck in case of error
+        setDownloaded(true);
       }
     };
 
     if (!sshKey && !error) {
       doItAsync();
     }
-  }, [sshKey, error]);
+  }, [sshKey, error, setDownloaded]);
 
   const onDownload = () => {
     if (sshKey) {
