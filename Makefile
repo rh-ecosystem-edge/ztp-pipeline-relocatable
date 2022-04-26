@@ -40,9 +40,11 @@ doc:
 	bash build.sh
 
 build-hub-sno:
+	cd ${PWD}/hack/deploy-hub-local && \
 	./hack/deploy-hub-local/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
 
 build-hub-compact:
+	cd ${PWD}/hack/deploy-hub-local && \
 	./hack/deploy-hub-local/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-hub:
@@ -56,9 +58,11 @@ deploy-pipe-hub:
 			--use-param-defaults deploy-ztp-hub
 
 build-spoke-sno:
-	./hack/deploy-hub-local/build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
 
 build-spoke-compact:
+	cd ${PWD}/hack/deploy-hub-local && \
 	./hack/deploy-hub-local/build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-spoke-sno:
@@ -82,5 +86,6 @@ deploy-pipe-spoke-compact:
     			--use-param-defaults deploy-ztp-spokes
 
 boostrap:
+	cd ${PWD}/pipelines && \
 	./pipelines/bootstrap.sh $(BRANCH)
 
