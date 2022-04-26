@@ -49,21 +49,16 @@ export const initialDataLoad = async ({
   apiService = workaroundUnmarshallObject(apiService);
   ingressConfig = workaroundUnmarshallObject(ingressConfig);
 
-  if (ingressService?.spec?.loadBalancerIP) {
-    handleSetIngressIp(
-      ipWithoutDots(
-        ingressService.spec?.loadBalancerIP ||
-          ingressService.status?.loadBalancer?.ingress?.[0]?.ip,
-      ),
-    );
-  }
-  if (apiService?.spec?.loadBalancerIP) {
-    handleSetApiaddr(
-      ipWithoutDots(
-        apiService?.spec?.loadBalancerIP || apiService.status?.loadBalancer?.ingress?.[0]?.ip,
-      ),
-    );
-  }
+  handleSetIngressIp(
+    ipWithoutDots(
+      ingressService.spec?.loadBalancerIP || ingressService.status?.loadBalancer?.ingress?.[0]?.ip,
+    ),
+  );
+  handleSetApiaddr(
+    ipWithoutDots(
+      apiService?.spec?.loadBalancerIP || apiService.status?.loadBalancer?.ingress?.[0]?.ip,
+    ),
+  );
 
   let domain = ingressConfig?.spec?.domain?.trim();
   if (domain?.startsWith('apps.')) {
