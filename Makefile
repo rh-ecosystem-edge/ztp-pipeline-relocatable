@@ -41,11 +41,11 @@ doc:
 
 build-hub-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./hack/deploy-hub-local/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
 
 build-hub-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./hack/deploy-hub-local/build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-hub:
 	tkn pipeline start -n spoke-deployer \
@@ -63,7 +63,7 @@ build-spoke-sno:
 
 build-spoke-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./hack/deploy-hub-local/build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-spoke-sno:
 	tkn pipeline start -n spoke-deployer \
@@ -87,5 +87,5 @@ deploy-pipe-spoke-compact:
 
 boostrap:
 	cd ${PWD}/pipelines && \
-	./pipelines/bootstrap.sh $(BRANCH)
+	./bootstrap.sh $(BRANCH)
 
