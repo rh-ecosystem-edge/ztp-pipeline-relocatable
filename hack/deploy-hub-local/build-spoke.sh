@@ -43,7 +43,7 @@ export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_OCS_VERSION="${ocs_version}"
-export HUB_ARCHITECTURE="${5:-installer}"
+export HUB_ARCHITECTURE="${5:-compact}"
 
 
 
@@ -57,22 +57,28 @@ echo ">>>>>>>>>>>>>>>>>>>>>"
 if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     if [ "${OC_NET_CLASS}" = "ipv4" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
+          if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
+            echo "Metal3 + Ipv4 + connected"
+            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+            kcli create plan -k -f create-vm-sno.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
+          else
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
             kcli create plan -k -f create-vm.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
-
+          fi
         else
             echo "Metal3 + ipv4 + disconnected"
-            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            
+            echo "Not implemented yet"
+            #t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
         fi
     else
         echo "Metal3 + ipv6 + disconnected"
-        t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-
+        echo "Not implemented yet"
+        #t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
     fi
 else
     echo "Without Metal3 + ipv4 + connected"
+    echo "Not implemented yet"
 fi
 
 # Spokes.yaml file generation
@@ -80,15 +86,15 @@ fi
 #Empty file before we start
 
 >spokes.yaml
-if [ "${HUB_ARCHITECTURE}" = "installer" ]; then
-  CHANGE_IP=$(kcli info vm test-ci-${HUB_ARCHITECTURE} -vf ip)
+CHANGE_IP=192.168.150.1  # hypervisor ip for this network
+if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
+  MASTERS=3
 else
-  CHANGE_IP=192.168.150.1  # hypervisor ip for this network
+  MASTERS=1
 fi
 # Default configuration
 cat <<EOF >>spokes.yaml
 config:
-
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
   OC_OCS_VERSION: '${OC_OCS_VERSION}'
@@ -105,7 +111,7 @@ for spoke in $(seq 0 $((CLUSTERS - 1))); do
     cat <<EOF >>spokes.yaml
   - spoke${spoke}-cluster:
 EOF
-    for master in 0 1 2; do
+    for master in $(seq 0 $((MASTERS - 1))); do
         # Stanza generation for each master
         MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} -f id -v)
         cat <<EOF >>spokes.yaml
@@ -126,6 +132,7 @@ EOF
 EOF
     done
 
+  if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
     # Add the single worker
     worker=0
     WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} -f id -v)
@@ -146,20 +153,9 @@ EOF
           - /dev/vdd
           - /dev/vde
 EOF
+  fi
 
 done
 
-
-kcli create dns -n bare-net api.spoke0-cluster.alklabs.local -i 192.168.150.201
-kcli create dns -n bare-net api-int.spoke0-cluster.alklabs.local -i 192.168.150.201
-kcli create dns -n bare-net ztpfw-registry-ztpfw-registry.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net ztpfw-ui-ztpfw-ui.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net edge-cluster-setup.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net ztpfw-registry-quay-ztpfw-registry.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net noobaa-mgmt-openshift-storage.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net console-openshift-console.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net oauth-openshift.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net prometheus-k8s-openshift-monitoring.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
-kcli create dns -n bare-net httpd-server.apps.spoke0-cluster.alklabs.local -i 192.168.150.200
 echo ">>>> EOF"
 echo ">>>>>>>>"
