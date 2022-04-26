@@ -12,6 +12,11 @@
 export KUBECONFIG=$(find  $HOME  -type f -name "kubeconfig")
 curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh ${KUBECONFIG} | bash -s
 ```
+## Development
+```
+curl -sLk https://raw.githubusercontent.com/tosin2013/ztp-pipeline-relocatable/dev/pipelines/bootstrap.sh ${KUBECONFIG} | bash -s
+```
+
 **Export SPOKEFILE env variable**
 ```
 export SPOKEFILE=/home/${USER}/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml
@@ -43,7 +48,7 @@ spec:
 ## Start the deploy-ztp-hub against the ACM hub cluster
 ```
 TEST=$(find  $HOME  -type f -name "kubeconfig")
-tkn pipeline start -n spoke-deployer -p spokes-config="$(cat ${SPOKEFILE})" -p kubeconfig="${TEST}" -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+tkn pipeline start -n spoke-deployer -p spokes-config="$(cat ${SPOKEFILE})" -p kubeconfig="${TEST}" -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub-cloud
 ```
 
 ## TESTING

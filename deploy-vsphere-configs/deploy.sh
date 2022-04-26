@@ -14,10 +14,10 @@ if ./verify.sh; then
 
     # Load common vars
     source ${WORKDIR}/shared-utils/common.sh
-
+    ls -lsth .
     git clone https://github.com/Red-Hat-SE-RTO/openshift-ztp.git
-    cd openshift-ztp
-    pip3 install -r ./requirements.txt
+    #cd openshift-ztp
+    #pip3 install -r ./requirements.txt
 elif [[ $? -eq 50 ]]; then
     echo ">>>> Verify failed...Some pods are failing..." #TODO change to remove and launch again
     exit 50
