@@ -4,6 +4,7 @@ bases:
   - spokes
 resources:
   - deploy-ztp-hub.yaml
+  - deploy-ztp-hub-cloud.yaml
   - deploy-ztp-spokes.yaml
 
 namespace: spoke-deployer

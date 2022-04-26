@@ -22,7 +22,7 @@ RUN cd /tmp && \
 
 
 RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils && dnf clean all
-RUN dnf makecache &&  dnf install epel-release -y &&  dnf install ansible -y 
+RUN dnf makecache &&  dnf install epel-release -y &&  dnf install ansible git python3 python3-pip -y 
 RUN mkdir -p /opt/ztp
 
 COPY . /opt/ztp
