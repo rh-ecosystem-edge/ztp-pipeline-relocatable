@@ -22,11 +22,15 @@ if [[ -z ${ALLSPOKES} ]]; then
 fi
 
 for spoke in ${ALLSPOKES}; do
+
+    echo "Extract Kubeconfig for ${spoke}"
+    extract_kubeconfig ${spoke}
+
     echo ">>>> Verifying the MetalLb ${spoke}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    deployment=$(oc --kubeconfig=${KUBECONFIG_HUB} get deployment -n metallb controller -ojsonpath={.status.availableReplicas})
-    service=$(oc --kubeconfig=${KUBECONFIG_HUB} get svc -n metallb --no-headers | wc -l)
-    address_pool=$(oc --kubeconfig=${KUBECONFIG_HUB} get addresspool -n metallb --no-headers | wc -l)
+    deployment=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get deployment -n metallb controller -ojsonpath={.status.availableReplicas})
+    service=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get svc -n metallb --no-headers | wc -l)
+    address_pool=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get addresspool -n metallb --no-headers | wc -l)
 
     if [[ ${deployment} == "1" && ${service} == "4" && ${address_pool} == "1"  ]]; then
         echo "MetalLb deployment is up and running"
@@ -35,8 +39,7 @@ for spoke in ${ALLSPOKES}; do
         exit 1
     fi
 
-    echo "Extract Kubeconfig for ${spoke}"
-    extract_kubeconfig ${spoke}
+
 
     echo ">> Checking external access to the spoke ${spoke}"
     oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
