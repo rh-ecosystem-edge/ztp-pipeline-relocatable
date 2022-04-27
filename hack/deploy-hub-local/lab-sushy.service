@@ -5,5 +5,7 @@ After=syslog.target
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/sushy-emulator --config /etc/sushy.conf
+ExecStop=/usr/bin/pkill sushy
+ExecReload=/usr/bin/pkill sushy
 StandardOutput=syslog
 StandardError=syslog
