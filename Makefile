@@ -6,6 +6,7 @@ HASH := $(shell git rev-parse HEAD)
 RELEASE ?= $(BRANCH)
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
+PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.9
 ACM_VERSION ?= 2.4
 OCS_VERSION ?= 4.9
@@ -41,11 +42,11 @@ doc:
 
 build-hub-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
 
 build-hub-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-hub.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-hub:
 	tkn pipeline start -n spoke-deployer \
@@ -60,11 +61,11 @@ deploy-pipe-hub:
 
 build-spoke-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
 
 build-spoke-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-spoke.sh  ${HOME}/openshift_pull.json $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-spoke-sno:
 	tkn pipeline start -n spoke-deployer \
