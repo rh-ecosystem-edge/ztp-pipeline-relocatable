@@ -92,5 +92,5 @@ deploy-pipe-spoke-compact:
 
 bootstrap:
 	cd ${PWD}/pipelines && \
-	./bootstrap.sh $(RELEASE)
+	./bootstrap.sh $(BRANCH)
 
