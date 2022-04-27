@@ -18,6 +18,7 @@ HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
+FULL_CLOUD_IMAGE_TAG=$(CLOUD_IMAGE):$(BRANCH)
 SPOKES_FILE ?= "$$(cat ${PWD}/hack/deploy-hub-local/spokes.yaml)"
 PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.9
