@@ -50,7 +50,7 @@ build-hub-compact:
 
 deploy-pipe-hub:
 	tkn pipeline start -n spoke-deployer \
-			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
 			-p spokes-config="$(cat $(SPOKES_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
@@ -69,7 +69,7 @@ build-spoke-compact:
 
 deploy-pipe-spoke-sno:
 	tkn pipeline start -n spoke-deployer \
-    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
     			-p spokes-config="$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
@@ -80,7 +80,7 @@ deploy-pipe-spoke-sno:
 
 deploy-pipe-spoke-compact:
 	tkn pipeline start -n spoke-deployer \
-    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
     			-p spokes-config="$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
@@ -91,5 +91,5 @@ deploy-pipe-spoke-compact:
 
 bootstrap:
 	cd ${PWD}/pipelines && \
-	./bootstrap.sh $(BRANCH)
+	./bootstrap.sh $(RELEASE)
 
