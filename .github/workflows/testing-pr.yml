@@ -44,14 +44,16 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make pipe-image
+          RELEASE=${RELEASE} make pipe-image-ci
 
       - name: Build and Push UI Image
         id: build-ui
         run: |
           cd ${{ github.workspace }}
-
-          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}    
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             RELEASE=latest
           else
             RELEASE=${{ github.event.pull_request.head.ref }}
@@ -63,7 +65,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make ui-image
+          RELEASE=${RELEASE} make ui-image-ci
 
 
   full-stack-testing:
