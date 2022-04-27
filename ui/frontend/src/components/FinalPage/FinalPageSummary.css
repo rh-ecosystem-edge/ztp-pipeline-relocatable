@@ -1,11 +1,11 @@
 .final-page-sumamary {
-  margin-top: var(--pf-global--spacer--4xl);
+  margin-top: var(--pf-global--spacer--xl);
   margin-right: var(--pf-global--spacer--xl);
   margin-left: var(--pf-global--spacer--xl);
 }
 
 .final-page-sumamary__item-first {
-  padding-bottom: var(--pf-global--spacer--2xl);
+  padding-bottom: var(--pf-global--spacer--lg);
 }
 
 .final-page-sumamary__item {

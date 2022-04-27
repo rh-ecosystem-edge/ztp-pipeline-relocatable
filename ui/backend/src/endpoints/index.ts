@@ -5,3 +5,4 @@ export * from './readiness';
 export * from './serve';
 export * from './htpasswd';
 export * from './changeDomain';
+export * from './user';
