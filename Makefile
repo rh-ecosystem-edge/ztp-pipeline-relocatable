@@ -12,7 +12,7 @@ ACM_VERSION ?= 2.4
 OCS_VERSION ?= 4.9
 
 
-.PHONY: all-images pipe-image ui-image all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact deploy-pipe-hub build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact boostrap
+.PHONY: all-images pipe-image ui-image all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact deploy-pipe-hub build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap
 .EXPORT_ALL_VARIABLES:
 
 all-images: pipe-image ui-image
