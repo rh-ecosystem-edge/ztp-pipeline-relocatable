@@ -50,6 +50,11 @@ if ./verify.sh; then
         fi
         sleep 5
         timeout=$((timeout + 1))
+    done
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for argocd pods "
+        exit 1
+    fi
 elif [[ $? -eq 50 ]]; then
     echo ">>>> Verify failed...Some pods are failing..." #TODO change to remove and launch again
     exit 50
