@@ -54,7 +54,7 @@ push-pipe-image: build-pipe-image
 push-ui-image: build-ui-image
 	podman push $(FULL_UI_IMAGE_TAG)
 
-push-cloud-image: build-cloud
+push-cloud-image: build-cloud-image
 	podman push $(FULL_CLOUD_IMAGE_TAG)
 
 doc:
