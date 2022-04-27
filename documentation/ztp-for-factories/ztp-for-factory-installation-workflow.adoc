@@ -79,7 +79,7 @@ We have 2 Pipelines created composed by some tasks each ones. Every Pipeline wil
 Let's explain the pipeline arguments and Flags we use in the ZTPFW, for that we will use this sample command as a base:
 
 ```sh
-tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ```
 
 .Pipeline Flags
