@@ -32,10 +32,10 @@ build-pipe-image:
 build-ui-image:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(FULL_UI_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.UI .
 
-push-pipe-image: build-pipe
+push-pipe-image: build-pipe-image
 	podman push $(FULL_PIPE_IMAGE_TAG)
 
-push-ui-image: build-ui
+push-ui-image: build-ui-image
 	podman push $(FULL_UI_IMAGE_TAG)
 
 doc:
