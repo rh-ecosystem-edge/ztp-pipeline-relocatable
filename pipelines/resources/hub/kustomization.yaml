@@ -5,4 +5,6 @@ resources:
   - hub-deploy-hub-config.yaml
   - hub-deploy-icsp.yaml
   - hub-save-config.yaml
-  - hub-deploy-vsphere-configs.yaml
+  - hub-deploy-aap.yaml
+  - hub-deploy-argocd.yaml
+  - hub-deploy-gitea.yaml
