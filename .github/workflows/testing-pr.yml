@@ -38,7 +38,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make pipe
+          RELEASE=${RELEASE} make pipe-image
 
       - name: Build and Push UI Image
         id: build-ui
@@ -57,7 +57,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make ui
+          RELEASE=${RELEASE} make ui-image
 
 
   full-stack-testing:

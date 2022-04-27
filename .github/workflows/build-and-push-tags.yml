@@ -51,7 +51,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make pipe
+          RELEASE=${RELEASE} make pipe-image
 
       - name: Build and Push UI Image
         id: build-ui
@@ -66,7 +66,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make ui
+          RELEASE=${RELEASE} make ui-image
 
       - name: Build and Push Cloud Image
         id: build-cloud-openshift-ztp
@@ -81,4 +81,4 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make cloud
+          RELEASE=${RELEASE} make cloud-image
