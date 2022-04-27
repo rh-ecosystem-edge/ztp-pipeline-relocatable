@@ -1,0 +1,114 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: deploy-ztp-spokes-sno
+spec:
+  description: Tekton Pipeline to deploy ZTPFW Spokes clusters
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+    - name: spokes-config
+      type: string
+    - name: mock
+      type: string
+      default: "false"
+  workspaces:
+    - name: ztp
+  tasks:
+
+  # Preflight
+  - name: pre-flight
+    taskRef:
+      name: common-pre-flight-spokes
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Spokes
+  - name: deploy-spokes
+    taskRef:
+      name: spoke-deploy-spoke
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - pre-flight
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy MetalLB
+  - name: deploy-metallb
+    taskRef:
+      name: spoke-deploy-metallb
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-spokes
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+
+  # Deploy ZTPFWUI
+  - name: deploy-ui
+    taskRef:
+      name: spoke-deploy-ui
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-metallb
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Detach Spoke Cluster
+  - name: detach-cluster
+    taskRef:
+      name: spoke-detach-cluster
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-ui
+    workspaces:
+      - name: ztp
+        workspace: ztp

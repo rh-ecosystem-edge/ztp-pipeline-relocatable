@@ -41,13 +41,18 @@ function check_aci() {
 function check_bmhs() {
     cluster=${1}
     wait_time=${2}
+    spokenumber=${3}
     timeout=0
     ready=false
+    NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
+    NUM_M_MAX=$((NUM_M + 1))
+
+
 
     while [ "${timeout}" -lt "${wait_time}" ]; do
         RCBMH=$(oc --kubeconfig=${KUBECONFIG_HUB} get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')
         # Check state
-        if [[ $(echo ${RCBMH} | grep provisioned | wc -w) -eq 3 || $(echo ${RCBMH} | grep provisioned | wc -w) -eq 4 ]]; then
+        if [[ $(echo ${RCBMH} | grep provisioned | wc -w) -eq ${NUM_M} || $(echo ${RCBMH} | grep provisioned | wc -w) -eq ${NUM_M_MAX} ]]; then
             ready=true
             break
         fi
@@ -79,11 +84,13 @@ if [[ -z ${ALLSPOKES} ]]; then
     ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 fi
 
+index=0
 for SPOKE in ${ALLSPOKES}; do
     echo ">>>> Starting the validation until finish the installation"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    check_bmhs "${SPOKE}" "${wait_time}"
+    check_bmhs "${SPOKE}" "${wait_time}" ${index}
     check_aci "${SPOKE}" "${wait_time}" "True"
+    index=$((index + 1))
     echo ">>>>EOF"
     echo ">>>>>>>"
 done
