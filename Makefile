@@ -25,15 +25,6 @@ OCP_VERSION ?= 4.10.9
 ACM_VERSION ?= 2.4
 OCS_VERSION ?= 4.9
 
-.PHONY: build-pipe build-ui push-pipe push-ui doc
-.EXPORT_ALL_VARIABLES:
-all: pipe ui cloud
-pipe: build-pipe push-pipe
-ui: build-ui push-ui
-cloud: build-cloud push-cloud
-
-
-
 .PHONY: all-images pipe-image ui-image cloud-image all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image build-cloud-image push-pipe-image push-ui-image push-cloud-image doc build-hub-sno build-hub-compact deploy-pipe-hub build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap
 .EXPORT_ALL_VARIABLES:
 
