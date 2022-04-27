@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: hub-deploy-hub-config
+  name: hub-deploy-aap
   annotations:
     description: |
-      This task will deploy Assisted Service on the Hub Cluster.
+      This task will deploy Ansible Automation Platform on the Hub Cluster.
 spec:
   workspaces:
     - name: ztp
@@ -29,8 +29,8 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_HUB_CONFIGS_DIR
-        value: "deploy-hub-configs"
+      - name: DEPLOY_AAP_DIR
+        value: "deploy-aap"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
@@ -43,8 +43,8 @@ spec:
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_HUB_CONFIGS_DIR}
+          cd ${WORKDIR}/${DEPLOY_AAP_DIR}
           ./deploy.sh
         else
-          echo "Deploy Registry Hub: Mock mode on"
+          echo "Deploy Ansible Automation Platform: Mock mode on"
         fi

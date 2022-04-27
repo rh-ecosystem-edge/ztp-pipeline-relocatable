@@ -86,11 +86,12 @@ echo ">>>> Spokes.yaml file generation"
 >spokes.yaml
 
 cat <<EOF >>spokes.yaml
-config:
-  OC_OCP_VERSION: '${OC_OCP_VERSION}'
-  OC_ACM_VERSION: '${OC_ACM_VERSION}'
-  OC_OCS_VERSION: '${OC_OCS_VERSION}'
+    config:
+    OC_OCP_VERSION: '${OC_OCP_VERSION}'
+    OC_ACM_VERSION: '${OC_ACM_VERSION}'
+    OC_OCS_VERSION: '${OC_OCS_VERSION}'
 EOF
+
 
 # Create header for spokes.yaml
 cat <<EOF >>spokes.yaml

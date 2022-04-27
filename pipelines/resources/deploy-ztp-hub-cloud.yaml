@@ -93,10 +93,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy vSphere Configs 
-  - name: deploy-vsphere-configs
+  # Deploy Ansible Automation Platform
+  - name: deploy-aap
     taskRef:
-      name: hub-deploy-vsphere-configs
+      name: hub-deploy-aap
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -108,6 +108,44 @@ spec:
         value: $(params.mock)
     runAfter:
       - deploy-acm
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy OpenShift Gitops
+  - name: deploy-argocd
+    taskRef:
+      name: hub-deploy-argocd
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-aap
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy OpenShift Gitea
+  - name: deploy-gitea
+    taskRef:
+      name: hub-deploy-gitea
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-argocd
     workspaces:
       - name: ztp
         workspace: ztp
