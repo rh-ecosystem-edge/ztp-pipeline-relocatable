@@ -27,10 +27,14 @@ jobs:
         id: build-pipe
         run: |
           cd ${{ github.workspace }}
-
-          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}    
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            # this is a PR from the repo with main branch
             RELEASE=latest
           else
+            # this is a PR from the repo with a branch
             RELEASE=${{ github.event.pull_request.head.ref }}
           fi
 
