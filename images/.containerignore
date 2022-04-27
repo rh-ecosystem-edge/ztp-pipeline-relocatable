@@ -1,5 +1,6 @@
 /opt/ztp/build/*
 /workspace/ztp/build/*
+./build/*
 **/pull_secret.json
 **/pull-secret.json
 **/openshift_pull.json

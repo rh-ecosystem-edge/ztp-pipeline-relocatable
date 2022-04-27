@@ -11,6 +11,7 @@ function htpasswdImpl(res: Response, _username?: string, _password?: string): vo
   const password = validateInput(PWD_REGEX, _password);
 
   if (!username || !password) {
+    logger.error('htpasswd: missing either username or password');
     res.writeHead(422).end();
     return;
   }
@@ -43,7 +44,7 @@ export function htpasswd(req: Request, res: Response): void {
         const encoded = JSON.parse(data) as { username?: string; password?: string };
         htpasswdImpl(res, encoded?.username, encoded?.password);
       } catch (e) {
-        logger.error('Failed to parse input');
+        logger.error('htpasswd: Failed to parse input');
         res.writeHead(422);
       }
     });
