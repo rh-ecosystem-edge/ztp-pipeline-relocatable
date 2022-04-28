@@ -93,7 +93,13 @@ export QUAY_MANIFESTS=quay-manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator'
+if [ -f "${CLOUD_DEPLOYMENT}" ];
+then 
+    export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator,ansible-automation-platform-operator,openshift-gitops-operator'
+else
+    export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator'
+fi 
+
 export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
 export EXTRA_IMAGES=('quay.io/jparrill/registry:3' 'registry.access.redhat.com/rhscl/httpd-24-rhel7:latest' 'quay.io/ztpfw/ui:latest')
 # TODO: Change static passwords by dynamic ones
