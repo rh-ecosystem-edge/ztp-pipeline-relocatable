@@ -35,7 +35,7 @@ jobs:
             RELEASE=latest
           else
             # this is a PR from the repo with a branch
-            RELEASE=${{ github.event.pull_request.head.ref }}
+            RELEASE=$( echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
           fi
 
           echo ">>>> Building Pipe Release"
@@ -56,7 +56,7 @@ jobs:
           elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.event.pull_request.head.ref }}
+            RELEASE=$(echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
           fi
 
           echo ">>>> Building UI Release"
