@@ -15,11 +15,11 @@ spoke{{ i }}-cluster-m{{ j }}:
     nic: enp2s0
     mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
   disks:
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200  
+  - size: 120
+  - size: 50
+  - size: 50
+  - size: 50
+  - size: 50  
 {% endfor %}
 {% endfor %}
 
@@ -36,9 +36,9 @@ spoke{{ i }}-cluster-w0:
     nic: enp2s0
     mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
   disks:
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200  
+  - size: 120
+  - size: 50
+  - size: 50
+  - size: 50
+  - size: 50  
 {% endfor %}
