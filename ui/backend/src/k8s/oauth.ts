@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { createHash } from 'crypto';
-import { IncomingMessage } from 'http';
-import { Agent, request } from 'https';
+import got from 'got';
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring';
 
 import { getClusterApiUrl } from './utils';
@@ -115,10 +114,16 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-export function logout(req: Request, res: Response): void {
+export async function logout(req: Request, res: Response): Promise<void> {
   logger.debug('Logout called');
+
   const token = getToken(req);
   if (!token) return unauthorized(req, res);
+
+  const gotOptions = {
+    headers: { Authorization: `Bearer ${token}` },
+    https: { rejectUnauthorized: false },
+  };
 
   let tokenName = token;
   const sha256Prefix = 'sha256~';
@@ -131,23 +136,17 @@ export function logout(req: Request, res: Response): void {
       .replace(/\//g, '_')}`;
   }
 
-  const clientRequest = request(
-    // /apis/oauth.openshift.io/v1/oauthaccesstokens/sha256~e49cNiBYVhrRff3jpdZY2o1U2mjeEGQDRjvSKVREvNs
-    `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
-    {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-      agent: new Agent({ rejectUnauthorized: false }),
-    },
-    (response: IncomingMessage) => {
-      logger.debug('OAuth access token deleted');
-      deleteCookie(res, K8S_ACCESS_TOKEN_COOKIE);
-      res.writeHead(response.statusCode || 500).end();
-    },
-  );
-  clientRequest.on('error', () => {
-    logger.warn('Failed to delete OAuth access token');
-    respondInternalServerError(req, res);
-  });
-  clientRequest.end();
+  try {
+    const url = `${process.env.CLUSTER_API_URL || ''}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`;
+    await got.delete(url, gotOptions);
+  } catch (err) {
+    logger.error(err);
+  }
+
+  const host = req.headers.host;
+
+  deleteCookie(res, { cookie: 'connect.sid' });
+  deleteCookie(res, { cookie: 'acm-access-token-cookie' });
+  deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host || ''}` });
+  res.writeHead(200).end();
 }
