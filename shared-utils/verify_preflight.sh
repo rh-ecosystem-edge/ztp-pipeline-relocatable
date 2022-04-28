@@ -90,13 +90,14 @@ fi
 
 echo ">>>> Verify oc get nodes"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-if [ -f "${CLOUD_DEPLOYMENT}" ];
+if [  ! -z "${CLOUD_DEPLOYMENT}" ];
 then 
     if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]]; then
         echo "Error: Nodes are not ready"
         exit 3
     fi
 else
+    echo "CLOUD_DEPLOYMENT=${CLOUD_DEPLOYMENT}"
     if [[ $(oc get nodes  | grep worker | grep -i ready | wc -l) -ne 3 ]]; then
         echo "Error: Worker nodes are not ready"
         exit 3

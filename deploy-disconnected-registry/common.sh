@@ -93,8 +93,9 @@ export QUAY_MANIFESTS=quay-manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-if [ -f "${CLOUD_DEPLOYMENT}" ];
+if [ ! -z "${CLOUD_DEPLOYMENT}" ];
 then 
+    echo "CLOUD_DEPLOYMENT=${CLOUD_DEPLOYMENT}"
     export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator,ansible-automation-platform-operator,openshift-gitops-operator'
 else
     export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator'
