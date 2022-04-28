@@ -18,3 +18,9 @@
       mirror-by-digest-only = false
       [[registry.mirror]]
         location = "CHANGEDOMAIN/jparrill/registry"
+    [[registry]]
+      prefix = ""
+      location = "registry.redhat.io/rhacm2/assisted-installer-agent-rhel8"
+      mirror-by-digest-only = true
+      [[registry.mirror]]
+        location = "CHANGEDOMAIN/rhacm2/assisted-installer-agent-rhel8"

@@ -34,7 +34,7 @@ jobs:
           if [[ "${{ github.ref_name }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.ref_name }}
+            RELEASE=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
           fi
 
           echo ">>>> Building Pipe Release"
@@ -43,7 +43,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make pipe
+          RELEASE=${RELEASE} make pipe-image-ci
 
       - name: Build and Push UI Image
         id: build-ui
@@ -53,7 +53,7 @@ jobs:
           if [[ "${{ github.ref_name }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.ref_name }}
+            RELEASE=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
           fi
 
           echo ">>>> Building UI Release"
@@ -62,4 +62,4 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make ui
+          RELEASE=${RELEASE} make ui-image-ci

@@ -6,8 +6,8 @@ on:
     types: [submitted, edited]
   pull_request:
     types: [labeled]
-  pull_request_target:
-    types: [labeled]
+  #pull_request_target:
+  #  types: [labeled]
   workflow_dispatch:
 
 jobs:
@@ -20,16 +20,22 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Build and Push Pipeline Image
         id: build-pipe
         run: |
           cd ${{ github.workspace }}
-
-          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}    
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            # this is a PR from the repo with main branch
             RELEASE=latest
           else
-            RELEASE=${{ github.event.pull_request.head.ref }}
+            # this is a PR from the repo with a branch
+            RELEASE=$( echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
           fi
 
           echo ">>>> Building Pipe Release"
@@ -38,17 +44,19 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make pipe
+          RELEASE=${RELEASE} make pipe-image-ci
 
       - name: Build and Push UI Image
         id: build-ui
         run: |
           cd ${{ github.workspace }}
-
-          if [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}    
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             RELEASE=latest
           else
-            RELEASE=${{ github.event.pull_request.head.ref }}
+            RELEASE=$(echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
           fi
 
           echo ">>>> Building UI Release"
@@ -57,7 +65,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make ui
+          RELEASE=${RELEASE} make ui-image-ci
 
 
   full-stack-testing:
