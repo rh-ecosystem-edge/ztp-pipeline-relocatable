@@ -15,7 +15,7 @@ The Hub pipeline is an OpenShift Object that will be used to deploy the infrastr
 Ok now we can continue with the Pipeline execution. It will be a command like this:
 
 ```sh
-tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ```
 
 After the above command you will see something like this on the prompt:
