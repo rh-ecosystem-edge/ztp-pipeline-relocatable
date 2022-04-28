@@ -76,7 +76,6 @@ exports[`Seetings can render data 1`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-3"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -376,7 +375,6 @@ exports[`Seetings can render data 2`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-3"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -746,7 +744,6 @@ exports[`Seetings can render data 3`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-3"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -1046,7 +1043,6 @@ exports[`Seetings can render error 1`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-2"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -1388,7 +1384,6 @@ exports[`Seetings can render loading state 1`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-1"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
