@@ -116,7 +116,8 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
           
-          RELEASE=${RELEASE} make all-spoke-compact-ci
+          RELEASE=${RELEASE} make build-spoke-compact
+          RELEASE=${RELEASE} make deploy-pipe-spoke-compact-ci
 
       - name: verify if the pipe has been successful
         run: |
