@@ -97,6 +97,7 @@ jobs:
       - name: create new vms and requirements
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          export HOME=/root
           cd ${{ github.workspace }}
           if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
             # this is a fork, so the image release should be the sha commit
