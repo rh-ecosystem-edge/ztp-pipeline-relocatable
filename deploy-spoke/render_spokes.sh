@@ -269,6 +269,7 @@ EOF
             done
         fi
 
+        if [ "${NUM_M}" -eq "1" ]; then
         cat <<EOF >>${OUTPUT}
    routes:
      config:
@@ -278,6 +279,7 @@ EOF
          metric: 99
          table-id: 254
 EOF
+        fi
 
         if [[ ${IGN_IFACES} != "null" ]]; then
             yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE; do
