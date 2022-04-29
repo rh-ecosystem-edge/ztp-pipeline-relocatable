@@ -269,10 +269,16 @@ EOF
             done
         fi
 
-        if [ "${NUM_M}" -eq "1" ]; then
         cat <<EOF >>${OUTPUT}
    routes:
      config:
+       - destination: $CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST
+         next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
+         next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
+EOF
+
+        if [ "${NUM_M}" -eq "1" ]; then
+        cat <<EOF >>${OUTPUT}
        - destination: 0.0.0.0/0
          next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
