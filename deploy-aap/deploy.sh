@@ -22,7 +22,7 @@ if ./verify.sh; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 02-operatorgroup.yml
     sleep 10
-    oc apply -f 03-subscription.yml -o yaml --dry-run=client | oc apply -f -
+    oc apply -f 03-subscription.yml
 
     OC_COMMAND=$(oc get csv -n ansible-automation-platform | grep "Ansible Automation Platform" | grep Succeeded | wc -l)
     timeout=0

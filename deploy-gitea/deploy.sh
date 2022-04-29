@@ -18,7 +18,7 @@ if ./verify.sh; then
 
     echo ">>>> Deploy manifests to install Gitea "
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc apply -f 02-catalogsource.yml -o yaml --dry-run=client | oc apply -f -
+    oc apply -f 02-catalogsource.yml
    
     until oc get packagemanifest gitea-operator -n openshift-marketplace; do echo "Waiting for PackageManifests...sleeping 10s..." && sleep 10; done
 

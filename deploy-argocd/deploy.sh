@@ -19,7 +19,7 @@ if ./verify.sh; then
 
     echo ">>>> Deploy manifests to install OpenShift Gitops "
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc apply -f 02-subscription.yml -o yaml --dry-run=client | oc apply -f -
+    oc apply -f 02-subscription.yml
 
     OC_COMMAND=$(oc get csv -n argocd | grep "Red Hat OpenShift GitOps" | grep Succeeded | wc -l)
     timeout=0

@@ -97,12 +97,14 @@ if [ ! -z "${CLOUD_DEPLOYMENT}" ];
 then 
     echo "CLOUD_DEPLOYMENT=${CLOUD_DEPLOYMENT}"
     export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator,ansible-automation-platform-operator,openshift-gitops-operator'
+    export EXTRA_IMAGES=('quay.io/jparrill/registry:3' 'registry.access.redhat.com/rhscl/httpd-24-rhel7:latest' 'quay.io/ztpfw/ui:latest' 'quay.io/gpte-devops-automation/gitea-catalog:latest')
 else
     export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator'
+    export EXTRA_IMAGES=('quay.io/jparrill/registry:3' 'registry.access.redhat.com/rhscl/httpd-24-rhel7:latest' 'quay.io/ztpfw/ui:latest')
 fi 
 
 export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
-export EXTRA_IMAGES=('quay.io/jparrill/registry:3' 'registry.access.redhat.com/rhscl/httpd-24-rhel7:latest' 'quay.io/ztpfw/ui:latest')
+
 # TODO: Change static passwords by dynamic ones
 export REG_US=dummy
 export REG_PASS=dummy123
