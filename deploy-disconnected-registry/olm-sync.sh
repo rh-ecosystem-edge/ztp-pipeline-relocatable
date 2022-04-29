@@ -233,6 +233,11 @@ function mirror() {
 }
 
 function mirror_certified() {
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    #######
     ## Load GPG keys to pull certified operator images
     echo ">>>> Loading GPG key to pull Certified Operators"
     curl -s -o /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-isv https://www.redhat.com/security/data/55A34A82.txt
@@ -280,11 +285,7 @@ function mirror_certified() {
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 
-    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
-    ####### using the vfs driver, and this causes errors.
-    export STORAGE_DRIVER=vfs
-    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
-    #######
+    
 
     # Empty log file
     >${OUTPUTDIR}/mirror.log
