@@ -130,6 +130,15 @@ function grab_api_ingress() {
     export REGISTRY_URL="ztpfw-registry-ztpfw-registry"
     export SPOKE_INGRESS_IP="$(dig @${HUB_NODE_IP} +short ${REGISTRY_URL}.${SPOKE_INGRESS_NAME})"
 }
+function check_registry_auth() {
+        podman login ${REGISTRY} --authfile ${PULL_SECRET} &> /dev/null
+        if [[ ! $? == 0 ]]; then
+                echo "ERROR: Failed to login to ${REGISTRY}, please check Pull Secret"
+                exit 1
+        else
+                echo "Login successfully to ${REGISTRY}"
+        fi
+}
 
 # SPOKES_FILE variable must be exported in the environment
 export KUBECONFIG_HUB=${KUBECONFIG}
@@ -206,6 +215,7 @@ if [[ ${SPOKES_FILE_REGISTRY} == "" || ${SPOKES_FILE_REGISTRY} == null ]]; then
     CUSTOM_REGISTRY=false
 else
     REGISTRY=$(echo ${SPOKES_FILE_REGISTRY} | cut -d"." -f1 )
-    LOCAL_REG=${SPOKES_FILE_REGISTRY}
+    LOCAL_REG=${REGISTRY}
     CUSTOM_REGISTRY=true
+    check_registry_auth
 fi
