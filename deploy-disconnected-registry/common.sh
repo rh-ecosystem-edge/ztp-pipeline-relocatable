@@ -51,20 +51,25 @@ function trust_internal_registry() {
         clus=${2}
     fi
 
-    echo ">>>> Trusting internal registry: ${1}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo ">> Kubeconfig: ${KBKNFG}"
-    echo ">> Mode: ${1}"
-    echo ">> Cluster: ${clus}"
-    ## Update trusted CA from Helper
-    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
-    export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
     export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
-    echo ">> Cert: ${PATH_CA_CERT}"
 
-    ## Update trusted CA from Helper
-    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
-    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${clus}.crt"
+    if [[ ${CUSTOM_REGISTRY} ]]; then 
+        echo ">>>> Trusting internal registry: ${1}"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        echo ">> Kubeconfig: ${KBKNFG}"
+        echo ">> Mode: ${1}"
+        echo ">> Cluster: ${clus}"
+        ## Update trusted CA from Helper
+        #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
+        export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+        echo ">> Cert: ${PATH_CA_CERT}"
+
+        ## Update trusted CA from Helper
+        echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
+        echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${clus}.crt"
+    else
+        openssl s_client -connect ${LOCAL_REG} | openssl x509 > ${PATH_CA_CERT}
+    fi
     update-ca-trust extract
     echo ">> Done!"
     echo

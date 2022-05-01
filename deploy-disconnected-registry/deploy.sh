@@ -238,7 +238,10 @@ function deploy_registry() {
 
 if [[ ${1} == 'hub' ]]; then
     if ! ./verify.sh 'hub'; then
-        deploy_registry 'hub'
+        # Check if private registry 
+        if [[ ! ${CUSTOM_REGISTRY} ]]; then
+            deploy_registry 'hub'
+        fi
         trust_internal_registry 'hub'
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
         render_file manifests/machine-config-certs.yaml 'hub'
