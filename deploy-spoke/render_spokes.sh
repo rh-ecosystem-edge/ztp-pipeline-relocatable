@@ -272,12 +272,20 @@ EOF
         cat <<EOF >>${OUTPUT}
    routes:
      config:
+       - destination: $CHANGE_SPOKE_MASTER_PUB_INT_ROUTE_DEST
+         next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
+         next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
+EOF
+
+        if [ "${NUM_M}" -eq "1" ]; then
+        cat <<EOF >>${OUTPUT}
        - destination: 0.0.0.0/0
          next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
          metric: 99
          table-id: 254
 EOF
+        fi
 
         if [[ ${IGN_IFACES} != "null" ]]; then
             yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE; do
