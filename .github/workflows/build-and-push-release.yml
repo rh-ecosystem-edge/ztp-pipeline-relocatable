@@ -114,6 +114,3 @@ jobs:
             echo ">>>>"
             RELEASE=${RELEASE} make cloud-image-ci
           fi
-
-
-\
