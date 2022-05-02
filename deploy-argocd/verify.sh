@@ -12,7 +12,7 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
-if [[ $(oc get ns | grep argocd  | wc -l) -eq 0 || $(oc get multiclusterhub -n argocd  --no-headers | wc -l) -eq 0 ]]; then
+if [[ $(oc get ns | grep argocd  | wc -l) -eq 0 || $(oc get ArgoCD -n argocd  --no-headers | wc -l) -eq 0 ]]; then
     #Argocd  namespace does not exist. Launching the step to create it...
     exit 0
 elif [[ $(oc get pod -n argocd  | grep -i running | wc -l) -eq $(oc get pod -n argocd  | grep -v NAME | wc -l) ]]; then

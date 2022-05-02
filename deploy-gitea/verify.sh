@@ -12,7 +12,7 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
-if [[ $(oc get ns | grep gitea  | wc -l) -eq 0 || $(oc get multiclusterhub -n gitea  --no-headers | wc -l) -eq 0 ]]; then
+if [[ $(oc get ns | grep gitea  | wc -l) -eq 0 || $(oc get Gitea -n gitea  --no-headers | wc -l) -eq 0 ]]; then
     #Gitea  namespace does not exist. Launching the step to create it...
     exit 0
 elif [[ $(oc get pod -n gitea  | grep -i running | wc -l) -eq $(oc get pod -n gitea  | grep -v NAME | wc -l) ]]; then

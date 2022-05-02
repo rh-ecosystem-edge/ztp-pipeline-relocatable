@@ -43,7 +43,7 @@ if ./verify.sh; then
     oc apply -f 04-instance.yml
    
 
-    echo ">>>> Wait until acm ready"
+    echo ">>>> Wait until AAP ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
