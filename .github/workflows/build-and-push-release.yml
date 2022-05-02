@@ -45,7 +45,6 @@ jobs:
             echo "Git hash: ${{ github.sha }}"
             echo ">>>>"
             RELEASE=latest make pipe-image-ci
-
           else
             echo ">> Building Branch Image"
             RELEASE=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
@@ -117,29 +116,4 @@ jobs:
           fi
 
 
-
-          cd ${{ github.workspace }}
-
-          if [[ "${{ github.ref_name }}" == 'main' ]];then
-            RELEASE=latest
-          else
-            RELEASE=${{ github.ref_name }}
-          fi
-
-          echo ">>>> Building Cloud Release"
-          echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.ref_name }}"
-          echo "Git hash: ${{ github.sha }}"
-          echo ">>>>"
-
-          RELEASE=${RELEASE} make cloud-image
-          else
-            echo ">> Building Branch Image"
-            RELEASE=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
-            echo ">>>> Building Cloud Release"
-            echo "Release: ${RELEASE}"
-            echo "Image Branch: ${{ github.ref_name }}"
-            echo "Git hash: ${{ github.sha }}"
-            echo ">>>>"
-            RELEASE=${RELEASE} make cloud-image
-          fi
+\
