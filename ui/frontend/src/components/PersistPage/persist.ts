@@ -1,12 +1,22 @@
+// import { getRequest } from '../../resources';
 import { K8SStateContextData } from '../types';
+import {
+  MAX_LIVENESS_CHECK_COUNT,
+  // DELAY_BEFORE_FINAL_REDIRECT,
+  // MAX_LIVENESS_CHECK_COUNT,
+  // UI_POD_NOT_READY,
+  ZTPFW_UI_ROUTE_PREFIX,
+} from './constants';
 import { persistDomain } from './persistDomain';
 import {
-  deleteKubeAdmin,
+  // deleteKubeAdmin,
   persistIdentityProvider,
   PersistIdentityProviderResult,
 } from './persistIdentityProvider';
 import { saveApi, saveIngress } from './persistServices';
 import { PersistErrorType } from './types';
+import { delay, waitForLivenessProbe } from './utils';
+// import { waitForLivenessProbe } from './utils';
 
 export const persist = async (
   state: K8SStateContextData,
@@ -17,13 +27,36 @@ export const persist = async (
   if (
     persistIdpResult !== PersistIdentityProviderResult.error &&
     (await saveIngress(setError, state.ingressIp)) &&
-    (await persistDomain(setError, state.domain)) &&
-    (persistIdpResult !== PersistIdentityProviderResult.userCreated ||
-      (await deleteKubeAdmin(setError))) &&
-    (await saveApi(setError, state.apiaddr))
+    (await saveApi(setError, state.apiaddr)) &&
+    (await persistDomain(setError, state.domain))
+    /*(persistIdpResult !== PersistIdentityProviderResult.userCreated ||
+      (await deleteKubeAdmin(setError))) &&*/
   ) {
     // finished with success
     setError(null); // show the green circle of success
+
+    // wait till livenessProbe
+    await waitForLivenessProbe(
+      `https://${window.location.hostname}` /* This works thanks to the route backup */,
+      MAX_LIVENESS_CHECK_COUNT,
+    );
+
+    if (persistIdpResult === PersistIdentityProviderResult.userCreated) {
+      // wait for identity provider
+      // Assumption: since we have waited in the previous step, it should be good enough to wait on pods in openshift-authentication namespace to become ready
+    }
+
+    // delete route backup
+
     onSuccess();
   }
+};
+
+export const navigateToNewDomain = async (domain: string, contextPath: string) => {
+  // We can not check livenessProbe on the new domain due to CORS
+  // We can not use pod serving old domain either since it will be terminated and the route changed
+  // So just wait...
+  console.info('Changes are persisted, about to navigate to the new domain');
+  const ztpfwUrl = `https://${ZTPFW_UI_ROUTE_PREFIX}.apps.${domain}`;
+  window.location.href = `${ztpfwUrl}${contextPath}`;
 };

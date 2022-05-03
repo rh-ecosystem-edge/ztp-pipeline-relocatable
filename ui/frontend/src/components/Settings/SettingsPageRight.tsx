@@ -12,11 +12,12 @@ import {
   Title,
 } from '@patternfly/react-core';
 
-import { persist, PersistErrorType } from '../PersistPage';
+import { navigateToNewDomain, persist, PersistErrorType } from '../PersistPage';
 import { IpTripletsSelector } from '../IpTripletsSelector';
 import { useK8SStateContext } from '../K8SStateContext';
 
 import './SettingsPageRight.css';
+import { ActionCountDown } from '../ActionCountDown';
 
 export const SettingsPageRight: React.FC<{
   isInitialEdit?: boolean;
@@ -59,6 +60,8 @@ export const SettingsPageRight: React.FC<{
   const onSuccess = () => {
     setError(null);
     setEdit(false);
+
+    navigateToNewDomain(domain, '/settings');
   };
 
   const onCancelEdit = () => {
@@ -157,6 +160,10 @@ export const SettingsPageRight: React.FC<{
               data-testid="settings-page-button-edit"
               variant={ButtonVariant.primary}
               onClick={() => setEdit(true)}
+              disabled={
+                /* wait for changes to take effect, do another change on the new page after redirection */
+                error === null
+              }
             >
               Edit
             </Button>

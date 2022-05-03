@@ -14,12 +14,12 @@ import {
   global_success_color_100 as successColor,
 } from '@patternfly/react-tokens';
 
-import { persist } from './persist';
+import { navigateToNewDomain, persist } from './persist';
 import { PersistErrorType } from './types';
-import { DELAY_BEFORE_FINAL_REDIRECT } from './constants';
 import { useK8SStateContext } from '../K8SStateContext';
 
 import './PersistPageBottom.css';
+import { ActionCountDown } from '../ActionCountDown';
 
 export const PersistPageBottom: React.FC = () => {
   const navigate = useNavigate();
@@ -34,12 +34,8 @@ export const PersistPageBottom: React.FC = () => {
     setRetry(false);
     setError(undefined);
 
-    persist(state, setError, () => {
-      setTimeout(() => {
-        navigate(`/wizard/final`);
-      }, DELAY_BEFORE_FINAL_REDIRECT);
-    });
-  }, [retry, setError, state, navigate]);
+    persist(state, setError, () => navigateToNewDomain(state.domain, '/wizard/final'));
+  }, [retry, setError, state]);
 
   return (
     <Stack className="persist-page-bottom" hasGutter>

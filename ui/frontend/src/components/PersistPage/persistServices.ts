@@ -7,6 +7,8 @@ import { addIpDots } from '../utils';
 import {
   ADDRESS_POOL_ANNOTATION_KEY,
   ADDRESS_POOL_NAMESPACE,
+  API_LIVENESS_FAILED_TITLE,
+  MAX_LIVENESS_CHECK_COUNT,
   MISSING_VALUE,
   RESOURCE_CREATE_TITLE,
   RESOURCE_PATCH_TITLE,
@@ -17,6 +19,7 @@ import {
   SERVICE_TEMPLATE_METALLB_INGRESS,
 } from './resourceTemplates';
 import { PersistErrorType } from './types';
+import { waitForLivenessProbe } from './utils';
 
 const createAddressPool = async (
   setError: (error: PersistErrorType) => void,
@@ -197,4 +200,20 @@ export const saveIngress = async (
 export const saveApi = async (
   setError: (error: PersistErrorType) => void,
   apiip: string,
-): Promise<boolean> => saveService(setError, apiip, SERVICE_TEMPLATE_API, 'API IP', 'api');
+): Promise<boolean> => {
+  if (!(await saveService(setError, apiip, SERVICE_TEMPLATE_API, 'API IP', 'api'))) {
+    return false;
+  }
+
+  if (
+    !(await waitForLivenessProbe(`https://${window.location.hostname}`, MAX_LIVENESS_CHECK_COUNT))
+  ) {
+    setError({
+      title: API_LIVENESS_FAILED_TITLE,
+      message: 'Can not reach API on time.',
+    });
+    return false;
+  }
+
+  return true;
+};
