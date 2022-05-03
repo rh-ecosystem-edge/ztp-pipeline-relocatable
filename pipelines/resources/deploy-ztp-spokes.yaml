@@ -107,7 +107,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-metallb
+      - deploy-icsp-spokes-pre
     workspaces:
       - name: ztp
         workspace: ztp
