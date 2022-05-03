@@ -18,7 +18,7 @@ OCS_VERSION ?= 4.9
 all-images: pipe-image ui-image
 all-images-ci: pipe-image-ci ui-image-ci
 
-pipe-: build-pipe-image push-pipe-image
+pipe-image: build-pipe-image push-pipe-image
 ui-image: build-ui-image push-ui-image
 
 pipe-image-ci: build-pipe-image-ci push-pipe-image-ci
