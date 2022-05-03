@@ -159,11 +159,6 @@ function clean_openshift_pipelines() {
 
 }
 
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root"
-  exit 1
-fi
-
 export BASEDIR=$(dirname "$0")
 export BRANCH=${1:-main}
 export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
