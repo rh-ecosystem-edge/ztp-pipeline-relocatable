@@ -31,7 +31,7 @@ template
 
 - **manifests**
 
-    Within the folder `manifests` should the .yaml files to be applied to the spoke cluster. In the template example is just the namespace where the feature will be installed.
+    Within the folder `manifests` should the .yaml files to be applied to the spoke cluster. In the template example is just a manifest to create a namespace called `contrib-template`. In here can be created as must as needed manifests objects to be applied to the spoke cluster, called from the `deploy.sh` script.
 
 # 2. Create contrib feature 
 
@@ -42,7 +42,19 @@ cd contrib
 cp -r template deploy-app
 ```
 
+At this point all the scripts and manifests should be updated with the required instructions to deploy the feature in the spoke cluster.
+
 # 3. Create pipeline tasks
 
+Once the contrib feature is created, the next step is to create the Tekton tasks to call the deploy script. The tasks should be created in the `pipelines/resources/contrib/` folder.
+The current template example can be copied to the folder and renamed to `deploy-app`.
+
+```bash
+cp pipelines/resources/contrib/contrib-template.yaml pipelines/resources/contrib/deploy-app.yaml
+```
+
+After copy the task definition from the template, can be updated with the required instructions to call the previously created deploy.sh script and define the variables and/or config if required.
 
 # 4. Add tasks to the spoke pipeline
+
+The last step is to add the task to the pipeline. The task should be added to the spoke pipelines file at `pipelines/resources/deploy-ztp-spokes.yaml`. The position of the call to the new task depend of the nature of the feature and the dependencies of the features from other steps in the pipeline.
