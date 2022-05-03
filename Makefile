@@ -1,5 +1,5 @@
 CI_FOLDER = images
-PIPE_IMAGE = quay.io/ztpfw/pipeline
+PIPE_IMAGE ?= quay.io/ztpfw/pipeline
 UI_IMAGE = quay.io/ztpfw/ui
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
@@ -18,7 +18,7 @@ OCS_VERSION ?= 4.9
 all-images: pipe-image ui-image
 all-images-ci: pipe-image-ci ui-image-ci
 
-pipe-image: build-pipe-image push-pipe-image
+pipe-: build-pipe-image push-pipe-image
 ui-image: build-ui-image push-ui-image
 
 pipe-image-ci: build-pipe-image-ci push-pipe-image-ci

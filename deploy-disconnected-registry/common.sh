@@ -53,7 +53,7 @@ function trust_internal_registry() {
 
     export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
 
-    if [[ ${CUSTOM_REGISTRY} ]]; then 
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then 
         echo ">>>> Trusting internal registry: ${1}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo ">> Kubeconfig: ${KBKNFG}"
@@ -69,10 +69,25 @@ function trust_internal_registry() {
         echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${clus}.crt"
     else
         openssl s_client -connect ${LOCAL_REG} | openssl x509 > ${PATH_CA_CERT}
+        update-ca-trust
     fi
     update-ca-trust extract
     echo ">> Done!"
     echo
+    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+        echo "Checking Private registry creds"
+        # ? workaround for podman on openshift
+        export STORAGE_DRIVER=vfs
+        sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+        CHECK_LOGIN=$(podman login ${LOCAL_REG} --authfile ${PULL_SECRET}  || echo "false" )
+        if [[ ${CHECK_LOGIN} == "false" ]]; then
+                echo "ERROR: Failed to login to ${LOCAL_REG}, please check Pull Secret"
+                exit 1
+        else
+                echo "Login successfully to ${LOCAL_REG}"
+        fi
+
+    fi
 }
 
 if [[ $# -lt 1 ]]; then
