@@ -29,8 +29,8 @@ if ./verify.sh; then
     timeout=0
     ready=false
     while [ "$timeout" -lt "1000" ]; do
-        echo KUBESPOKE=${SPOKE_KUBECONFIG}
-        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep giteas.gpte.opentlc.com | wc -l) -eq 1 ]]; then
+        echo KUBESPOKE=${KUBECONFIG}
+        if [[ $(oc --kubeconfig=${KUBECONFIG} get crd | grep giteas.gpte.opentlc.com | wc -l) -eq 1 ]]; then
             ready=true
             break
         fi
