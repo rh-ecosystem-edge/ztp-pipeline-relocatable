@@ -21,18 +21,24 @@ if ./verify.sh; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 02-subscription.yml
 
-    OC_COMMAND=$(oc get csv -n argocd | grep "Red Hat OpenShift GitOps" | grep Succeeded | wc -l)
+    echo ">>>> Waiting for subscription and crd"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
-    while [ "${timeout}" -lt "120" ]; do
-        if [[ ${OC_COMMAND} -eq 1 ]]; then
+    ready=false
+    while [ "$timeout" -lt "1000" ]; do
+        echo KUBESPOKE=${SPOKE_KUBECONFIG}
+        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep argocds.argoproj.io | wc -l) -eq 1 ]]; then
             ready=true
             break
         fi
-        echo "Wait for Red Hat OpenShift GitOps"
+        echo "Waiting for CRD argocds.argoproj.io to be created"
         sleep 5
-        timeout=$((timeout + 1))
-        OC_COMMAND=$(oc get csv -n argocd | grep "Red Hat OpenShift GitOps" | grep Succeeded | wc -l)
+        timeout=$((timeout + 5))
     done
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for CRD argocds.argoproj.io"
+        exit 1
+    fi
 
     echo ">>>> Deploy OpenShift Gitops instance"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"

@@ -24,18 +24,24 @@ if ./verify.sh; then
     sleep 10
     oc apply -f 03-subscription.yml
 
-    OC_COMMAND=$(oc get csv -n ansible-automation-platform | grep "Ansible Automation Platform" | grep Succeeded | wc -l)
+    echo ">>>> Waiting for subscription and crd"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
-    while [ "${timeout}" -lt "120" ]; do
-        if [[ ${OC_COMMAND} -eq 1 ]]; then
+    ready=false
+    while [ "$timeout" -lt "1000" ]; do
+        echo KUBESPOKE=${SPOKE_KUBECONFIG}
+        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep automationhubs.automationhub.ansible.com  | wc -l) -eq 1 ]]; then
             ready=true
             break
         fi
-        echo "Wait for Ansible Automation Platform"
+        echo "Waiting for CRD automationhubs.automationhub.ansible.com  to be created"
         sleep 5
-        timeout=$((timeout + 1))
-        OC_COMMAND=$(oc get csv -n ansible-automation-platform | grep "Ansible Automation Platform" | grep Succeeded | wc -l)
+        timeout=$((timeout + 5))
     done
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for CRD automationhubs.automationhub.ansible.com"
+        exit 1
+    fi
 
 
     echo ">>>> Deploy AAP instance"

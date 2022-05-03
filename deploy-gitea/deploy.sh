@@ -24,18 +24,24 @@ if ./verify.sh; then
 
     oc apply -f 03-subscription.yml
 
-    OC_COMMAND=$(oc get csv -n gitea | grep "Gitea Operator " | grep Succeeded | wc -l)
+    echo ">>>> Waiting for subscription and crd"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
-    while [ "${timeout}" -lt "120" ]; do
-        if [[ ${OC_COMMAND} -eq 1 ]]; then
+    ready=false
+    while [ "$timeout" -lt "1000" ]; do
+        echo KUBESPOKE=${SPOKE_KUBECONFIG}
+        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep giteas.gpte.opentlc.com | wc -l) -eq 1 ]]; then
             ready=true
             break
         fi
-        echo "Wait for Gitea Operator "
+        echo "Waiting for CRD giteas.gpte.opentlc.com  to be created"
         sleep 5
-        timeout=$((timeout + 1))
-        OC_COMMAND=$(oc get csv -n argocd | grep "Gitea Operator " | grep Succeeded | wc -l)
+        timeout=$((timeout + 5))
     done
+    if [ "$ready" == "false" ]; then
+        echo "timeout waiting for CRD giteas.gpte.opentlc.com"
+        exit 1
+    fi
 
 
     echo ">>>> Deploy Gitea instance"
