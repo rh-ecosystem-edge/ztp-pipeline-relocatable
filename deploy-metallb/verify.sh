@@ -32,14 +32,12 @@ for spoke in ${ALLSPOKES}; do
     service=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get svc -n metallb --no-headers | wc -l)
     address_pool=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get addresspool -n metallb --no-headers | wc -l)
 
-    if [[ ${deployment} == "1" && ${service} == "4" && ${address_pool} == "1"  ]]; then
+    if [[ ${deployment} == "1" && ${service} == "4" && ${address_pool} == "1" ]]; then
         echo "MetalLb deployment is up and running"
     else
         echo "MetalLb deployment is not running"
         exit 1
     fi
-
-
 
     echo ">> Checking external access to the spoke ${spoke}"
     oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers

@@ -152,4 +152,3 @@ bootstrap:
 bootstrap-ci:
 	cd ${PWD}/pipelines && \
 	./bootstrap.sh $(RELEASE)
-
