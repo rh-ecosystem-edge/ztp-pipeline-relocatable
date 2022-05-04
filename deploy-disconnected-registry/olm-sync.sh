@@ -224,6 +224,7 @@ function mirror() {
                     echo ">>>> ERROR: Retry limit reached to copy image ${image}"
                     exit 1
             fi
+          done
         fi
         sleep 1
     done
