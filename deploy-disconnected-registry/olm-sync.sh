@@ -182,9 +182,21 @@ function mirror() {
                     echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
                     skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     if [[ ${?} != 0 ]]; then
+                      retry=1
+                      while [ ${retry} != 0 ]; do
                         echo "Error on Image Copy, retrying after 5 seconds..."
-                        sleep 10
-                        skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                        skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                        if [[ ${?} == 0 ]]; then
+                          retry=0
+                        else
+                          sleep 10
+                          retry=$((retry + 1))
+                        fi
+                        if [ ${retry} == 12 ]; then
+                                echo ">>>> ERROR: Retry limit reached to copy image ${package}"
+                                exit 1
+                        fi
+                      done
                     fi
                     sleep 1
                 fi
@@ -197,7 +209,23 @@ function mirror() {
         echo "Image: ${image}"
         echo "skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}"
         skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
-        # sleep 1
+        if [[ ${?} != 0 ]]; then
+          retry=1
+          while [ ${retry} != 0 ]; do
+            echo "Error on Image Copy, retrying after 5 seconds..."
+            skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
+            if [[ ${?} == 0 ]]; then
+              retry=0
+            else
+              sleep 10
+              retry=$((retry + 1))
+            fi
+            if [ ${retry} == 12 ]; then
+                    echo ">>>> ERROR: Retry limit reached to copy image ${image}"
+                    exit 1
+            fi
+        fi
+        sleep 1
     done
 }
 
