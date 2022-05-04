@@ -17,7 +17,6 @@ import { IpTripletsSelector } from '../IpTripletsSelector';
 import { useK8SStateContext } from '../K8SStateContext';
 
 import './SettingsPageRight.css';
-import { ActionCountDown } from '../ActionCountDown';
 
 export const SettingsPageRight: React.FC<{
   isInitialEdit?: boolean;
@@ -149,11 +148,14 @@ export const SettingsPageRight: React.FC<{
               variant={AlertVariant.success}
               isInline
             >
-              All changes have been saved.
+              All changes have been saved, waiting for them to take effect.
+              {/* TODO: show spinner */}
             </Alert>
           </StackItem>
         )}
-        {error === undefined && <StackItem isFilled></StackItem>}
+        {error === undefined && (
+          <StackItem isFilled>{isSaving && <>Saving changes... {/* TODO: Spinner */}</>}</StackItem>
+        )}
         <StackItem className="settings-page-sumamary__item__footer">
           {!isEdit && (
             <Button

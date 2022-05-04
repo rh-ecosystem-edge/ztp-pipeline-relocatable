@@ -125,55 +125,50 @@ const updateSingleRoute = async (
   }
 };
 
-const updateZtpfwUI = async (
-  token: string,
-  // ztpfwUiTlsSecretName: string,
-  ztpfwDomain: string,
-  ingressDomain: string,
-  oldIngressDomain = '',
-) => {
-  // route
-  try {
-    const route = await getRoute(token, { name: ZTPFW_ROUTE_NAME, namespace: ZTPFW_NAMESPACE });
-
-    // Make a copy to be able to make livenessProbe requests from browser (new route hots CORS issue)
-    await backupRoute(token, route);
-    
-    await updateSingleRoute(token, oldIngressDomain, ingressDomain, route);
-    logger.debug('ZTPFW UI Route patched');
-  } catch (e) {
-    logger.error('Failed to patch ZTPFW UI Route: ', e);
-  }
-
-  // oauth-client
+const updateOauthRedirectUri = async (token: string, ztpfwDomain: string): Promise<string> => {
   const newOauthRedirectUri = `https://${ztpfwDomain}/login/callback`;
   try {
     const oauthClient = await getOAuthClient(token, ZTPFW_OAUTHCLIENT_NAME);
 
-    const redirectURIs = oauthClient.spec?.redirectURIs || [];
+    const redirectURIs = oauthClient.redirectURIs || [];
     if (!redirectURIs.includes(newOauthRedirectUri)) {
+      logger.debug('Appending oauthclient for: ', newOauthRedirectUri);
       redirectURIs.push(newOauthRedirectUri);
+
+      const patchesOauth: PatchType[] = [
+        {
+          op: oauthClient.redirectURIs ? 'replace' : 'add',
+          path: '/redirectURIs',
+          value: redirectURIs,
+        },
+      ];
+      const result = await patchOAuthClient(token, ZTPFW_OAUTHCLIENT_NAME, patchesOauth);
+      if (result.statusCode === 200) {
+        logger.debug('ZTPFW UI OAuthClient patched: ');
+      } else {
+        logger.error('Failed to patch ZTPFW UI OAuth Client: ', result);
+        // keep going
+      }
+    } else {
+      logger.debug('OAuthclient already contains ', newOauthRedirectUri, ', skipping');
     }
-    const patchesOauth: PatchType[] = [
-      {
-        op: oauthClient.spec?.redirectURIs ? 'replace' : 'add',
-        path: '/spec/redirectURIs',
-        value: redirectURIs,
-      },
-    ];
-    await patchOAuthClient(token, ZTPFW_OAUTHCLIENT_NAME, patchesOauth);
-    logger.debug('ZTPFW UI OAuthClient patched');
   } catch (e) {
     logger.error('Failed to patch ZTPFW UI OAuthClient: ', e);
   }
 
-  // Deployment
+  return newOauthRedirectUri;
+};
+
+const updateZtpfwDeployment = async (
+  token: string,
+  ztpfwDomain: string,
+  newOauthRedirectUri: string,
+) => {
   try {
     const deployment = await getDeployment(token, {
       name: ZTPFW_DEPLOYMENT_NAME,
       namespace: ZTPFW_NAMESPACE,
     });
-    logger.debug('ZTPFW Deployment received: ', deployment);
     const env = deployment.spec?.template?.spec?.containers?.[0].env;
     if (!env) {
       logger.error(
@@ -211,10 +206,37 @@ const updateZtpfwUI = async (
       },
       patchesDeployment,
     );
-    logger.debug('ZTPFW UI Deployment patched: ', patchesDeployment);
+    logger.debug('ZTPFW UI Deployment patched');
   } catch (e) {
     logger.error('Failed to patch ZTPFW UI Deployment: ', e);
   }
+};
+
+const updateZtpfwUI = async (
+  token: string,
+  // ztpfwUiTlsSecretName: string,
+  ztpfwDomain: string,
+  ingressDomain: string,
+  oldIngressDomain = '',
+) => {
+  // route
+  try {
+    const route = await getRoute(token, { name: ZTPFW_ROUTE_NAME, namespace: ZTPFW_NAMESPACE });
+
+    // Make a copy to be able to make livenessProbe requests from browser (new route hots CORS issue)
+    await backupRoute(token, route);
+
+    await updateSingleRoute(token, oldIngressDomain, ingressDomain, route);
+    logger.debug('ZTPFW UI Route patched');
+  } catch (e) {
+    logger.error('Failed to patch ZTPFW UI Route: ', e);
+  }
+
+  // oauth-client
+  const newOauthRedirectUri = await updateOauthRedirectUri(token, ztpfwDomain);
+
+  // Deployment
+  await updateZtpfwDeployment(token, ztpfwDomain, newOauthRedirectUri);
 };
 
 /**
@@ -342,10 +364,6 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
       value: componentRoutes,
     },
   ];
-
-  // Keep going even if a route fails to be updated. To have at least something
-  // await updateRoutes(token, ingressDomain, oldIngressDomain);
-  logger.info('Skipping update of _all_ routes');
 
   // Persist the changes (call PATCH)
   try {

@@ -34,7 +34,7 @@ export const backupRoute = async (token: string, route: Route) => {
 
   const backupRouteName = `${name}-copy`;
   try {
-    await jsonDelete<Route>(getRouteUrl(namespace, name), token);
+    await jsonDelete<Route>(getRouteUrl(namespace, backupRouteName), token);
   } catch (e) {
     console.log('Attempt to delete route-backup failed. This is not an error: ', e);
   }
@@ -52,17 +52,18 @@ export const backupRoute = async (token: string, route: Route) => {
         host: route.spec?.host,
         port: route.spec?.port,
         tls: route.spec?.tls,
-        to: route.spec?.host,
+        to: route.spec?.to,
         wildcardPolicy: route.spec?.wildcardPolicy,
       },
     };
-    return await jsonPost<Route>(
+    await jsonPost<Route>(
       `${getClusterApiUrl()}/apis/${RouteApiVersion}/namespaces/${namespace}/routes`,
       routeCopy,
       token,
     );
+
+    logger.debug('Backup route created');
   } catch (e) {
     console.error(`Failed to create copy of ${namespace}/${name} route: `, e);
   }
-  return undefined;
 };

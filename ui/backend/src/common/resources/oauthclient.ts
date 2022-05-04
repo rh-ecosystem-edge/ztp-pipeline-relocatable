@@ -13,8 +13,6 @@ export interface OAuthClient extends IResource {
   apiVersion: OAuthClientApiVersionType;
   kind: OAuthClientKindType;
   metadata: Metadata;
-  spec?: {
-    redirectURIs?: string[];
-    secret: string;
-  };
+  redirectURIs?: string[];
+  secret?: string;
 }

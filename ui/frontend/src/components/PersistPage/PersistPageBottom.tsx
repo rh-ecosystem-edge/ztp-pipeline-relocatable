@@ -19,7 +19,6 @@ import { PersistErrorType } from './types';
 import { useK8SStateContext } from '../K8SStateContext';
 
 import './PersistPageBottom.css';
-import { ActionCountDown } from '../ActionCountDown';
 
 export const PersistPageBottom: React.FC = () => {
   const navigate = useNavigate();
@@ -78,7 +77,8 @@ export const PersistPageBottom: React.FC = () => {
             />
           </StackItem>
           <StackItem isFilled className="wizard-sublabel">
-            Settings succesfully saved.
+            Settings succesfully saved, waiting for them to take effect.
+            {/* TODO: Show spinner */}
           </StackItem>
         </>
       )}

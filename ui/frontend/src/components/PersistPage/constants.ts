@@ -9,9 +9,10 @@ export const UI_POD_NOT_READY = 'Configuration UI pod is not ready';
 export const API_LIVENESS_FAILED_TITLE = 'API can not be reached';
 
 export const IDENTITY_PROVIDER_NAME = 'ztpfw-htpasswd-idp';
+export const ZTPFW_NAMESPACE = 'ztpfw-ui';
 
-export const DELAY_BEFORE_FINAL_REDIRECT = 2 * 1000;
-export const MAX_LIVENESS_CHECK_COUNT = 20; /* TODO: increase to 120 */
+export const DELAY_BEFORE_FINAL_REDIRECT = 10 * 1000;
+export const MAX_LIVENESS_CHECK_COUNT = 20; /* TODO: increase to 24 */
 
 export const SSH_PRIVATE_KEY_SECRET = {
   name: 'cluster-ssh-keypair',

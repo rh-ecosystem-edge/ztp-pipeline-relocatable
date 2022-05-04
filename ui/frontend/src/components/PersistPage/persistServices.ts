@@ -8,7 +8,6 @@ import {
   ADDRESS_POOL_ANNOTATION_KEY,
   ADDRESS_POOL_NAMESPACE,
   API_LIVENESS_FAILED_TITLE,
-  MAX_LIVENESS_CHECK_COUNT,
   MISSING_VALUE,
   RESOURCE_CREATE_TITLE,
   RESOURCE_PATCH_TITLE,
@@ -205,9 +204,7 @@ export const saveApi = async (
     return false;
   }
 
-  if (
-    !(await waitForLivenessProbe(`https://${window.location.hostname}`, MAX_LIVENESS_CHECK_COUNT))
-  ) {
+  if (!(await waitForLivenessProbe())) {
     setError({
       title: API_LIVENESS_FAILED_TITLE,
       message: 'Can not reach API on time.',

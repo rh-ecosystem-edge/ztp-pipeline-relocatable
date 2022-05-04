@@ -81,14 +81,12 @@ export function jsonDelete<T = unknown>(
   const headers: HeadersInit = {};
   headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`;
 
-  console.log('--- jsonDelete: ', url);
   return fetchRetry(url, {
     method: 'DELETE',
     headers,
     agent,
     compress: true,
   }).then(async (response) => {
-    console.log('--- jsonDelete response: ', response);
     const result = {
       statusCode: response.status,
       body: (await response.json()) as unknown as T,
