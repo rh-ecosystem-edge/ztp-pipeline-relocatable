@@ -43,7 +43,7 @@ if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 
     exit 1
 fi
 
-if ! check_route_ready TG_KUBECONFIG; then
+if ! check_route_ready ${TG_KUBECONFIG}; then
     exit 2
 fi
 
