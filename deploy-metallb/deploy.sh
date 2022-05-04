@@ -176,12 +176,13 @@ function grab_master_ext_ips() {
     local spokenumber=${2}
 
     ## Grab 1 master and 1 IP
-    agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
-    export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
+    agent=$(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${spoke} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}' | awk '{print $1}')
+
+    export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
     master=${SPOKE_NODE_NAME##*-}
     export MAC_EXT_DHCP=$(yq e ".spokes[${spokenumber}].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
     ## HAY QUE PROBAR ESTO
-    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
     export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
 }
 
