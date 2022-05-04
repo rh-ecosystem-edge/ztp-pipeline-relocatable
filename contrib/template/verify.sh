@@ -19,6 +19,10 @@ fi
 for spoke in ${ALLSPOKES}; do
     echo "Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
+    
+    #############################################################################################
+    ##### Here should be added the validation if the desired resources are already deployed #####
+    #############################################################################################
     echo ">>>> Verifying Namespace template for: ${spoke}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Check Namespace..."
@@ -26,6 +30,9 @@ for spoke in ${ALLSPOKES}; do
         # contrib-template namespace does not exists so we need to create it
         exit 1
     fi
+    #############################################################################################
+    ### End of validation if the desired resources are already deployed #########################
+    #############################################################################################
 done
 
 echo ">>>>EOF"

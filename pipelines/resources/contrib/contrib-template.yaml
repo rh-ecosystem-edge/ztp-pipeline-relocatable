@@ -33,21 +33,14 @@ spec:
         value: "contrib/template"
       - name: SHARED_DIR
         value: "shared-utils"
-      - name: MOCK
-        value: $(params.mock)
   steps:
     - name: deploy-contrib-template
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
+        ./deploy.sh
 
-        if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-          ./deploy.sh
-        else
-          echo "Deploy Disconnected Registry Spoke: Mock mode on"
-        fi
   volumes:
   - name: lib-containers
     emptyDir: {}

@@ -23,11 +23,14 @@ if ! ./verify.sh; then
     for spoke in ${ALLSPOKES}; do
 
         index=$((index + 1))
-
         echo ">>>> Deploy manifests to create template namespace in: ${spoke}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo "Extract Kubeconfig for ${spoke}"
         extract_kubeconfig ${spoke}
+        ##############################################################################
+        ##### Here can be added other manifests to create the required resources #####
+        ##############################################################################
+        
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-template-namespace.yaml
         
     done
