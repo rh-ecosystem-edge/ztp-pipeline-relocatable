@@ -8,7 +8,7 @@ set -m
 function get_clients() {
     if ! (command -v oc &>/dev/null); then
         curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz | tar xvz -C /usr/bin
-        rm -f  /usr/bin/README.md
+        rm -f /usr/bin/README.md
         chmod +x /usr/bin/oc /usr/bin/kubectl
     fi
 }
