@@ -1,3 +1,10 @@
+## [1.1.12](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.11...1.1.12) (2022-05-04)
+
+### Bug Fixes
+
+- MGMT-10096 - Avoid storage overcommit when OCS is deployed ([#198](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/198)) ([64cd65d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/64cd65df15775023d63f7e63489d8c5671d827bb))
+- Root is not necessary to execute the bootstrap script, removing that req ([597bfd4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/597bfd42d9183f104a9aea740af4e9f457ed47c4))
+
 ## [1.1.11](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.10...1.1.11) (2022-04-05)
 
 ### Bug Fixes
