@@ -100,8 +100,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 retry=1
   while [ ${retry} != 0 ]; do
    if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]]; then
-       echo "Error: ClusterOperators are not ready"
-       exit 3
+       echo "Error: ClusterOperators are not ready: ${retry}"
        sleep 10
        retry=$((retry + 1))
     else

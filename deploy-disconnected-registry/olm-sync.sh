@@ -193,8 +193,8 @@ function mirror() {
                           retry=$((retry + 1))
                         fi
                         if [ ${retry} == 12 ]; then
-                                echo ">>>> ERROR: Retry limit reached to copy image ${package}"
-                                exit 1
+                          echo ">>>> ERROR: Retry limit reached to copy image ${package}"
+                          exit 1
                         fi
                       done
                     fi
@@ -221,8 +221,8 @@ function mirror() {
               retry=$((retry + 1))
             fi
             if [ ${retry} == 12 ]; then
-                    echo ">>>> ERROR: Retry limit reached to copy image ${image}"
-                    exit 1
+              echo ">>>> ERROR: Retry limit reached to copy image ${image}"
+              exit 1
             fi
           done
         fi
