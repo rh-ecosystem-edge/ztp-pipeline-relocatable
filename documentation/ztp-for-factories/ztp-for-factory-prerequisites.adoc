@@ -136,3 +136,28 @@ endif::[]
 | Hardcoded name as `worker0` for the worker node
 
 |===
+
+.Optional parameters
+|===
+|Parameter/Section | Description
+
+| [[REGISTRY]] `REGISTRY`
+| Use private registry. Specify in `<URL>:<PORT>`` format. 
+
+|===
+
+=== Private regisrty
+By Default, The `ZTPFW` will deploy its own registry within the `HUB` cluster. Although, you can use your own registry.
+
+First, verify that the `HUB` cluster contains the private registry credentials.
+
+`oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d`
+
+than modify the `config.yaml` with the URL for the repo
+
+```yaml
+# config.yaml
+config:
+    REGISTRY: my-registry.domain.local:5000
+
+```
