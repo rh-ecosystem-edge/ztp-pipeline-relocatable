@@ -13,24 +13,7 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
-function check_route_ready() {
-    echo ">>>> Waiting for registry route Ready"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    timeout=0
-    ready=false
-    while [ "$timeout" -lt "1000" ]; do
-        if [[ $(oc get --kubeconfig=${1} route -n ${REGISTRY} --no-headers | wc -l) -eq 3 ]]; then
-            ready=true
-            break
-        fi
-        sleep 5
-        timeout=$((timeout + 1))
-    done
-    if [ "$ready" == "false" ]; then
-        echo "timeout waiting for Registry route t to be ready..."
-        exit 1
-    fi
-}
+
 
 if [[ ${1} == 'hub' ]]; then
     TG_KUBECONFIG=${KUBECONFIG_HUB}
@@ -43,7 +26,7 @@ if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 
     exit 1
 fi
 
-if ! check_route_ready ${TG_KUBECONFIG}; then
+if [[ $(oc get --kubeconfig=${TG_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -lt 1 ]]; then
     exit 2
 fi
 
