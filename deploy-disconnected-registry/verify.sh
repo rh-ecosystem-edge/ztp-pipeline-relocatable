@@ -19,7 +19,7 @@ function check_route_ready() {
     timeout=0
     ready=false
     while [ "$timeout" -lt "1000" ]; do
-        if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -eq 3 ]]; then
+        if [[ $(oc get --kubeconfig=${1} route -n ${REGISTRY} --no-headers | wc -l) -eq 3 ]]; then
             ready=true
             break
         fi
@@ -43,7 +43,7 @@ if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 
     exit 1
 fi
 
-if ! check_route_ready; then
+if ! check_route_ready TG_KUBECONFIG; then
     exit 2
 fi
 
