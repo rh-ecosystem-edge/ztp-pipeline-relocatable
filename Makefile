@@ -152,3 +152,9 @@ bootstrap:
 bootstrap-ci:
 	cd ${PWD}/pipelines && \
 	./bootstrap.sh $(RELEASE)
+
+clean:
+	oc delete managedcluster $(SPOKE_NAME); \
+	oc delete ns $(SPOKE_NAME); \
+	oc rollout restart -n openshift-machine-api deployment/metal3; \
+	kcli delete vm $(SPOKE_NAME)-m0 $(SPOKE_NAME)-m1 $(SPOKE_NAME)-m2 $(SPOKE_NAME)-w0
