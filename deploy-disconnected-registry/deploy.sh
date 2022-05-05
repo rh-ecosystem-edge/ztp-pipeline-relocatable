@@ -242,7 +242,6 @@ if [[ ${1} == 'hub' ]]; then
         trust_internal_registry 'hub'
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
         render_file manifests/machine-config-certs.yaml 'hub'
-        # after machine config is applied, we need to wait for the registry and acm pods and deployments to be ready
         check_mcp 'hub'
         ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
     else
@@ -254,6 +253,7 @@ elif [[ ${1} == 'spoke' ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
     fi
 
+    i=0
     for spoke in ${ALLSPOKES}; do
         # Get Spoke Kubeconfig
         echo "spoke: ${spoke}"
@@ -278,9 +278,9 @@ elif [[ ${1} == 'spoke' ]]; then
             done
 
             # updated with machine config
-            echo ">> Updating machine config certs"
-            render_file manifests/machine-config-certs.yaml 'spoke' ${spoke}
-            check_mcp 'spoke' "${spoke}"
+            echo ">> Updating machine config certs manually"
+            recover_spoke_rsa ${spoke}
+            trust_node_certificates ${spoke} ${i}
 
             echo ">> Waiting for the registry Quay CR to be ready after updating the MCP"
             for dep in $LIST_DEP; do
@@ -292,5 +292,6 @@ elif [[ ${1} == 'spoke' ]]; then
         else
             echo ">>>> This step to deploy registry on Spoke: ${spoke} is not neccesary, everything looks ready"
         fi
+        i=$((i + 1))
     done
 fi

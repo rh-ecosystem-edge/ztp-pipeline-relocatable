@@ -4,6 +4,36 @@
 
 #set -x
 
+function trust_node_certificates() {
+    # This function will copy manually the registry certificates into the OCP nodes and
+    # it will replace the MCO because it takes 45 Minutes in reboot.
+    # Initially no collateral effects on MCO.
+    # This is only affecting the spokes, because we cannot ensure the Hub's RSA Keyfile location
+
+    cluster=${2}
+    i=${3}
+    cp -f ${PATH_CA_CERT} ${SPOKE_SAFE_FOLDER}
+
+    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
+        EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+        echo ""
+        echo ">>>> Copying Registry Certificates to cluster: ${cluster}"
+        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
+            NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
+            if [[ -n ${NODE_IP} ]]; then
+                echo "Master Node: ${master}"
+                echo "AGENT: ${agent}"
+                echo "BMC: ${EXT_MAC_ADDR}"
+                echo "IP: ${NODE_IP%%/*}"
+                echo ">>>>"
+                copy_files_common "${PATH_CA_CERT}" "${NODE_IP%%/*}" "./spoke-reg-cert.crt"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo mv ~/spoke-reg-cert.crt /etc/pki/ca-trust/source/anchors/"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo update-ca-trust"
+            fi
+        done
+    done
+} 
+
 function recover_spoke_rsa() {
 
     if [[ ${#} -lt 1 ]]; then
@@ -126,6 +156,13 @@ function grab_api_ingress() {
     grab_hub_dns
     export SPOKE_API_NAME="api.${cluster}.${HUB_BASEDOMAIN}"
     export SPOKE_API_IP="$(dig @${HUB_NODE_IP} +short ${SPOKE_API_NAME})"
+    if [[ "$(echo ${SPOKE_API_IP} | grep -c 'timed out')" == 1 ]];then
+        export SPOKE_API_IP="$(dig +short ${SPOKE_API_NAME})"
+        if [[ -z ${SPOKE_API_IP} ]];then
+            echo "CRITICAL ERROR: ${SPOKE_API_NAME} cannot be resolved"
+            exit 1
+        fi
+    fi
     export SPOKE_INGRESS_NAME="apps.${cluster}.${HUB_BASEDOMAIN}"
     export REGISTRY_URL="ztpfw-registry-ztpfw-registry"
     export SPOKE_INGRESS_IP="$(dig @${HUB_NODE_IP} +short ${REGISTRY_URL}.${SPOKE_INGRESS_NAME})"

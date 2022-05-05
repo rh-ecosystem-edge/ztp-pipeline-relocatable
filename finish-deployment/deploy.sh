@@ -124,7 +124,7 @@ for spoke in ${ALLSPOKES}; do
     echo ">> Cluster: ${spoke}"
     check_cluster ${spoke}
     recover_spoke_rsa ${spoke}
-    recover_spoke_files ${spoke} $i
+    recover_spoke_files ${spoke} ${i}
     store_rsa_secrets ${spoke}
     #detach_cluster ${spoke}
     i=$((i + 1))
