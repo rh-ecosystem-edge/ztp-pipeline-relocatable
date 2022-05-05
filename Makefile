@@ -82,7 +82,7 @@ build-spoke-compact:
 deploy-pipe-hub:
 	tkn pipeline start -n spoke-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-			-p spokes-config=$$(cat $(SPOKES_FILE)) \
+			-p spokes-config="$$(cat $(SPOKES_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
@@ -93,7 +93,7 @@ deploy-pipe-hub:
 deploy-pipe-spoke-sno:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-    			-p spokes-config=$$(cat $(SPOKES_FILE)) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
@@ -104,7 +104,7 @@ deploy-pipe-spoke-sno:
 deploy-pipe-spoke-compact:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-    			-p spokes-config=$$(cat $(SPOKES_FILE)) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
@@ -115,7 +115,7 @@ deploy-pipe-spoke-compact:
 deploy-pipe-hub-ci:
 	tkn pipeline start -n spoke-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-			-p spokes-config=$$(cat $(SPOKES_FILE)) \
+			-p spokes-config="$$(cat $(SPOKES_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
@@ -126,7 +126,7 @@ deploy-pipe-hub-ci:
 deploy-pipe-spoke-sno-ci:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-    			-p spokes-config=$$(cat $(SPOKES_FILE)) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
@@ -137,7 +137,7 @@ deploy-pipe-spoke-sno-ci:
 deploy-pipe-spoke-compact-ci:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-    			-p spokes-config=$$(cat $(SPOKES_FILE)) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
