@@ -131,8 +131,8 @@ spec:
       - name: ztp
         workspace: ztp
 
-    # Deploy Disconnected Registry
-  - name: deploy-disconnected-registry-ocp
+    # Mirror ocp step in disconnected registry
+  - name: mirror-ocp-images
     taskRef:
       name: spoke-deploy-disconnected-registry-spokes-ocp
     params:
@@ -150,8 +150,8 @@ spec:
       - name: ztp
         workspace: ztp
 
-    # Deploy Disconnected Registry
-  - name: deploy-disconnected-registry-olm
+    # Mirror olm in disconnected registry
+  - name: mirror-olm-images
     taskRef:
       name: spoke-deploy-disconnected-registry-spokes-olm
     params:
@@ -169,7 +169,7 @@ spec:
       - name: ztp
         workspace: ztp
 
-    # Deploy Disconnected Registry
+    # Deploy Disconnected Registry Pull secret
   - name: deploy-disconnected-registry-ps
     taskRef:
       name: spoke-deploy-disconnected-registry-spokes-ps
@@ -183,8 +183,8 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-disconnected-registry-ocp
-      - deploy-disconnected-registry-olm
+      - mirror-ocp-images
+      - mirror-olm-images
     workspaces:
       - name: ztp
         workspace: ztp
