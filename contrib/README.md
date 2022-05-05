@@ -1,6 +1,6 @@
 # Contrib
 
-The goal of this document is to explain the procedure to add custom features to the spoke clusters.
+The goal of this document is to explain the procedure to add custom steps to the cluster's deployment pipeline. 
 
 - [Contrib](#contrib)
 - [1. Introduction to contrib template](#1-introduction-to-contrib-template)
