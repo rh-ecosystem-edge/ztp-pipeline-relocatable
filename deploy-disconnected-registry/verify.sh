@@ -13,6 +13,8 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
+
+
 if [[ ${1} == 'hub' ]]; then
     TG_KUBECONFIG=${KUBECONFIG_HUB}
 elif [[ ${1} == 'spoke' ]]; then
@@ -23,4 +25,9 @@ if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 
     #namespace or resources does not exist. Launching the step to create it...
     exit 1
 fi
+
+if [[ $(oc get --kubeconfig=${TG_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -lt 1 ]]; then
+    exit 2
+fi
+
 exit 0

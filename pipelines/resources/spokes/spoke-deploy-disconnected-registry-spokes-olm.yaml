@@ -1,12 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-disconnected-registry-spokes
+  name: spoke-deploy-disconnected-registry-spokes-olm
   annotations:
     description: |
-      This task will deploy the Disconnected Internal registry.
-      Then will perform the OCP and OLM sync, based on the SYNC parameter.
-      Update the Global PullSecret for every spoke with the proper credentials.
+      Will perform the OCP and OLM sync, based on the SYNC parameter.
 spec:
   workspaces:
     - name: ztp
@@ -38,17 +36,32 @@ spec:
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-disconnected-registry
+
+    - name: mirror-olm
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
+      resources:
+        requests:
+          memory: "250Mi"
+          cpu: "250m"
+        limits:
+          memory: 8Gi
+          cpu: 10000m
+      securityContext:
+        privileged: false
+        runAsUser: 0
+      volumeMounts:
+      - mountPath: /var/lib/containers
+        name: lib-containers
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-          ./deploy.sh 'spoke'
+          echo "Starting OLM Catalog Image Mirroring Step"
+          ./olm-sync.sh 'spoke'
         else
-          echo "Deploy Disconnected Registry Spoke: Mock mode on"
+          echo "Deploy Mirror OLM Spoke: Mock mode on"
         fi
 
 
