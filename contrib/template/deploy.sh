@@ -28,11 +28,14 @@ if ! ./verify.sh; then
         echo "Extract Kubeconfig for ${spoke}"
         extract_kubeconfig ${spoke}
         ##############################################################################
-        ##### Here can be added other manifests to create the required resources #####
+        # Here can be added other manifests to create the required resources
         ##############################################################################
         
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-template-namespace.yaml
-        
+
+        ##############################################################################
+        # End of customiztion                                    
+        ##############################################################################
     done
 
 fi

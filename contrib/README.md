@@ -42,6 +42,18 @@ cd contrib
 cp -r template deploy-app
 ```
 
+The contrib feature directory should looks like this after adding some manifests with the desired resources to be deployed on the spoke clusters:
+
+```
+deploy-app
+├── deploy.sh
+├── manifests
+│   └── 01-deploy-app-resource1.yaml
+│   └── 02-deploy-app-resource2.yaml
+│   └── ...
+└── verify.sh
+```
+
 At this point all the scripts and manifests should be updated with the required instructions to deploy the feature in the spoke cluster.
 
 # 3. Create pipeline tasks
@@ -61,7 +73,7 @@ Be aware to add to the `kustomization.yaml` the name of the task reference name.
 
 The last step is to add the task to the pipeline. The task should be added to the spoke pipelines file at `pipelines/resources/deploy-ztp-spokes.yaml`. The position of the call to the new task depend of the nature of the feature and the dependencies of the features from other steps in the pipeline.
 
-The snippet below should be added in the `deploy-ztp-spokes.yaml` updating the values that fit for the desired task run. It is important to be carefull with the value of `name.runAfter`, in here has to be defined the previous task of our run in the pipeline.
+The snippet below should be added in the `deploy-ztp-spokes.yaml` updating the values that fit for the desired task run. It is important to be carefull with the value of `spec.tasks[].name.runAfter`, in here has to be defined the previous task of our run in the pipeline.
 
 ```yaml
 - name: contrib-template
@@ -74,8 +86,6 @@ The snippet below should be added in the `deploy-ztp-spokes.yaml` updating the v
         value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
     runAfter:
       - previous-step # here has to be the name of the previous step where this task should be called
     workspaces:
