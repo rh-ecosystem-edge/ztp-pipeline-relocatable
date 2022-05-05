@@ -26,6 +26,15 @@ for spoke in ${ALLSPOKES}; do
     echo "Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
 
+    echo ">> Checking external access to the spoke ${spoke}"
+    oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
+    if [[ ${?} != 0 ]]; then
+        echo "ERROR: You cannot access ${spoke} spoke cluster externally"
+        exit 1
+    fi
+    echo ">> external access with spoke ${spoke} Verified"
+    echo
+
     echo ">>>> Verifying the MetalLb ${spoke}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     deployment=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get deployment -n metallb controller -ojsonpath={.status.availableReplicas})
@@ -39,15 +48,6 @@ for spoke in ${ALLSPOKES}; do
         exit 1
     fi
 
-    echo ">> Checking external access to the spoke ${spoke}"
-    oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
-    if [[ ${?} != 0 ]]; then
-        echo "ERROR: You cannot access ${spoke} spoke cluster externally"
-        exit 1
-    fi
-
-    echo ">> external access with spoke ${spoke} Verified"
-    echo
 done
 
 echo ">>>>EOF"
