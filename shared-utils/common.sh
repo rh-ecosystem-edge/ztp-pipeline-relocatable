@@ -14,25 +14,26 @@ function trust_node_certificates() {
     i=${3}
     cp -f ${PATH_CA_CERT} ${SPOKE_SAFE_FOLDER}
 
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
-        echo ""
-        echo ">>>> Copying Registry Certificates to cluster: ${cluster}"
-        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
-            NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
-            if [[ -n ${NODE_IP} ]]; then
-                echo "Master Node: ${master}"
-                echo "AGENT: ${agent}"
-                echo "BMC: ${EXT_MAC_ADDR}"
-                echo "IP: ${NODE_IP%%/*}"
-                echo ">>>>"
-                copy_files_common "${PATH_CA_CERT}" "${NODE_IP%%/*}" "./spoke-reg-cert.crt"
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo mv ~/spoke-reg-cert.crt /etc/pki/ca-trust/source/anchors/"
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo update-ca-trust"
-            fi
-        done
+    echo ">>>> Copying Registry Certificates to cluster: ${cluster}"
+    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}')
+    do
+        echo
+        SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
+        master=${SPOKE_NODE_NAME##*-}
+        MAC_EXT_DHCP=$(yq e ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+        SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+        NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
+        if [[ -n ${NODE_IP} ]]; then
+            echo "Master Node: ${master}"
+            echo "AGENT: ${agent}"
+            echo "IP: ${NODE_IP%%/*}"
+            echo ">>>>>>>>>"
+            copy_files_common "${PATH_CA_CERT}" "${NODE_IP%%/*}" "./spoke-reg-cert.crt"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo mv ~/spoke-reg-cert.crt /etc/pki/ca-trust/source/anchors/"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo update-ca-trust"
+        fi
     done
-} 
+}
 
 function recover_spoke_rsa() {
 
