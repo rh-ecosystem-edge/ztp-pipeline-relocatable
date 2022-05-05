@@ -69,7 +69,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-disconnected-registry
+      - spoke-deploy-ocs
     workspaces:
       - name: ztp
         workspace: ztp
