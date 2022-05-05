@@ -26,7 +26,7 @@ function extract_vars() {
     DISKS_PATH=${1}
     raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)
     disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,#g | sed 's/,*//' | sed 's/,*//')
-    disks_count=$(echo ${disks} |sed 's/,/\n/g'|wc -l)
+    disks_count=$(echo ${disks} | sed 's/,/\n/g' | wc -l)
 
     for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
         nodes+="${node},"
@@ -155,7 +155,6 @@ if ! ./verify.sh; then
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-OCS-Subscription.yaml
 
         sleep 60
-
 
         echo ">>>> Labeling nodes for OCS"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"

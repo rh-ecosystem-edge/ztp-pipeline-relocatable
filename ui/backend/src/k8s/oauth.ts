@@ -4,19 +4,21 @@ import { IncomingMessage } from 'http';
 import { Agent, request } from 'https';
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring';
 
-import { setDead } from '../endpoints/liveness';
+// import { setDead } from '../endpoints/liveness';
 import { getClusterApiUrl } from './utils';
 import { deleteCookie } from './cookies';
 import { jsonRequest } from './json-request';
 import { getToken, K8S_ACCESS_TOKEN_COOKIE } from './token';
 import { redirect, respondInternalServerError, unauthorized } from './respond';
+import { OAUTH_ROUTE_PREFIX, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
 
 const logger = console;
 
-type OAuthInfo = { authorization_endpoint: string; token_endpoint: string };
-let oauthInfoPromise: Promise<OAuthInfo>;
+// type OAuthInfo = { authorization_endpoint: string; token_endpoint: string };
+// let oauthInfoPromise: Promise<OAuthInfo>;
 
-export const getOauthInfoPromise = () => {
+export const getOauthInfo = () => {
+  /* This does not work after domain change
   if (oauthInfoPromise === undefined) {
     oauthInfoPromise = jsonRequest<OAuthInfo>(
       `${getClusterApiUrl()}/.well-known/oauth-authorization-server`,
@@ -33,11 +35,26 @@ export const getOauthInfoPromise = () => {
     });
   }
   return oauthInfoPromise;
+  */
+
+  // We need to hardcode it
+  const oauthServer = (process.env.FRONTEND_URL || 'missing-frontend-url').replace(
+    ZTPFW_UI_ROUTE_PREFIX,
+    OAUTH_ROUTE_PREFIX,
+  );
+  const oauth = {
+    // https://oauth-openshift.apps.spoke0-cluster.alklabs.local/oauth/authorize
+    authorization_endpoint: `${oauthServer}/oauth/authorize`,
+    token_endpoint: `${oauthServer}/oauth/token`,
+  };
+
+  return oauth;
 };
 
-export const login = async (_: Request, res: Response): Promise<void> => {
+export const login = (_: Request, res: Response): void => {
   logger.log('Login requested');
-  const oauthInfo = await getOauthInfoPromise();
+  const oauthInfo = getOauthInfo();
+
   const queryString = stringifyQuery({
     response_type: `code`,
     client_id: process.env.OAUTH2_CLIENT_ID,
@@ -45,7 +62,10 @@ export const login = async (_: Request, res: Response): Promise<void> => {
     scope: `user:full`,
     state: '',
   });
-  return redirect(res, `${oauthInfo.authorization_endpoint}?${queryString}`);
+  const url = `${oauthInfo.authorization_endpoint}?${queryString}`;
+  logger.log('Login redirect: ', url);
+
+  return redirect(res, url);
 };
 
 export const loginCallback = async (req: Request, res: Response): Promise<void> => {
@@ -53,7 +73,7 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
   logger.debug('Login callback');
 
   if (url.includes('?')) {
-    const oauthInfo = await getOauthInfoPromise();
+    const oauthInfo = getOauthInfo();
     const queryString = url.substr(url.indexOf('?') + 1);
     const query = parseQueryString(queryString);
     const code = query.code as string;

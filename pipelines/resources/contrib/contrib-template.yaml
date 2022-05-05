@@ -1,12 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-disconnected-registry-spokes
+  name: spoke-deploy-contrib-template
   annotations:
     description: |
-      This task will deploy the Disconnected Internal registry.
-      Then will perform the OCP and OLM sync, based on the SYNC parameter.
-      Update the Global PullSecret for every spoke with the proper credentials.
+      This task will create a new namespace called contrib-template in all spokes clusters.
 spec:
   workspaces:
     - name: ztp
@@ -32,25 +30,16 @@ spec:
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_REGISTRY_DIR
-        value: "deploy-disconnected-registry"
+        value: "contrib/template"
       - name: SHARED_DIR
         value: "shared-utils"
-      - name: MOCK
-        value: $(params.mock)
   steps:
-    - name: deploy-disconnected-registry
+    - name: deploy-contrib-template
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
-
-        if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-          ./deploy.sh 'spoke'
-        else
-          echo "Deploy Disconnected Registry Spoke: Mock mode on"
-        fi
-
+        ./deploy.sh
 
   volumes:
   - name: lib-containers

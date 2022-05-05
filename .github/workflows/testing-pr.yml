@@ -29,7 +29,7 @@ jobs:
           cd ${{ github.workspace }}
           if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
             # this is a fork, so the image release should be the sha commit
-            RELEASE=${{ github.sha }}    
+            RELEASE=${{ github.sha }}
           elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             # this is a PR from the repo with main branch
             RELEASE=latest
@@ -52,7 +52,7 @@ jobs:
           cd ${{ github.workspace }}
           if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
             # this is a fork, so the image release should be the sha commit
-            RELEASE=${{ github.sha }}    
+            RELEASE=${{ github.sha }}
           elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             RELEASE=latest
           else
@@ -101,7 +101,7 @@ jobs:
           cd ${{ github.workspace }}
           if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
             # this is a fork, so the image release should be the sha commit
-            RELEASE=${{ github.sha }}    
+            RELEASE=${{ github.sha }}
           elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             # this is a PR from the repo with main branch
             RELEASE=latest
@@ -115,7 +115,7 @@ jobs:
           echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
-          
+
           RELEASE=${RELEASE} make build-spoke-compact
           RELEASE=${RELEASE} make deploy-pipe-spoke-compact-ci
 

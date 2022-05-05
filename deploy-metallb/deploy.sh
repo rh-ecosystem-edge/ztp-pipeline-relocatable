@@ -119,10 +119,10 @@ function render_manifests() {
 
     # Render the subscription to be connected or disconnected (assuming sno is connected)
     export NUM_M=$(yq e ".spokes[0].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
-    if [ "${NUM_M}" -eq "3" ]; then  # 3 masters and disconnected
+    if [ "${NUM_M}" -eq "3" ]; then # 3 masters and disconnected
         sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-MLB-Subscription.yaml
         sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-NMS-Subscription.yaml
-    else  # sno is connected so the source should be upstream
+    else # sno is connected so the source should be upstream
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-MLB-Subscription.yaml
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-NMS-Subscription.yaml
     fi

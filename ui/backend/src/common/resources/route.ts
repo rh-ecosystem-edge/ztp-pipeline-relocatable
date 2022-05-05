@@ -13,5 +13,9 @@ export interface Route extends IResource {
   metadata: Metadata;
   spec?: {
     host?: string;
+    port?: unknown;
+    tls?: unknown;
+    to?: unknown;
+    wildcardPolicy?: unknown;
   };
 }

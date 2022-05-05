@@ -47,8 +47,6 @@ function check_bmhs() {
     NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
     NUM_M_MAX=$((NUM_M + 1))
 
-
-
     while [ "${timeout}" -lt "${wait_time}" ]; do
         RCBMH=$(oc --kubeconfig=${KUBECONFIG_HUB} get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')
         # Check state

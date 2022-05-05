@@ -12,7 +12,7 @@ import {
   Title,
 } from '@patternfly/react-core';
 
-import { persist, PersistErrorType } from '../PersistPage';
+import { navigateToNewDomain, persist, PersistErrorType } from '../PersistPage';
 import { IpTripletsSelector } from '../IpTripletsSelector';
 import { useK8SStateContext } from '../K8SStateContext';
 
@@ -59,6 +59,8 @@ export const SettingsPageRight: React.FC<{
   const onSuccess = () => {
     setError(null);
     setEdit(false);
+
+    navigateToNewDomain(domain, '/settings');
   };
 
   const onCancelEdit = () => {
@@ -146,17 +148,24 @@ export const SettingsPageRight: React.FC<{
               variant={AlertVariant.success}
               isInline
             >
-              All changes have been saved.
+              All changes have been saved, waiting for them to take effect.
+              {/* TODO: show spinner */}
             </Alert>
           </StackItem>
         )}
-        {error === undefined && <StackItem isFilled></StackItem>}
+        {error === undefined && (
+          <StackItem isFilled>{isSaving && <>Saving changes... {/* TODO: Spinner */}</>}</StackItem>
+        )}
         <StackItem className="settings-page-sumamary__item__footer">
           {!isEdit && (
             <Button
               data-testid="settings-page-button-edit"
               variant={ButtonVariant.primary}
               onClick={() => setEdit(true)}
+              disabled={
+                /* wait for changes to take effect, do another change on the new page after redirection */
+                error === null
+              }
             >
               Edit
             </Button>
