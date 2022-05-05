@@ -10,7 +10,7 @@ SPOKES_FILE ?= "$$(cat ${PWD}/hack/deploy-hub-local/spokes.yaml)"
 PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.9
 ACM_VERSION ?= 2.4
-OCS_VERSION ?= 4.9
+ODF_VERSION ?= 4.9
 
 .PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact deploy-pipe-hub build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-spoke-sno-ci deploy-pipe-spoke-compact-ci all-hub-sno-ci all-hub-compact-ci all-spoke-sno-ci all-spoke-compact-ci all-images-ci
 .EXPORT_ALL_VARIABLES:
@@ -65,19 +65,19 @@ doc:
 
 build-hub-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno
 
 build-hub-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact
 
 build-spoke-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno
 
 build-spoke-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact
 
 deploy-pipe-hub:
 	tkn pipeline start -n spoke-deployer \

@@ -4,7 +4,7 @@ xref:config[config]:
   xref:OC_OCP_TAG[OC_OCP_TAG]: "4.9.0-x86_64"
   xref:OC_RHCOS_RELEASE[OC_RHCOS_RELEASE]: "49.84.202110081407-0"
   xref:OC_ACM_VERSION[OC_ACM_VERSION]: "2.4"
-  xref:OC_OCS_VERSION[OC_OCS_VERSION]: "4.8"
+  xref:OC_ODF_VERSION[OC_ODF_VERSION]: "4.8"
 
 xref:spokes[spokes]:
   - xref:spokename[spoke1-name]:

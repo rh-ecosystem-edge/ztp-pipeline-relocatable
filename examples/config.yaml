@@ -1,7 +1,7 @@
 config:
   OC_OCP_VERSION: "4.10.6"
   OC_ACM_VERSION: "2.4"
-  OC_OCS_VERSION: "4.9"
+  OC_ODF_VERSION: "4.9"
 
 spokes:
   - spoke1-name:
