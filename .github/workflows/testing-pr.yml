@@ -29,7 +29,7 @@ jobs:
           cd ${{ github.workspace }}
           if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
             # this is a fork, so the image release should be the sha commit
-            RELEASE=${{ github.sha }}    
+            RELEASE=${{ github.sha }}
           elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             # this is a PR from the repo with main branch
             RELEASE=latest
@@ -52,7 +52,7 @@ jobs:
           cd ${{ github.workspace }}
           if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
             # this is a fork, so the image release should be the sha commit
-            RELEASE=${{ github.sha }}    
+            RELEASE=${{ github.sha }}
           elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
             RELEASE=latest
           else
@@ -77,12 +77,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Load Pipelines
-        run: |
-          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          cd hack/deploy-hub-local
-          ./bootstrap-ci.sh
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: remove all old deployments and vms
         run: |
@@ -101,24 +97,31 @@ jobs:
       - name: create new vms and requirements
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          cd hack/deploy-hub-local
-          ./build-spoke.sh ~/openshift_pull.json 4.10.5 2.4 4.9 sno
+          export HOME=/root
+          cd ${{ github.workspace }}
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            # this is a PR from the repo with main branch
+            RELEASE=latest
+          else
+            # this is a PR from the repo with a branch
+            RELEASE=$( echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
+          fi
 
-      - name: launch the spoke pipeline
-        run: |
-          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:${{ github.event.pull_request.head.ref }}" -p spokes-config="$(cat /root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+          echo ">>>> Launching Pipeline spoke"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make build-spoke-compact
+          RELEASE=${RELEASE} make deploy-pipe-spoke-compact-ci
 
       - name: verify if the pipe has been successful
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-
-          while [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i running | wc -l) -gt 0 ]; do
-            echo "Waiting for the pipeline to finish"
-            echo "Current Status:  $(tkn  pr describe -n spoke-deployer -L -ojsonpath={.status.conditions[0].message})"
-            echo "---------"
-            sleep 300
-          done
 
           if [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
             echo "The pipeline has failed"

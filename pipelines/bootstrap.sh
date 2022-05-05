@@ -5,6 +5,14 @@ set -o nounset
 #set -o errexit
 set -m
 
+function get_clients() {
+    if ! (command -v oc &>/dev/null); then
+        curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz | tar xvz -C /usr/bin
+        rm -f /usr/bin/README.md
+        chmod +x /usr/bin/oc /usr/bin/kubectl
+    fi
+}
+
 function get_tkn() {
     URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64.tar.gz"
     BIN_FOLDER="${HOME}/bin"
@@ -157,6 +165,7 @@ export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
 
+get_clients
 get_tkn
 get_yq
 clone_ztp

@@ -119,10 +119,10 @@ function render_manifests() {
 
     # Render the subscription to be connected or disconnected (assuming sno is connected)
     export NUM_M=$(yq e ".spokes[0].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
-    if [ "${NUM_M}" -eq "3" ]; then  # 3 masters and disconnected
+    if [ "${NUM_M}" -eq "3" ]; then # 3 masters and disconnected
         sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-MLB-Subscription.yaml
         sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-NMS-Subscription.yaml
-    else  # sno is connected so the source should be upstream
+    else # sno is connected so the source should be upstream
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-MLB-Subscription.yaml
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-NMS-Subscription.yaml
     fi
@@ -176,12 +176,13 @@ function grab_master_ext_ips() {
     local spokenumber=${2}
 
     ## Grab 1 master and 1 IP
-    agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
-    export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
+    agent=$(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${spoke} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}' | awk '{print $1}')
+
+    export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
     master=${SPOKE_NODE_NAME##*-}
     export MAC_EXT_DHCP=$(yq e ".spokes[${spokenumber}].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
     ## HAY QUE PROBAR ESTO
-    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
     export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
 }
 
