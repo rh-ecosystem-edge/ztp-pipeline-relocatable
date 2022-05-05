@@ -9,3 +9,6 @@ ExecStop=/usr/bin/pkill sushy
 ExecReload=/usr/bin/pkill sushy
 StandardOutput=syslog
 StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
