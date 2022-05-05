@@ -121,8 +121,8 @@ function check_mcp() {
     fi
 }
 
-function check_ocs_ready() {
-    echo ">>>> Waiting for OCS Cluster Ready"
+function check_odf_ready() {
+    echo ">>>> Waiting for ODF Cluster Ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
@@ -135,7 +135,7 @@ function check_ocs_ready() {
         timeout=$((timeout + 1))
     done
     if [ "$ready" == "false" ]; then
-        echo "timeout waiting for OCS deployment to be ready..."
+        echo "timeout waiting for ODF deployment to be ready..."
         exit 1
     fi
 }
@@ -182,8 +182,8 @@ function deploy_registry() {
         echo ">>>> Deploy internal Quay Registry: ${REGISTRY} - Namespace: (${cluster})"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         # TODO: Render variables instead being static
-        # check if ocs is ready before deploying registry
-        check_ocs_ready
+        # check if odf is ready before deploying registry
+        check_odf_ready
 
         # Create the registry deployment and wait for it
         echo ">> Creating the registry deployment"

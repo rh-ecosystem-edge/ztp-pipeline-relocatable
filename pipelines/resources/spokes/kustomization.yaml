@@ -6,7 +6,7 @@ resources:
   - spoke-deploy-icsp-spokes-post.yaml
   - spoke-deploy-icsp-spokes-pre.yaml
   - spoke-deploy-metallb.yaml
-  - spoke-deploy-ocs.yaml
+  - spoke-deploy-odf.yaml
   - spoke-deploy-spoke.yaml
   - spoke-deploy-workers.yaml
   - spoke-detach-cluster.yaml

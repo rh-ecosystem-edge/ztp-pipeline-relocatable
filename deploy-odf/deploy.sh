@@ -51,7 +51,7 @@ source ${WORKDIR}/shared-utils/common.sh
 if ! ./verify.sh; then
     echo ">>>> Modify files to replace with pipeline info gathered"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    sed -i "s/CHANGEME/$OC_OCS_VERSION/g" manifests/03-OCS-Subscription.yaml
+    sed -i "s/CHANGEME/$OC_ODF_VERSION/g" manifests/03-ODF-Subscription.yaml
 
     if [[ -z ${ALLSPOKES} ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
@@ -146,17 +146,17 @@ if ! ./verify.sh; then
             exit 1
         fi
 
-        echo ">>>> Deploy manifests to install OCS $OC_OCS_VERSION"
+        echo ">>>> Deploy manifests to install ODF $OC_ODF_VERSION"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-OCS-Namespace.yaml
+        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-ODF-Namespace.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-OCS-OperatorGroup.yaml
+        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-ODF-OperatorGroup.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-OCS-Subscription.yaml
+        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-ODF-Subscription.yaml
 
         sleep 60
 
-        echo ">>>> Labeling nodes for OCS"
+        echo ">>>> Labeling nodes for ODF"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
         counter=0
         for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get node -o name); do
@@ -166,12 +166,12 @@ if ! ./verify.sh; then
         done
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-        echo ">>>> Render and apply manifest to deploy OCS StorageCluster"
+        echo ">>>> Render and apply manifest to deploy ODF StorageCluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        render_file manifests/04-OCS-StorageCluster.yaml
+        render_file manifests/04-ODF-StorageCluster.yaml
         sleep 60
 
-        echo ">>>> Waiting for: OCS Cluster"
+        echo ">>>> Waiting for: ODF Cluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
@@ -184,7 +184,7 @@ if ! ./verify.sh; then
             timeout=$((timeout + 1))
         done
         if [ "$ready" == "false" ]; then
-            echo "timeout waiting for OCS deployment..."
+            echo "timeout waiting for ODF deployment..."
             exit 1
         fi
     done

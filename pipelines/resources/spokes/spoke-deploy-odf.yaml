@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-ocs
+  name: spoke-deploy-odf
   annotations:
     description: |
       This task will deploy OCS/ODF on the Spoke Cluster.
@@ -29,22 +29,22 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_OCS_DIR
-        value: "deploy-ocs"
+      - name: DEPLOY_ODF_DIR
+        value: "deploy-odf"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-ocs
+    - name: deploy-odf
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_OCS_DIR}
+          cd ${WORKDIR}/${DEPLOY_ODF_DIR}
           ./deploy.sh
         else
-          echo "Deploy OCS: Mock mode on"
+          echo "Deploy ODF: Mock mode on"
         fi
