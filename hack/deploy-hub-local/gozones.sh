@@ -1,5 +1,5 @@
 #!/bin/bash
-https://computingforgeeks.com/how-to-disable-ipv6-on-linux/
+## https://computingforgeeks.com/how-to-disable-ipv6-on-linux/
 ### libvirt networks 
 kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
 kcli create network -c 192.168.150.0/24 bare-net
