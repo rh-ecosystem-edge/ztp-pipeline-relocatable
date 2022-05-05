@@ -36,10 +36,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy OCS
-  - name: deploy-ocs
+  # Deploy HTTPD Server
+  - name: deploy-httpd-server
     taskRef:
-      name: spoke-deploy-ocs
+      name: hub-deploy-httpd-server
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -55,10 +55,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy RHACM
-  - name: deploy-acm
+  # Deploy Disconnected Registry + Sync
+  - name: deploy-disconnected-registry
     taskRef:
-      name: hub-deploy-acm
+      name: hub-deploy-disconnected-registry
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -69,64 +69,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-disconnected-registry
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # Deploy Ansible Automation Platform
-  - name: deploy-aap
-    taskRef:
-      name: hub-deploy-aap
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-acm
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # Deploy OpenShift Gitops
-  - name: deploy-argocd
-    taskRef:
-      name: hub-deploy-argocd
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-aap
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # Deploy OpenShift Gitea
-  - name: deploy-gitea
-    taskRef:
-      name: hub-deploy-gitea
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-argocd
+      - deploy-httpd-server
     workspaces:
       - name: ztp
         workspace: ztp

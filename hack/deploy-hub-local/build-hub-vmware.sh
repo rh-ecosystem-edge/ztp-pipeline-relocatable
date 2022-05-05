@@ -15,6 +15,8 @@ export pull_secret=${1}
 export ocp_version=${2}
 export acm_version=${3}
 export ocs_version=${4}
+export QUBINODE=true
+export HUB_INSTALL="hub-install-qubinode.yml"
 
 if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" ] || [ -z "${acm_version}" ] || [ -z "${ocs_version}" ]; then
     usage
@@ -33,7 +35,7 @@ fi
 # #########
 export DEPLOY_OCP_DIR="./"
 export OC_RELEASE="quay.io/openshift-release-dev/ocp-release:$ocp_version-x86_64"
-export OC_CLUSTER_NAME="test-ci"
+export OC_CLUSTER_NAME="ocp4"
 export OC_DEPLOY_METAL="yes"
 export OC_NET_CLASS="ipv4"
 export OC_TYPE_ENV="connected"
@@ -72,8 +74,8 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
              	kcli delete vm test-ci-sno -y || true; kcli delete vm test-ci-master-0 -y || true; kcli delete vm test-ci-master-1 -y || true; kcli delete vm test-ci-master-2 -y || true; kcli delete network bare-net -y || true
              	kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
              	kcli create network -c 192.168.150.0/24 bare-net
-             	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
-             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
+             	echo kcli create cluster openshift --force --paramfile=${HUB_INSTALL} -P masters=3 -P memory=48000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
+             	kcli create cluster openshift --force --paramfile=${HUB_INSTALL} -P masters=3 -P memory=48000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
              	export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
              	oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             fi
@@ -91,6 +93,7 @@ config:
     OC_OCP_VERSION: '${OC_OCP_VERSION}'
     OC_ACM_VERSION: '${OC_ACM_VERSION}'
     OC_OCS_VERSION: '${OC_OCS_VERSION}'
+    CLOUD_DEPLOYMENT: "true"
 EOF
 
 
