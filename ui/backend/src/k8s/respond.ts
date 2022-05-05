@@ -38,6 +38,12 @@ export function respondCreated(res: Response, data: Record<string, unknown>): vo
 }
 
 export function redirect(res: Response, location: string): void {
+  // console.log(
+  //   '--- returning redirect, TODO: does it go with old or new domain? Why we are navigated to the old oauth domain??? res: ',
+  //   res,
+  //   ', location: ',
+  //   location,
+  // );
   res.writeHead(302, { location }).end();
 }
 
