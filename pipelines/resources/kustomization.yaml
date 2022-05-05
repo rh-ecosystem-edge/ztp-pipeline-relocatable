@@ -7,5 +7,6 @@ resources:
   - deploy-ztp-hub-cloud.yaml
   - deploy-ztp-spokes.yaml
   - deploy-ztp-spokes-sno.yaml
+  - deploy-ztp-hub-disconnected-registry.yaml
 
 namespace: spoke-deployer

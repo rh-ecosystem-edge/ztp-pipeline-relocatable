@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: deploy-ztp-hub-cloud
+  name: deploy-ztp-hub-disconnected-registry
 spec:
   description: Tekton Pipeline to deploy ZTPFW Hub Cluster
   params:
