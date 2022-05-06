@@ -51,10 +51,8 @@ if ./verify.sh; then
         echo "Waiting for Assisted installer to be ready..."
         sleep 5
     done
-    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
-    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-image-service
-
-    echo ">>>> Wait for ACM and AI deployed successfully"
+    check_resource "deployment" "assisted-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
+    check_resource "deployment" "assisted-image-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
 
 else
 
