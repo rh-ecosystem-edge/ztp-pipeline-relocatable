@@ -15,7 +15,7 @@ const logger = console;
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string };
 
-const getOauthInfoPromise = async () => {
+export const getOauthInfoPromise = async () => {
   if (process.env.FRONTEND_URL?.startsWith('https://localhost')) {
     // dev environment
     // In production, this does not work after domain change
