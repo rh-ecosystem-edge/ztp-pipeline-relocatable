@@ -80,7 +80,7 @@ build-spoke-compact:
 	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
 deploy-pipe-hub-sno:
-	${PWD}/shared-utils/wait_for_sno_mco.sh \
+	${PWD}/shared-utils/wait_for_sno_mco.sh & \
 	tkn pipeline start -n spoke-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
 			-p spokes-config="$$(cat $(SPOKES_FILE))" \
