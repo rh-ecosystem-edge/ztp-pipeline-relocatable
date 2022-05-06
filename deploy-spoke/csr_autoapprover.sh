@@ -33,11 +33,3 @@ while [ ${count} -gt 0 ]; do
     sleep 20
 
 done
-
-if [ $(oc get csr | grep Approved | grep -v Issued | wc -l) -gt 0 ]; then
-    rm -f ${KUBECONFIG}
-    echo "Kubeconfig file removed"
-    systemctl disable csr-approver
-    echo "csr-approver service disabled"
-    exit 0
-fi

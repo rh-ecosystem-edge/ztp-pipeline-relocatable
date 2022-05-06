@@ -21,10 +21,10 @@ function App() {
                 element={<Redirect to={process.env.REACT_APP_BACKEND_PATH} preservePathName />}
               />
               {/* TODO: Implement landing page after logout */}
-              <Route
+              {/* <Route
                 path="/logout/*"
                 element={<Redirect to={process.env.REACT_APP_BACKEND_PATH} preservePathName />}
-              />
+              /> */}
             </>
           )}
           <Route path="/welcome" element={<WelcomePage />} />

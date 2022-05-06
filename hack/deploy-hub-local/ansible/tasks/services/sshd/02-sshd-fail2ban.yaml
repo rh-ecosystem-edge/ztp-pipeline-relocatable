@@ -1,3 +1,4 @@
+---
 - name: Install helpful packages
   package: name={{ item }} state=present
   with_items:
@@ -12,15 +13,16 @@
     option: enabled
     value: true
 
-- name: Enable helpful services
+- name: Enable fail2ban
   service: name={{ item }} enabled=yes state=started
   with_items:
     - fail2ban
   when: sshpassword==True
+  ignore_errors: true
 
-- name: Disable helpful services
+- name: Disable fail2ban
   service: name={{ item }} enabled=no state=stopped
   with_items:
     - fail2ban
-  when: sshpassword==false
+  when: sshpassword==False
   ignore_errors: true

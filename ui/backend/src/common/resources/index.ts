@@ -6,3 +6,6 @@ export * from './service';
 export * from './status';
 export * from './ingress';
 export * from './route';
+export * from './oauthclient';
+export * from './deployment';
+export * from './pod';
