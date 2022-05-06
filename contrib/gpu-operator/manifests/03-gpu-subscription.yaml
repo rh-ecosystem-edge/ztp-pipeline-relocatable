@@ -8,6 +8,6 @@ spec:
   channel: $CHANGEME_VERSION
   installPlanApproval: Automatic
   name: gpu-operator-certified
-  source: certified-operators
+  source: ztpfw-catalog-certfied
   sourceNamespace: openshift-marketplace
   startingCSV: "gpu-operator-certified.$CHANGEME_VERSION"

@@ -7,5 +7,5 @@ spec:
   channel: "stable"
   installPlanApproval: Automatic
   name: nfd
-  source: redhat-operators
+  source: ztpfw-catalog
   sourceNamespace: openshift-marketplace
