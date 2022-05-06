@@ -12,7 +12,7 @@ OCP_VERSION ?= 4.10.9
 ACM_VERSION ?= 2.4
 OCS_VERSION ?= 4.9
 
-.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact deploy-pipe-hub build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-spoke-sno-ci deploy-pipe-spoke-compact-ci all-hub-sno-ci all-hub-compact-ci all-spoke-sno-ci all-spoke-compact-ci all-images-ci
+.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact deploy-pipe-hub-sno deploy-pipe-hub-compact build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-spoke-sno-ci deploy-pipe-spoke-compact-ci all-hub-sno-ci all-hub-compact-ci all-spoke-sno-ci all-spoke-compact-ci all-images-ci
 .EXPORT_ALL_VARIABLES:
 
 all-images: pipe-image ui-image
@@ -24,8 +24,8 @@ ui-image: build-ui-image push-ui-image
 pipe-image-ci: build-pipe-image-ci push-pipe-image-ci
 ui-image-ci: build-ui-image-ci push-ui-image-ci
 
-all-hub-sno: build-hub-sno bootstrap deploy-pipe-hub
-all-hub-compact: build-hub-compact bootstrap deploy-pipe-hub
+all-hub-sno: build-hub-sno bootstrap deploy-pipe-hub-sno
+all-hub-compact: build-hub-compact bootstrap deploy-pipe-hub-compact
 all-spoke-sno: build-spoke-sno bootstrap deploy-pipe-spoke-sno
 all-spoke-compact: build-spoke-compact bootstrap deploy-pipe-spoke-compact
 
@@ -79,7 +79,19 @@ build-spoke-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
 
-deploy-pipe-hub:
+deploy-pipe-hub-sno:
+	${PWD}/shared-utils/wait_for_sno_mco.sh \
+	tkn pipeline start -n spoke-deployer \
+			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+			-p kubeconfig=${KUBECONFIG} \
+			-w name=ztp,claimName=ztp-pvc \
+			--timeout 5h \
+			--pod-template ./pipelines/resources/common/pod-template.yaml \
+			--use-param-defaults deploy-ztp-hub  && \
+	tkn pr logs -L -n spoke-deployer -f
+
+deploy-pipe-hub-compact:
 	tkn pipeline start -n spoke-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
 			-p spokes-config="$$(cat $(SPOKES_FILE))" \
