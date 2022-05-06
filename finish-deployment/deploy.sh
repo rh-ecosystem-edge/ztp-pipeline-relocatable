@@ -61,22 +61,24 @@ function save_files() {
     i=${2}
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
-        echo ""
-        echo ">>>> Copying ${cluster} Kubeconfig to Master ${master} Node"
-        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
-            NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
-            if [[ -n ${NODE_IP} ]]; then
-                echo "Master Node: ${master}"
-                echo "AGENT: ${agent}"
-                echo "BMC: ${EXT_MAC_ADDR}"
-                echo "IP: ${NODE_IP%%/*}"
-                echo ">>>>"
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "mkdir -p ~/.kube"
-                copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP%%/*}" "./.kube/config"
-            fi
-        done
+    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}')
+    do
+        echo
+        SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
+        master=${SPOKE_NODE_NAME##*-}
+        MAC_EXT_DHCP=$(yq e ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+        SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+        NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
+        if [[ -n ${NODE_IP} ]]; then
+            echo "Master Node: ${master}"
+            echo "AGENT: ${agent}"
+            echo "BMC: ${MAC_EXT_DHCP}"
+            echo "IP: ${NODE_IP%%/*}"
+            echo ">>>>"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "mkdir -p ~/.kube"
+            copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP%%/*}" "./.kube/config"
+            mask_systemd_units ${NODE_IP%%/*}
+        fi
     done
 }
 
@@ -109,6 +111,14 @@ function store_rsa_secrets() {
     echo ">> Namespace: ${cluster}"
     oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=id_rsa.key=${RSA_KEY_FILE} --from-file=id_rsa.pub=${RSA_PUB_FILE}
     oc --kubeconfig=${SPOKE_KUBECONFIG} -n default create secret generic cluster-ssh-keypair --from-file=id_rsa.key=${RSA_KEY_FILE} --from-file=id_rsa.pub=${RSA_PUB_FILE}
+}
+
+function mask_systemd_units() {
+    # Function to mask dangerous systemd unit which could affect the relocation 
+    node=${1}
+    echo ">> Masking systemd units on node: ${node}"
+    echo ">>>> Unit: crio-wipe"
+    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${node} "sudo systemctl mask crio-wipe"
 }
 
 source ${WORKDIR}/shared-utils/common.sh
