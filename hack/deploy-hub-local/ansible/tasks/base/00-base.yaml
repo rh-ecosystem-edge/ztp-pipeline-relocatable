@@ -1,3 +1,4 @@
+---
 - name: Set hostname
   hostname:
     name: "{{ inventory_hostname }}"
@@ -5,6 +6,13 @@
 - name: Create resolv.conf
   copy:
     dest: "/etc/resolv.conf"
+    content: |
+      nameserver 8.8.8.8
+      nameserver 8.8.4.4
+
+- name: Create resolv.upstream.conf
+  copy:
+    dest: "/etc/resolv.upstream.conf"
     content: |
       nameserver 8.8.8.8
       nameserver 8.8.4.4
@@ -35,30 +43,6 @@
     - "abrt*"
   ignore_errors: true
 
-- name: Use DNF fastest mirror
-  ini_file:
-    path: /etc/dnf/dnf.conf
-    section: main
-    option: fastestmirror
-    value: 1
-  when: os == "fedora"
-
-- name: Use DNF drpm
-  ini_file:
-    path: /etc/dnf/dnf.conf
-    section: main
-    option: deltarpm
-    value: true
-  when: os == "fedora"
-
-- name: Use DNF parallel downloads
-  ini_file:
-    path: /etc/dnf/dnf.conf
-    section: main
-    option: max_parallel_downloads
-    value: 20
-  when: os == "fedora"
-
 - name: Create go bin path
   file:
     path: /root/go/bin
@@ -66,56 +50,6 @@
     owner: root
     group: root
     mode: "0755"
-
-- name: Uninstall packages
-  package: name={{ item }} state=absent
-  with_items:
-    - golang
-    - motd-news-config
-    - command-not-found
-    - update-notifier-common
-  ignore_errors: true
-
-- name: Install helpful packages
-  package: name={{ item }} state=present
-  with_items:
-    - bash-completion
-    - bc
-    - sysstat
-    - tmux
-    - curl
-    - ansible
-    - util-linux
-    - tuned
-    - cmake
-    - powerline
-    - mc
-    - pipsi
-    - nmap
-    - tar
-    - unzip
-    - rsync
-    - net-tools
-    - logrotate
-    - joe
-    - make
-    - wget
-    - git
-    - mailutils
-    - jq
-    - mlocate
-
-  ignore_errors: true
-
-- name: Enable helpful services
-  service: name={{ item }} enabled=yes state=started
-  with_items:
-    - tuned
-    - fstrim.timer
-    - chrony
-    - chronyd
-    - firewalld
-  ignore_errors: true
 
 - name: Change root shell
   user: name=root shell={{ root_shell }}
@@ -170,23 +104,7 @@
     virtual: false
     chassis: "server"
   when: proliant
-
-- name: link powerline so is loaded Debian
-  file:
-    dest: /etc/profile.d/powerline.sh
-    force: yes
-    state: link
-    src: /usr/share/powerline/bindings/bash/powerline.sh
-  when: os == 'debian'
-
-- name: link powerline so is loaded Fedora
-  file:
-    dest: /etc/profile.d/powerline.sh
-    force: yes
-    state: link
-    src: /usr/share/powerline/bash/powerline.sh
-  when: os == 'fedora'
-
+  
 - name: Configure systemd for ignoring closed lid on power
   ini_file:
     path: /etc/systemd/logind.conf
@@ -203,23 +121,6 @@
     value: ignore
   when: physical and chassis == 'laptop'
 
-- name: Set tuned profile to latency-performance
-  shell: /usr/sbin/tuned-adm profile latency-performance
-
-- name: Configure logrotate.conf
-  lineinfile:
-    dest: /etc/logrotate.conf
-    create: true
-    state: present
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-  with_items:
-    - { regexp: "^compress", line: "compress" }
-    - { regexp: "^rotate.*", line: "rotate 14" }
-    - { regexp: "^daily", line: "daily" }
-    - { regexp: "^weekly.*", line: "" }
-    - { regexp: "^dateext.*", line: "" }
-
 - name: Configure User environment
   lineinfile:
     dest: /root/.bashrc
@@ -229,11 +130,10 @@
     line: "{{ item.line }}"
   with_items:
     - { regexp: "^export GOPATH", line: "export GOPATH=~/go" }
-    - { regexp: "^export PATH.*", line: "export PATH=$PATH:$GOPATH/bin" }
-
+    - { regexp: "^export PATH.*", line: "export PATH=$PATH:$GOPATH/bin:/root/bin" }
     - {
-        regexp: "^source /etc/profile.d/powerline.sh",
-        line: "source /etc/profile.d/powerline.sh",
+        regexp: "^export PS1=",
+        line: 'export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\] \n\[\e[0;35m\]\$ \[\e[0m\]"',
       }
 
 - name: Limit Journal file size
@@ -241,4 +141,11 @@
     path: /etc/systemd/journald.conf
     section: Journal
     option: SystemMaxUse
-    value: 200M
+    value: "{{ journalSystemMaxUse | default('500M') }}"
+
+- name: Update root user password
+  user:
+    name: root
+    password: "{{ rootpassword }}"
+    append: yes
+  when: updaterootpwd==True
