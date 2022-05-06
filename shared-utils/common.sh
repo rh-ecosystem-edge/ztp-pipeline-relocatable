@@ -10,8 +10,8 @@ function trust_node_certificates() {
     # Initially no collateral effects on MCO.
     # This is only affecting the spokes, because we cannot ensure the Hub's RSA Keyfile location
 
-    cluster=${2}
-    i=${3}
+    cluster=${1}
+    i=${2}
     cp -f ${PATH_CA_CERT} ${SPOKE_SAFE_FOLDER}
 
     echo ">>>> Copying Registry Certificates to cluster: ${cluster}"
