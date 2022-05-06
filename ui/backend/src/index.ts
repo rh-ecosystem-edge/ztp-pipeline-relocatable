@@ -13,6 +13,8 @@ import {
   serve,
   htpasswd,
   changeDomain,
+  user,
+  configure,
 } from './endpoints';
 
 const PORT = process.env.BACKEND_PORT || 3001;
@@ -90,6 +92,9 @@ const start = () => {
 
   app.post(`/htpasswd`, htpasswd);
   app.post(`/changeDomain`, changeDomain);
+
+  app.get('/user', user);
+  app.get('/configure', configure);
 
   app.all(`/api/*`, proxy);
   app.all(`/apis/*`, proxy);

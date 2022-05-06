@@ -15,6 +15,7 @@ import {
 import { navigateToNewDomain, persist, PersistErrorType } from '../PersistPage';
 import { IpTripletsSelector } from '../IpTripletsSelector';
 import { useK8SStateContext } from '../K8SStateContext';
+import { DeleteKubeadminButton } from './DeleteKubeadminButton';
 
 import './SettingsPageRight.css';
 
@@ -158,17 +159,20 @@ export const SettingsPageRight: React.FC<{
         )}
         <StackItem className="settings-page-sumamary__item__footer">
           {!isEdit && (
-            <Button
-              data-testid="settings-page-button-edit"
-              variant={ButtonVariant.primary}
-              onClick={() => setEdit(true)}
-              disabled={
-                /* wait for changes to take effect, do another change on the new page after redirection */
-                error === null
-              }
-            >
-              Edit
-            </Button>
+            <>
+              <DeleteKubeadminButton />{' '}
+              <Button
+                data-testid="settings-page-button-edit"
+                variant={ButtonVariant.primary}
+                onClick={() => setEdit(true)}
+                disabled={
+                  /* wait for changes to take effect, do another change on the new page after redirection */
+                  error === null
+                }
+              >
+                Edit
+              </Button>
+            </>
           )}
           {isEdit && (
             <>

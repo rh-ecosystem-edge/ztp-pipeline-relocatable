@@ -25,3 +25,5 @@ export const ADDRESS_POOL_ANNOTATION_KEY = 'metallb.universe.tf/address-pool';
 export const ADDRESS_POOL_NAMESPACE = 'metallb';
 
 export const ZTPFW_UI_ROUTE_PREFIX = 'edge-cluster-setup';
+
+export const kubeadminSecret = { name: 'kubeadmin', namespace: 'kube-system' };

@@ -1,0 +1,8 @@
+---
+- name: Create /root/bin path
+  file:
+    path: /root/bin
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"

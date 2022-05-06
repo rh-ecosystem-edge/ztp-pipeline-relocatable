@@ -13,12 +13,14 @@ import { global_success_color_100 as successColor } from '@patternfly/react-toke
 import { useNavigate } from 'react-router-dom';
 
 import { useConsoleUrl } from '../../resources/consoleUrl';
+import { useK8SStateContext } from '../K8SStateContext';
 
 import './FinalPageSummary.css';
 
 export const FinalPageSummary: React.FC = () => {
   const navigate = useNavigate();
   const consoleUrl = useConsoleUrl();
+  const state = useK8SStateContext();
 
   return (
     <Stack hasGutter className="final-page-sumamary">
@@ -45,6 +47,14 @@ export const FinalPageSummary: React.FC = () => {
         <Text component={TextVariants.small}>
           If you need to modify your settings, make sure you are still connected to your edge
           cluster and click Settings.
+        </Text>
+      </StackItem>
+      <StackItem className="final-page-sumamary__item">
+        <Title headingLevel="h3">Delete the kubeadmin user</Title>
+        <Text component={TextVariants.small}>
+          For security reasons, it is highly recommended to remove the kubeadmin user. To do so,
+          relogin as the <b>{state.username}</b> user and click <b>Delete kubeadmin</b> button on
+          the Settings page.
         </Text>
       </StackItem>
       <StackItem>

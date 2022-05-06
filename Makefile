@@ -18,8 +18,7 @@ HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
-FULL_CLOUD_IMAGE_TAG=$(CLOUD_IMAGE):$(BRANCH)
-SPOKES_FILE ?= "$$(cat ${PWD}/hack/deploy-hub-local/spokes.yaml)"
+SPOKES_FILE ?= ${PWD}/hack/deploy-hub-local/spokes.yaml
 PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.9
 ACM_VERSION ?= 2.4
@@ -111,7 +110,7 @@ build-spoke-compact:
 deploy-pipe-hub:
 	tkn pipeline start -n spoke-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-			-p spokes-config=$(SPOKES_FILE) \
+			-p spokes-config="$$(cat $(SPOKES_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
@@ -122,7 +121,7 @@ deploy-pipe-hub:
 deploy-pipe-spoke-sno:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-    			-p spokes-config=$(SPOKES_FILE) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
@@ -133,7 +132,7 @@ deploy-pipe-spoke-sno:
 deploy-pipe-spoke-compact:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-    			-p spokes-config=$(SPOKES_FILE) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
@@ -144,7 +143,7 @@ deploy-pipe-spoke-compact:
 deploy-pipe-hub-ci:
 	tkn pipeline start -n spoke-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-			-p spokes-config=$(SPOKES_FILE) \
+			-p spokes-config="$$(cat $(SPOKES_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
@@ -155,7 +154,7 @@ deploy-pipe-hub-ci:
 deploy-pipe-spoke-sno-ci:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-    			-p spokes-config=$(SPOKES_FILE) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
@@ -166,7 +165,7 @@ deploy-pipe-spoke-sno-ci:
 deploy-pipe-spoke-compact-ci:
 	tkn pipeline start -n spoke-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-    			-p spokes-config=$(SPOKES_FILE) \
+    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \

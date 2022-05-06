@@ -10,6 +10,7 @@ import { deleteSecret, getSecret } from '../../resources/secret';
 import { IResource, Secret, PatchType } from '../../backend-shared';
 import {
   IDENTITY_PROVIDER_NAME,
+  kubeadminSecret,
   KUBEADMIN_REMOVE,
   PERSIST_IDP,
   RESOURCE_CREATE_TITLE,
@@ -194,12 +195,11 @@ export const deleteKubeAdmin = async (
 ): Promise<boolean> => {
   let secret;
   try {
-    const kubeadmin = { name: 'kubeadmin', namespace: 'kube-system' };
     // The 404 is a valid state in this flow
-    secret = await getSecret(kubeadmin).promise;
+    secret = await getSecret(kubeadminSecret).promise;
 
     // Ok, it is still there, so remove it
-    await deleteSecret(kubeadmin).promise;
+    await deleteSecret(kubeadminSecret).promise;
   } catch (e) {
     if (secret) {
       // It is not a failure if the secret is already missing

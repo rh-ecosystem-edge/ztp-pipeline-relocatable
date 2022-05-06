@@ -1,15 +1,10 @@
 import { K8SStateContextData } from '../types';
 import { MAX_LIVENESS_CHECK_COUNT, UI_POD_NOT_READY, ZTPFW_UI_ROUTE_PREFIX } from './constants';
 import { persistDomain } from './persistDomain';
-import {
-  // deleteKubeAdmin,
-  persistIdentityProvider,
-  PersistIdentityProviderResult,
-} from './persistIdentityProvider';
+import { persistIdentityProvider, PersistIdentityProviderResult } from './persistIdentityProvider';
 import { saveApi, saveIngress } from './persistServices';
 import { PersistErrorType } from './types';
 import { waitForZtpfwPodToBeRecreated } from './utils';
-// import { waitForLivenessProbe } from './utils';
 
 export const persist = async (
   state: K8SStateContextData,
@@ -22,8 +17,6 @@ export const persist = async (
     (await saveIngress(setError, state.ingressIp)) &&
     (await saveApi(setError, state.apiaddr)) &&
     (await persistDomain(setError, state.domain))
-    /*(persistIdpResult !== PersistIdentityProviderResult.userCreated ||
-      (await deleteKubeAdmin(setError))) &&*/
   ) {
     // finished with success
     console.log('Data persisted, blocking progress till reconciled');
