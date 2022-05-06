@@ -5,12 +5,14 @@ set -o errexit
 set -o nounset
 set -m
 
+tput setab 7
+tput setaf 4
 
 echo ">>>> Verify the api active until mco restart node"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 retry=1
   while [ ${retry} != 0 ]; do
-    oc --kubeconfig=${KUBECONFIG} get nodes
+    oc --kubeconfig=${KUBECONFIG} get nodes &> /dev/null
     if [[ $? == 0 ]]; then
        echo "Api is up...waiting until mco will restart the node"
        sleep 10
@@ -25,7 +27,7 @@ echo ">>>> Wait until sno is restarted"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 retry=1
   while [ ${retry} != 0 ]; do
-    oc --kubeconfig=${KUBECONFIG} get nodes
+    oc --kubeconfig=${KUBECONFIG} get nodes &> /dev/null
     if [[ $? != 0 ]]; then
         echo "Api is down...waiting until node will be restarted"
         sleep 10
