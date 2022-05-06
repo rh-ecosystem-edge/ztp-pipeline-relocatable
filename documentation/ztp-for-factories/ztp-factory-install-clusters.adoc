@@ -2,7 +2,7 @@
 :_content-type: ASSEMBLY
 [id="ztp-factory-workflows"]
 = Zero touch provisioning (ZTP) for factory workflows
-include::_attributes/common-attributes.adoc[]
+include::modules/common-attributes.adoc[]
 :context: ztp-factory-install
 
 :FeatureName: ZTP for factory workflows

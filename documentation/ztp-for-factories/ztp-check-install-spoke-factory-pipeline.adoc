@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="monitoring-the-progress-of-the-edge-cluster-factory-install_pipeline_{context}"]
 = Monitoring the progress of the edge cluster factory install pipeline
+include::modules/common-attributes.adoc[]
 
 You can watch the progress of the pipelines by using the {product-title} web console and by using the deployment log file.
 

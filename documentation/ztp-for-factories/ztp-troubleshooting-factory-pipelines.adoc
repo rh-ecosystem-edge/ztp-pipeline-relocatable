@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="troubleshooting-a-pipeline-run_{context}"]
 = Troubleshooting a pipeline run
+include::modules/common-attributes.adoc[]
 
 Perform the following steps to debug a pipeline run.
 
@@ -217,5 +218,5 @@ Use 'oc describe pod/spoke-deploy-disconnected-registry-spokes-run-t6k2d-pod-cnm
 Starting pod/spoke-deploy-disconnected-registry-spokes-run-t6k2d-pod-cnm5t-debug, command was: /tekton/tools/entrypoint -wait_file /tekton/downward/ready -wait_file_content -post_file /tekton/tools/0 -termination_path /tekton/termination -step_metadata_dir /tekton/steps/step-deploy-disconnected-registry -step_metadata_dir_link /tekton/steps/0 -docker-cfg=pipeline-dockercfg-t6ccl -entrypoint /tekton/scripts/script-0-mm64m --
 Pod IP: 10.134.0.53
 If you don't see a command prompt, try pressing enter.
-sh-4.4# 
+sh-4.4#
 ----

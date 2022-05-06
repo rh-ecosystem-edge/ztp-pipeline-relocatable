@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="configuring-edge-cluster-at-remote-location_{context}"]
 = Configuring the edge cluster at the remote location
+include::modules/common-attributes.adoc[]
 
 Configure the edge cluster by using the custom user interface.
 

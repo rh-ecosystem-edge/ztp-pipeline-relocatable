@@ -4,6 +4,7 @@
 :_content-type: CONCEPT
 [id="hub-factory-pipeline_{context}"]
 = Hub factory pipeline
+include::modules/common-attributes.adoc[]
 
 The hub configuration pipeline stage prepares the hub cluster to deploy multiple edge clusters for the end customer.
 

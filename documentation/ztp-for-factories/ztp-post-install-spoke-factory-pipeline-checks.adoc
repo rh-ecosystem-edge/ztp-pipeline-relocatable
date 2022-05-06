@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="post-spoke-factory-pipeline-verification-checks_{context}"]
 = Post edge cluster factory pipeline verification checks
+include::modules/common-attributes.adoc[]
 
 Perform the following steps after completion of the edge cluster factory pipeline run.
 

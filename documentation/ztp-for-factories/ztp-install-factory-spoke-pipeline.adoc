@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="running-the-edge-cluster_factory_install_pipeline_{context}"]
 = Running the edge cluster factory install pipeline
+include::modules/common-attributes.adoc[]
 
 Run the following steps to run the edge factory install pipeline.
 
@@ -40,7 +41,7 @@ spokes:
       master0: <2>
         ignore_ifaces: eno1,eno2 <3>
         nic_ext_dhcp: eno4 <4>
-        nic_int_static: eno5 <5> 
+        nic_int_static: eno5 <5>
         mac_ext_dhcp: "aa:ss:dd:ee:b0:10" <6>
         mac_int_static: "aa:ss:dd:ee:b1:10" <7>
         bmc_url: "<url bmc>" <8>

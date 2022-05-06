@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="installing-the-openshift-pipelines-operator_{context}"]
 = Installing the OpenShift Pipelines Operator
+include::modules/common-attributes.adoc[]
 
 Follow this guidance to install the OpenShift Pipelines Operator that is used to run the pipeline.
 

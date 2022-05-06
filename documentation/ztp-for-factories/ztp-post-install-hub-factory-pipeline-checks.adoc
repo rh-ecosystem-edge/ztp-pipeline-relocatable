@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="post-hub-factory-pipeline-verification-checks_{context}"]
 = Post hub factory pipeline verification checks
+include::modules/common-attributes.adoc[]
 
 Perform the following steps after completion of the hub factory pipeline run.
 

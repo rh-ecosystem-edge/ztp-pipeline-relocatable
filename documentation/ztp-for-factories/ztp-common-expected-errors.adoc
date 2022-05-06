@@ -4,6 +4,7 @@
 :_content-type: CONCEPT
 [id="common-expected-errors_{context}"]
 = Common and expected errors
+include::modules/common-attributes.adoc[]
 
 A common issue that may occur during the ZTP pipelines run is a failure during the check hub stage.
 

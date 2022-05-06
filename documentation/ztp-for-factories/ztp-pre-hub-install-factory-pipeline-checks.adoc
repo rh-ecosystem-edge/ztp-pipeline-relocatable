@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="verifying-the-hub-cluster-is-ready_{context}"]
 = Verifying the hub cluster is ready to run the factory install pipeline
+include::modules/common-attributes.adoc[]
 
 Run the following steps to ensure the hub cluster is ready to run the factory install pipeline.
 

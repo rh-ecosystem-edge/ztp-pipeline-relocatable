@@ -4,6 +4,7 @@
 :_content-type: PROCEDURE
 [id="running-the-hub-cluster-factory-install-pipeline_{context}"]
 = Running the hub cluster factory install pipeline
+include::modules/common-attributes.adoc[]
 
 Run the following steps to run the hub factory install pipeline.
 

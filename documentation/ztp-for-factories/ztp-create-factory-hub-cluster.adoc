@@ -4,6 +4,7 @@
 :_content-type: CONCEPT
 [id="preparing-the-factory-install-environment_{context}"]
 = Preparing the factory install environment
+include::modules/common-attributes.adoc[]
 
 [discrete]
 === Base prerequisites

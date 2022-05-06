@@ -4,6 +4,7 @@
 :_content-type: CONCEPT
 [id="hub-edge-cluster-architecture_{context}"]
 = Hub and edge cluster architecture
+include::modules/common-attributes.adoc[]
 
 After running all workflows in the hub and edge cluster pipelines, the architecture for a compact hub and 3 plus 1 edge cluster may resemble the following:
 
