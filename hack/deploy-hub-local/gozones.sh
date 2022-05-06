@@ -1,5 +1,5 @@
 #!/bin/bash
-## https://computingforgeeks.com/how-to-disable-ipv6-on-linux/
+
 ### libvirt networks 
 kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
 kcli create network -c 192.168.150.0/24 bare-net
@@ -12,13 +12,15 @@ ISOLATED_NETWORK_DOMAIN="rtoztplab.com"
 ISOLATED_NETWORK_CIDR="192.168.150.0/24"
 FORWARD_IP="1.1.1.1"
 
+# Go Zones Does not currently work with IPv6
 cat  >/etc/sysctl.d/ipv6.conf<<EOF
 net.ipv6.conf.all.disable_ipv6 = 1
 net.ipv6.conf.default.disable_ipv6 = 1
 net.ipv6.conf.lo.disable_ipv6 = 1
 EOF
+sysctl -p /etc/sysctl.d/ipv6.conf
+cat /proc/sys/net/ipv6/conf/all/disable_ipv6
 
-FORWARD_IP="10.11.5.19"
 # Create the YAML File
 mkdir -p ${MIRROR_BASE_PATH}/dns/volumes/go-zones/
 mkdir -p ${MIRROR_BASE_PATH}/dns/volumes/bind/
