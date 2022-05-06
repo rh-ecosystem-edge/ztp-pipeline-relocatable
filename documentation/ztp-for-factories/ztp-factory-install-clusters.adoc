@@ -1,15 +1,14 @@
-//local build
+// Telcodocs-403 assembly
+:_content-type: ASSEMBLY
+[id="ztp-factory-workflows"]
+= Zero touch provisioning (ZTP) for factory workflows
+include::_attributes/common-attributes.adoc[]
+:context: ztp-factory-install
 
-[id="ztp-for-factory-main"]
-= ZTP for Factory Workflow
+:FeatureName: ZTP for factory workflows
 
-:imagesdir: images
-:context: ztp-for-factory-installation-workflow
-:product-version: 4.10
-:upstream:
-:product-title: OpenShift Container Platform
-:op-system-first: Red Hat Enterprise Linux CoreOS (RHCOS)
-:op-system: RHCOS
+
+toc::[]
 
 include::ztp-for-factory-overview-ocp-docs.adoc[leveloffset=+1]
 
@@ -87,5 +86,3 @@ include::ztpfw-pipelines-flags-arguments.adoc[leveloffset=+1]
 
 *  xref:https://docs.openshift.com/container-platform/latest/cicd/gitops/understanding-openshift-gitops.adoc#understanding-openshift-gitops[Understanding OpenShift GitOps]
 *  xref:https://docs.openshift.com/container-platform/latest/cicd/pipelines/understanding-openshift-pipelines.adoc#understanding-openshift-pipelines[Understanding OpenShift Pipelines]
-
-include::ztp-for-factory-development.adoc[leveloffset=+1]
