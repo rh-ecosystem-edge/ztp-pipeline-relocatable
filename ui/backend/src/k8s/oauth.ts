@@ -4,21 +4,23 @@ import { IncomingMessage } from 'http';
 import { Agent, request } from 'https';
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring';
 
-import { setDead } from '../endpoints/liveness';
 import { getClusterApiUrl } from './utils';
 import { deleteCookie } from './cookies';
 import { jsonRequest } from './json-request';
 import { getToken, K8S_ACCESS_TOKEN_COOKIE } from './token';
 import { redirect, respondInternalServerError, unauthorized } from './respond';
+import { OAUTH_ROUTE_PREFIX, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
+import { setDead } from '../endpoints';
 
 const logger = console;
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string };
-let oauthInfoPromise: Promise<OAuthInfo>;
 
-export const getOauthInfoPromise = () => {
-  if (oauthInfoPromise === undefined) {
-    oauthInfoPromise = jsonRequest<OAuthInfo>(
+const getOauthInfoPromise = async () => {
+  if (process.env.FRONTEND_URL?.startsWith('https://localhost')) {
+    // dev environment
+    // In production, this does not work after domain change
+    const oauthInfo = await jsonRequest<OAuthInfo>(
       `${getClusterApiUrl()}/.well-known/oauth-authorization-server`,
     ).catch((err: Error) => {
       logger.error({
@@ -31,13 +33,30 @@ export const getOauthInfoPromise = () => {
         token_endpoint: '',
       };
     });
+    return {
+      authorization_endpoint: oauthInfo.authorization_endpoint,
+      token_endpoint: oauthInfo.token_endpoint,
+    };
   }
-  return oauthInfoPromise;
+
+  // We need to hardcode it in production
+  const oauthServer = (process.env.FRONTEND_URL || 'missing-frontend-url').replace(
+    ZTPFW_UI_ROUTE_PREFIX,
+    OAUTH_ROUTE_PREFIX,
+  );
+  const oauth = {
+    // https://oauth-openshift.apps.spoke0-cluster.alklabs.local/oauth/authorize
+    authorization_endpoint: `${oauthServer}/oauth/authorize`,
+    token_endpoint: `${oauthServer}/oauth/token`,
+  };
+
+  return oauth;
 };
 
 export const login = async (_: Request, res: Response): Promise<void> => {
   logger.log('Login requested');
   const oauthInfo = await getOauthInfoPromise();
+
   const queryString = stringifyQuery({
     response_type: `code`,
     client_id: process.env.OAUTH2_CLIENT_ID,
@@ -45,7 +64,10 @@ export const login = async (_: Request, res: Response): Promise<void> => {
     scope: `user:full`,
     state: '',
   });
-  return redirect(res, `${oauthInfo.authorization_endpoint}?${queryString}`);
+  const url = `${oauthInfo.authorization_endpoint}?${queryString}`;
+  logger.log('Login redirect: ', url);
+
+  return redirect(res, url);
 };
 
 export const loginCallback = async (req: Request, res: Response): Promise<void> => {

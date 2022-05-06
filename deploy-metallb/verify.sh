@@ -26,30 +26,28 @@ for spoke in ${ALLSPOKES}; do
     echo "Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
 
-    echo ">>>> Verifying the MetalLb ${spoke}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    deployment=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get deployment -n metallb controller -ojsonpath={.status.availableReplicas})
-    service=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get svc -n metallb --no-headers | wc -l)
-    address_pool=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get addresspool -n metallb --no-headers | wc -l)
-
-    if [[ ${deployment} == "1" && ${service} == "4" && ${address_pool} == "1"  ]]; then
-        echo "MetalLb deployment is up and running"
-    else
-        echo "MetalLb deployment is not running"
-        exit 1
-    fi
-
-
-
     echo ">> Checking external access to the spoke ${spoke}"
     oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
     if [[ ${?} != 0 ]]; then
         echo "ERROR: You cannot access ${spoke} spoke cluster externally"
         exit 1
     fi
-
     echo ">> external access with spoke ${spoke} Verified"
     echo
+
+    echo ">>>> Verifying the MetalLb ${spoke}"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    deployment=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get deployment -n metallb controller -ojsonpath={.status.availableReplicas})
+    service=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get svc -n metallb --no-headers | wc -l)
+    address_pool=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get addresspool -n metallb --no-headers | wc -l)
+
+    if [[ ${deployment} == "1" && ${service} == "4" && ${address_pool} == "1" ]]; then
+        echo "MetalLb deployment is up and running"
+    else
+        echo "MetalLb deployment is not running"
+        exit 1
+    fi
+
 done
 
 echo ">>>>EOF"

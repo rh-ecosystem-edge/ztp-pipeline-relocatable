@@ -19,7 +19,7 @@ export const UsernameSelector: React.FC = () => {
         </Title>
       </StackItem>
       <StackItem className="wizard-sublabel">
-        Create a new personalized, account for future access replacing recent kbeadmin user.
+        Create a new personalized, account for future access replacing recent kubeadmin user.
       </StackItem>
       <StackItem className="username-item" isFilled>
         <FormGroup

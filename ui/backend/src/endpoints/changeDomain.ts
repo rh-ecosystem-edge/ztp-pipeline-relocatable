@@ -1,11 +1,20 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { Request, Response } from 'express';
-import { ZTPFW_NAMESPACE, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
+import { Route } from '../common';
+import {
+  ZTPFW_DEPLOYMENT_NAME,
+  ZTPFW_NAMESPACE,
+  ZTPFW_OAUTHCLIENT_NAME,
+  ZTPFW_ROUTE_NAME,
+  ZTPFW_UI_ROUTE_PREFIX,
+} from '../constants';
 import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
-import { getToken, unauthorized } from '../k8s';
+import { getToken, PostResponse, unauthorized } from '../k8s';
 import { ApiServerSpec, patchApiServerConfig } from '../resources/apiserver';
+import { getDeployment, patchDeployment } from '../resources/deployment';
 import { getIngressConfig, patchIngressConfig } from '../resources/ingress';
-import { getAllRoutes, patchRoute } from '../resources/route';
+import { getOAuthClient, patchOAuthClient } from '../resources/oauthclient';
+import { backupRoute, getRoute, patchRoute } from '../resources/route';
 import { createCertSecret, generateCertificate } from './generateCertificate';
 
 import { validateInput } from './utils';
@@ -40,7 +49,7 @@ const updateIngressComponentRoutes = async (
   domain: string,
   namePrefix: string,
   routeNamespace: string,
-): Promise<boolean> => {
+): Promise<string | undefined /* secretName */> => {
   const secretName = await createSelfSignedTlsSecret(res, token, domain, namePrefix);
   if (secretName) {
     const route = componentRoutes.find((r) => r.name === routeName);
@@ -65,83 +74,169 @@ const updateIngressComponentRoutes = async (
       ', serving certificate: ',
       secretName,
     );
-    return true;
   }
 
-  return false;
+  return secretName;
 };
 
-const updateRoutes = async (
+const updateSingleRoute = async (
   token: string,
-  _ingressDomain: string,
-  _oldIngressDomain?: string,
-): Promise<boolean> => {
-  if (!_oldIngressDomain) {
-    logger.info('Missing old Ingress domain - skipping update of Route resources.');
-    return false;
-  }
-  const oldIngressDomain = `.${_oldIngressDomain}`;
-  const ingressDomain = `.${_ingressDomain}`;
-  logger.debug(
-    `Updating all Route resources. From "${oldIngressDomain}" to "${ingressDomain}" wherever possible.`,
-  );
+  oldIngressDomain: string,
+  ingressDomain: string,
+  route: Route,
+): Promise<PostResponse<Route> | void> => {
+  if (route.spec?.host) {
+    const newHost = route.spec.host.replace(oldIngressDomain, ingressDomain);
+    if (newHost === route.spec.host) {
+      logger.debug(
+        `No change for the ${route.metadata.namespace}/${route.metadata.name} route, keeping host: "${newHost}".`,
+      );
+    } else {
+      const patch: PatchType[] = [
+        {
+          op: 'replace',
+          path: '/spec/host',
+          value: newHost,
+        },
+      ];
 
-  try {
-    const allRoutes = await getAllRoutes(token);
-    if (!allRoutes?.length) {
-      logger.error('Failed to retrieve list of all routes.');
-      return false;
-    }
-
-    const promises: Promise<void>[] = [];
-    allRoutes.forEach((route) => {
-      if (route.spec?.host) {
-        const newHost = route.spec.host.replace(oldIngressDomain, ingressDomain);
-        if (newHost === route.spec.host) {
+      try {
+        return patchRoute(
+          token,
+          { name: route.metadata.name || '', namespace: route.metadata.namespace || '' },
+          patch,
+        ).then((r) => {
           logger.debug(
-            `No change for the ${route.metadata.namespace}/${route.metadata.name} route, keeping host: "${newHost}".`,
+            `Route ${route.metadata.namespace}/${route.metadata.name} is patched, new host: ${newHost}`,
           );
-        } else {
-          const patch: PatchType[] = [
-            {
-              op: 'replace',
-              path: '/spec/host',
-              value: newHost,
-            },
-          ];
-
-          const patching = async () => {
-            try {
-              await patchRoute(
-                token,
-                { name: route.metadata.name || '', namespace: route.metadata.namespace || '' },
-                patch,
-              );
-              logger.debug(
-                `Route ${route.metadata.namespace}/${route.metadata.name} is patched, new host: ${newHost}`,
-              );
-            } catch (e) {
-              logger.error(
-                `Failed to patch ${route.metadata.namespace}/${route.metadata.name} route: `,
-                e,
-              );
-            }
-          };
-          promises.push(patching());
-        }
-      } else {
-        logger.debug(
-          `Skipping update of ${route.metadata.namespace}/${route.metadata.name} route, missing host there.`,
+          return r;
+        });
+      } catch (e) {
+        logger.error(
+          `Failed to patch ${route.metadata.namespace}/${route.metadata.name} route: `,
+          e,
         );
       }
-    });
-
-    await Promise.allSettled(promises);
-  } catch (e) {
-    logger.error('Failed to patch routes: ', e);
-    return false;
+    }
+  } else {
+    logger.debug(
+      `Skipping update of ${route.metadata.namespace}/${route.metadata.name} route, missing host there.`,
+    );
   }
-  return true;
+};
+
+const updateOauthRedirectUri = async (token: string, ztpfwDomain: string): Promise<string> => {
+  const newOauthRedirectUri = `https://${ztpfwDomain}/login/callback`;
+  try {
+    const oauthClient = await getOAuthClient(token, ZTPFW_OAUTHCLIENT_NAME);
+
+    const redirectURIs = oauthClient.redirectURIs || [];
+    if (!redirectURIs.includes(newOauthRedirectUri)) {
+      logger.debug('Appending oauthclient for: ', newOauthRedirectUri);
+      redirectURIs.push(newOauthRedirectUri);
+
+      const patchesOauth: PatchType[] = [
+        {
+          op: oauthClient.redirectURIs ? 'replace' : 'add',
+          path: '/redirectURIs',
+          value: redirectURIs,
+        },
+      ];
+      const result = await patchOAuthClient(token, ZTPFW_OAUTHCLIENT_NAME, patchesOauth);
+      if (result.statusCode === 200) {
+        logger.debug('ZTPFW UI OAuthClient patched: ');
+      } else {
+        logger.error('Failed to patch ZTPFW UI OAuth Client: ', result);
+        // keep going
+      }
+    } else {
+      logger.debug('OAuthclient already contains ', newOauthRedirectUri, ', skipping');
+    }
+  } catch (e) {
+    logger.error('Failed to patch ZTPFW UI OAuthClient: ', e);
+  }
+
+  return newOauthRedirectUri;
+};
+
+const updateZtpfwDeployment = async (
+  token: string,
+  ztpfwDomain: string,
+  newOauthRedirectUri: string,
+) => {
+  try {
+    const deployment = await getDeployment(token, {
+      name: ZTPFW_DEPLOYMENT_NAME,
+      namespace: ZTPFW_NAMESPACE,
+    });
+    const env = deployment.spec?.template?.spec?.containers?.[0].env;
+    if (!env) {
+      logger.error(
+        'Can not find either env variables or volumes in the ZTPFW UI Deployment resource',
+      );
+      return;
+    }
+    const frontendEnv = env.find((e) => e.name === 'FRONTEND_URL');
+    if (frontendEnv) {
+      frontendEnv.value = `https://${ztpfwDomain}`;
+    } else {
+      logger.warn('Can not find FRONTEND_URL env variable in the ZTPFW UI Deployment resource');
+    }
+    const redirectEnv = env.find((e) => e.name === 'OAUTH2_REDIRECT_URL');
+    if (redirectEnv) {
+      redirectEnv.value = newOauthRedirectUri;
+    } else {
+      logger.warn(
+        'Can not find OAUTH2_REDIRECT_URL env variable in the ZTPFW UI Deployment resource',
+      );
+    }
+
+    const patchesDeployment: PatchType[] = [
+      {
+        op: 'replace',
+        path: '/spec/template/spec/containers',
+        value: deployment.spec?.template?.spec?.containers,
+      },
+    ];
+    await patchDeployment(
+      token,
+      {
+        name: ZTPFW_DEPLOYMENT_NAME,
+        namespace: ZTPFW_NAMESPACE,
+      },
+      patchesDeployment,
+    );
+    logger.debug('ZTPFW UI Deployment patched');
+  } catch (e) {
+    logger.error('Failed to patch ZTPFW UI Deployment: ', e);
+  }
+};
+
+const updateZtpfwUI = async (
+  token: string,
+  // ztpfwUiTlsSecretName: string,
+  ztpfwDomain: string,
+  ingressDomain: string,
+  oldIngressDomain = '',
+) => {
+  // route
+  try {
+    const route = await getRoute(token, { name: ZTPFW_ROUTE_NAME, namespace: ZTPFW_NAMESPACE });
+
+    // Make a copy to be able to make livenessProbe requests from browser (new route hots CORS issue)
+    await backupRoute(token, route);
+
+    await updateSingleRoute(token, oldIngressDomain, ingressDomain, route);
+    logger.debug('ZTPFW UI Route patched');
+  } catch (e) {
+    logger.error('Failed to patch ZTPFW UI Route: ', e);
+  }
+
+  // oauth-client
+  const newOauthRedirectUri = await updateOauthRedirectUri(token, ztpfwDomain);
+
+  // Deployment
+  await updateZtpfwDeployment(token, ztpfwDomain, newOauthRedirectUri);
 };
 
 /**
@@ -161,11 +256,16 @@ const updateRoutes = async (
  *     - update relevant item of the spec.componentRoutes
  *   - update spec.domain
  *
- * - update spec.host of all routes (in _all_ namespaces) if old value matches old domain (skip otherwise)
- *
- * - at last (to mitigate the risks), call HTTP PATCH on
+ * - call HTTP PATCH on
  *   - apiserver/cluster
  *   - ingress/cluster
+ *
+ * - update ZTPFW UI
+ *   - the route resource for the new domain
+ *   - OAuthClient for login callback
+ *   - Deployment for env variables
+ *   - side-effect: our pod is terminated (consequence of the Deployment resource change)
+ *
  */
 const changeDomainImpl = async (res: Response, token: string, _domain?: string): Promise<void> => {
   const domain = validateInput(DNS_NAME_REGEX, _domain);
@@ -219,40 +319,35 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   const ztpfwDomain = `${ZTPFW_UI_ROUTE_PREFIX}.${ingressDomain}`;
 
   const componentRoutes = ingress?.spec?.componentRoutes || [];
-  if (
-    !(
-      (
-        (await updateIngressComponentRoutes(
-          res,
-          token,
-          componentRoutes,
-          'console',
-          consoleDomain,
-          'console-secret-',
-          'openshift-console', // namespace
-        )) &&
-        (await updateIngressComponentRoutes(
-          res,
-          token,
-          componentRoutes,
-          'oauth-openshift',
-          oauthDomain,
-          'oauth-secret-',
-          'openshift-authentication',
-        )) &&
-        (await updateIngressComponentRoutes(
-          res,
-          token,
-          componentRoutes,
-          ZTPFW_UI_ROUTE_PREFIX,
-          ztpfwDomain,
-          'ztpfw-secret-',
-          ZTPFW_NAMESPACE,
-        ))
-      )
-      // TODO: Anything else??
-    )
-  ) {
+  const consoleTlsSecretName = await updateIngressComponentRoutes(
+    res,
+    token,
+    componentRoutes,
+    'console',
+    consoleDomain,
+    'console-secret-',
+    'openshift-console', // namespace
+  );
+  const oauthTlsSecretName = await updateIngressComponentRoutes(
+    res,
+    token,
+    componentRoutes,
+    'oauth-openshift',
+    oauthDomain,
+    'oauth-secret-',
+    'openshift-authentication',
+  );
+  const ztpfwUiTlsSecretName = await updateIngressComponentRoutes(
+    res,
+    token,
+    componentRoutes,
+    ZTPFW_UI_ROUTE_PREFIX,
+    ztpfwDomain,
+    'ztpfw-secret-',
+    ZTPFW_NAMESPACE,
+  );
+  if (!(consoleTlsSecretName && oauthTlsSecretName && ztpfwUiTlsSecretName)) {
+    // TODO: Anything else??
     logger.info('Update of an ingress component route failed, exiting.');
     return;
   }
@@ -269,9 +364,6 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
       value: componentRoutes,
     },
   ];
-
-  // Keep going even if a route fails to be updated. To have at least something
-  await updateRoutes(token, ingressDomain, oldIngressDomain);
 
   // Persist the changes (call PATCH)
   try {
@@ -310,6 +402,14 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
     res.writeHead(500, 'Failed to patch ApiServer cluster resource.').end();
     return;
   }
+
+  // This will terminate our pod
+  await updateZtpfwUI(
+    token,
+    /*ztpfwUiTlsSecretName,*/ ztpfwDomain,
+    ingressDomain,
+    oldIngressDomain,
+  );
 
   res.writeHead(200).end(); // All good
 };
