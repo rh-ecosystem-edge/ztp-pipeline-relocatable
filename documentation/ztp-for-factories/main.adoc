@@ -87,5 +87,6 @@ include::ztpfw-pipelines-flags-arguments.adoc[leveloffset=+1]
 
 *  xref:https://docs.openshift.com/container-platform/latest/cicd/gitops/understanding-openshift-gitops.adoc#understanding-openshift-gitops[Understanding OpenShift GitOps]
 *  xref:https://docs.openshift.com/container-platform/latest/cicd/pipelines/understanding-openshift-pipelines.adoc#understanding-openshift-pipelines[Understanding OpenShift Pipelines]
+*  xref:https://docs.openshift.com/container-platform/4.10/networking/metallb/metallb-operator-install.html[Installing the MetalLB Operator]
 
 include::ztp-for-factory-development.adoc[leveloffset=+1]
