@@ -109,7 +109,7 @@ data:
         storage:
           files:
           - contents:
-              source: data:text/plain;charset=utf-8;base64,S1VCRUxFVF9OT0RFSVBfSElOVD0xOTIuMTY4LjcuMTA=
+              source: data:text/plain;charset=utf-8;base64,S1VCRUxFVF9OT0RFSVBfSElOVD0xOTIuMTY4LjcuMA==
               verification: {}
             filesystem: root
             mode: 420
