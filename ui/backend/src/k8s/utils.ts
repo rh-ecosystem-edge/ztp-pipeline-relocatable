@@ -1,10 +1,13 @@
 const logger = console;
 
 export const getClusterApiUrl = () => {
-  if (!process.env.CLUSTER_API_URL) {
-    logger.error('CLUSTER_API_URL env variable is not set.');
-  }
-  return process.env.CLUSTER_API_URL || '';
+  // https://kubernetes.default.svc:443
+  return (
+    process.env.CLUSTER_API_URL ||
+    `https://${process.env.KUBERNETES_SERVICE_HOST || 'missing-KUBERNETES_SERVICE_HOST'}:${
+      process.env.KUBERNETES_SERVICE_PORT || 'missing-KUBERNETES_SERVICE_PORT'
+    }`
+  );
 };
 
 export const logAllEnvVariables = () => {

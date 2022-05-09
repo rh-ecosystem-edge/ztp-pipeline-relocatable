@@ -137,7 +137,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
   }
 
   try {
-    const url = `${process.env.CLUSTER_API_URL || ''}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`;
+    const url = `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`;
     await got.delete(url, gotOptions);
   } catch (err) {
     logger.error(err);
