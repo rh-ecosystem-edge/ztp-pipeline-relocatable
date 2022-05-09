@@ -45,6 +45,9 @@ export async function user(req: Request, res: Response): Promise<void> {
       response.body.status.user.username
         ? response.body.status.user.username
         : '';
+    if (!name) {
+      logger.info('The username for a token was not received, response: ', response);
+    }    
     const responsePayload = {
       statusCode: response.statusCode,
       body: { username: name },

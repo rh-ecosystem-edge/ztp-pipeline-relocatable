@@ -174,7 +174,7 @@ else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
 
-if [ -f 06-coredns.yml]; then
+if [ -f 06-coredns.yml ]; then
     echo ">>>> Applying Fire and Forget DNSMasq config"
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 06-coredns.yml --wait=False
 fi
