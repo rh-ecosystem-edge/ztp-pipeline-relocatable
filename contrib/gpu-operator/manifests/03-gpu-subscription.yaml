@@ -5,9 +5,9 @@ metadata:
   name: gpu-operator-certified
   namespace: nvidia-gpu-operator
 spec:
-  channel: $CHANGEME_VERSION
+  channel: v1.10
   installPlanApproval: Automatic
   name: gpu-operator-certified
   source: ztpfw-catalog-certfied
   sourceNamespace: openshift-marketplace
-  startingCSV: "gpu-operator-certified.$CHANGEME_VERSION"
+  startingCSV: "gpu-operator-certified.v1.10.1"
