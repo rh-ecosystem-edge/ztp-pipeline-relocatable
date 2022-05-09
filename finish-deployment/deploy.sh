@@ -56,15 +56,73 @@ function clean_cluster() {
     oc --kubeconfig=${KUBECONFIG_HUB} delete namespace ${cluster}
 }
 
+function generate_spoke_csr-approver_resources() {
+destfile=${1}
+
+# Generate serviceaccount and clusterrole
+cat <<EOF > ${destfile}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ztpfw-csr-approver
+  namespace: openshift-infra
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ztpfw-csr-approver
+rules:
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests/approval
+  verbs:
+  - update
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - signers
+  verbs:
+  - approve
+EOF
+}
+
+function generate_spoke_csr-approver_kubeconfig() {
+
+    export SPOKE_CSR-KUBECONFIG=${SPOKE_SAFE_FOLDER}/ztpfw-csr-approver-config
+    export SPOKE_CSR-RESOURCES=${SPOKE_SAFE_FOLDER}/ztpfw-csr-approver-resources.yaml
+
+    # Generate ServiceAccount and ClusterRole ztpfw-csr-approver
+    generate_spoke_csr-approver_resources ${SPOKE_CSR-RESOURCES}
+
+    # Create resources if they don't exist yet. We need this for multi-node clusters.
+    # Then, create the ClusterRoleBinding and final kubeconfig
+    oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f ${SPOKE_CSR-RESOURCES}
+    oc --kubeconfig=${SPOKE_KUBECONFIG} adm policy add-cluster-role-to-user ztpfw-csr-approver -z ztpfw-csr-approver -n openshift-infra
+    oc --kubeconfig=${SPOKE_KUBECONFIG} serviceaccounts create-kubeconfig ztpfw-csr-approver > ${SPOKE_CSR-KUBECONFIG}
+}
+
 function save_files() {
     cluster=${1}
     i=${2}
     cp -f ${SPOKE_KUBECONFIG} ${SPOKE_KUBEADMIN_PASS} ${SPOKE_SAFE_FOLDER}
 
+    # Generate csr-approver resources
+    generate_spoke_csr-approver_kubeconfig
+
     for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
         EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
         echo ""
-        echo ">>>> Copying ${cluster} Kubeconfig to Master ${master} Node"
+        echo ">>>> Copying ${cluster} CSR Approver Kubeconfig to Master ${master} Node"
         for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
             NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
             if [[ -n ${NODE_IP} ]]; then
@@ -74,7 +132,8 @@ function save_files() {
                 echo "IP: ${NODE_IP%%/*}"
                 echo ">>>>"
                 ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "mkdir -p ~/.kube"
-                copy_files_common "${SPOKE_KUBECONFIG}" "${NODE_IP%%/*}" "./.kube/config"
+                copy_files_common "${SPOKE_CSR-KUBECONFIG}" "${NODE_IP%%/*}" "./.kube/ztpfw-csr-approver-config"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "rm -f ~/.kube/config"
             fi
         done
     done
