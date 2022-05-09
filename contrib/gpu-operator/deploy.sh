@@ -39,7 +39,7 @@ function get_config() {
         echo "  $0 <SPOKES_FILE> <SPOKE_NAME> <SPOKE_INDEX>"
         exit 1
     fi
-    SPOKE_FILE=${1}
+    SPOKES_FILE=${1}
     SPOKE_NAME=${2}
     SPOKE_INDEX=${3}
     
@@ -49,7 +49,6 @@ function get_config() {
 function deploy_gpu() {
     if ./verify.sh; then
 
-        get_config ${SPOKES_FILE} ${spoke} ${index}
 
         echo "Installing NFD operator for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-nfd-namespace.yaml
@@ -93,6 +92,7 @@ fi
 index=0
 for spoke in ${ALLSPOKES}; do
     extract_kubeconfig_common ${spoke}
+    get_config ${SPOKES_FILE} ${spoke} ${index}
     deploy_gpu ${spoke}
     index=$((index + 1))
     echo ">> GPU Operator Deployment done in: ${spoke}"
