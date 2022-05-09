@@ -62,7 +62,7 @@ if ./verify.sh; then
 
     # Make sure that no config exists
     rm -f 06-coredns.yml
-    if [ "${NUM_M}" == "0"]; then
+    if [ "${NUM_M}" == "0" ]; then
 
         DNSMAPPINGS=$(echo """
 address=/apps.${MYDOMAIN}/${MYIP}
