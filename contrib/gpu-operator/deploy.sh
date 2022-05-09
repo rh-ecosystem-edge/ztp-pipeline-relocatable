@@ -49,6 +49,8 @@ function get_config() {
 function deploy_gpu() {
     if ./verify.sh; then
 
+        get_config ${SPOKES_FILE} ${spoke} ${index}
+
         echo "Installing NFD operator for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-nfd-namespace.yaml
         sleep 2
@@ -91,7 +93,6 @@ fi
 index=0
 for spoke in ${ALLSPOKES}; do
     extract_kubeconfig_common ${spoke}
-    get_config ${SPOKES_FILE} ${spoke} ${index}
     deploy_gpu ${spoke}
     index=$((index + 1))
     echo ">> GPU Operator Deployment done in: ${spoke}"
