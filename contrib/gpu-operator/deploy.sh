@@ -74,7 +74,7 @@ function deploy_gpu() {
         sleep 2
 
         echo "Adding GPU Cluster Policy for ${spoke}"
-        envsubst <manifests/05-gpu-cluster-policy.yaml | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+        envsubst <manifests/03-gpu-subscription.yaml | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
         sleep 2
     else
         echo ">>>> This step is not neccesary, everything looks ready"
