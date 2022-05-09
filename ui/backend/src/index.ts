@@ -26,7 +26,6 @@ const startUpCheck = () => {
     // 'BACKEND_PORT',
     // 'TOKEN',
     'FRONTEND_URL',
-    'CLUSTER_API_URL',
     'OAUTH2_CLIENT_ID',
     'OAUTH2_CLIENT_SECRET',
     'OAUTH2_REDIRECT_URL',
