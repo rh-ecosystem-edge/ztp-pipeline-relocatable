@@ -39,11 +39,11 @@ function get_config() {
         echo "  $0 <SPOKES_FILE> <SPOKE_NAME> <SPOKE_INDEX>"
         exit 1
     fi
-    SPOKES_FILE=${1}
-    SPOKE_NAME=${2}
-    SPOKE_INDEX=${3}
+    spokes_file=${1}
+    spoke_name=${2}
+    index=${3}
     
-    export CHANGEME_VERSION=$(yq eval ".spokes[${index}].${spoke_name}.contrib.gpu-operator.version" ${SPOKES_FILE})
+    export CHANGEME_VERSION=$(yq eval ".spokes[${index}].${spoke_name}.contrib.gpu-operator.version" ${spokes_file})
 }
 
 function deploy_gpu() {
