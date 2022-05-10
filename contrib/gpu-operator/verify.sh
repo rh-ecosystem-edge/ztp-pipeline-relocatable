@@ -28,7 +28,7 @@ for spoke in ${ALLSPOKES}; do
         exit 0
     fi
 
-    if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd nodefeaturediscoveries.nfd.openshift.io | wc -l) -ne 0 && $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd clusterpolicies.nvidia.com | wc -l) -ne 0]]; then
+    if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd nodefeaturediscoveries.nfd.openshift.io | wc -l) -ne 0 && $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd clusterpolicies.nvidia.com | wc -l) -ne 0 ]]; then
         echo ">>>> Spoke ${spoke} already have gpu-operator."
         exit 0
     fi
