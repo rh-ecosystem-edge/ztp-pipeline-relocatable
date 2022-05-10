@@ -42,8 +42,14 @@ function prepare_env() {
 function check_registry() {
     REG=${1}
 
+
+
     for a in {1..30}; do
-        skopeo login ${REG} --authfile=${PULL_SECRET} --username ${REG_US} --password ${REG_PASS}
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+            skopeo login ${REG} --authfile=${PULL_SECRET} --username ${REG_US} --password ${REG_PASS}
+        else
+            skopeo login ${REG} --authfile=${PULL_SECRET}
+        fi
         if [[ $? -eq 0 ]]; then
             echo "Registry: ${REG} available"
             break
@@ -66,12 +72,19 @@ function mirror() {
         check_registry ${DESTINATION_REGISTRY}
     fi
 
-    echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
-    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
-    echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
-    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+        echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
+        ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+        ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+        echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
+        ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+        ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+    else
+        ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} --authfile=${PULL_SECRET}
+        ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} --authfile=${PULL_SECRET}
+    fi
+
 
     if [ ! -f ~/.docker/config.json ]; then
         echo "ERROR: missing ~/.docker/config.json config"

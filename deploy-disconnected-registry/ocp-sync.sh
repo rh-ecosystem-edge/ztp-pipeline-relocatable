@@ -75,10 +75,11 @@ if [[ ${1} == 'hub' ]]; then
     trust_internal_registry 'hub'
 
     if ! ./verify_ocp_sync.sh 'hub'; then
-        oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
-
-        export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-        ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+            oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f - 
+            # export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+            ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
+        fi
         mirror_ocp 'hub' 'hub'
     else
         echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"

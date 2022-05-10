@@ -39,7 +39,7 @@ function prepare_env() {
     fi
 }
 
-if [[ ${1} == 'hub' ]]; then
+if [[ ${1} == 'hub' && ${CUSTOM_REGISTRY} == "false"  ]]; then
 
     prepare_env 'hub'
     ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}

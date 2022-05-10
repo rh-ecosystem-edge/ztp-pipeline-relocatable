@@ -199,13 +199,9 @@ fi
 
 export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
 
-SPOKES_FILE_REGISTRY=$(yq eval ".config.REGISTRY" ${SPOKES_FILE} || null )
+export SPOKES_FILE_REGISTRY=$(yq eval ".config.REGISTRY" ${SPOKES_FILE} || null )
 if [[ ${SPOKES_FILE_REGISTRY} == "" || ${SPOKES_FILE_REGISTRY} == null ]]; then
-    REGISTRY=ztpfw-registry
-    LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-    CUSTOM_REGISTRY=false
+    export CUSTOM_REGISTRY=false
 else
-    REGISTRY=$(echo ${SPOKES_FILE_REGISTRY} | cut -d"." -f1 )
-    LOCAL_REG=${SPOKES_FILE_REGISTRY}
-    CUSTOM_REGISTRY=true
+    export CUSTOM_REGISTRY=true
 fi

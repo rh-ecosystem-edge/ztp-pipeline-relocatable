@@ -18,7 +18,7 @@ if [[ ${1} == 'hub' ]]; then
 elif [[ ${1} == 'spoke' ]]; then
     TG_KUBECONFIG=${SPOKE_KUBECONFIG}
 fi
-if [[ ! ${CUSTOM_REGISTRY} ]]; then
+if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
     if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TG_KUBECONFIG} get -n ztpfw-registry deployment ztpfw-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
         #namespace or resources does not exist. Launching the step to create it...
         exit 1

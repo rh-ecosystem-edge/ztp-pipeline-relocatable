@@ -68,7 +68,8 @@ function trust_internal_registry() {
         echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
         echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/internal-registry-${clus}.crt"
     else
-        openssl s_client -connect ${LOCAL_REG} | openssl x509 > ${PATH_CA_CERT}
+        CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} | openssl x509 | base64  )
+        echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
         update-ca-trust
     fi
     update-ca-trust extract
@@ -76,7 +77,7 @@ function trust_internal_registry() {
     echo
     if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
         echo "Checking Private registry creds"
-        # ? workaround for podman on openshift
+        #? workaround running podman on openshift
         export STORAGE_DRIVER=vfs
         sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
         CHECK_LOGIN=$(podman login ${LOCAL_REG} --authfile ${PULL_SECRET}  || echo "false" )
@@ -106,8 +107,12 @@ source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-# ? moved to shared util
-# export REGISTRY=ztpfw-registry 
+if [[ ${CUSTOM_REGISTRY} == "false"  ]]; then
+    REGISTRY=ztpfw-registry
+else
+    REGISTRY=$(echo ${SPOKES_FILE_REGISTRY} | cut -d"." -f1 )
+    LOCAL_REG=${SPOKES_FILE_REGISTRY}
+fi
 
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
@@ -128,6 +133,10 @@ if [[ ${1} == "hub" ]]; then
     export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OC_OCP_TAG}"
     export SOURCE_REGISTRY="quay.io"
     export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+        LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+    fi
+
     export DESTINATION_REGISTRY=${LOCAL_REG}
     ## OLM
     ## NS where the OLM images will be mirrored

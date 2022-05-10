@@ -239,11 +239,14 @@ function deploy_registry() {
 if [[ ${1} == 'hub' ]]; then
     if ! ./verify.sh 'hub'; then
         # Check if private registry 
-        if [[ ! ${CUSTOM_REGISTRY} ]]; then
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
             deploy_registry 'hub'
+            trust_internal_registry 'hub'
+            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+        else
+            trust_internal_registry 'hub'
         fi
-        trust_internal_registry 'hub'
-        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+        
         render_file manifests/machine-config-certs.yaml 'hub'
         # after machine config is applied, we need to wait for the registry and acm pods and deployments to be ready
         check_mcp 'hub'
