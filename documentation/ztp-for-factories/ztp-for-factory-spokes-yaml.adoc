@@ -9,7 +9,7 @@ xref:config[config]:
 xref:spokes[spokes]:
   - xref:spokename[spoke1-name]:
       xref:mastername[master0]:
-        xref:ignore_ifaces[ignore_ifaces]: eno1,eno2
+        xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
         xref:nic_int_static[nic_int_static]: eno5
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:10"
@@ -71,6 +71,7 @@ xref:spokes[spokes]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: sda
         xref:storage_disk[storage_disk]:
           - sdb
           - sdc
@@ -85,6 +86,7 @@ xref:spokes[spokes]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: sda
         xref:storage_disk[storage_disk]:
           - sdb
           - sdc
@@ -99,6 +101,7 @@ xref:spokes[spokes]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: sda
         xref:storage_disk[storage_disk]:
           - sdb
           - sdc
