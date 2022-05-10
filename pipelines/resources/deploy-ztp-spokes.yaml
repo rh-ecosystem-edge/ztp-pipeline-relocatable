@@ -261,7 +261,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - detach-cluster
+      - deploy-icsp-spokes-post
     workspaces:
       - name: ztp
         workspace: ztp
@@ -280,8 +280,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-icsp-spokes-post
+      - gpu-operator
     workspaces:
       - name: ztp
         workspace: ztp
-
