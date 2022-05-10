@@ -47,7 +47,8 @@ if ./verify.sh; then
     echo ">>>> Deploy AAP instance"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 04-instance.yml
-   
+    oc apply -f 05-rolebindings.yaml
+    oc apply -f 06-scc.yaml
 
     echo ">>>> Wait until AAP ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
