@@ -127,11 +127,6 @@ You need this to access the nodes of the edge cluster.
 ====
 
 .. Click **Finish setup**.
-+
-When complete the screen switches to:
-+
-.Edge cluster setup
-image::ztp-edge-cluster-setup1.png[Edge cluster setup]
 
 .. Selecting **OpenShift console** brings you direct to the web console.
 
