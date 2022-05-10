@@ -14,7 +14,7 @@ fi
 rm -fr ${PVC_PATH}pv*
 
 # install the nfs
-export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+export KUBECONFIG=/root/.kcli/clusters/${OC_CLUSTER_NAME}/auth/kubeconfig
 export PRIMARY_IP=192.168.150.1
 dnf -y install nfs-utils
 systemctl enable --now nfs-server
