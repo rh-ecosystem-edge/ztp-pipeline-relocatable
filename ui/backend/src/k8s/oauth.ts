@@ -44,7 +44,7 @@ export const getOauthInfoPromise = async () => {
     OAUTH_ROUTE_PREFIX,
   );
   const oauth = {
-    // https://oauth-openshift.apps.spoke0-cluster.alklabs.local/oauth/authorize
+    // https://oauth-openshift.apps.edgecluster0-cluster.alklabs.local/oauth/authorize
     authorization_endpoint: `${oauthServer}/oauth/authorize`,
     token_endpoint: `${oauthServer}/oauth/token`,
   };

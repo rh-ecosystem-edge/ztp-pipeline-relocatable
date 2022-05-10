@@ -10,45 +10,45 @@ function get_config() {
 
     if [[ $# -lt 1 ]]; then
         echo "Usage :"
-        echo "  $0 <SPOKES_FILE> <SPOKE_NAME> <SPOKE_INDEX>"
+        echo "  $0 <EDGECLUSTERS_FILE> <EDGE_NAME> <EDGE_INDEX>"
         exit 1
     fi
-    spokes_file=${1}
-    spoke_name=${2}
+    edgeclusters_file=${1}
+    edgecluster_name=${2}
     index=${3}
 
-    export CHANGEME_VERSION=$(yq eval ".spokes[${index}].${spoke_name}.contrib.gpu-operator.version" ${spokes_file})
+    export CHANGEME_VERSION=$(yq eval ".edgeclusters[${index}].${edgecluster_name}.contrib.gpu-operator.version" ${edgeclusters_file})
 }
 
 function deploy_gpu() {
     if ! ./verify.sh; then
 
-        echo "Installing NFD operator for ${spoke}"
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-nfd-namespace.yaml
+        echo "Installing NFD operator for ${edgecluster}"
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-nfd-namespace.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-nfd-operator-group.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-nfd-operator-group.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-nfd-subscription.yaml
-        sleep 2
-
-        check_resource "crd" "nodefeaturediscoveries.nfd.openshift.io" "Established" "openshift-nfd" "${SPOKE_KUBECONFIG}"
-
-        echo "Installing GPU operator for ${spoke}"
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-gpu-namespace.yaml
-        sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-gpu-operator-group.yaml
-        sleep 2
-        envsubst <manifests/03-gpu-subscription.yaml | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-nfd-subscription.yaml
         sleep 2
 
-        check_resource "crd" "clusterpolicies.nvidia.com" "Established" "nvidia-gpu-operator" "${SPOKE_KUBECONFIG}"
+        check_resource "crd" "nodefeaturediscoveries.nfd.openshift.io" "Established" "openshift-nfd" "${EDGE_KUBECONFIG}"
 
-        echo "Adding GPU node labels with NFD for ${spoke}"
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/04-nfd-gpu-feature.yaml
+        echo "Installing GPU operator for ${edgecluster}"
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-gpu-namespace.yaml
+        sleep 2
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-gpu-operator-group.yaml
+        sleep 2
+        envsubst <manifests/03-gpu-subscription.yaml | oc --kubeconfig=${EDGE_KUBECONFIG} apply -f -
         sleep 2
 
-        echo "Adding GPU Cluster Policy for ${spoke}"
-        envsubst <manifests/05-gpu-cluster-policy.yaml | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+        check_resource "crd" "clusterpolicies.nvidia.com" "Established" "nvidia-gpu-operator" "${EDGE_KUBECONFIG}"
+
+        echo "Adding GPU node labels with NFD for ${edgecluster}"
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/04-nfd-gpu-feature.yaml
+        sleep 2
+
+        echo "Adding GPU Cluster Policy for ${edgecluster}"
+        envsubst <manifests/05-gpu-cluster-policy.yaml | oc --kubeconfig=${EDGE_KUBECONFIG} apply -f -
         sleep 2
     else
         echo ">>>> This step is not neccesary, everything looks ready"
@@ -58,15 +58,15 @@ function deploy_gpu() {
     echo ">>>>>>>"
 }
 
-if [[ -z ${ALLSPOKES} ]]; then
-    ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+if [[ -z ${ALLEDGECLUSTERS} ]]; then
+    ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
 fi
 
 index=0
-for spoke in ${ALLSPOKES}; do
-    extract_kubeconfig_common ${spoke}
-    get_config ${SPOKES_FILE} ${spoke} ${index}
-    deploy_gpu ${spoke}
+for edgecluster in ${ALLEDGECLUSTERS}; do
+    extract_kubeconfig_common ${edgecluster}
+    get_config ${EDGECLUSTERS_FILE} ${edgecluster} ${index}
+    deploy_gpu ${edgecluster}
     index=$((index + 1))
-    echo ">> GPU Operator Deployment done in: ${spoke}"
+    echo ">> GPU Operator Deployment done in: ${edgecluster}"
 done

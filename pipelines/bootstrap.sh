@@ -97,13 +97,13 @@ function check_resource() {
 }
 
 function create_permissions() {
-    echo ">>>> Creating NS ${SPOKE_DEPLOYER_NS} and giving permissions to SA ${SPOKE_DEPLOYER_SA}"
+    echo ">>>> Creating NS ${EDGE_DEPLOYER_NS} and giving permissions to SA ${EDGE_DEPLOYER_SA}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${SPOKE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} create sa ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-scc-to-user -z anyuid ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} create clusterrolebinding ${SPOKE_DEPLOYER_ROLEBINDING} --clusterrole=cluster-admin --serviceaccount=spoke-deployer:pipeline -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${EDGE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} create sa ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} adm policy add-scc-to-user -z anyuid ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} create clusterrolebinding ${EDGE_DEPLOYER_ROLEBINDING} --clusterrole=cluster-admin --serviceaccount=edgecluster-deployer:pipeline -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
     echo
 }
 
@@ -144,7 +144,7 @@ function clean_openshift_pipelines() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc delete subscriptions.operators.coreos.com -n openshift-operators openshift-pipelines-operator-rh
     oc delete csv -n openshift-operators $(oc get csv -n openshift-operators --no-headers | grep openshift-pipelines-operator | cut -f1 -d\ )
-    oc delete ns ${SPOKE_DEPLOYER_NS}
+    oc delete ns ${EDGE_DEPLOYER_NS}
     oc delete mutatingwebhookconfigurations webhook.operator.tekton.dev webhook.pipeline.tekton.dev webhook.triggers.tekton.dev
     oc delete validatingwebhookconfigurations validation.webhook.operator.tekton.dev validation.webhook.pipeline.tekton.dev validation.webhook.triggers.tekton.dev
     oc delete apiservices v1alpha1.operator.tekton.dev v1alpha1.tekton.dev v1alpha1.triggers.tekton.dev v1beta1.tekton.dev v1beta1.triggers.tekton.dev
@@ -169,9 +169,9 @@ get_clients
 get_tkn
 get_yq
 clone_ztp
-export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
-export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
-export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
+export EDGE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
+export EDGE_DEPLOYER_SA=${EDGE_DEPLOYER_NS}
+export EDGE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
 if [[ ${#} -ge 2 ]]; then
     if [[ ${2} == 'clean' ]]; then

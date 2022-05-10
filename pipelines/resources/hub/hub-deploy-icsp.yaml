@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,12 +25,12 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_SPOKES_DIR
-        value: "deploy-spoke"
+      - name: DEPLOY_EDGECLUSTERS_DIR
+        value: "deploy-edgecluster"
       - name: DEPLOY_REGISTRY_DIR
         value: "deploy-disconnected-registry"
       - name: SHARED_DIR
@@ -45,7 +45,7 @@ spec:
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
           ./configure_disconnected.sh 'hub'
         else
           echo "Deploy ICSP Hub: Mock mode on"

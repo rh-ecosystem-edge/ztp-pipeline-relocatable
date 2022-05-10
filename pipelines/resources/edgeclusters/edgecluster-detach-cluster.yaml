@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-disconnected-registry-spokes-ps
+  name: edgecluster-detach-cluster
   annotations:
     description: |
-      Update the Global PullSecret for every spoke with the proper credentials.
+      This task will detach the Edge-cluster Cluster from the Hub.
 spec:
   workspaces:
     - name: ztp
@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,30 +25,26 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_REGISTRY_DIR
-        value: "deploy-disconnected-registry"
+      - name: FINISH_DEP_DIR
+        value: "finish-deployment"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: update-global-pullsecret
+    - name: detach-cluster
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-          ./update-global-pullsecret.sh 'spoke'
+          cd ${WORKDIR}/${FINISH_DEP_DIR}
+          ./deploy.sh
         else
-          echo "Update Global Pull Secret Spoke: Mock mode on"
+          echo "Detach Cluster: Mock mode on"
         fi
-
-  volumes:
-  - name: lib-containers
-    emptyDir: {}

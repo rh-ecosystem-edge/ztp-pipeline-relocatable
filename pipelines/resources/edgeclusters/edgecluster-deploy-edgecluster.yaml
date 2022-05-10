@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-metallb
+  name: edgecluster-deploy-edgecluster
   annotations:
     description: |
-      This task will deploy MetalLB on the Spoke Cluster.
+      This task will deploy the edgeclusters based on the edgeclusters.yaml file passed to the pipeline/task.
 spec:
   workspaces:
     - name: ztp
@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,26 +25,40 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_METALLB_DIR
-        value: "deploy-metallb"
+      - name: DEPLOY_EDGECLUSTERS_DIR
+        value: "deploy-edgecluster"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-metallb
+    - name: render-edgeclusters
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_METALLB_DIR}
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
+          ./render_edgeclusters.sh
+          sleep 3
+        else
+          echo "Render Edge-cluster: Mock mode on"
+        fi
+
+    - name: deploy-edgeclusters
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
           ./deploy.sh
         else
-          echo "Deploy MetalLB: Mock mode on"
+          echo "Deploy Edge-cluster: Mock mode on"
         fi

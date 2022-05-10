@@ -81,11 +81,11 @@ else
     echo "Not implemented yet"
 fi
 
-# Spokes.yaml file generation
+# Edge-clusters.yaml file generation
 
 #Empty file before we start
 
->spokes.yaml
+>edgeclusters.yaml
 CHANGE_IP=192.168.150.1  # hypervisor ip for this network
 if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
   MASTERS=3
@@ -93,7 +93,7 @@ else
   MASTERS=1
 fi
 # Default configuration
-cat <<EOF >>spokes.yaml
+cat <<EOF >>edgeclusters.yaml
 config:
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
@@ -101,28 +101,28 @@ config:
 
 EOF
 
-# Create header for spokes.yaml
-cat <<EOF >>spokes.yaml
-spokes:
+# Create header for edgeclusters.yaml
+cat <<EOF >>edgeclusters.yaml
+edgeclusters:
 EOF
-# Create header for spokes.yaml
+# Create header for edgeclusters.yaml
 
-for spoke in $(seq 0 $((CLUSTERS - 1))); do
-    cat <<EOF >>spokes.yaml
-  - spoke${spoke}-cluster:
+for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
+    cat <<EOF >>edgeclusters.yaml
+  - edgecluster${edgecluster}-cluster:
       contrib:
         gpu-operator:
           version: "v1.10.1"
 EOF
     for master in $(seq 0 $((MASTERS - 1))); do
         # Stanza generation for each master
-        MASTERUID=$(kcli info vm spoke${spoke}-cluster-m${master} -f id -v)
-        cat <<EOF >>spokes.yaml
+        MASTERUID=$(kcli info vm edgecluster${edgecluster}-cluster-m${master} -f id -v)
+        cat <<EOF >>edgeclusters.yaml
       master${master}:
         nic_ext_dhcp: enp1s0
         nic_int_static: enp2s0
-        mac_ext_dhcp: "ee:ee:ee:ee:${master}${spoke}:${master}e"
-        mac_int_static: "aa:aa:aa:aa:${master}${spoke}:${master}a"
+        mac_ext_dhcp: "ee:ee:ee:ee:${master}${edgecluster}:${master}e"
+        mac_int_static: "aa:aa:aa:aa:${master}${edgecluster}:${master}a"
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
@@ -138,14 +138,14 @@ EOF
   if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
     # Add the single worker
     worker=0
-    WORKERUID=$(kcli info vm spoke${spoke}-cluster-w${worker} -f id -v)
+    WORKERUID=$(kcli info vm edgecluster${edgecluster}-cluster-w${worker} -f id -v)
 
-    cat <<EOF >>spokes.yaml
+    cat <<EOF >>edgeclusters.yaml
       worker${worker}:
         nic_ext_dhcp: enp1s0
         nic_int_static: enp2s0
-        mac_ext_dhcp: "ee:ee:ee:${worker}${spoke}:${worker}${spoke}:${worker}e"
-        mac_int_static: "aa:aa:aa:${worker}${spoke}:${worker}${spoke}:${worker}a"
+        mac_ext_dhcp: "ee:ee:ee:${worker}${edgecluster}:${worker}${edgecluster}:${worker}e"
+        mac_int_static: "aa:aa:aa:${worker}${edgecluster}:${worker}${edgecluster}:${worker}a"
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"

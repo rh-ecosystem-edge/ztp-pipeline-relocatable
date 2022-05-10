@@ -21,7 +21,7 @@ function check_aci() {
             break
         fi
         echo ">> Waiting for ACI"
-        echo "Spoke: ${cluster}"
+        echo "Edge-cluster: ${cluster}"
         echo "Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.debugInfo.stateInfo}')"
         echo "Desired State: Cluster is Installed"
         echo
@@ -41,10 +41,10 @@ function check_aci() {
 function check_bmhs() {
     cluster=${1}
     wait_time=${2}
-    spokenumber=${3}
+    edgeclusternumber=${3}
     timeout=0
     ready=false
-    NUM_M=$(yq e ".spokes[${spokenumber}].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
+    NUM_M=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
     NUM_M_MAX=$((NUM_M + 1))
 
     while [ "${timeout}" -lt "${wait_time}" ]; do
@@ -54,7 +54,7 @@ function check_bmhs() {
             ready=true
             break
         fi
-        echo ">> Waiting for BMH on spoke for each cluster node: $(oc get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')"
+        echo ">> Waiting for BMH on edgecluster for each cluster node: $(oc get bmh -n ${cluster} -o jsonpath='{.items[*].status.provisioning.state}')"
         echo 'Desired State: provisioned'
         echo
 
@@ -78,16 +78,16 @@ if [[ $# -lt 1 ]]; then
     exit 1
 fi
 
-if [[ -z ${ALLSPOKES} ]]; then
-    ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+if [[ -z ${ALLEDGECLUSTERS} ]]; then
+    ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
 fi
 
 index=0
-for SPOKE in ${ALLSPOKES}; do
+for EDGE in ${ALLEDGECLUSTERS}; do
     echo ">>>> Starting the validation until finish the installation"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    check_bmhs "${SPOKE}" "${wait_time}" ${index}
-    check_aci "${SPOKE}" "${wait_time}" "True"
+    check_bmhs "${EDGE}" "${wait_time}" ${index}
+    check_aci "${EDGE}" "${wait_time}" "True"
     index=$((index + 1))
     echo ">>>>EOF"
     echo ">>>>>>>"

@@ -6,8 +6,8 @@ xref:config[config]:
   xref:OC_ACM_VERSION[OC_ACM_VERSION]: "2.4"
   xref:OC_ODF_VERSION[OC_ODF_VERSION]: "4.8"
 
-xref:spokes[spokes]:
-  - xref:spokename[spoke1-name]:
+xref:edgeclusters[edgeclusters]:
+  - xref:edgeclustername[edgecluster1-name]:
       xref:mastername[master0]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
@@ -61,7 +61,7 @@ xref:spokes[spokes]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
-  - xref:spokename[spoke2-name]:
+  - xref:edgeclustername[edgecluster2-name]:
       xref:mastername[master0]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4

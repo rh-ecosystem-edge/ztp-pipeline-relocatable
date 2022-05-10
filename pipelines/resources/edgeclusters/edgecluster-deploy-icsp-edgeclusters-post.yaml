@@ -1,12 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-disconnected-registry-spokes
+  name: edgecluster-deploy-icsp-edgeclusters-post
   annotations:
     description: |
-      This task will deploy the Disconnected Internal registry.
-      Then will perform the OCP and OLM sync, based on the SYNC parameter.
-      Update the Global PullSecret for every spoke with the proper credentials.
+      This task will deploy the ICSP on the edgecluster cluster to point to the disconnected registry deployed in the previous step.
 spec:
   workspaces:
     - name: ztp
@@ -17,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -27,10 +25,12 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_EDGECLUSTERS_DIR
+        value: "deploy-edgecluster"
       - name: DEPLOY_REGISTRY_DIR
         value: "deploy-disconnected-registry"
       - name: SHARED_DIR
@@ -38,20 +38,15 @@ spec:
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-disconnected-registry
+    - name: deploy-icsp-edgeclusters-post
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-          ./deploy.sh 'spoke'
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
+          ./configure_disconnected.sh 'edgecluster' 'post'
         else
-          echo "Deploy Disconnected Registry Spoke: Mock mode on"
+          echo "Deploy ICSP Post: Mock mode on"
         fi
-
-
-  volumes:
-  - name: lib-containers
-    emptyDir: {}

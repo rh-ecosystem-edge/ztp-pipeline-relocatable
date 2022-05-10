@@ -28,7 +28,7 @@ dns=none" > /etc/NetworkManager/conf.d/00-no-dnsmasq.conf
 #!/bin/bash
 
 echo "
-search alklabs.local test-ci.alklabs.local spoke0-cluster.alklabs.local
+search alklabs.local test-ci.alklabs.local edgecluster0-cluster.alklabs.local
 nameserver 127.0.0.1
 options edns0 trust-ad
 " > /run/NetworkManager/resolv.conf
@@ -88,10 +88,10 @@ address=/.apps.test-ci.alklabs.local/192.168.150.252
 address=/api.test-ci.alklabs.local/192.168.150.253
 address=/api-int.test-ci.alklabs.local/192.168.150.253
 
-# Spoke Cluster
-address=/.apps.spoke0-cluster.alklabs.local/192.168.150.200
-address=/api.spoke0-cluster.alklabs.local/192.168.150.201
-address=/api-int.spoke0-cluster.alklabs.local/192.168.150.201" > /etc/dnsmasq.d/00-test-ci.conf
+# Edge-cluster Cluster
+address=/.apps.edgecluster0-cluster.alklabs.local/192.168.150.200
+address=/api.edgecluster0-cluster.alklabs.local/192.168.150.201
+address=/api-int.edgecluster0-cluster.alklabs.local/192.168.150.201" > /etc/dnsmasq.d/00-test-ci.conf
 
     echo "nameserver 8.8.8.8
 nameserver 8.8.4.4" > /etc/resolv.upstream.conf

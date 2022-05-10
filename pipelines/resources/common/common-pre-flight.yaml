@@ -12,7 +12,7 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: kubeconfig
@@ -27,8 +27,8 @@ spec:
         value: "/workspace/ztp"
       - name: KUBECONFIG
         value: $(params.kubeconfig)
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK

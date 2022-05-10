@@ -15,8 +15,8 @@ source ./common.sh ${1}
 
 if [[ ${1} == 'hub' ]]; then
     TARGET_KUBECONFIG=${KUBECONFIG_HUB}
-elif [[ ${1} == 'spoke' ]]; then
-    TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+elif [[ ${1} == 'edgecluster' ]]; then
+    TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
 fi
 
 echo "Logging into ${DESTINATION_REGISTRY}"

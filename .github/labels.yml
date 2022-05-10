@@ -31,8 +31,8 @@ registry:
 metallb:
   - deploy-metallb/**/*
 
-spoke:
-  - deploy-spoke/**/*
+edgecluster:
+  - deploy-edgecluster/**/*
 
 worker:
   - deploy-worker/**/*

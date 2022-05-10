@@ -90,15 +90,15 @@ jobs:
       - name: remove all old deployments and vms
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          oc delete --ignore-not-found=true managedcluster spoke0-cluster || true
-          oc delete --ignore-not-found=true ns spoke0-cluster || true
-          kcli delete vm spoke0-cluster-m0 -y || true
-          kcli delete vm spoke0-cluster-m1 -y || true
-          kcli delete vm spoke0-cluster-m2 -y || true
-          kcli delete vm spoke0-cluster-w0 -y || true
-          list=$(tkn pr ls -n spoke-deployer |grep -i running | cut -d' ' -f1)
+          oc delete --ignore-not-found=true managedcluster edgecluster0-cluster || true
+          oc delete --ignore-not-found=true ns edgecluster0-cluster || true
+          kcli delete vm edgecluster0-cluster-m0 -y || true
+          kcli delete vm edgecluster0-cluster-m1 -y || true
+          kcli delete vm edgecluster0-cluster-m2 -y || true
+          kcli delete vm edgecluster0-cluster-w0 -y || true
+          list=$(tkn pr ls -n edgecluster-deployer |grep -i running | cut -d' ' -f1)
           for i in $list; do
-            tkn pr cancel $i -n spoke-deployer || true
+            tkn pr cancel $i -n edgecluster-deployer || true
           done
 
       - name: create new vms and requirements
@@ -117,23 +117,23 @@ jobs:
             RELEASE=$( echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
           fi
 
-          echo ">>>> Launching Pipeline spoke"
+          echo ">>>> Launching Pipeline edgecluster"
           echo "Release: ${RELEASE}"
           echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
-          RELEASE=${RELEASE} make build-spoke-compact
-          RELEASE=${RELEASE} make deploy-pipe-spoke-compact-ci
+          RELEASE=${RELEASE} make build-edgecluster-compact
+          RELEASE=${RELEASE} make deploy-pipe-edgecluster-compact-ci
 
       - name: verify if the pipe has been successful
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 
-          if [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
+          if [ $(tkn pr ls -n edgecluster-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
             echo "The pipeline has failed"
             exit 1
-          elif [ $(tkn pr ls -n spoke-deployer | head -2 | grep -i succeeded | wc -l) -gt 0 ]; then
+          elif [ $(tkn pr ls -n edgecluster-deployer | head -2 | grep -i succeeded | wc -l) -gt 0 ]; then
             echo "The pipeline has succeeded"
             exit 0
           else

@@ -45,13 +45,13 @@
 
 ### Bug Fixes
 
-- **deploy-ocs/deploy.sh:** commit e669b8636a9667cc304c9f8d6ebb033abae07a7a introduced /dev/ in the spokes.yaml but didn't update OCS wipe disk script ([2c4e345](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/2c4e34544109629e820afc9fd95cac0f2f500139))
+- **deploy-ocs/deploy.sh:** commit e669b8636a9667cc304c9f8d6ebb033abae07a7a introduced /dev/ in the edgeclusters.yaml but didn't update OCS wipe disk script ([2c4e345](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/2c4e34544109629e820afc9fd95cac0f2f500139))
 
 ## [1.1.8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.7...1.1.8) (2022-04-04)
 
 ### Bug Fixes
 
-- **verify_prefly-spokes.sh:** remove leftoverline ([d1754ab](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/d1754ab0e17fbfcbf10dea12eb81159f32989f55))
+- **verify_prefly-edgeclusters.sh:** remove leftoverline ([d1754ab](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/d1754ab0e17fbfcbf10dea12eb81159f32989f55))
 
 ## [1.1.7](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.6...1.1.7) (2022-04-04)
 
@@ -100,8 +100,8 @@
 ### Reverts
 
 - Revert "fixing the unexplicable issue with reigstry phase pre" ([fdaee71](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fdaee71b6096256f40bd259d7a79610b537ad5ae))
-- Revert "deploy-spoke/configure_disconnected.sh" ([e5945cb](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/e5945cb48dc6511cd7383632cbdc5efda95e9d16))
-- Revert "trying to fix with splitting spokes kubeconfig depends on the stage" ([318a682](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/318a6824b294e96981a002275f4a0ddbfff5adbe))
+- Revert "deploy-edgecluster/configure_disconnected.sh" ([e5945cb](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/e5945cb48dc6511cd7383632cbdc5efda95e9d16))
+- Revert "trying to fix with splitting edgeclusters kubeconfig depends on the stage" ([318a682](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/318a6824b294e96981a002275f4a0ddbfff5adbe))
 
 ## [0.0.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/0.0.3...0.0.4) (2021-12-14)
 

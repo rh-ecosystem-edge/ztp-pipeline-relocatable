@@ -5,31 +5,31 @@ set -o nounset
 set -m
 
 function extract_kubeconfig() {
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${spoke} secret/${spoke}-admin-kubeconfig --to - >${SPOKE_KUBECONFIG}
+    ## Extract the Edgecluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${edgecluster} secret/${edgecluster}-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
 }
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
-if [[ -z ${ALLSPOKES} ]]; then
-    ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+if [[ -z ${ALLEDGECLUSTERS} ]]; then
+    ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
 fi
 
 index=0
-for spoke in ${ALLSPOKES}; do
-    echo "Extract Kubeconfig for ${spoke}"
-    extract_kubeconfig ${spoke}
-    echo ">>>> Check if spoke ${spoke} require gpu-operator."
+for edgecluster in ${ALLEDGECLUSTERS}; do
+    echo "Extract Kubeconfig for ${edgecluster}"
+    extract_kubeconfig ${edgecluster}
+    echo ">>>> Check if edgecluster ${edgecluster} require gpu-operator."
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    
-    if [[ $(yq eval ".spokes[${index}].${spoke}.contrib|keys" ${SPOKES_FILE} | grep gpu-operator  | wc -l) -eq 0 ]]; then
-        echo ">>>> Spoke ${spoke} does not require gpu-operator."
+
+    if [[ $(yq eval ".edgeclusters[${index}].${edgecluster}.contrib|keys" ${EDGECLUSTERS_FILE} | grep gpu-operator | wc -l) -eq 0 ]]; then
+        echo ">>>> Edgecluster ${edgecluster} does not require gpu-operator."
         exit 0
     fi
 
-    if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd nodefeaturediscoveries.nfd.openshift.io | wc -l) -ne 0 && $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd clusterpolicies.nvidia.com | wc -l) -ne 0 ]]; then
-        echo ">>>> Spoke ${spoke} already have gpu-operator."
+    if [[ $(oc --kubeconfig=${EDGE_KUBECONFIG} get crd nodefeaturediscoveries.nfd.openshift.io | wc -l) -ne 0 && $(oc --kubeconfig=${EDGE_KUBECONFIG} get crd clusterpolicies.nvidia.com | wc -l) -ne 0 ]]; then
+        echo ">>>> Edgecluster ${edgecluster} already have gpu-operator."
         exit 0
     fi
     let index++
