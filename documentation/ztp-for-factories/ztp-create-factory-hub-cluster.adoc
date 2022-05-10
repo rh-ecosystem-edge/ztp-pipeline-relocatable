@@ -17,7 +17,7 @@ include::modules/common-attributes.adoc[]
 [discrete]
 === Storage prerequisites
 
-* Storage can be provided by installing the Local Storage Operator and by using local volumes or by using OpenShift Data Foundation (ODF). Deploy ODF following the guidance in link:https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/4.9/html/deploying_openshift_data_foundation_using_bare_metal_infrastructure/index[Deploying OpenShift Data Foundation using bare metal infrastructure].
+* Storage can be provided by installing the Local Storage Operator and by using local volumes or by using OpenShift Data Foundation (ODF). 
 +
 [NOTE]
 ====
