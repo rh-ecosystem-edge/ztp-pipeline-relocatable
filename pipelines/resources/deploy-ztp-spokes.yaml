@@ -93,6 +93,44 @@ spec:
       - name: ztp
         workspace: ztp
 
+  # Deploy Workers
+  - name: deploy-workers
+    taskRef:
+      name: spoke-deploy-workers
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-metallb
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy ZTPFWUI
+  - name: deploy-ui
+    taskRef:
+      name: spoke-deploy-ui
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-metallb
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
   # Deploy OCS
   - name: deploy-ocs
     taskRef:
@@ -107,7 +145,8 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-metallb
+      - deploy-workers
+      - deploy-ui
     workspaces:
       - name: ztp
         workspace: ztp
@@ -131,10 +170,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy ICSP Spokes Post
-  - name: deploy-icsp-spokes-post
+    # Mirror ocp step in disconnected registry
+  - name: mirror-ocp-images
     taskRef:
-      name: spoke-deploy-icsp-spokes-post
+      name: spoke-deploy-disconnected-registry-spokes-ocp
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -150,10 +189,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy ZTPFWUI
-  - name: deploy-ui
+    # Mirror olm in disconnected registry
+  - name: mirror-olm-images
     taskRef:
-      name: spoke-deploy-ui
+      name: spoke-deploy-disconnected-registry-spokes-olm
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -164,15 +203,15 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-icsp-spokes-post
+      - deploy-disconnected-registry
     workspaces:
       - name: ztp
         workspace: ztp
 
-  # Deploy Workers
-  - name: deploy-workers
+    # Deploy Disconnected Registry Pull secret
+  - name: deploy-disconnected-registry-ps
     taskRef:
-      name: spoke-deploy-workers
+      name: spoke-deploy-disconnected-registry-spokes-ps
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -183,7 +222,27 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-icsp-spokes-post
+      - mirror-ocp-images
+      - mirror-olm-images
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy ICSP Spokes Post
+  - name: deploy-icsp-spokes-post
+    taskRef:
+      name: spoke-deploy-icsp-spokes-post
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-disconnected-registry-ps
     workspaces:
       - name: ztp
         workspace: ztp
@@ -202,7 +261,26 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-workers
+      - deploy-icsp-spokes-post
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy GPU Operator
+  - name: gpu-operator
+    taskRef:
+      name: contrib-gpu-operator
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - detach-cluster
     workspaces:
       - name: ztp
         workspace: ztp

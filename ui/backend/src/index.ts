@@ -2,6 +2,7 @@ import express from 'express';
 import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
+import helmet from 'helmet';
 
 import { login, loginCallback, logout } from './k8s/oauth';
 import {
@@ -13,6 +14,8 @@ import {
   serve,
   htpasswd,
   changeDomain,
+  user,
+  configure,
 } from './endpoints';
 
 const PORT = process.env.BACKEND_PORT || 3001;
@@ -24,7 +27,6 @@ const startUpCheck = () => {
     // 'BACKEND_PORT',
     // 'TOKEN',
     'FRONTEND_URL',
-    'CLUSTER_API_URL',
     'OAUTH2_CLIENT_ID',
     'OAUTH2_CLIENT_SECRET',
     'OAUTH2_REDIRECT_URL',
@@ -71,6 +73,8 @@ const start = () => {
 
   const app = express();
 
+  app.use(helmet.frameguard()) // to enable X-Frame-Options header for logout
+
   if (process.env.CORS) {
     app.use(
       cors({
@@ -90,6 +94,9 @@ const start = () => {
 
   app.post(`/htpasswd`, htpasswd);
   app.post(`/changeDomain`, changeDomain);
+
+  app.get('/user', user);
+  app.get('/configure', configure);
 
   app.all(`/api/*`, proxy);
   app.all(`/apis/*`, proxy);

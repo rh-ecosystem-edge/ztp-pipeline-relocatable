@@ -1,23 +1,11 @@
-- name: Update root user password
-  user:
-    name: root
-    password: "{{ rootpassword }}"
-    append: yes
-
-- name: Set authorized keys for root
-  authorized_key:
-    user: root
-    state: present
-    exclusive: no
-    key: "{{ item }}"
-  with_items: "{{ sshkeys }}"
-
-- name: get github key(s) and update the authorized_keys file
+---
+- name: Install SSH keys from github.com/USER.keys
   authorized_key:
     user: "root"
     key: "https://github.com/{{ item }}.keys"
   with_items:
     - "{{ users }}"
+  when: updatesshkeys==True
 
 - name: Disable root login over ssh with password
   lineinfile:

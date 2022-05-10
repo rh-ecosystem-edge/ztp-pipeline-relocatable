@@ -13,10 +13,31 @@
       - key: "{{ sshkey }}"
 
   tasks:
-    - name: Include base tasks
+    - name: Base configuration
+      include_tasks: tasks/base/00-base.yaml
+
+    - name: Install rpm and configure common services
+      include_tasks: tasks/base/01-services.yaml
+
+    - name: Install bin-utils
+      include_tasks: tasks/base/02-bin-utils.yaml
+
+    - name: Configure sshd
       include_tasks: "{{item}}"
       with_fileglob:
-        - "tasks/base/*.yaml"
+        - "tasks/services/sshd/*.yaml"
+      when: configuressh==True
+
+    - name: Configure chronyd
+      include_tasks: "{{item}}"
+      with_fileglob:
+        - "tasks/services/chronyd/*.yaml"
+      when: configurechronyd==True
+
+    - name: Configure libvirtd
+      include_tasks: "{{item}}"
+      with_fileglob:
+        - "tasks/services/libvirtd/*.yaml"
 
     - name: Flush handlers
       meta: flush_handlers
@@ -34,4 +55,9 @@
     - name: Restart sshd
       service:
         name: sshd
+        state: restarted
+
+    - name: Restart tuned
+      service:
+        name: tuned
         state: restarted

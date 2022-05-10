@@ -83,3 +83,8 @@ export const ipWithoutDots = (ip?: string): string => {
   console.info('Unrecognized ip address format "', ip, '"');
   return '            '; // 12 characters
 };
+
+export const delay = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });

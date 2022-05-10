@@ -33,6 +33,28 @@ spec:
       interval: 30m
 EOF
     echo
+
+    if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
+        echo ">>>> There are no certified operators to be mirrored"
+    else
+           cat >>${CS_OUTFILE} <<EOF
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: ${OC_DIS_CATALOG}-certfied
+  namespace: ${MARKET_NS}
+spec:
+  sourceType: grpc
+  image: ${OLM_CERTIFIED_DESTINATION_INDEX}
+  displayName: Disconnected Lab Certified
+  publisher: disconnected-lab-certified
+  updateStrategy:
+    registryPoll:
+      interval: 30m
+EOF
+    fi
+    echo
 }
 
 function trust_internal_registry() {
@@ -120,8 +142,10 @@ export QUAY_MANIFESTS=quay-manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator'
+export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,mcg-operator,nfd'
+export CERTIFIED_SOURCE_PACKAGES='gpu-operator-certified'
 export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
+export CERTIFIED_PACKAGES_FORMATED=$(echo ${CERTIFIED_SOURCE_PACKAGES} | tr "," " ")
 export EXTRA_IMAGES=('quay.io/jparrill/registry:3' 'registry.access.redhat.com/rhscl/httpd-24-rhel7:latest' 'quay.io/ztpfw/ui:latest')
 # TODO: Change static passwords by dynamic ones
 export REG_US=dummy
@@ -138,14 +162,22 @@ if [[ ${1} == "hub" ]]; then
     fi
 
     export DESTINATION_REGISTRY=${LOCAL_REG}
-    ## OLM
+    export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
+
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
-    ## NS where the OLM INDEX for RH OPERATORS image will be mirrored
+    ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
     export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
     ## OLM INDEX IMAGE
     export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-    ## OCP
+    
+    ## NS where the OLM CERTIFIED images will be mirrored
+    export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
+    ## Image name where the OLM INDEX for RH CERTIFIED OPERATORS image will be mirrored
+    export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
+    ## OLM CERTIFIED INDEX IMAGE
+    export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+    # OCP
     ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
     export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
     ## OCP INDEX IMAGE
@@ -172,10 +204,18 @@ elif [[ ${1} == "spoke" ]]; then
         export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
         ## NS where the OLM images will be mirrored
         export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
-        ## NS where the OLM INDEX for RH OPERATORS image will be mirrored
+        ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
         export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
 
         export SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
         export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+
+        ## NS where the OLM CERTIFIED images will be mirrored
+        export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
+        ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
+        export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
+
+        export CERTIFIED_SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+        export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
     fi
 fi

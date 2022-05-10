@@ -60,7 +60,7 @@ create_spoke_definitions() {
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_SPOKE_API} ${SPOKE_API_NAME}" | base64 -w0)
     export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
     export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
-    export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
+    export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
     # Generate the spoke definition yaml
     cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
@@ -77,6 +77,46 @@ metadata:
 stringData:
   .dockerconfigjson: '$CHANGE_PULL_SECRET'
   type: kubernetes.io/dockerconfigjson
+EOF
+    if [ "${NUM_M}" -eq "1" ]; then
+        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: $CHANGE_SPOKE_NAME-manifests-override
+  namespace: $CHANGE_SPOKE_NAME
+  annotations:
+    manifests-directory: manifests
+data:
+  node-ip-config.yml: |
+    apiVersion: machineconfiguration.openshift.io/v1
+    kind: MachineConfig
+    metadata:
+      labels:
+        machineconfiguration.openshift.io/role: master
+      name: 10-masters-node-ip-hint
+    spec:
+      config:
+        ignition:
+          config: {}
+          security:
+            tls: {}
+          timeouts: {}
+          version: 2.2.0
+        networkd: {}
+        passwd: {}
+        storage:
+          files:
+          - contents:
+              source: data:text/plain;charset=utf-8;base64,S1VCRUxFVF9OT0RFSVBfSElOVD0xOTIuMTY4LjcuMA==
+              verification: {}
+            filesystem: root
+            mode: 420
+            path: /etc/default/nodeip-configuration
+EOF
+    fi
+        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
 apiVersion: extensions.hive.openshift.io/v1beta1
 kind: AgentClusterInstall
@@ -86,6 +126,14 @@ metadata:
 spec:
   clusterDeploymentRef:
     name: $CHANGE_SPOKE_NAME
+EOF
+    if [ "${NUM_M}" -eq "1" ]; then
+        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+  manifestsConfigMapRef:
+    name: $CHANGE_SPOKE_NAME-manifests-override
+EOF
+    fi
+        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   imageSetRef:
     name: $CHANGE_SPOKE_CLUSTERIMAGESET
   fips: true
@@ -276,17 +324,6 @@ EOF
          next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
          next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
 EOF
-
-        if [ "${NUM_M}" -eq "1" ]; then
-        cat <<EOF >>${OUTPUT}
-       - destination: 0.0.0.0/0
-         next-hop-address: $CHANGE_SPOKE_MASTER_PUB_INT_GW
-         next-hop-interface: $CHANGE_SPOKE_MASTER_PUB_INT
-         metric: 99
-         table-id: 254
-EOF
-        fi
-
         if [[ ${IGN_IFACES} != "null" ]]; then
             yq eval -ojson ".spokes[${spokenumber}].${cluster}.master${master}.ignore_ifaces" ${SPOKES_FILE} | jq -c '.[]' | while read IFACE; do
                 echo "Ignoring route for: ${IFACE}"

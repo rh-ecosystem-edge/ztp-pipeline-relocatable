@@ -1,0 +1,69 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: spoke-deploy-disconnected-registry-spokes-ocp
+  annotations:
+    description: |
+      Will perform the OCP sync, based on the SYNC parameter.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+      default: ""
+    - name: spokes-config
+      type: string
+      default: ""
+    - name: mock
+      type: string
+      default: "false"
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp"
+      - name: SPOKES_CONFIG
+        value: $(params.spokes-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_REGISTRY_DIR
+        value: "deploy-disconnected-registry"
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
+  steps:
+
+    - name: mirror-ocp
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      resources:
+        requests:
+          memory: "250Mi"
+          cpu: "250m"
+        limits:
+          memory: 8Gi
+          cpu: 10000m
+      securityContext:
+        privileged: false
+        runAsUser: 0
+      volumeMounts:
+      - mountPath: /var/lib/containers
+        name: lib-containers
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
+          echo "Starting OpenShift Image Mirroring"
+          ./ocp-sync.sh 'spoke'
+        else
+          echo "Deploy Mirror OCP Spoke: Mock mode on"
+        fi
+
+  volumes:
+  - name: lib-containers
+    emptyDir: {}

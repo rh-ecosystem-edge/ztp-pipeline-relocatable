@@ -20,4 +20,6 @@ ReactDOM.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 // reportWebVitals();
 
+// For debugging - especially after domain change
 console.log('UI Backend URL: ', getBackendUrl());
+console.log('Frontend accessed at: ', window.location.href);

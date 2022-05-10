@@ -9,11 +9,14 @@ until [ $(curl -k -s https://api:6443/version?timeout=10s | jq -r '.major' | gre
 done
 
 # Begin looking for and signing CSRs to activate nodes
-export KUBECONFIG="/var/home/core/.kube/config"
+export KUBECONFIG="/var/home/core/.kube/ztpfw-csr-approver-config"
 
-if [ ! -f "${KUBECONFIG}" ]; then
-    echo "ERROR: Could not find kubeconfig file for cluster"
-    exit 1
+    # Fail if ztpfw kubeconfig does not exist
+    if [ ! -f ${KUBECONFIG} ] 
+        echo "ERROR: Could not find ztpfw-csr-approver-config kubeconfig file for the cluster"
+        exit 1
+    fi
+
 fi
 
 count=30
@@ -33,11 +36,3 @@ while [ ${count} -gt 0 ]; do
     sleep 20
 
 done
-
-if [ $(oc get csr | grep Approved | grep -v Issued | wc -l) -gt 0 ]; then
-    rm -f ${KUBECONFIG}
-    echo "Kubeconfig file removed"
-    systemctl disable csr-approver
-    echo "csr-approver service disabled"
-    exit 0
-fi

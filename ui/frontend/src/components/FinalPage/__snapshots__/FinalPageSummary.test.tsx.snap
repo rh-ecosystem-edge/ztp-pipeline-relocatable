@@ -83,6 +83,33 @@ exports[`FinalPageSummary can render 1`] = `
       </small>
     </div>
     <div
+      class="pf-l-stack__item final-page-sumamary__item"
+    >
+      <h3
+        class="pf-c-title pf-m-lg"
+        data-ouia-component-id="OUIA-Generated-Title-4"
+        data-ouia-component-type="PF4/Title"
+        data-ouia-safe="true"
+      >
+        Delete the kubeadmin user
+      </h3>
+      <small
+        class=""
+        data-ouia-component-id="OUIA-Generated-Text-4"
+        data-ouia-component-type="PF4/Text"
+        data-ouia-safe="true"
+        data-pf-content="true"
+      >
+        For security reasons, it is highly recommended to remove the kubeadmin user. To do so, relogin as the 
+        <b />
+         user and click 
+        <b>
+          Delete kubeadmin
+        </b>
+         button on the Settings page.
+      </small>
+    </div>
+    <div
       class="pf-l-stack__item"
     >
       <button
@@ -107,7 +134,7 @@ exports[`FinalPageSummary can render 1`] = `
       >
         <p
           class="final-page-summary__settings"
-          data-ouia-component-id="OUIA-Generated-Text-4"
+          data-ouia-component-id="OUIA-Generated-Text-5"
           data-ouia-component-type="PF4/Text"
           data-ouia-safe="true"
           data-pf-content="true"
