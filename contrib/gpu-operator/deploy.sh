@@ -21,7 +21,7 @@ function get_config() {
 }
 
 function deploy_gpu() {
-    if ./verify.sh; then
+    if ! ./verify.sh; then
 
         echo "Installing NFD operator for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-nfd-namespace.yaml
