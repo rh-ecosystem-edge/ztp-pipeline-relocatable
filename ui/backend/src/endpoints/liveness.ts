@@ -6,7 +6,6 @@ import { FetchError, Response as FetchResponse } from 'node-fetch';
 
 import { fetchRetry } from '../k8s/fetch-retry';
 import { respondInternalServerError, respondOK } from '../k8s/respond';
-// import { getOauthInfoPromise } from '../k8s/oauth';
 import { getClusterApiUrl } from '../k8s/utils';
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants;
