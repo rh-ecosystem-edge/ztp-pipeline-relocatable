@@ -46,6 +46,7 @@ function deploy_ui() {
     render_file manifests/oauth-client.yaml
     render_file manifests/service.yaml
     render_file manifests/route.yaml
+    render_file manifests/clusterrolbinding.yaml
 }
 
 function verify_ui() {
