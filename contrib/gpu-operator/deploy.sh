@@ -6,32 +6,6 @@ set -m
 
 source ${WORKDIR}/shared-utils/common.sh
 
-function wait_for_crd() {
-    SPOKE_KUBECONFIG=${1}
-    SPOKE=${2}
-    CRD=${3}
-
-    echo ">>>> Waiting for subscription and crd on: ${SPOKE}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    timeout=0
-    ready=false
-
-    while [ "$timeout" -lt "1000" ]; do
-        echo KUBESPOKE=${SPOKE_KUBECONFIG}
-        if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep ${CRD} | wc -l) -eq 1 ]]; then
-            ready=true
-            break
-        fi
-        echo "Waiting for CRD ${CRD} to be created"
-        sleep 5
-        timeout=$((timeout + 5))
-    done
-    if [ "$ready" == "false" ]; then
-        echo timeout waiting for CRD ${CRD}
-        exit 1
-    fi
-}
-
 function get_config() {
 
     if [[ $# -lt 1 ]]; then
@@ -57,7 +31,7 @@ function deploy_gpu() {
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-nfd-subscription.yaml
         sleep 2
 
-        wait_for_crd ${SPOKE_KUBECONFIG} ${spoke} "nodefeaturediscoveries.nfd.openshift.io"
+        check_resource "crd" "nodefeaturediscoveries.nfd.openshift.io" "Established" "openshift-nfd"
 
         echo "Installing GPU operator for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-gpu-namespace.yaml
@@ -67,7 +41,7 @@ function deploy_gpu() {
         envsubst <manifests/03-gpu-subscription.yaml | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
         sleep 2
 
-        wait_for_crd ${SPOKE_KUBECONFIG} ${spoke} "clusterpolicies.nvidia.com"
+        check_resource "crd" "clusterpolicies.nvidia.com" "Established" "nvidia-gpu-operator"
 
         echo "Adding GPU node labels with NFD for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/04-nfd-gpu-feature.yaml
