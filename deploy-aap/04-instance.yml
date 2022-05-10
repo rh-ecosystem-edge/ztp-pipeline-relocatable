@@ -28,7 +28,7 @@ spec:
   image_pull_policy: IfNotPresent
   projects_storage_size: 8Gi
   admin_email: admin@example.com
-  task_privileged: false
+  task_privileged: true
   projects_storage_class: ocs-storagecluster-ceph-rbd
   projects_storage_access_mode: ReadWriteOnce
   web_resource_requirements:
