@@ -146,7 +146,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
   const host = req.headers.host;
 
   deleteCookie(res, { cookie: 'connect.sid' });
-  deleteCookie(res, { cookie: 'acm-access-token-cookie' });
+  deleteCookie(res, { cookie:  K8S_ACCESS_TOKEN_COOKIE});
   deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host || ''}` });
   res.writeHead(200).end();
 }
