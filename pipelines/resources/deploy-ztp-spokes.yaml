@@ -248,6 +248,25 @@ spec:
       - name: ztp
         workspace: ztp
 
+  # Deploy GPU Operator
+  - name: gpu-operator
+    taskRef:
+      name: contrib-gpu-operator
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - detach-cluster
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
   # Detach Spoke Cluster
   - name: detach-cluster
     taskRef:
@@ -267,21 +286,4 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy GPU Operator
-  - name: gpu-operator
-    taskRef:
-      name: contrib-gpu-operator
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - detach-cluster
-    workspaces:
-      - name: ztp
-        workspace: ztp
+
