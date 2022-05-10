@@ -14,6 +14,7 @@ import {
   htpasswd,
   changeDomain,
   user,
+  configure,
 } from './endpoints';
 
 const PORT = process.env.BACKEND_PORT || 3001;
@@ -25,7 +26,6 @@ const startUpCheck = () => {
     // 'BACKEND_PORT',
     // 'TOKEN',
     'FRONTEND_URL',
-    'CLUSTER_API_URL',
     'OAUTH2_CLIENT_ID',
     'OAUTH2_CLIENT_SECRET',
     'OAUTH2_REDIRECT_URL',
@@ -93,6 +93,7 @@ const start = () => {
   app.post(`/changeDomain`, changeDomain);
 
   app.get('/user', user);
+  app.get('/configure', configure);
 
   app.all(`/api/*`, proxy);
   app.all(`/apis/*`, proxy);

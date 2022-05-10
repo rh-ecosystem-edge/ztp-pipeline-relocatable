@@ -118,24 +118,25 @@ function save_files() {
 
     # Generate csr-approver resources
     generate_spoke_csr-approver_kubeconfig
-
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${i}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        EXT_MAC_ADDR=$(yq eval ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
-        echo ""
-        echo ">>>> Copying ${cluster} CSR Approver Kubeconfig to Master ${master} Node"
-        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
-            NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
-            if [[ -n ${NODE_IP} ]]; then
-                echo "Master Node: ${master}"
-                echo "AGENT: ${agent}"
-                echo "BMC: ${EXT_MAC_ADDR}"
-                echo "IP: ${NODE_IP%%/*}"
-                echo ">>>>"
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "mkdir -p ~/.kube"
-                copy_files_common "${SPOKE_CSR-KUBECONFIG}" "${NODE_IP%%/*}" "./.kube/ztpfw-csr-approver-config"
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "rm -f ~/.kube/config"
-            fi
-        done
+    
+    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}')
+    do
+        echo
+        SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
+        master=${SPOKE_NODE_NAME##*-}
+        MAC_EXT_DHCP=$(yq e ".spokes[${i}].${cluster}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+        SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+        NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
+        if [[ -n ${NODE_IP} ]]; then
+            echo "Master Node: ${master}"
+            echo "AGENT: ${agent}"
+            echo "BMC: ${MAC_EXT_DHCP}"
+            echo "IP: ${NODE_IP%%/*}"
+            echo ">>>>"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "mkdir -p ~/.kube"
+            copy_files_common "${SPOKE_CSR-KUBECONFIG}" "${NODE_IP%%/*}" "./.kube/ztpfw-csr-approver-config"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "rm -f ~/.kube/config"
+        fi
     done
 }
 
@@ -183,7 +184,7 @@ for spoke in ${ALLSPOKES}; do
     echo ">> Cluster: ${spoke}"
     check_cluster ${spoke}
     recover_spoke_rsa ${spoke}
-    recover_spoke_files ${spoke} $i
+    recover_spoke_files ${spoke} ${i}
     store_rsa_secrets ${spoke}
     #detach_cluster ${spoke}
     i=$((i + 1))

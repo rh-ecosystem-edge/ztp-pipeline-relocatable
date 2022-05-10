@@ -1,5 +1,11 @@
 import { Request, Response } from 'express';
-import { getToken, jsonPost, respondInternalServerError, unauthorized } from '../k8s';
+import {
+  getClusterApiUrl,
+  getToken,
+  jsonPost,
+  respondInternalServerError,
+  unauthorized,
+} from '../k8s';
 import { getServiceAcccountToken } from './liveness';
 
 const logger = console;
@@ -26,9 +32,7 @@ export async function user(req: Request, res: Response): Promise<void> {
 
   try {
     const response = await jsonPost<TokenReview>(
-      `${
-        process.env.CLUSTER_API_URL || 'missing-cluster-api-url'
-      }/apis/authentication.k8s.io/v1/tokenreviews`,
+      `${getClusterApiUrl()}/apis/authentication.k8s.io/v1/tokenreviews`,
       {
         apiVersion: 'authentication.k8s.io/v1',
         kind: 'TokenReview',
@@ -45,6 +49,9 @@ export async function user(req: Request, res: Response): Promise<void> {
       response.body.status.user.username
         ? response.body.status.user.username
         : '';
+    if (!name) {
+      logger.info('The username for a token was not received, response: ', response);
+    }
     const responsePayload = {
       statusCode: response.statusCode,
       body: { username: name },
