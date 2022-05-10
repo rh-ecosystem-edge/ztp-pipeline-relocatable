@@ -153,8 +153,8 @@ fi
 index=0
 
 for EDGE in ${ALLEDGECLUSTERS}; do
-    create_worker_definitions ${SPOKE} ${index}
-    WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} --no-headers | grep worker | cut -f1 -d\ )
+    create_worker_definitions ${EDGE} ${index}
+    WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${EDGE} --no-headers | grep worker | cut -f1 -d\ )
     check_resource "agent" "${WORKER_AGENT}" "Installed" "${EDGE}" "${KUBECONFIG_HUB}"
     index=$((index + 1))
 done
