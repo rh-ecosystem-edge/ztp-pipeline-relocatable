@@ -31,7 +31,7 @@ function deploy_gpu() {
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-nfd-subscription.yaml
         sleep 2
 
-        check_resource "crd" "nodefeaturediscoveries.nfd.openshift.io" "Established" "openshift-nfd"
+        check_resource "crd" "nodefeaturediscoveries.nfd.openshift.io" "Established" "openshift-nfd" "${SPOKE_KUBECONFIG}"
 
         echo "Installing GPU operator for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-gpu-namespace.yaml
@@ -41,7 +41,7 @@ function deploy_gpu() {
         envsubst <manifests/03-gpu-subscription.yaml | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
         sleep 2
 
-        check_resource "crd" "clusterpolicies.nvidia.com" "Established" "nvidia-gpu-operator"
+        check_resource "crd" "clusterpolicies.nvidia.com" "Established" "nvidia-gpu-operator" "${SPOKE_KUBECONFIG}"
 
         echo "Adding GPU node labels with NFD for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/04-nfd-gpu-feature.yaml

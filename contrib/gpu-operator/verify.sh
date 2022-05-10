@@ -28,7 +28,7 @@ for spoke in ${ALLSPOKES}; do
         exit 0
     fi
 
-    check_resource "crd" "clusterpolicies.nvidia.com" "Established" "nvidia-gpu-operator"
+    check_resource "crd" "clusterpolicies.nvidia.com" "Established" "nvidia-gpu-operator" "${SPOKE_KUBECONFIG}"
 
     if [[ $? -eq 0 ]]; then
         echo ">>>> Spoke ${spoke} already have gpu-operator."
