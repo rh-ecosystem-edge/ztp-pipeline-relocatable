@@ -135,32 +135,6 @@ EOF
     done
 }
 
-function verify_worker() {
-
-    cluster=${1}
-    timeout=0
-    ready=false
-
-    echo ">>>> Waiting for Worker Agent: ${cluster}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    while [ "$timeout" -lt "1000" ]; do
-        WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} --no-headers | grep worker | cut -f1 -d\ )
-        echo "Waiting for Worker's agent installation for edgecluster: ${cluster} - Agent: ${WORKER_AGENT}"
-        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${WORKER_AGENT} -o jsonpath='{.status.conditions[?(@.reason=="InstallationCompleted")].status}') == True ]]; then
-            ready=true
-            break
-        fi
-        sleep 5
-        timeout=$((timeout + 1))
-    done
-
-    if [ "$ready" == "false" ]; then
-        echo "Timeout waiting for Worker's agent installation for edgecluster: ${cluster}"
-        exit 1
-    fi
-
-}
-
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
@@ -179,7 +153,8 @@ fi
 index=0
 
 for EDGE in ${ALLEDGECLUSTERS}; do
-    create_worker_definitions ${EDGE} ${index}
-    verify_worker ${EDGE}
+    create_worker_definitions ${SPOKE} ${index}
+    WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} --no-headers | grep worker | cut -f1 -d\ )
+    check_resource "agent" "${WORKER_AGENT}" "Installed" "${EDGE}" "${KUBECONFIG_HUB}"
     index=$((index + 1))
 done
