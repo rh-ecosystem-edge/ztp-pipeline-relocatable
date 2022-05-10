@@ -49,6 +49,16 @@ for packagemanifest in $(oc --kubeconfig=${TGT_KUBECONFIG} get packagemanifest -
         skopeo inspect docker://"${DESTINATION_REGISTRY}"/"${OLM_DESTINATION_REGISTRY_IMAGE_NS}"/$(echo ${package} | awk -F'/' '{print $2}')-$(basename ${package}) --authfile "${PULL_SECRET}"
     done
 done
+
+echo ">>>> Verifying Certified OLM Sync: ${1}"
+${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+for packagemanifest in $(oc --kubeconfig=${TGT_KUBECONFIG} get packagemanifest -n openshift-marketplace -o name ${CERTIFIED_PACKAGES_FORMATED}); do
+    for package in $(oc --kubeconfig=${TGT_KUBECONFIG} get ${packagemanifest} -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
+        echo "Verify Package: ${package}"
+        #if next command fails, it means that the image is not already in the destination registry, so output command will be error (>0)
+        skopeo inspect docker://"${DESTINATION_REGISTRY}"/"${OLM_DESTINATION_REGISTRY_IMAGE_NS}"/$(echo ${package} | awk -F'/' '{print $2}')-$(basename ${package}) --authfile "${PULL_SECRET}"
+    done
+done
 #In this case, we don't need to mirror catalogs, everything is already there
 
 recover_mapping

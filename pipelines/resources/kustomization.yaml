@@ -2,6 +2,7 @@ bases:
   - common
   - hub
   - spokes
+  - contrib
 resources:
   - deploy-ztp-hub.yaml
   - deploy-ztp-spokes.yaml
