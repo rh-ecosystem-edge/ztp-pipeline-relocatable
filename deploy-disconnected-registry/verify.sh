@@ -13,8 +13,6 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
-
-
 if [[ ${1} == 'hub' ]]; then
     TG_KUBECONFIG=${KUBECONFIG_HUB}
 elif [[ ${1} == 'spoke' ]]; then

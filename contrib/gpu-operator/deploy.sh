@@ -33,7 +33,7 @@ function wait_for_crd() {
 }
 
 function get_config() {
-    
+
     if [[ $# -lt 1 ]]; then
         echo "Usage :"
         echo "  $0 <SPOKES_FILE> <SPOKE_NAME> <SPOKE_INDEX>"
@@ -42,13 +42,12 @@ function get_config() {
     spokes_file=${1}
     spoke_name=${2}
     index=${3}
-    
+
     export CHANGEME_VERSION=$(yq eval ".spokes[${index}].${spoke_name}.contrib.gpu-operator.version" ${spokes_file})
 }
 
 function deploy_gpu() {
     if ./verify.sh; then
-
 
         echo "Installing NFD operator for ${spoke}"
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-nfd-namespace.yaml
