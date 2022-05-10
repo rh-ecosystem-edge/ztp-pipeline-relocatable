@@ -40,7 +40,7 @@ The Hub Workflow will be something like what you're seeing in the image, let's d
 image::pipeline-spoke-workflow.png[]
 
 - **Download the code**:
-This phase will be mandatory or not, depending the scenario, if the environemnt it's fully disconnected, this source code will be embbeded into the Container Image.
+This phase will be mandatory or not, depending the scenario, if the environment it's fully disconnected, this source code will be embedded into the Container Image.
 
 - **Check the Hub cluster**:
 We will ensure all the things are ready to start the Hub provisioning, things like ClusterOperators, ClusterVersion and Nodes up and ready are basic to start working.
@@ -55,10 +55,10 @@ This is one of the Key steps, without this you will not be able to access the AP
 This step will deploy Local Storage Operator and also OpenShift Storage. Local Storage Operator will use the node disks (NVMEs) to create PVs, which OCS will use to deploy the StorageCluster on top of them, to generate the Storage Classes and Dynamic provisioning of the PVs.
 
 - **Deploy Quay**:
-We will deploy Quay Operator and components of Quay because the final customer will need a fully supported solution in the Edge and the factory (in the most probable scenario) will have their own internal registry in the factory. This Quay deployment has an small foot print enabling only the things needded to host an Internal Registry with basic functions.
+We will deploy Quay Operator and components of Quay because the final customer will need a fully supported solution in the Edge and the factory (in the most probable scenario) will have their own internal registry in the factory. This Quay deployment has an small foot print enabling only the things needed to host an Internal Registry with basic functions.
 
 - **Deploy Worker Node**:
 At this point we will deploy the Worker node, and we will make it join to the Edge cluster.
 
-- **Dettach Edge Cluster**:
-This final step will perform some actions, first ensure that the things are well set and working. After that it will save the SSH-RSA keys, Kubeconfig and Kubeadmin password into the Hub, more concretelly in the <spoke-cluster-name> Namespace in the hub cluster. This could be sent afterwards to the customer, this policy should be set by the factory.
+- **Detach Edge Cluster**:
+This final step will perform some actions, first ensure that the things are well set and working. After that it will save the SSH-RSA keys, Kubeconfig and Kubeadmin password into the Hub, more concretely in the <spoke-cluster-name> Namespace in the hub cluster. This could be sent afterwards to the customer, this policy should be set by the factory.

@@ -36,7 +36,7 @@ The Hub Workflow will be something like what you're seeing in the image, let's d
 image::pipeline-hub-workflow.png[]
 
 - **Download the code**:
-This phase will be mandatory or not, depending on the scenario. If the environemnt is fully disconnected, this source code will be embbeded into the Container Image.
+This phase will be mandatory or not, depending on the scenario. If the environment is fully disconnected, this source code will be embedded into the Container Image.
 
 - **Check the Hub cluster**:
 We will ensure all the things are ready to start the Hub provisioning. ClusterOperators, ClusterVersion and up and ready Nodes are all essential to start working.
