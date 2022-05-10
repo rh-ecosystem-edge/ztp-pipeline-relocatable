@@ -12,4 +12,3 @@ set -m
 # Load common vars
 # source ${WORKDIR}/shared-utils/common.sh
 exit 0
-

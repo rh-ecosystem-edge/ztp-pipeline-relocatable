@@ -36,7 +36,7 @@ function prepare_env() {
     if [[ ${fail_counter} -ge 1 ]]; then
         echo "#########"
         exit 1
-    fi   
+    fi
 }
 
 function check_registry() {
@@ -184,21 +184,21 @@ function mirror() {
                     echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
                     skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     if [[ ${?} != 0 ]]; then
-                      retry=1
-                      while [ ${retry} != 0 ]; do
-                        echo "Error on Image Copy, retrying after 5 seconds..."
-                        skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-                        if [[ ${?} == 0 ]]; then
-                          retry=0
-                        else
-                          sleep 10
-                          retry=$((retry + 1))
-                        fi
-                        if [ ${retry} == 12 ]; then
-                          echo ">>>> ERROR: Retry limit reached to copy image ${package}"
-                          exit 1
-                        fi
-                      done
+                        retry=1
+                        while [ ${retry} != 0 ]; do
+                            echo "Error on Image Copy, retrying after 5 seconds..."
+                            skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                            if [[ ${?} == 0 ]]; then
+                                retry=0
+                            else
+                                sleep 10
+                                retry=$((retry + 1))
+                            fi
+                            if [ ${retry} == 12 ]; then
+                                echo ">>>> ERROR: Retry limit reached to copy image ${package}"
+                                exit 1
+                            fi
+                        done
                     fi
                     sleep 1
                 fi
@@ -212,21 +212,21 @@ function mirror() {
         echo "skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}"
         skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
         if [[ ${?} != 0 ]]; then
-          retry=1
-          while [ ${retry} != 0 ]; do
-            echo "Error on Image Copy, retrying after 5 seconds..."
-            skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
-            if [[ ${?} == 0 ]]; then
-              retry=0
-            else
-              sleep 10
-              retry=$((retry + 1))
-            fi
-            if [ ${retry} == 12 ]; then
-              echo ">>>> ERROR: Retry limit reached to copy image ${image}"
-              exit 1
-            fi
-          done
+            retry=1
+            while [ ${retry} != 0 ]; do
+                echo "Error on Image Copy, retrying after 5 seconds..."
+                skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
+                if [[ ${?} == 0 ]]; then
+                    retry=0
+                else
+                    sleep 10
+                    retry=$((retry + 1))
+                fi
+                if [ ${retry} == 12 ]; then
+                    echo ">>>> ERROR: Retry limit reached to copy image ${image}"
+                    exit 1
+                fi
+            done
         fi
         sleep 1
     done
@@ -285,12 +285,10 @@ function mirror_certified() {
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 
-    
-
     # Empty log file
     >${OUTPUTDIR}/mirror.log
 
-    # Certified Operators 
+    # Certified Operators
     SALIDA=1
 
     retry=1
@@ -421,7 +419,7 @@ elif [[ ${1} == "spoke" ]]; then
         if ! ./verify_olm_sync.sh 'spoke'; then
             mirror 'spoke'
             if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
-            echo ">>>> There are no certified operators to be mirrored"
+                echo ">>>> There are no certified operators to be mirrored"
             else
                 mirror_certified 'spoke'
             fi

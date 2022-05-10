@@ -98,20 +98,20 @@ fi
 echo ">>>> Verify the cluster operator ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 retry=1
-  while [ ${retry} != 0 ]; do
-   if [[ $(oc get co | awk '{print $3}' | grep -i true | wc -l) -ne $(($(oc get co | wc -l) - 1)) ]]; then
-       echo "Error: ClusterOperators are not ready. Trying again... ${retry}"
-       sleep 10
-       retry=$((retry + 1))
+while [ ${retry} != 0 ]; do
+    if [[ $(oc get co | awk '{print $3}' | grep -i true | wc -l) -ne $(($(oc get co | wc -l) - 1)) ]]; then
+        echo "Error: ClusterOperators are not ready. Trying again... ${retry}"
+        sleep 10
+        retry=$((retry + 1))
     else
-       echo ">>>> Cluster Operators are ready"
-       retry=0
+        echo ">>>> Cluster Operators are ready"
+        retry=0
     fi
     if [ ${retry} == 20 ]; then
         echo ">>>> ERROR: Retry limit reached to get Cluster Operators ready"
         exit 4
     fi
-   done
+done
 
 echo ">>>> Verify the metal3 pods ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

@@ -37,7 +37,7 @@ EOF
     if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
         echo ">>>> There are no certified operators to be mirrored"
     else
-           cat >>${CS_OUTFILE} <<EOF
+        cat >>${CS_OUTFILE} <<EOF
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
@@ -132,14 +132,14 @@ if [[ ${1} == "hub" ]]; then
     export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
     export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
     export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-    # OLM 
+    # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
     ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
     export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
     ## OLM INDEX IMAGE
     export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-    
+
     ## NS where the OLM CERTIFIED images will be mirrored
     export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
     ## Image name where the OLM INDEX for RH CERTIFIED OPERATORS image will be mirrored

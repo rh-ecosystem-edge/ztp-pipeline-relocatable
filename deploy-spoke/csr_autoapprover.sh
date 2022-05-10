@@ -11,12 +11,10 @@ done
 # Begin looking for and signing CSRs to activate nodes
 export KUBECONFIG="/var/home/core/.kube/ztpfw-csr-approver-config"
 
-    # Fail if ztpfw kubeconfig does not exist
-    if [ ! -f ${KUBECONFIG} ] 
-        echo "ERROR: Could not find ztpfw-csr-approver-config kubeconfig file for the cluster"
-        exit 1
-    fi
-
+# Fail if ztpfw kubeconfig does not exist
+if [ ! -f ${KUBECONFIG} ]; then
+    echo "ERROR: Could not find ztpfw-csr-approver-config kubeconfig file for the cluster"
+    exit 1
 fi
 
 count=30

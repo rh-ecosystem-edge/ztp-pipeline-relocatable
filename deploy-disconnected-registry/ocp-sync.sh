@@ -47,7 +47,7 @@ function mirror_ocp() {
     export STORAGE_DRIVER=vfs
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
-    
+
     # Empty log file
     >${OUTPUTDIR}/mirror-ocp.log
     SALIDA=1

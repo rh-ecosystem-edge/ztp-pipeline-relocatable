@@ -73,8 +73,7 @@ function trust_node_certificates() {
     cp -f ${PATH_CA_CERT} ${SPOKE_SAFE_FOLDER}
 
     echo ">>>> Copying Registry Certificates to cluster: ${cluster}"
-    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}')
-    do
+    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}'); do
         echo
         SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
         master=${SPOKE_NODE_NAME##*-}
@@ -215,9 +214,9 @@ function grab_api_ingress() {
     grab_hub_dns
     export SPOKE_API_NAME="api.${cluster}.${HUB_BASEDOMAIN}"
     export SPOKE_API_IP="$(dig @${HUB_NODE_IP} +short ${SPOKE_API_NAME})"
-    if [[ "$(echo ${SPOKE_API_IP} | grep -c 'timed out')" == 1 ]];then
+    if [[ "$(echo ${SPOKE_API_IP} | grep -c 'timed out')" == 1 ]]; then
         export SPOKE_API_IP="$(dig +short ${SPOKE_API_NAME})"
-        if [[ -z ${SPOKE_API_IP} ]];then
+        if [[ -z ${SPOKE_API_IP} ]]; then
             echo "CRITICAL ERROR: ${SPOKE_API_NAME} cannot be resolved"
             exit 1
         fi

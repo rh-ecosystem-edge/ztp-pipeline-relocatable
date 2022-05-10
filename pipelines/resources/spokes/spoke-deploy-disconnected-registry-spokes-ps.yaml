@@ -41,7 +41,7 @@ spec:
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
-          
+
         if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
           ./update-global-pullsecret.sh 'spoke'

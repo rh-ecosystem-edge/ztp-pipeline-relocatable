@@ -96,7 +96,7 @@ function generate_mapping() {
     echo ">>>> Creating OLM Manifests"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
     GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
-    
+
     # Check if certified OLM operators required and if so add them to the mapping
     if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
         echo ">>>> There are no certified operators to be mirrored"
@@ -105,7 +105,7 @@ function generate_mapping() {
         echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
         GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_CERTIFIED_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-certified-manifests
         # Merge additional certified olm mapping with the redhat olm in order to create just one icsp object with all the images
-        cat ${OUTPUTDIR}/olm-certified-manifests/mapping.txt >> ${OUTPUTDIR}/olm-manifests/mapping.txt
+        cat ${OUTPUTDIR}/olm-certified-manifests/mapping.txt >>${OUTPUTDIR}/olm-manifests/mapping.txt
     fi
     echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
     unalias cp &>/dev/null || echo "Unaliased cp: Done!"
