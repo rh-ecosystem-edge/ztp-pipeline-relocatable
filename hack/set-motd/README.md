@@ -20,8 +20,10 @@ Show usage with `set-motd help`
 
 ## Default values
 
+```plain
 path: /etc/motd
 user: ZTPFW Github Actions
+```
 
 ## Default output
 
