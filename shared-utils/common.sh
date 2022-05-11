@@ -88,6 +88,8 @@ function trust_node_certificates() {
             copy_files_common "${PATH_CA_CERT}" "${NODE_IP%%/*}" "./spoke-reg-cert.crt"
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo mv ~/spoke-reg-cert.crt /etc/pki/ca-trust/source/anchors/"
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo update-ca-trust"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo systemctl restart crio kubelet"
+            sleep 50
         fi
     done
 }
