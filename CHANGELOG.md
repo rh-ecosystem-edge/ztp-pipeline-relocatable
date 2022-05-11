@@ -1,3 +1,9 @@
+## [1.1.14](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.13...1.1.14) (2022-05-11)
+
+### Bug Fixes
+
+- Error on catalogSource certificate detection ([ffe170c](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/ffe170c75be43e1ec55a127d9de10aa1aaae9a1c))
+
 ## [1.1.13](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.12...1.1.13) (2022-05-11)
 
 ### Bug Fixes
