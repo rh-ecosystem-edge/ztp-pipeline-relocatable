@@ -1,5 +1,6 @@
 import { Metadata } from './metadata';
 import { IResource } from './resource';
+import { StatusCondition } from './statuscondition';
 
 export type PodApiVersionType = 'v1';
 export const PodApiVersion: PodApiVersionType = 'v1';
@@ -20,9 +21,6 @@ export interface Pod extends IResource {
     }[];
   };
   status?: {
-    conditions: {
-      status: string;
-      type: string;
-    }[];
+    conditions: StatusCondition[];
   };
 }
