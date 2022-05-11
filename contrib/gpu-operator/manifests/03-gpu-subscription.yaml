@@ -5,7 +5,7 @@ metadata:
   name: gpu-operator-certified
   namespace: nvidia-gpu-operator
 spec:
-  channel: $CHANGEME_VERSION
+  channel: stable
   installPlanApproval: Automatic
   name: gpu-operator-certified
   source: ztpfw-catalog-certfied
