@@ -89,6 +89,7 @@ function trust_node_certificates() {
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo mv ~/spoke-reg-cert.crt /etc/pki/ca-trust/source/anchors/"
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo update-ca-trust"
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo systemctl restart crio kubelet"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "test -f ~/.kube/config && oc delete pod -n openshift-marketplace --all"
             sleep 50
         fi
     done
