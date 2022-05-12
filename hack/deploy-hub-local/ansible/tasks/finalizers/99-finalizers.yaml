@@ -1,0 +1,20 @@
+---
+- name: Check if set-motd exists
+  stat: 
+    path: /root/bin/set-motd
+  register: setmotdfile
+  tags: [ 00-base-os, 00-base-network, 01-packages, 
+        01-configure-dnf, 02-bin-utils, 
+        00-common-services, configure-sshd,
+        configure-tuned, configure-chronyd,
+        configure-logrotate, configure-libvirtd ]
+
+- name: Mark provisioning as finalized
+  command: "/root/bin/set-motd set -user '{{ motd_user }}' -motd 'Finished execution of setup.yaml'"
+  ignore_errors: true
+  tags: [ 00-base-os, 00-base-network, 01-packages, 
+        01-configure-dnf, 02-bin-utils, 
+        00-common-services, configure-sshd,
+        configure-tuned, configure-chronyd,
+        configure-logrotate, configure-libvirtd ]
+  when: setmotdfile.stat.exists == true

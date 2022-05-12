@@ -2,10 +2,12 @@
 - name: Enable libvirtd
   service: name=libvirtd enabled=yes state=started
   ignore_errors: true
+  tags: configure-libvirtd
 
 - name: Create libvirtd pool
   command: "kcli create pool -p /var/lib/libvirt/images default"
   ignore_errors: true
+  tags: configure-libvirtd
 
 # This step is not needed if the playbook run as root.
 # Leaving it here in case it's needed in the future.
