@@ -50,7 +50,7 @@ if ./verify.sh; then
     ready=false
     sleep 240
     while [ "${timeout}" -lt "120" ]; do
-        if [[ $(oc get pod -n argocd | grep -i running | wc -l) -eq $(oc get pod -n argocd | grep -v NAME | wc -l) ]]; then
+        if [[ $(oc get pod -n openshift-gitops | grep -i running | wc -l) -eq $(oc get pod -n openshift-gitops | grep -v NAME | wc -l) ]]; then
             ready=true
             break
         fi

@@ -3,7 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 metadata:
   creationTimestamp: null
   name: openshift-gitops
-  namespace: argocd
+  namespace: openshift-gitops
 spec:
   controller:
     processors: {}
