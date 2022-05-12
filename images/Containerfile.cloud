@@ -18,8 +18,10 @@ RUN cd /tmp && \
     curl -s -L https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linux_amd64 >/usr/bin/yq && \
     chmod +x /usr/bin/yq && \
     curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl >/usr/bin/kubectl && \
-    chmod u+x /usr/bin/kubectl
-
+    chmod u+x /usr/bin/kubectl && \
+    curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
+    chmod 700 /tmp/get_helm.sh && \ 
+    /tmp/get_helm.sh
 
 RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils && dnf clean all
 RUN dnf makecache &&  dnf install epel-release -y &&  dnf install ansible git python3 python3-pip -y 

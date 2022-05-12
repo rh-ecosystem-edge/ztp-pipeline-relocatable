@@ -12,11 +12,11 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
-if [[ $(oc get ns | grep openshift-gitops  | wc -l) -eq 0 || $(oc get ArgoCD -n openshift-gitops  --no-headers | wc -l) -eq 0 ]]; then
+if [[ $(oc get ns | grep reflector  | wc -l) -eq 0 || $(oc get ArgoCD -n reflector  --no-headers | wc -l) -eq 0 ]]; then
     #Argocd  namespace does not exist. Launching the step to create it...
     exit 0
-elif [[ $(oc get pod -n openshift-gitops  | grep -i running | wc -l) -eq $(oc get pod -n openshift-gitops  | grep -v NAME | wc -l) ]]; then
-    #All pods for ArgoCD running...Skipping the step to create it
+elif [[ $(oc get pod -n reflector  | grep -i running | wc -l) -eq $(oc get pod -n reflector  | grep -v NAME | wc -l) ]]; then
+    #All pods for ACM running...Skipping the step to create it
     exit 1
 else
     #Some pods are failing...Stop pipe to solve it  #TODO this scenario we should remove the subscription and destroy everything and relaunch again
