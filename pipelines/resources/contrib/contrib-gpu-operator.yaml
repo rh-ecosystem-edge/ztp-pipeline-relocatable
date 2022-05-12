@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-disconnected-registry-spokes-ps
+  name: contrib-gpu-operator
   annotations:
     description: |
-      Update the Global PullSecret for every spoke with the proper credentials.
+      This task will deploy GPU/NFD on the Spoke Cluster.
 spec:
   workspaces:
     - name: ztp
@@ -29,26 +29,22 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_REGISTRY_DIR
-        value: "deploy-disconnected-registry"
+      - name: DEPLOY_GPU_DIR
+        value: "contrib/gpu-operator"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: update-global-pullsecret
+    - name: gpu-operator
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-          ./update-global-pullsecret.sh 'spoke'
+          cd ${WORKDIR}/${DEPLOY_GPU_DIR}
+          ./deploy.sh
         else
-          echo "Update Global Pull Secret Spoke: Mock mode on"
+          echo "Deploy GPU: Mock mode on"
         fi
-
-  volumes:
-  - name: lib-containers
-    emptyDir: {}

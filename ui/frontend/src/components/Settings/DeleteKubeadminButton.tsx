@@ -13,6 +13,7 @@ import { kubeadminSecret } from '../PersistPage/constants';
 import { deleteKubeAdmin } from '../PersistPage/persistIdentityProvider';
 import { PersistErrorType } from '../PersistPage';
 import { getBackendUrl, getRequest } from '../../resources';
+import { delay } from '../utils';
 
 type DeleteKubeadminModalProps = {
   isOpen: boolean;
@@ -87,6 +88,7 @@ export const DeleteKubeadminButton: React.FC = () => {
     'Loading',
   );
   const [isOpen, setOpen] = React.useState(false);
+  const [retryCounter, setRetryCounter] = React.useState(1);
 
   React.useEffect(() => {
     const doItAsync = async () => {
@@ -111,6 +113,12 @@ export const DeleteKubeadminButton: React.FC = () => {
         setKubeadminDisabledReason(
           'Kubeadmin can be deleted only by an user with cluster-admin role.',
         );
+
+        // try it again
+        console.info('Failed to load username, retrying in a few seconds.');
+        await delay(5000);
+        setRetryCounter(retryCounter + 1);
+
         return;
       }
 
@@ -118,7 +126,7 @@ export const DeleteKubeadminButton: React.FC = () => {
     };
 
     doItAsync();
-  }, [isOpen /* On every modal close*/]);
+  }, [isOpen, retryCounter /* On every modal close */]);
 
   const isDisabled = !!kubeadminDisabledReason;
 

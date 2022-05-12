@@ -51,14 +51,14 @@ EOF
     chmod 644 /etc/resolv.conf
 
     echo ">>>> Configuring IPTables"
-    iptables -C FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24 2&>1 > /dev/null
+    iptables -C FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24 2>&1 > /dev/null
     if [[ $? == 0 ]];then
         echo "Adding Rule..."
         iptables -I FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24
         firewall-cmd --reload
     fi
 
-    iptables -C FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24 2&>1 > /dev/null
+    iptables -C FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24 2>&1 > /dev/null
     if [[ $? == 0 ]];then
         echo "Adding Rule..."
         iptables -I FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24

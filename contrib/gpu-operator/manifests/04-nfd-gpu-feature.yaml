@@ -1,0 +1,32 @@
+---
+apiVersion: nfd.openshift.io/v1
+kind: NodeFeatureDiscovery
+metadata:
+  name: nfd-instance-gpu
+  namespace: openshift-nfd
+spec:
+  instance: "" # instance is empty by default
+  operand:
+    image: quay.io/openshift/origin-node-feature-discovery:4.11
+    imagePullPolicy: Always
+  workerConfig:
+    configData: |
+      sources:
+        pci:
+          deviceClassWhitelist:
+            - "10de"
+            - "0200"
+            - "0302"
+            - "03"
+            - "12"
+          deviceLabelFields:
+            - vendor
+  customConfig:
+    configData: |
+      #    - name: "more.kernel.features"
+      #      matchOn:
+      #      - loadedKMod: ["example_kmod3"]
+      #    - name: "more.features.by.nodename"
+      #      value: customValue
+      #      matchOn:
+      #      - nodename: ["special-.*-node-.*"]

@@ -30,11 +30,11 @@ if ! ./verify.sh; then
         ##############################################################################
         # Here can be added other manifests to create the required resources
         ##############################################################################
-        
+
         oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-template-namespace.yaml
 
         ##############################################################################
-        # End of customiztion                                    
+        # End of customization
         ##############################################################################
     done
 

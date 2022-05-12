@@ -50,7 +50,7 @@ exports[`DomainSelector can can handle invalid domain 1`] = `
             class="validation-failed-text"
             data-testid="domain-validation-failed"
           >
-            Valid domain wasn't provided
+            Valid domain wasn't provided.
           </div>
         </div>
       </div>

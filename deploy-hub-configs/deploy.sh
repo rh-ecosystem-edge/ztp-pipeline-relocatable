@@ -62,7 +62,7 @@ if ./verify.sh; then
 
     # Make sure that no config exists
     rm -f 06-coredns.yml
-    if [ "${NUM_M}" == "0"]; then
+    if [ "${NUM_M}" == "0" ]; then
 
         DNSMAPPINGS=$(echo """
 address=/apps.${MYDOMAIN}/${MYIP}
@@ -71,11 +71,11 @@ address=/api.${MYDOMAIN}/${MYIP}
     """ | base64 -w0)
 
         DISPATCHER=$(
-            echo """
+            cat <<EOF | base64 -w0
 export IP="${MYIP}" # IP OF NODE (HUB)
 export BASE_RESOLV_CONF=/run/NetworkManager/resolv.conf
 if [ "\$2" = "dhcp4-change" ] || [ "\$2" = "dhcp6-change" ] || [ "\$2" = "up" ] || [ "\$2" = "connectivity-change" ]; then
-	export TMP_FILE=$(mktemp /etc/forcedns_resolv.conf.XXXXXX)
+	export TMP_FILE=\$(mktemp /etc/forcedns_resolv.conf.XXXXXX)
 	cp  \$BASE_RESOLV_CONF \$TMP_FILE
 	chmod --reference=\$BASE_RESOLV_CONF \$TMP_FILE
 	sed -i -e "s/${MYDOMAIN}//" \
@@ -86,7 +86,7 @@ if [ "\$2" = "dhcp4-change" ] || [ "\$2" = "dhcp6-change" ] || [ "\$2" = "up" ] 
             /" \$TMP_FILE
 	mv \$TMP_FILE /etc/resolv.conf
 fi
-  """ | base64 -w0
+EOF
         )
 
         # Write the manifest file for CoreDNS
@@ -166,17 +166,15 @@ EOF
         echo "Waiting for Assisted installer to be ready..."
         sleep 5
     done
-    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-service
-    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n open-cluster-management assisted-image-service
-
-    echo ">>>> Wait for ACM and AI deployed successfully"
+    check_resource "deployment" "assisted-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
+    check_resource "deployment" "assisted-image-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
 
 else
 
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
 
-if [ -f 06-coredns.yml]; then
+if [ -f 06-coredns.yml ]; then
     echo ">>>> Applying Fire and Forget DNSMasq config"
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 06-coredns.yml --wait=False
 fi

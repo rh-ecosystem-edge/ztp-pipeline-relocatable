@@ -177,7 +177,6 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
     elif [[ ${1} == 'spoke' ]]; then
         TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        export KUBECONFIG=${SPOKE_KUBECONFIG}
         source ./common.sh ${1}
         cluster=${2}
         echo ">>>> Deploy internal Quay Registry: ${REGISTRY} - Namespace: (${cluster})"
@@ -192,7 +191,7 @@ function deploy_registry() {
         sleep 30
         QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n "${REGISTRY}" get deployment -o name | grep quay-operator | cut -d '/' -f 2)
         echo ">> Waiting for the registry deployment to be ready"
-        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${QUAY_OPERATOR}"
+        check_resource "deployment" "${QUAY_OPERATOR}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
 
         # Create the config for the registry
         echo ">> Creating the config for the registry"
@@ -205,7 +204,7 @@ function deploy_registry() {
         echo ">> Waiting for the registry Quay CR to be ready"
         for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo); do
             echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+            check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
         done
 
         # wait for route to be ready
@@ -232,11 +231,10 @@ function deploy_registry() {
 
         echo ">> Creating organizations for mirror to succeed"
         APIURL="https://${ROUTE}/api/v1/organization/"
-        for organization in ocp4 olm jparrill ocatopic ztpfw; do
+        for organization in ocp4 olm olm-certified jparrill ocatopic ztpfw; do
             echo ">> Creating organization ${organization}"
             curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"${organization}@redhat.com\"}"
         done
-        export KUBECONFIG=${KUBECONFIG_HUB}
     fi
 
 }
@@ -245,11 +243,10 @@ if [[ ${1} == 'hub' ]]; then
     if ! ./verify.sh 'hub'; then
         deploy_registry 'hub'
         trust_internal_registry 'hub'
-        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+        check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
         render_file manifests/machine-config-certs.yaml 'hub'
-        # after machine config is applied, we need to wait for the registry and acm pods and deployments to be ready
         check_mcp 'hub'
-        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+        check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
     fi
@@ -259,6 +256,7 @@ elif [[ ${1} == 'spoke' ]]; then
         ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
     fi
 
+    i=0
     for spoke in ${ALLSPOKES}; do
         # Get Spoke Kubeconfig
         echo "spoke: ${spoke}"
@@ -273,29 +271,26 @@ elif [[ ${1} == 'spoke' ]]; then
             deploy_registry 'spoke' ${spoke}
             trust_internal_registry 'spoke' ${spoke}
 
-            # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
-            export KUBECONFIG=${SPOKE_KUBECONFIG}
-            LIST_DEP=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo)
+            LIST_DEP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo)
             echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
             for dep in $LIST_DEP; do
-                echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-                ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+                echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
+                check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${SPOKE_KUBECONFIG}"
             done
 
-            # updated with machine config
-            echo ">> Updating machine config certs"
-            render_file manifests/machine-config-certs.yaml 'spoke' ${spoke}
-            check_mcp 'spoke' "${spoke}"
+            echo ">> Updating Node CA Root chain manually"
+            recover_spoke_rsa ${spoke}
+            trust_node_certificates ${spoke} ${i}
 
             echo ">> Waiting for the registry Quay CR to be ready after updating the MCP"
             for dep in $LIST_DEP; do
-                echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-                ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+                echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
+                check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${SPOKE_KUBECONFIG}"
             done
-            export KUBECONFIG=${KUBECONFIG_HUB}
 
         else
             echo ">>>> This step to deploy registry on Spoke: ${spoke} is not neccesary, everything looks ready"
         fi
+        i=$((i + 1))
     done
 fi
