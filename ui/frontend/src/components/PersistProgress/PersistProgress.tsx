@@ -2,8 +2,10 @@ import React from 'react';
 import { Progress, ProgressVariant } from '@patternfly/react-core';
 
 type PersistProgressProps = {
+  className?: string;
   progress: number;
   progressError: boolean;
+  label?: string;
 };
 
 let persistStepsCount = 1;
@@ -35,25 +37,36 @@ export type UsePersistProgressType = {
 };
 
 export const usePersistProgress = (): UsePersistProgressType => {
-  const [progress, setProgressValue] = React.useState(0);
+  const [state, setProgressValue] = React.useState<{ progress: number; label?: string }>({
+    progress: 0,
+    label: undefined,
+  });
 
   const setProgress = React.useCallback(
     (stepFinished: number) => {
-      setProgressValue((stepFinished / persistStepsCount) * 100);
+      setProgressValue({
+        progress: (stepFinished / persistStepsCount) * 100,
+        label: PersistStepLabels[stepFinished + 1],
+      });
     },
     [setProgressValue],
   );
 
   return React.useMemo(
     () => ({
-      progress,
       setProgress,
+      ...state,
     }),
-    [progress, setProgress],
+    [state, setProgress],
   );
 };
 
-export const PersistProgress: React.FC<PersistProgressProps> = ({ progress, progressError }) => {
+export const PersistProgress: React.FC<PersistProgressProps> = ({
+  className,
+  progress,
+  label,
+  progressError,
+}) => {
   let variant: ProgressVariant | undefined = undefined;
   if (progress === persistStepsCount) {
     variant = ProgressVariant.success;
@@ -64,10 +77,12 @@ export const PersistProgress: React.FC<PersistProgressProps> = ({ progress, prog
 
   return (
     <Progress
+      id="persist-progress"
+      className={className}
       value={progress}
       variant={variant}
-      title="Reconciling"
-      label={PersistStepLabels[progress + 1] || ''}
+      title="Persisting changes"
+      label={label}
     />
   );
 };

@@ -63,8 +63,9 @@ export const SettingsPageRight: React.FC<{
     setError(null);
     setEdit(false);
 
-    navigateToNewDomain(domain, '/settings');
+    navigateToNewDomain(domain, '/settings#redirected');
   };
+  const isAfterRedirection = window.location.hash === '#redirected';
 
   const onCancelEdit = () => {
     setEdit(false);
@@ -143,23 +144,29 @@ export const SettingsPageRight: React.FC<{
             </Alert>
           </StackItem>
         )}
-        {error === null && (
+        {isSaving && (
           <StackItem isFilled className="summary-page-sumamary__item">
-            <Alert
-              data-testid="settings-page-alert-all-saved"
-              title="Changes saved"
-              variant={AlertVariant.success}
-              isInline
-            >
-              All changes have been saved, it might take several minutes for cluster to reconcile.
-              <PersistProgress progress={progress.progress} progressError={!!error} />
-            </Alert>
+            <PersistProgress
+              className="settings-page-sumamary__persist-progress"
+              {...progress}
+              progressError={!!error}
+            />
+            {error === null && (
+              <>
+                All changes have been saved, it might take several minutes for cluster to reconcile.
+              </>
+            )}
           </StackItem>
         )}
-        {/* TODO: Fix logic around isSaving and error here!!!! */}
-        {error === undefined && (
-          <StackItem isFilled>
-            {isSaving && <PersistProgress progress={progress.progress} progressError={!!error} />}
+        {!isSaving && !error && (
+          <StackItem isFilled className="summary-page-sumamary__item">
+            {/* Just a placeholder */}
+          </StackItem>
+        )}
+        {isAfterRedirection && !isSaving && !isEdit && (
+          <StackItem className="summary-page-sumamary__item">
+            {/* TODO: Do we want to shouw 100% progressbar here? After redirection, it can be a fake one... */}
+            All changes have been saved.
           </StackItem>
         )}
         <StackItem className="settings-page-sumamary__item__footer">

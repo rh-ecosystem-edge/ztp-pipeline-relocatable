@@ -92,3 +92,5 @@ export const delay = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+
+export const getZtpfwUrl = () => `https://${window.location.hostname}:${window.location.port}`;

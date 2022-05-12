@@ -1,6 +1,6 @@
 import { getRequest } from '../../resources';
 import { getPodsOfNamespace } from '../../resources/pod';
-import { delay } from '../utils';
+import { delay, getZtpfwUrl } from '../utils';
 import {
   DELAY_BEFORE_FINAL_REDIRECT,
   MAX_LIVENESS_CHECK_COUNT,
@@ -13,7 +13,7 @@ export const waitForLivenessProbe = async (
   ztpfwUrl?: string,
 ) => {
   // This works thanks to the route backup
-  ztpfwUrl = ztpfwUrl || `https://${window.location.hostname}:${window.location.port}`;
+  ztpfwUrl = ztpfwUrl || getZtpfwUrl();
 
   try {
     // We can not check new domain for availability due to CORS

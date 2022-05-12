@@ -129,9 +129,53 @@ exports[`PersistPage can render 1`] = `
               </svg>
             </div>
             <div
-              class="pf-l-stack__item pf-m-fill wizard-sublabel"
+              class="pf-l-stack__item wizard-sublabel"
             >
               Saving settings for your edge cluster...
+            </div>
+            <div
+              class="pf-l-stack__item pf-m-fill"
+              width="100%"
+            >
+              <div
+                class="pf-c-progress persist-page-bottom__persist-progress"
+                id="persist-progress"
+              >
+                <div
+                  aria-hidden="true"
+                  class="pf-c-progress__description"
+                  id="persist-progress-description"
+                >
+                  Persisting changes
+                </div>
+                <div
+                  aria-hidden="true"
+                  class="pf-c-progress__status"
+                >
+                  <span
+                    class="pf-c-progress__measure"
+                  >
+                    Saving Ingress IP
+                  </span>
+                </div>
+                <div
+                  aria-labelledby="persist-progress-description"
+                  aria-valuemax="100"
+                  aria-valuemin="0"
+                  aria-valuenow="14.285714285714285"
+                  class="pf-c-progress__bar"
+                  role="progressbar"
+                >
+                  <div
+                    class="pf-c-progress__indicator"
+                    style="width: 14%;"
+                  >
+                    <span
+                      class="pf-c-progress__measure"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
