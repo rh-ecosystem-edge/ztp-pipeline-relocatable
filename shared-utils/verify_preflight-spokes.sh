@@ -22,7 +22,7 @@ for spoke in ${ALLSPOKES}; do
     echo ">>>> HUB_BASEDOMAIN: ${HUB_BASEDOMAIN}"
     if [[ ${SPOKE_API_IP} == "" || ${SPOKE_INGRESS_IP} == "" || ${HUB_BASEDOMAIN} == "" ]]; then
         echo "Error: DNS Entry are not available for spoke ${spoke}"
-        exit 7
+        exit 1
     fi
 done
 
@@ -34,7 +34,7 @@ for spoke in ${ALLSPOKES}; do
         root_disk=$(yq e ".spokes[${index}].[].master${master}.root_disk" $SPOKES_FILE)
         if [[ ${root_disk} == "" ]] || [[ ${root_disk} == "null" ]]; then
             echo "Error: root_disk is not defined for master ${master} at spoke ${spoke}"
-            exit 7
+            exit 1
         fi
     done
 
@@ -42,7 +42,7 @@ for spoke in ${ALLSPOKES}; do
         root_disk=$(yq e ".spokes.[${index}].[].worker${worker}.root_disk" $SPOKES_FILE)
         if [[ ${root_disk} == "" ]] || [[ ${root_disk} == "null" ]]; then
             echo "Error: root_disk is not defined for worker ${worker} at spoke ${spoke}"
-            exit 7
+            exit 1
         fi
     done
     index=$((index + 1))
