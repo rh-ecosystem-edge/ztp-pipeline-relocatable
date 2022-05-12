@@ -94,23 +94,23 @@ spec:
         workspace: ztp
 
   # Deploy Workers
-  - name: deploy-workers
-    taskRef:
-      name: spoke-deploy-workers
-    params:
-      - name: spokes-config
-        value: $(params.spokes-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-    runAfter:
-      - deploy-metallb
-    workspaces:
-      - name: ztp
-        workspace: ztp
+  # - name: deploy-workers
+  #   taskRef:
+  #     name: spoke-deploy-workers
+  #   params:
+  #     - name: spokes-config
+  #       value: $(params.spokes-config)
+  #     - name: kubeconfig
+  #       value: $(params.kubeconfig)
+  #     - name: ztp-container-image
+  #       value: $(params.ztp-container-image)
+  #     - name: mock
+  #       value: $(params.mock)
+  #   runAfter:
+  #     - deploy-metallb
+  #   workspaces:
+  #     - name: ztp
+  #       workspace: ztp
 
   # Deploy ZTPFWUI
   - name: deploy-ui
@@ -145,7 +145,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-workers
+      # - deploy-workers
       - deploy-ui
     workspaces:
       - name: ztp
@@ -247,10 +247,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Detach Spoke Cluster
-  - name: detach-cluster
+  # Deploy GPU Operator
+  - name: gpu-operator
     taskRef:
-      name: spoke-detach-cluster
+      name: contrib-gpu-operator
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -266,10 +266,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy GPU Operator
-  - name: gpu-operator
+  # Detach Spoke Cluster
+  - name: detach-cluster
     taskRef:
-      name: contrib-gpu-operator
+      name: spoke-detach-cluster
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -280,7 +280,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - detach-cluster
+      - gpu-operator
     workspaces:
       - name: ztp
         workspace: ztp

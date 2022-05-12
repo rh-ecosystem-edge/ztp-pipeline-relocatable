@@ -101,7 +101,7 @@ function generate_mapping() {
     if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
         echo ">>>> There are no certified operators to be mirrored"
     else
-        echo ">>>> Creating Cetfied OLM Manifests"
+        echo ">>>> Creating Certified OLM Manifests"
         echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
         GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_CERTIFIED_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-certified-manifests
         # Merge additional certified olm mapping with the redhat olm in order to create just one icsp object with all the images
