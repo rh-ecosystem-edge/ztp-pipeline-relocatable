@@ -110,6 +110,9 @@ EOF
 for spoke in $(seq 0 $((CLUSTERS - 1))); do
     cat <<EOF >>spokes.yaml
   - spoke${spoke}-cluster:
+      contrib:
+        gpu-operator:
+          version: "v1.10.1"
 EOF
     for master in $(seq 0 $((MASTERS - 1))); do
         # Stanza generation for each master

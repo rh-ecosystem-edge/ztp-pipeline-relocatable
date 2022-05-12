@@ -2,6 +2,7 @@ import express from 'express';
 import https from 'https';
 import fs from 'fs';
 import cors from 'cors';
+import helmet from 'helmet';
 
 import { login, loginCallback, logout } from './k8s/oauth';
 import {
@@ -71,6 +72,8 @@ const start = () => {
   };
 
   const app = express();
+
+  app.use(helmet.frameguard()) // to enable X-Frame-Options header for logout
 
   if (process.env.CORS) {
     app.use(

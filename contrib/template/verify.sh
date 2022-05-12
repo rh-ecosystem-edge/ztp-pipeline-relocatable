@@ -19,7 +19,7 @@ fi
 for spoke in ${ALLSPOKES}; do
     echo "Extract Kubeconfig for ${spoke}"
     extract_kubeconfig ${spoke}
-    
+
     #############################################################################################
     ##### Here should be added the validation if the desired resources are already deployed #####
     #############################################################################################

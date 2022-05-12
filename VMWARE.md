@@ -1,6 +1,6 @@
 # VMWARE integration
 
-## Requirements 
+## Development Requirements 
 * OpenShift 4.10 cluster running on VMWARE
 * ODF installed (3 masters, 3 workers for ODF)
 * OpenShift Pipelines Installed
@@ -52,6 +52,7 @@ $ tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/takinosh/
 ```
 cd ~
 git clone https://gitea-gitea.apps.ocp4.rtoztplab.com/user-1/openshift-ztp.git
+cd ~/openshift-ztp
 ```
 
 ## Setup the Hub Cluster

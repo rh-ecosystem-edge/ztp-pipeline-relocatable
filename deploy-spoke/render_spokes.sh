@@ -116,7 +116,7 @@ data:
             path: /etc/default/nodeip-configuration
 EOF
     fi
-        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+    cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
 apiVersion: extensions.hive.openshift.io/v1beta1
 kind: AgentClusterInstall
@@ -133,7 +133,7 @@ EOF
     name: $CHANGE_SPOKE_NAME-manifests-override
 EOF
     fi
-        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+    cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   imageSetRef:
     name: $CHANGE_SPOKE_CLUSTERIMAGESET
   fips: true

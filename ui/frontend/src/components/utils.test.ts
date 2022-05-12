@@ -8,8 +8,8 @@ import {
 
 const TWELVE_SPACES = '            ';
 const STRING_SUCCESS = '';
-const STRING_FAILED_DOMAIN = "Valid domain wasn't provided";
-const STRING_FAILED_USERNAME = "Valid username wasn't provided";
+const STRING_FAILED_DOMAIN = "Valid domain wasn't provided.";
+const STRING_FAILED_USERNAME = "Valid username wasn't provided.";
 
 const IP_TRIPLET_SUCCESS = {
   valid: true,

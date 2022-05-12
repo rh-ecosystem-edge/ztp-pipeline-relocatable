@@ -226,7 +226,7 @@ function deploy_registry() {
 
         echo ">> Creating organizations for mirror to succeed"
         APIURL="https://${ROUTE}/api/v1/organization/"
-        for organization in ocp4 olm jparrill ocatopic ztpfw; do
+        for organization in ocp4 olm olm-certified jparrill ocatopic ztpfw; do
             echo ">> Creating organization ${organization}"
             curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"${organization}@redhat.com\"}"
         done
@@ -268,8 +268,7 @@ elif [[ ${1} == 'spoke' ]]; then
 
             LIST_DEP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo)
             echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
-            for dep in $LIST_DEP
-            do
+            for dep in $LIST_DEP; do
                 echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
                 check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${SPOKE_KUBECONFIG}"
             done
@@ -279,8 +278,7 @@ elif [[ ${1} == 'spoke' ]]; then
             trust_node_certificates ${spoke} ${i}
 
             echo ">> Waiting for the registry Quay CR to be ready after updating the MCP"
-            for dep in $LIST_DEP
-            do
+            for dep in $LIST_DEP; do
                 echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
                 check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${SPOKE_KUBECONFIG}"
             done

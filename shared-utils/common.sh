@@ -73,8 +73,7 @@ function trust_node_certificates() {
     cp -f ${PATH_CA_CERT} ${SPOKE_SAFE_FOLDER}
 
     echo ">>>> Copying Registry Certificates to cluster: ${cluster}"
-    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}')
-    do
+    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}'); do
         echo
         SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
         master=${SPOKE_NODE_NAME##*-}
@@ -89,6 +88,9 @@ function trust_node_certificates() {
             copy_files_common "${PATH_CA_CERT}" "${NODE_IP%%/*}" "./spoke-reg-cert.crt"
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo mv ~/spoke-reg-cert.crt /etc/pki/ca-trust/source/anchors/"
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo update-ca-trust"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo systemctl restart crio kubelet"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "test -f ~/.kube/config && oc delete pod -n openshift-marketplace --all"
+            sleep 50
         fi
     done
 }
@@ -215,9 +217,9 @@ function grab_api_ingress() {
     grab_hub_dns
     export SPOKE_API_NAME="api.${cluster}.${HUB_BASEDOMAIN}"
     export SPOKE_API_IP="$(dig @${HUB_NODE_IP} +short ${SPOKE_API_NAME})"
-    if [[ "$(echo ${SPOKE_API_IP} | grep -c 'timed out')" == 1 ]];then
+    if [[ "$(echo ${SPOKE_API_IP} | grep -c 'timed out')" == 1 ]]; then
         export SPOKE_API_IP="$(dig +short ${SPOKE_API_NAME})"
-        if [[ -z ${SPOKE_API_IP} ]];then
+        if [[ -z ${SPOKE_API_IP} ]]; then
             echo "CRITICAL ERROR: ${SPOKE_API_NAME} cannot be resolved"
             exit 1
         fi
