@@ -63,7 +63,7 @@ func setMotd(motd *stringFlag, user *stringFlag, pr *stringFlag, customPath *str
 	}
 
 	currentTime := time.Now()
-	var motdMsg string = fmt.Sprintf("Updated at %s\n", currentTime.Format(time.UnixDate))
+	motdMsg := fmt.Sprintf("Updated at %s\n", currentTime.Format(time.UnixDate))
 
 	if motd.set {
 		motdMsg = fmt.Sprintf("%s%s\n", motdMsg, motd.String())
@@ -78,13 +78,13 @@ func setMotd(motd *stringFlag, user *stringFlag, pr *stringFlag, customPath *str
 	}
 
 	// Clean file
-	var path string = customPath.String()
+	path := customPath.String()
 	if err := os.Truncate(path, 0); err != nil {
 		log.Printf("Failed to truncate: %v", err)
 	}
 
 	// Open file
-	var f, err = os.OpenFile(path, os.O_RDWR, 0644)
+	f, err := os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -111,7 +111,7 @@ func unsetMotd() {
 	}
 
 	// Open file
-	var f, err = os.OpenFile("/etc/motd", os.O_RDWR, 0644)
+	f, err := os.OpenFile("/etc/motd", os.O_RDWR, 0644)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -119,7 +119,7 @@ func unsetMotd() {
 	defer f.Close()
 
 	// Write motd
-	var unsetMotd string = "Server free to use\n"
+	unsetMotd := "Server free to use\n"
 	n, err := f.WriteString(unsetMotd)
 	if err != nil {
 		fmt.Println(err, n)
