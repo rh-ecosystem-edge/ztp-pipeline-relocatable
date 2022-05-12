@@ -1,5 +1,6 @@
 import { getCondition } from '../../copy-backend-common';
 import { getClusterOperator } from '../../resources/clusteroperator';
+import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { K8SStateContextData } from '../types';
 import { delay } from '../utils';
 import {
@@ -56,6 +57,7 @@ const waitForClusterOperator = async (
 
 const waitOnreconciliation = async (
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   state: K8SStateContextData,
   persistIdpResult: PersistIdentityProviderResult,
 ): Promise<boolean> => {
@@ -69,20 +71,26 @@ const waitOnreconciliation = async (
     });
     return false;
   }
+  setProgress(PersistSteps.ReconcileUIPod);
 
   if (persistIdpResult === PersistIdentityProviderResult.userCreated) {
     // wait for API
     if (!(await waitForClusterOperator(setError, 'openshift-apiserver'))) {
       return false;
     }
+    setProgress(PersistSteps.ReconcileApiOperator);
 
     // wait for identity provider
     if (!(await waitForClusterOperator(setError, 'authentication'))) {
       return false;
     }
+    setProgress(PersistSteps.ReconcileAuthOperator);
 
     // TODO: openshift console??
   }
+
+  // Important: keep following aligned with the last reconcile-step
+  setProgress(PersistSteps.ReconcileAuthOperator);
 
   console.info('waitOnreconciliation finished successfully');
   return true;
@@ -91,14 +99,20 @@ const waitOnreconciliation = async (
 export const persist = async (
   state: K8SStateContextData,
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   onSuccess: () => void,
 ) => {
-  const persistIdpResult = await persistIdentityProvider(setError, state.username, state.password);
+  const persistIdpResult = await persistIdentityProvider(
+    setError,
+    setProgress,
+    state.username,
+    state.password,
+  );
   if (
     persistIdpResult !== PersistIdentityProviderResult.error &&
-    (await saveIngress(setError, state.ingressIp)) &&
-    (await saveApi(setError, state.apiaddr)) &&
-    (await persistDomain(setError, state.domain))
+    (await saveIngress(setError, setProgress, state.ingressIp)) &&
+    (await saveApi(setError, setProgress, state.apiaddr)) &&
+    (await persistDomain(setError, setProgress, state.domain))
   ) {
     // finished with success
     console.log('Data persisted, blocking progress till reconciled');
@@ -106,7 +120,7 @@ export const persist = async (
     setError(null); // show the green circle of success
 
     // TODO: show progress bar while waiting
-    if (!(await waitOnreconciliation(setError, state, persistIdpResult))) {
+    if (!(await waitOnreconciliation(setError, setProgress, state, persistIdpResult))) {
       return;
     }
 

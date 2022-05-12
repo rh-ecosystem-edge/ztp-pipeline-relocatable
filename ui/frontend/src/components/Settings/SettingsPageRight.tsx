@@ -16,6 +16,7 @@ import { navigateToNewDomain, persist, PersistErrorType } from '../PersistPage';
 import { IpTripletsSelector } from '../IpTripletsSelector';
 import { useK8SStateContext } from '../K8SStateContext';
 import { DeleteKubeadminButton } from './DeleteKubeadminButton';
+import { PersistProgress, usePersistProgress } from '../PersistProgress';
 
 import './SettingsPageRight.css';
 
@@ -28,6 +29,7 @@ export const SettingsPageRight: React.FC<{
   const [isSaving, setIsSaving] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
   const state = useK8SStateContext();
+  const progress = usePersistProgress();
 
   const error: PersistErrorType | undefined = initialError
     ? {
@@ -53,7 +55,7 @@ export const SettingsPageRight: React.FC<{
   const onSave = async () => {
     setIsSaving(true);
     setError(undefined);
-    await persist(state, setError, onSuccess);
+    await persist(state, setError, progress.setProgress, onSuccess);
     setIsSaving(false);
   };
 
@@ -149,13 +151,16 @@ export const SettingsPageRight: React.FC<{
               variant={AlertVariant.success}
               isInline
             >
-              All changes have been saved, waiting for them to take effect.
-              {/* TODO: show spinner */}
+              All changes have been saved, it might take several minutes for cluster to reconcile.
+              <PersistProgress progress={progress.progress} progressError={!!error} />
             </Alert>
           </StackItem>
         )}
+        {/* TODO: Fix logic around isSaving and error here!!!! */}
         {error === undefined && (
-          <StackItem isFilled>{isSaving && <>Saving changes... {/* TODO: Spinner */}</>}</StackItem>
+          <StackItem isFilled>
+            {isSaving && <PersistProgress progress={progress.progress} progressError={!!error} />}
+          </StackItem>
         )}
         <StackItem className="settings-page-sumamary__item__footer">
           {!isEdit && (
