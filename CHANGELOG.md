@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.0...1.2.1) (2022-05-13)
+
+### Bug Fixes
+
+- **ci:** motd message now shows info properly ([02207ae](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/02207ae53445120169db11c5865873ae137fe5b2))
+
 # [1.2.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.14...1.2.0) (2022-05-13)
 
 ### Features
