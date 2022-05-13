@@ -61,7 +61,7 @@ task.tekton.dev/spoke-deploy-disconnected-registry-spokes configured
 task.tekton.dev/spoke-deploy-icsp-spokes-post configured
 task.tekton.dev/spoke-deploy-icsp-spokes-pre configured
 task.tekton.dev/spoke-deploy-metallb configured
-task.tekton.dev/spoke-deploy-ocs configured
+task.tekton.dev/spoke-deploy-odf configured
 task.tekton.dev/spoke-deploy-spoke configured
 task.tekton.dev/spoke-deploy-workers configured
 task.tekton.dev/spoke-detach-cluster configured

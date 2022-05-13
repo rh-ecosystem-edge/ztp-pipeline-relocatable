@@ -131,10 +131,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy OCS
-  - name: deploy-ocs
+  # Deploy ODF
+  - name: deploy-odf
     taskRef:
-      name: spoke-deploy-ocs
+      name: spoke-deploy-odf
     params:
       - name: spokes-config
         value: $(params.spokes-config)
@@ -165,7 +165,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-ocs
+      - deploy-odf
     workspaces:
       - name: ztp
         workspace: ztp

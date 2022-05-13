@@ -5,5 +5,5 @@ export DEPLOY_REGISTRY_DIR=deploy-disconnected-registry
 export DEPLOY_HTTPD_SERVER_DIR=deploy-httpd-server
 export DEPLOY_HUB_CONFIGS_DIR=deploy-hub-configs
 export DEPLOY_SPOKES_DIR=deploy-spoke
-export DEPLOY_OCS_DIR=deploy-ocs
+export DEPLOY_ODF_DIR=deploy-ods
 export SHARED_DIR=shared-utils
