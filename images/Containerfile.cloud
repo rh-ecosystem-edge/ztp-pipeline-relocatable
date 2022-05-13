@@ -22,7 +22,7 @@ RUN cd /tmp && \
     curl -k -s  https://get.helm.sh/helm-v3.8.2-linux-amd64.tar.gz > helm-v3.8.2-linux-amd64.tar.gz && \
     tar zxf helm-v3.8.2-linux-amd64.tar.gz && \
     rm -rf helm-v3.8.2-linux-amd64.tar.gz && \
-    mv mv linux-amd64/helm  /usr/bin/helm && \
+    mv linux-amd64/helm  /usr/bin/helm && \
     chmod u+x /usr/bin/helm && \
     rm -rf linux-amd64/helm
 
