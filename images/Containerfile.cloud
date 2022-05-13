@@ -21,7 +21,7 @@ RUN cd /tmp && \
     chmod u+x /usr/bin/kubectl && \
     curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
     chmod 700 /tmp/get_helm.sh && \ 
-    /tmp/get_helm.sh
+    bash -x /tmp/get_helm.sh
 
 RUN dnf install -y bind-utils openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils && dnf clean all
 RUN dnf makecache &&  dnf install epel-release -y &&  dnf install ansible git python3 python3-pip -y 
