@@ -17,6 +17,7 @@ import {
 import { navigateToNewDomain, persist } from './persist';
 import { PersistErrorType } from './types';
 import { useK8SStateContext } from '../K8SStateContext';
+import { PersistProgress, usePersistProgress } from '../PersistProgress';
 
 import './PersistPageBottom.css';
 
@@ -25,6 +26,7 @@ export const PersistPageBottom: React.FC = () => {
   const [error, setError] = React.useState<PersistErrorType>(/* undefined */);
   const [retry, setRetry] = React.useState(true);
   const state = useK8SStateContext();
+  const progress = usePersistProgress();
 
   React.useEffect(() => {
     if (!retry) {
@@ -33,8 +35,10 @@ export const PersistPageBottom: React.FC = () => {
     setRetry(false);
     setError(undefined);
 
-    persist(state, setError, () => navigateToNewDomain(state.domain, '/wizard/final'));
-  }, [retry, setError, state]);
+    persist(state, setError, progress.setProgress, () =>
+      navigateToNewDomain(state.domain, '/wizard/final'),
+    );
+  }, [retry, setError, progress.setProgress, state]);
 
   return (
     <Stack className="persist-page-bottom" hasGutter>
@@ -64,8 +68,15 @@ export const PersistPageBottom: React.FC = () => {
               className="persist-page-bottom__progress-icon"
             />
           </StackItem>
-          <StackItem isFilled className="wizard-sublabel">
+          <StackItem className="wizard-sublabel">
             Saving settings for your edge cluster...
+          </StackItem>
+          <StackItem isFilled width="100%">
+            <PersistProgress
+              className="persist-page-bottom__persist-progress"
+              {...progress}
+              progressError={!!error}
+            />
           </StackItem>
         </>
       ) : (
@@ -76,9 +87,15 @@ export const PersistPageBottom: React.FC = () => {
               className="persist-page-bottom__success-icon"
             />
           </StackItem>
-          <StackItem isFilled className="wizard-sublabel">
-            Settings succesfully saved, waiting for them to take effect.
-            {/* TODO: Show spinner */}
+          <StackItem className="wizard-sublabel">
+            Settings succesfully saved, it might take several minutes for cluster to reconcile.
+          </StackItem>
+          <StackItem width="100%">
+            <PersistProgress
+              className="persist-page-bottom__persist-progress"
+              {...progress}
+              progressError={!!error}
+            />
           </StackItem>
         </>
       )}

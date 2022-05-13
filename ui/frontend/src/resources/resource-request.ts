@@ -7,6 +7,7 @@ import {
   Status,
   StatusKind,
 } from '../backend-shared';
+import { getZtpfwUrl } from '../components/utils';
 
 export interface IRequestResult<ResultType = unknown> {
   promise: Promise<ResultType>;
@@ -289,12 +290,20 @@ export function fetchDelete(url: string, signal: AbortSignal) {
 }
 
 const navigateToLogin = () => {
-  const url = `${getBackendUrl()}/login`;
-  console.info('API returned is Unauthorized response. Redirecting to login: ', url);
+  let query = '';
+  if (window.location.hash?.includes('redirected')) {
+    // since we have so far just one special case like this, let's hardcode it
+    query = '?state=/settings#redirected';
+  }
+
+  const url = `${getBackendUrl()}/login${query}`;
+  console.info('API returned Unauthorized response. Redirecting to login: ', url);
   if (url.startsWith('http')) {
+    // development env
     window.location.href = url;
   } else {
-    window.location.pathname = url;
+    // production
+    window.location.href = `${getZtpfwUrl()}${url}`;
   }
 };
 
