@@ -11,4 +11,5 @@
 
 - name: Force time sync
   shell: chronyc -a 'burst 4/4'
+  ignore_errors: true
   tags: configure-chronyd
