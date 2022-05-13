@@ -15,3 +15,7 @@
 .settings-page-sumamary__item__footer {
   margin-bottom: var(--pf-global--spacer--lg);
 }
+
+.settings-page-sumamary__persist-progress {
+  width: 28rem;
+}

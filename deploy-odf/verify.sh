@@ -28,7 +28,7 @@ for spoke in ${ALLSPOKES}; do
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Check Pods..."
     if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-local-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-local-storage --no-headers | grep -v Completed | wc -l) ]]; then
-        #ocs in the spoke not exists so we need to create it
+        #odf in the spoke not exists so we need to create it
         exit 1
     fi
 
@@ -42,11 +42,11 @@ for spoke in ${ALLSPOKES}; do
         exit 1
     fi
 
-    echo ">>>> Verifying OCS and StorageCluster: ${spoke}"
+    echo ">>>> Verifying ODF and StorageCluster: ${spoke}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Check Pods..."
     if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pod -n openshift-storage --no-headers | grep -v Completed | wc -l) ]]; then
-        #ocs in the spoke not exists so we need to create it
+        #odf in the spoke not exists so we need to create it
         exit 1
     fi
 

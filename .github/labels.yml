@@ -37,8 +37,8 @@ spoke:
 worker:
   - deploy-worker/**/*
 
-ocs:
-  - deploy-ocs/**/*
+odf:
+  - deploy-odf/**/*
 
 
 finalization:

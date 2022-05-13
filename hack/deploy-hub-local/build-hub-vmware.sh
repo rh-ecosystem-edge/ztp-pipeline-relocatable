@@ -92,7 +92,7 @@ cat <<EOF >>spokes.yaml
 config:
     OC_OCP_VERSION: '${OC_OCP_VERSION}'
     OC_ACM_VERSION: '${OC_ACM_VERSION}'
-    OC_OCS_VERSION: '${OC_OCS_VERSION}'
+    OC_ODF_VERSION: '${OC_OCS_VERSION}'
     CLOUD_DEPLOYMENT: "true"
 EOF
 

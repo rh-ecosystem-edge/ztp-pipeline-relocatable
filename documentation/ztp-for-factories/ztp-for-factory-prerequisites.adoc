@@ -32,7 +32,7 @@ Installer-provisioned installation of {product-title} requires:
     NOTE:: We cannot use `emptyDir` directive for runninng the pipeline, because between each step in the pipeline the contents will be removed and we require them to further progress.
     . 3 PVs for ACM (the expected size will depend on how many spokes will you deploy)
     . 1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 200Gb on the Hub
-    side (Maybe more if you have ODF/OCS deployed).
+    side (Maybe more if you have OCS/ODF deployed).
     . 1 for the HTTPD server, which will host the RHCOS images.
     . We need to meet the OpenShift Storage requirements for the Hub like (SSD/NVME).
     . LSO should be enough but we recommend to use a more reliable storage backend like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
@@ -89,8 +89,8 @@ endif::[]
 | [[OC_ACM_VERSION]] `OC_ACM_VERSION`
 | Specifies which ACM version should be used for the deployment
 
-| [[OC_OCS_VERSION]] `OC_OCS_VERSION`
-| This defines the OCS version to be used
+| [[OC_ODF_VERSION]] `OC_ODF_VERSION`
+| This defines the ODF version to be used
 
 | [[spokes]] `spokes`
 | This section is the one containing the configuration for each one of the Spoke Clusters
