@@ -30,15 +30,6 @@ exports[`FinalPageSummary can render 1`] = `
         </svg>
         Setup complete!
       </h1>
-      <small
-        class=""
-        data-ouia-component-id="OUIA-Generated-Text-1"
-        data-ouia-component-type="PF4/Text"
-        data-ouia-safe="true"
-        data-pf-content="true"
-      >
-        Your cluster has been successfully configured and is ready to use.
-      </small>
     </div>
     <div
       class="pf-l-stack__item final-page-sumamary__item"
@@ -53,7 +44,7 @@ exports[`FinalPageSummary can render 1`] = `
       </h3>
       <small
         class=""
-        data-ouia-component-id="OUIA-Generated-Text-2"
+        data-ouia-component-id="OUIA-Generated-Text-1"
         data-ouia-component-type="PF4/Text"
         data-ouia-safe="true"
         data-pf-content="true"
@@ -74,7 +65,7 @@ exports[`FinalPageSummary can render 1`] = `
       </h3>
       <small
         class=""
-        data-ouia-component-id="OUIA-Generated-Text-3"
+        data-ouia-component-id="OUIA-Generated-Text-2"
         data-ouia-component-type="PF4/Text"
         data-ouia-safe="true"
         data-pf-content="true"
@@ -95,7 +86,7 @@ exports[`FinalPageSummary can render 1`] = `
       </h3>
       <small
         class=""
-        data-ouia-component-id="OUIA-Generated-Text-4"
+        data-ouia-component-id="OUIA-Generated-Text-3"
         data-ouia-component-type="PF4/Text"
         data-ouia-safe="true"
         data-pf-content="true"
@@ -134,7 +125,7 @@ exports[`FinalPageSummary can render 1`] = `
       >
         <p
           class="final-page-summary__settings"
-          data-ouia-component-id="OUIA-Generated-Text-5"
+          data-ouia-component-id="OUIA-Generated-Text-4"
           data-ouia-component-type="PF4/Text"
           data-ouia-safe="true"
           data-pf-content="true"
