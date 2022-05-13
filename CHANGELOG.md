@@ -1,3 +1,9 @@
+# [1.2.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.14...1.2.0) (2022-05-13)
+
+### Features
+
+- **ci:** set motd when a worker is in use ([8d167a5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8d167a5506d238e3a0a417f1133f6f77923fdf0d))
+
 ## [1.1.14](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.1.13...1.1.14) (2022-05-11)
 
 ### Bug Fixes
