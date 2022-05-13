@@ -5,7 +5,8 @@
     section: main
     option: fastestmirror
     value: 1
-  when: os == "fedora"
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
 
 - name: Use DNF drpm
   ini_file:
@@ -13,7 +14,8 @@
     section: main
     option: deltarpm
     value: true
-  when: os == "fedora"
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
 
 - name: Use DNF parallel downloads
   ini_file:
@@ -21,26 +23,30 @@
     section: main
     option: max_parallel_downloads
     value: 20
-  when: os == "fedora"
-
-- name: Uninstall packages
-  package: name={{ item }} state=absent
-  with_items:
-    - golang
-    - motd-news-config
-    - command-not-found
-    - update-notifier-common
-  ignore_errors: true
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
 
 - name: Enable copr repo karmab/kcli
   command: "dnf copr enable -y karmab/kcli"
   ignore_errors: true
-  when: os == "fedora"
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
 
 - name: Enable EPEL repository
   package: name=epel-release state=present
   ignore_errors: true
-  when: os == "fedora"
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
+
+- name: Uninstall packages
+  package: name={{ item }} state=absent
+  with_items:
+    - motd-news-config
+    - command-not-found
+    - update-notifier-common
+    - "abrt*"
+  ignore_errors: true
+  tags: [ 01-packages ]
 
 - name: Install common packages
   package: name={{ item }} state=present
@@ -51,7 +57,6 @@
     - tmux
     - curl
     - util-linux
-    - tuned
     - cmake
     - mc
     - nmap
@@ -78,30 +83,6 @@
     - spice-server
     - spice-protocol
     - qemu-kvm-ui-spice
+    - golang
   ignore_errors: true
-
-- name: Enable common services
-  service: name={{ item }} enabled=yes state=started
-  with_items:
-    - tuned
-    - fstrim.timer
-    - firewalld
-  ignore_errors: true
-
-- name: Set tuned profile to latency-performance
-  shell: /usr/sbin/tuned-adm profile latency-performance
-  notify: Restart tuned
-
-- name: Configure logrotate.conf
-  lineinfile:
-    dest: /etc/logrotate.conf
-    create: true
-    state: present
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-  with_items:
-    - { regexp: "^compress", line: "compress" }
-    - { regexp: "^rotate.*", line: "rotate 14" }
-    - { regexp: "^daily", line: "daily" }
-    - { regexp: "^weekly.*", line: "" }
-    - { regexp: "^dateext.*", line: "" }
+  tags: [ 01-packages ]

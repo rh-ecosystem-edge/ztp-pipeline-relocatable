@@ -6,3 +6,26 @@
     owner: root
     group: root
     mode: "0755"
+  tags: [ 02-bin-utils ]
+
+- name: Create /root/src path
+  file:
+    path: /root/src
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  tags: [ 02-bin-utils ]
+
+- name: Download ztp repo
+  git:
+    repo: https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git
+    dest: /root/src/ztp
+  tags: [ 02-bin-utils ]
+
+- name: Build set-motd binary
+  command: 
+    cmd: go build -o /root/bin/set-motd
+    chdir: /root/src/ztp/hack/set-motd
+    creates: /root/bin/set-motd
+  tags: [ 02-bin-utils ]

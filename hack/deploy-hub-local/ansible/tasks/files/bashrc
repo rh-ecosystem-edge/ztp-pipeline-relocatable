@@ -1,0 +1,25 @@
+# .bashrc
+
+# User specific aliases and functions
+
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+export GOPATH=~/go
+export PATH=$PATH:$GOPATH/bin
+
+function hasBranch {
+    git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/{\1}/"
+}
+
+function isSvn {
+    test -d .svn && echo "(svn)"
+}
+
+export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
+export RUNNER_ALLOW_RUNASROOT="1"

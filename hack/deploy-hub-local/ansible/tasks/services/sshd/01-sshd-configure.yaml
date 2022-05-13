@@ -4,8 +4,9 @@
     user: "root"
     key: "https://github.com/{{ item }}.keys"
   with_items:
-    - "{{ users }}"
-  when: updatesshkeys==True
+    - "{{ ssh_keys_users }}"
+  when: ssh_keys_update == True
+  tags: configure-sshd
 
 - name: Disable root login over ssh with password
   lineinfile:
@@ -13,8 +14,7 @@
     regexp: "^PermitRootLogin .*"
     state: present
     line: "PermitRootLogin prohibit-password"
-  notify:
-    - Restart sshd
+  tags: configure-sshd
 
 - name: Disable password authentication
   lineinfile:
@@ -22,24 +22,24 @@
     regexp: "^PasswordAuthentication .*"
     state: present
     line: "PasswordAuthentication no"
-  when: sshpassword==False
-  notify:
-    - Restart sshd
-
-- name: Enable password authentication
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^PasswordAuthentication .*"
-    state: present
-    line: "PasswordAuthentication yes"
-  when: sshpassword==True
-  notify:
-    - Restart sshd
+  tags: configure-sshd
 
 - name: SSH Listen on all interfaces
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "^ListenAddress .*"
     state: absent
-  notify:
-    - Restart sshd
+  tags: configure-sshd
+
+- name: Disable LastLogin
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PrintLastLog .*"
+    state: present
+    line: "PrintLastLog no"
+  tags: configure-sshd
+
+- name: Restart sshd
+  service:
+    name: sshd
+    state: restarted

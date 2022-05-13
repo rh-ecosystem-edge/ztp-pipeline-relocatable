@@ -1,0 +1,20 @@
+---
+- name: Install tuned
+  package: name=tuned state=present
+  ignore_errors: true
+  tags: configure-tuned
+
+- name: Enable tuned
+  service: name=tuned enabled=yes state=started
+  ignore_errors: true
+  tags: configure-tuned
+
+- name: Set tuned profile to latency-performance
+  shell: /usr/sbin/tuned-adm profile {{ tuned_profile }}
+  tags: configure-tuned
+
+- name: Restart tuned
+  service:
+    name: tuned
+    state: restarted
+  tags: configure-tuned
