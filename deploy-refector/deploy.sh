@@ -19,7 +19,7 @@ if ./verify.sh; then
 
     echo ">>>> Deploy manifests to install OpenShift Gitops "
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc apply -f 02-subscription.yml
+    #oc apply -f02-chart-repository.yml
 
     echo ">>>> Waiting for subscription and crd"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
