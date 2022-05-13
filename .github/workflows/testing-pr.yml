@@ -77,7 +77,7 @@ jobs:
       - name: Set MOTD
         run: |
           if [ -f /root/bin/set-motd ]; then
-            /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$(echo -e 'Title:' ${{ github.event.pull_request.title }} '\nBody:' ${{ github.event.pull_request.body }} '\nAuthor:' ${{ github.event.pull_request..user.login }})"
+            /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$(echo -e 'Title:' ${{ github.event.pull_request.title }} '\nBody:' ${{ github.event.pull_request.body }} '\nAuthor:' ${{ github.event.pull_request.user.login }})"
           fi
 
       - name: Checkout
