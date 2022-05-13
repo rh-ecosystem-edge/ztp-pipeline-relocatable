@@ -73,6 +73,13 @@ jobs:
     runs-on: CI-pool
     needs: build-and-push-docker-image
     steps:
+
+      - name: Set MOTD
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+            /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.number }}" -motd "PR: ${{ github.event.pull_request.pull_request }}"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -132,4 +139,10 @@ jobs:
           else
             echo "The pipeline has not finished"
             exit 1
+          fi
+
+      - name: Unset MOTD
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+            /root/bin/set-motd unset
           fi
