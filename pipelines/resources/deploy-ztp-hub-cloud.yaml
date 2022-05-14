@@ -50,7 +50,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-ocs
+      - pre-flight
     workspaces:
       - name: ztp
         workspace: ztp
