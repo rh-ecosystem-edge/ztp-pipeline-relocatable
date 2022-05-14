@@ -17,10 +17,13 @@ if ./verify.sh; then
 
     oc apply -f 01-namespace.yml
 
+
     echo ">>>> Deploy manifests to install OpenShift Gitops "
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    #oc apply -f02-chart-repository.yml
-
+    helm repo add emberstack https://emberstack.github.io/helm-charts
+    helm repo update
+    helm upgrade --install reflector emberstack/reflector
+    
     echo ">>>> Waiting for subscription and crd"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
