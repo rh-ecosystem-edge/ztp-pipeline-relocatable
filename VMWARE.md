@@ -6,6 +6,8 @@
 * OpenShift Pipelines Installed
 * RHEL/CENTOS jumpbox
 
+## Dev Box for deployments
+[ZTP for Factory Workflow qubinode dev box](https://gist.github.com/tosin2013/3b99a883078025de1a5327d532bf2cae)
 
 **Execute the bootstrap script file pipelines/bootstrap.sh ${KUBECONFIG} you can do that using this command:**
 ```
