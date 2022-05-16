@@ -75,9 +75,11 @@ jobs:
     steps:
 
       - name: Set MOTD
+        continue-on-error: true
         run: |
           if [ -f /root/bin/set-motd ]; then
-            /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$(echo -e 'Title:' ${{ github.event.pull_request.title }} '\nBody:' ${{ github.event.pull_request.body }} '\nAuthor:' ${{ github.event.pull_request.user.login }})"
+            MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nBody: ${{ github.event.pull_request.body }}")
+            /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
           fi
 
       - name: Checkout
@@ -142,6 +144,7 @@ jobs:
           fi
 
       - name: Unset MOTD
+        continue-on-error: true
         run: |
           if [ -f /root/bin/set-motd ]; then
             /root/bin/set-motd unset
