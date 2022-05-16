@@ -1,3 +1,9 @@
+## [1.2.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.3...1.2.4) (2022-05-16)
+
+### Bug Fixes
+
+- **ansible:** clean repo before cloning ([c21c3bf](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/c21c3bf1d50e0615bf879906b61f89994f2334e7))
+
 ## [1.2.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.2...1.2.3) (2022-05-16)
 
 ### Bug Fixes
