@@ -57,7 +57,7 @@ func (sf *stringFlag) String() string {
 
 func setMotd(motd *stringFlag, user *stringFlag, pr *stringFlag, customPath *stringFlag) {
 
-	if len(os.Args) == 2 || len(os.Args) > 10 {
+	if len(os.Args) == 2 {
 		fmt.Print(setHelpMsg)
 		os.Exit(1)
 	}
