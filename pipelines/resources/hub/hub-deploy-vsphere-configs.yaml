@@ -1,17 +1,17 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: hub-deploy-hub-config
+  name: hub-deploy-vsphere-configs
   annotations:
     description: |
-      This task will deploy Assisted Service on the Hub Cluster.
+      This task will deploy RHACM on the Hub Cluster.
 spec:
   workspaces:
     - name: ztp
   params:
     - name: ztp-container-image
       type: string
-      default: "quay.io/ztpfw/pipeline:latest"
+      default: "quay.io/takinosh/ztpfw-pipeline:dev"
     - name: kubeconfig
       type: string
       default: ""
@@ -29,22 +29,22 @@ spec:
         value: $(params.spokes-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_HUB_CONFIGS_DIR
-        value: "deploy-hub-configs"
+      - name: DEPLOY_VMWARE_DIR
+        value: "deploy-vsphere-configs"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-hub-config
+    - name: deploy-vsphere-configs
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_HUB_CONFIGS_DIR}
+          cd ${WORKDIR}/${DEPLOY_VMWARE_DIR}
           ./deploy.sh
         else
-          echo "Deploy Registry Hub: Mock mode on"
+          echo "Deploy VSphere Configs: Mock mode on"
         fi

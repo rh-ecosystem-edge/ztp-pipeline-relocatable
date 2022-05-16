@@ -1,6 +1,18 @@
 CI_FOLDER = images
-PIPE_IMAGE = quay.io/ztpfw/pipeline
-UI_IMAGE = quay.io/ztpfw/ui
+###
+## prod image name 
+## quay.io/ztpfw/pipeline
+###
+PIPE_IMAGE = quay.io/takinosh/ztpfw-pipeline
+###
+## prod image name 
+## quay.io/ztpfw/ui
+###
+UI_IMAGE = quay.io/takinosh/ztpfw-ui
+###
+## prod image name 
+## quay.io/ztpfw/cloud-openshift-ztp
+CLOUD_IMAGE = quay.io/takinosh/cloud-openshift-ztp
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
@@ -12,17 +24,19 @@ OCP_VERSION ?= 4.10.13
 ACM_VERSION ?= 2.4
 ODF_VERSION ?= 4.9
 
-.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-spoke-sno-ci deploy-pipe-spoke-compact-ci all-hub-sno-ci all-hub-compact-ci all-spoke-sno-ci all-spoke-compact-ci all-images-ci
+.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci cloud-image cloud-image-ci all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image build-cloud-image push-pipe-image push-ui-image push-cloud-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-spoke-sno-ci deploy-pipe-spoke-compact-ci all-hub-sno-ci all-hub-compact-ci all-spoke-sno-ci all-spoke-compact-ci all-images-ci
 .EXPORT_ALL_VARIABLES:
 
-all-images: pipe-image ui-image
-all-images-ci: pipe-image-ci ui-image-ci
+all-images: pipe-image ui-image cloud-image
+all-images-ci: pipe-image-ci ui-image-ci cloud-image-ci
 
 pipe-image: build-pipe-image push-pipe-image
 ui-image: build-ui-image push-ui-image
+cloud-image: build-cloud-image push-cloud-image
 
 pipe-image-ci: build-pipe-image-ci push-pipe-image-ci
 ui-image-ci: build-ui-image-ci push-ui-image-ci
+cloud-image-ci: build-cloud-image-ci push-cloud-image-ci
 
 all-hub-sno: build-hub-sno bootstrap wait-for-hub-sno deploy-pipe-hub-sno
 all-hub-compact: build-hub-compact bootstrap deploy-pipe-hub-compact
@@ -41,11 +55,19 @@ build-pipe-image:
 build-ui-image:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(FULL_UI_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.UI .
 
+build-cloud-image:
+	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(FULL_CLOUD_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.cloud .
+
 push-pipe-image: build-pipe-image
 	podman push $(FULL_PIPE_IMAGE_TAG)
 
+push-cloud-image: build-cloud-image
+	podman push $(FULL_CLOUD_IMAGE_TAG)
+
 push-ui-image: build-ui-image
 	podman push $(FULL_UI_IMAGE_TAG)
+
+
 
 ### CI
 build-pipe-image-ci:
@@ -54,11 +76,17 @@ build-pipe-image-ci:
 build-ui-image-ci:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(UI_IMAGE):$(RELEASE) -f $(CI_FOLDER)/Containerfile.UI .
 
+build-cloud-image-ci:
+	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(PIPE_IMAGE):$(RELEASE) -f $(CI_FOLDER)/Containerfile.cloud .
+
 push-pipe-image-ci: build-pipe-image-ci
 	podman push $(PIPE_IMAGE):$(RELEASE)
 
 push-ui-image-ci: build-ui-image-ci
 	podman push $(UI_IMAGE):$(RELEASE)
+
+push-cloud-image-ci: build-cloud-image-ci
+	podman push $(PIPE_IMAGE):$(RELEASE)
 
 doc:
 	bash build.sh

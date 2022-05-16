@@ -1,0 +1,132 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: deploy-ztp-hub-cloud
+spec:
+  description: Tekton Pipeline to deploy ZTPFW Hub Cluster
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+    - name: spokes-config
+      type: string
+    - name: mock
+      type: string
+      default: "false"
+  workspaces:
+    - name: ztp
+  tasks:
+
+  # Preflight
+  - name: pre-flight
+    taskRef:
+      name: common-pre-flight
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy RHACM
+  - name: deploy-acm
+    taskRef:
+      name: hub-deploy-acm
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - pre-flight
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Ansible Automation Platform
+  - name: deploy-aap
+    taskRef:
+      name: hub-deploy-aap
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-acm
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy OpenShift Gitops
+  - name: deploy-argocd
+    taskRef:
+      name: hub-deploy-argocd
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-aap
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy OpenShift Gitea
+  - name: deploy-gitea
+    taskRef:
+      name: hub-deploy-gitea
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-argocd
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Refector
+  - name: deploy-refector
+    taskRef:
+      name: hub-deploy-refector
+    params:
+      - name: spokes-config
+        value: $(params.spokes-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-gitea
+    workspaces:
+      - name: ztp
+        workspace: ztp
