@@ -56,12 +56,6 @@ func (sf *stringFlag) String() string {
 }
 
 func setMotd(motd *stringFlag, user *stringFlag, pr *stringFlag, customPath *stringFlag) {
-
-	if len(os.Args) == 2 || len(os.Args) > 10 {
-		fmt.Print(setHelpMsg)
-		os.Exit(1)
-	}
-
 	currentTime := time.Now()
 	motdMsg := fmt.Sprintf("Updated at %s\n", currentTime.Format(time.UnixDate))
 
