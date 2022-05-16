@@ -1,3 +1,9 @@
+## [1.2.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.1...1.2.2) (2022-05-16)
+
+### Bug Fixes
+
+- **deploy:** fix csr-autoapprover serviceaccount path ([88c1525](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/88c15259306b26a61d56324adb60dbf4b03dbd49))
+
 ## [1.2.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.0...1.2.1) (2022-05-13)
 
 ### Bug Fixes
