@@ -1,3 +1,9 @@
+## [1.2.6](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.5...1.2.6) (2022-05-16)
+
+### Bug Fixes
+
+- **ci:** reduce set-motd verbose ([5dd7082](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/5dd7082b8b4adfd096fc64ef9bc73ab40b45af9f))
+
 ## [1.2.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.4...1.2.5) (2022-05-16)
 
 ### Bug Fixes
