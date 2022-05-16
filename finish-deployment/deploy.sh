@@ -108,7 +108,7 @@ function generate_spoke_csr-approver_kubeconfig() {
     # Then, create the ClusterRoleBinding and final kubeconfig
     oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f ${SPOKE_CSR_RESOURCES}
     oc --kubeconfig=${SPOKE_KUBECONFIG} adm policy add-cluster-role-to-user ztpfw-csr-approver -z ztpfw-csr-approver -n openshift-infra
-    oc --kubeconfig=${SPOKE_KUBECONFIG} serviceaccounts create-kubeconfig ztpfw-csr-approver >${SPOKE_CSR_KUBECONFIG}
+    oc --kubeconfig=${SPOKE_KUBECONFIG} serviceaccounts create-kubeconfig ztpfw-csr-approver -n openshift-infra > ${SPOKE_CSR_KUBECONFIG}
 }
 
 function save_files() {

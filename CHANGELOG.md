@@ -1,3 +1,33 @@
+## [1.2.6](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.5...1.2.6) (2022-05-16)
+
+### Bug Fixes
+
+- **ci:** reduce set-motd verbose ([5dd7082](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/5dd7082b8b4adfd096fc64ef9bc73ab40b45af9f))
+
+## [1.2.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.4...1.2.5) (2022-05-16)
+
+### Bug Fixes
+
+- **ci:** prevent this workflow to fail because of motd ([23c9ce5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/23c9ce540b8baf6417b7201e17ba11ad425a789c))
+
+## [1.2.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.3...1.2.4) (2022-05-16)
+
+### Bug Fixes
+
+- **ansible:** clean repo before cloning ([c21c3bf](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/c21c3bf1d50e0615bf879906b61f89994f2334e7))
+
+## [1.2.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.2...1.2.3) (2022-05-16)
+
+### Bug Fixes
+
+- **setmotd:** removing max args in setmotd set ([6768ac2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6768ac2ac546e4a7ca4bb5884f5f217c47bf65de))
+
+## [1.2.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.1...1.2.2) (2022-05-16)
+
+### Bug Fixes
+
+- **deploy:** fix csr-autoapprover serviceaccount path ([88c1525](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/88c15259306b26a61d56324adb60dbf4b03dbd49))
+
 ## [1.2.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.0...1.2.1) (2022-05-13)
 
 ### Bug Fixes
