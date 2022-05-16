@@ -17,6 +17,12 @@
     mode: "0755"
   tags: [ 02-bin-utils ]
 
+- name: Clean previous ztp sources
+  file:
+    path: /root/src/ztp
+    state: absent
+  tags: [ 02-bin-utils ]
+
 - name: Download ztp repo
   git:
     repo: https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable.git
