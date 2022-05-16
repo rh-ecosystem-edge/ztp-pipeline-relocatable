@@ -34,6 +34,7 @@ $ export SPOKES_PATH=/root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes
 ```
 $ CLUSTER_NAME="ocp4"
 $ KUBECONFIG=$(find   $HOME/.kcli/clusters/${CLUSTER_NAME}  -type f -name "kubeconfig")
+$ export SPOKES_PATH=/root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml
 $ tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/takinosh/ztpfw-pipeline:dev" -p spokes-config="$(cat ${SPOKES_PATH})" -p kubeconfig="${KUBECONFIG}" -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub-disconnected-registry
 ```
 
@@ -43,6 +44,7 @@ $ tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/takinosh/
 ```
 $ CLUSTER_NAME="ocp4"
 $ KUBECONFIG=$(find $HOME/.kcli/clusters/${CLUSTER_NAME} -type f -name "kubeconfig")
+$ export SPOKES_PATH=/root/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml
 $ tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/takinosh/ztpfw-pipeline:dev" -p spokes-config="$(cat ${SPOKES_PATH})" -p kubeconfig="${KUBECONFIG}" -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub-cloud
 ```
 

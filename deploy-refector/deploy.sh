@@ -17,43 +17,23 @@ if ./verify.sh; then
 
     oc apply -f 01-namespace.yml
 
+    echo ">>>> Create  reflector rolebinding"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    oc apply -f  02-rolebinding.yml
 
     echo ">>>> Deploy manifests to install OpenShift Gitops "
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     helm repo add emberstack https://emberstack.github.io/helm-charts
     helm repo update
-    helm upgrade --install reflector emberstack/reflector
-    
-    echo ">>>> Waiting for subscription and crd"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    timeout=0
-    ready=false
-    while [ "$timeout" -lt "1000" ]; do
-        echo KUBESPOKE=${KUBECONFIG}
-        if [[ $(oc --kubeconfig=${KUBECONFIG} get crd | grep argocds.argoproj.io | wc -l) -eq 1 ]]; then
-            ready=true
-            break
-        fi
-        echo "Waiting for CRD argocds.argoproj.io to be created"
-        sleep 5
-        timeout=$((timeout + 5))
-    done
-    if [ "$ready" == "false" ]; then
-        echo "timeout waiting for CRD argocds.argoproj.io"
-        exit 1
-    fi
+    helm upgrade --install reflector emberstack/reflector --namespace reflector
 
-    echo ">>>> Deploy OpenShift Gitops instance"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc apply -f 03-instance.yml
-
-    echo ">>>> Wait until OpenShift Gitops ready"
+    echo ">>>> Wait until reflector is ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
     sleep 240
     while [ "${timeout}" -lt "120" ]; do
-        if [[ $(oc get pod -n openshift-gitops | grep -i running | wc -l) -eq $(oc get pod -n openshift-gitops | grep -v NAME | wc -l) ]]; then
+        if [[ $(oc get pod -n reflector | grep -i running | wc -l) -eq $(oc get pod -n reflector| grep -v NAME | wc -l) ]]; then
             ready=true
             break
         fi
@@ -61,7 +41,7 @@ if ./verify.sh; then
         timeout=$((timeout + 1))
     done
     if [ "$ready" == "false" ]; then
-        echo "timeout waiting for argocd pods "
+        echo "timeout waiting for reflector pods "
         exit 1
     fi
 elif [[ $? -eq 50 ]]; then
