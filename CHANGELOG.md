@@ -1,3 +1,9 @@
+## [1.2.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.2...1.2.3) (2022-05-16)
+
+### Bug Fixes
+
+- **setmotd:** removing max args in setmotd set ([6768ac2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6768ac2ac546e4a7ca4bb5884f5f217c47bf65de))
+
 ## [1.2.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.1...1.2.2) (2022-05-16)
 
 ### Bug Fixes
