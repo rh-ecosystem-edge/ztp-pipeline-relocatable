@@ -78,7 +78,7 @@ jobs:
         continue-on-error: true
         run: |
           if [ -f /root/bin/set-motd ]; then
-            MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nBody: ${{ github.event.pull_request.body }}")
+            MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}")
             /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
           fi
 
