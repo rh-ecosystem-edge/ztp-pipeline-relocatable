@@ -1,3 +1,9 @@
+## [1.2.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.4...1.2.5) (2022-05-16)
+
+### Bug Fixes
+
+- **ci:** prevent this workflow to fail because of motd ([23c9ce5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/23c9ce540b8baf6417b7201e17ba11ad425a789c))
+
 ## [1.2.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.3...1.2.4) (2022-05-16)
 
 ### Bug Fixes
