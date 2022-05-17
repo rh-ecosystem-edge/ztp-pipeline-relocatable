@@ -44,7 +44,7 @@
     mode: "0755"
     content: |
       
-      Set or unset current server's current status:
+      Set or unset current server's status:
       set-motd set [-user] [-motd] [-pr]
       set-motd unset
       
