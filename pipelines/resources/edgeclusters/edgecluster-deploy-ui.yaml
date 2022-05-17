@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-icsp-spokes-post
+  name: edgecluster-deploy-ui
   annotations:
     description: |
-      This task will deploy the ICSP on the spoke cluster to point to the disconnected registry deployed in the previous step.
+      This task will deploy the ZTPFW UI into the edgecluster  clsuters
 spec:
   workspaces:
     - name: ztp
@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,28 +25,26 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_SPOKES_DIR
-        value: "deploy-spoke"
-      - name: DEPLOY_REGISTRY_DIR
-        value: "deploy-disconnected-registry"
+      - name: DEPLOY_UI_DIR
+        value: "deploy-ui"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-icsp-spokes-post
+    - name: deploy-ui
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
-          ./configure_disconnected.sh 'spoke' 'post'
+          cd ${WORKDIR}/${DEPLOY_UI_DIR}
+          ./deploy.sh
         else
-          echo "Deploy ICSP Post: Mock mode on"
+          echo "Deploy UI: Mock mode on"
         fi

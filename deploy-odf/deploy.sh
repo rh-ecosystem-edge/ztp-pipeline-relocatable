@@ -15,7 +15,7 @@ function render_file() {
 
     DESTINATION_FILE=${2:-""}
     if [[ ${DESTINATION_FILE} == "" ]]; then
-        envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+        envsubst <${SOURCE_FILE} | oc --kubeconfig=${EDGE_KUBECONFIG} apply -f -
     else
         envsubst <${SOURCE_FILE} >${DESTINATION_FILE}
     fi
@@ -24,11 +24,11 @@ function render_file() {
 function extract_vars() {
     # Extract variables from config file
     DISKS_PATH=${1}
-    raw_disks=$(yq eval "${DISKS_PATH}" "${SPOKES_FILE}" | sed s/null//)
+    raw_disks=$(yq eval "${DISKS_PATH}" "${EDGECLUSTERS_FILE}" | sed s/null//)
     disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,#g | sed 's/,*//' | sed 's/,*//')
     disks_count=$(echo ${disks} | sed 's/,/\n/g' | wc -l)
 
-    for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
+    for node in $(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
         nodes+="${node},"
     done
 
@@ -41,9 +41,9 @@ function extract_vars() {
 }
 
 function extract_kubeconfig() {
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} extract -n $spoke secret/$spoke-admin-kubeconfig --to - >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n $edgecluster secret/$edgecluster-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
 }
 
 # Load common vars
@@ -53,21 +53,21 @@ if ! ./verify.sh; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     sed -i "s/CHANGEME/$OC_ODF_VERSION/g" manifests/03-ODF-Subscription.yaml
 
-    if [[ -z ${ALLSPOKES} ]]; then
-        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
     index=0
-    for spoke in ${ALLSPOKES}; do
-        echo ">>>> Nuking storage disks for: ${spoke}"
+    for edgecluster in ${ALLEDGECLUSTERS}; do
+        echo ">>>> Nuking storage disks for: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-        cluster=$(yq eval ".spokes[${index}]|keys" $SPOKES_FILE | awk '{print $2}' | xargs echo)
+        cluster=$(yq eval ".edgeclusters[${index}]|keys" $EDGECLUSTERS_FILE | awk '{print $2}' | xargs echo)
 
-        for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-            EXT_MAC_ADDR=$(yq eval ".spokes[${index}].[].master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+        for master in $(echo $(seq 0 $(($(yq eval ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l) - 1)))); do
+            EXT_MAC_ADDR=$(yq eval ".edgeclusters[${index}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
 
-            recover_spoke_rsa ${cluster}
+            recover_edgecluster_rsa ${cluster}
 
             echo ""
             echo ">>>> Nuking storage disks for Master ${master} Node"
@@ -79,7 +79,7 @@ if ! ./verify.sh; then
                     echo "IP: ${NODE_IP%%/*}"
                     echo ">>>>"
 
-                    storage_disks=$(yq e ".spokes[${index}].[].master${master}.storage_disk" $SPOKES_FILE | awk '{print $2}' | xargs echo)
+                    storage_disks=$(yq e ".edgeclusters[${index}].[].master${master}.storage_disk" $EDGECLUSTERS_FILE | awk '{print $2}' | xargs echo)
 
                     for disk in ${storage_disks}; do
                         echo ">>> Nuking disk ${disk} at ${master} ${NODE_IP%%/*}"
@@ -91,26 +91,26 @@ if ! ./verify.sh; then
 
         index=$((index + 1))
 
-        echo ">>>> Deploy manifests to install LSO and LocalVolume: ${spoke}"
+        echo ">>>> Deploy manifests to install LSO and LocalVolume: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        echo "Extract Kubeconfig for ${spoke}"
-        extract_kubeconfig ${spoke}
-        echo "Filling vars for ${spoke}"
-        extract_vars ".spokes[].${spoke}.master0.storage_disk"
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-LSO-Namespace.yaml
+        echo "Extract Kubeconfig for ${edgecluster}"
+        extract_kubeconfig ${edgecluster}
+        echo "Filling vars for ${edgecluster}"
+        extract_vars ".edgeclusters[].${edgecluster}.master0.storage_disk"
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-LSO-Namespace.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-LSO-OperatorGroup.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-LSO-OperatorGroup.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-LSO-Subscription.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-LSO-Subscription.yaml
         sleep 2
 
-        echo ">>>> Waiting for subscription and crd on: ${spoke}"
+        echo ">>>> Waiting for subscription and crd on: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
         while [ "$timeout" -lt "1000" ]; do
-            echo KUBESPOKE=${SPOKE_KUBECONFIG}
-            if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get crd | grep localvolumes.local.storage.openshift.io | wc -l) -eq 1 ]]; then
+            echo KUBEEDGE=${EDGE_KUBECONFIG}
+            if [[ $(oc --kubeconfig=${EDGE_KUBECONFIG} get crd | grep localvolumes.local.storage.openshift.io | wc -l) -eq 1 ]]; then
                 ready=true
                 break
             fi
@@ -123,17 +123,17 @@ if ! ./verify.sh; then
             exit 1
         fi
 
-        echo ">>>> Render and apply manifests for LocalVolume on: ${spoke}"
+        echo ">>>> Render and apply manifests for LocalVolume on: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         render_file manifests/04-LSO-LocalVolume.yaml
         sleep 20
 
-        echo ">>>> Waiting for: LSO PVs on ${spoke}"
+        echo ">>>> Waiting for: LSO PVs on ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
         while [ "$timeout" -lt "1000" ]; do
-            if [[ $(oc --kubeconfig=${SPOKE_KUBECONFIG} get pv -o name | wc -l) -ge 3 ]]; then
+            if [[ $(oc --kubeconfig=${EDGE_KUBECONFIG} get pv -o name | wc -l) -ge 3 ]]; then
                 ready=true
                 break
             fi
@@ -148,20 +148,20 @@ if ! ./verify.sh; then
 
         echo ">>>> Deploy manifests to install ODF $OC_ODF_VERSION"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/01-ODF-Namespace.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-ODF-Namespace.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/02-ODF-OperatorGroup.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-ODF-OperatorGroup.yaml
         sleep 2
-        oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f manifests/03-ODF-Subscription.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-ODF-Subscription.yaml
 
         sleep 60
 
         echo ">>>> Labeling nodes for ODF"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
         counter=0
-        for node in $(oc --kubeconfig=${SPOKE_KUBECONFIG} get node -o name); do
-            oc --kubeconfig=${SPOKE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage='' --overwrite=true
-            oc --kubeconfig=${SPOKE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter} --overwrite=true
+        for node in $(oc --kubeconfig=${EDGE_KUBECONFIG} get node -o name); do
+            oc --kubeconfig=${EDGE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage='' --overwrite=true
+            oc --kubeconfig=${EDGE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter} --overwrite=true
             let "counter+=1"
         done
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -176,7 +176,7 @@ if ! ./verify.sh; then
         timeout=0
         ready=false
         while [ "$timeout" -lt "1000" ]; do
-            if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
+            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
                 ready=true
                 break
             fi
@@ -188,7 +188,7 @@ if ! ./verify.sh; then
             exit 1
         fi
     done
-    oc --kubeconfig=${SPOKE_KUBECONFIG} patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 fi
 echo ">>>>EOF"
 echo ">>>>>>>"

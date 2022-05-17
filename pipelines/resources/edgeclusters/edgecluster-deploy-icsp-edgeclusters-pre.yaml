@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-odf
+  name: edgecluster-deploy-icsp-edgeclusters-pre
   annotations:
     description: |
-      This task will deploy OCS/ODF on the Spoke Cluster.
+      This task will deploy the ICSP on the edgecluster cluster to point to the Hub's images and work as a disconnected one.
 spec:
   workspaces:
     - name: ztp
@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,26 +25,28 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_ODF_DIR
-        value: "deploy-odf"
+      - name: DEPLOY_EDGECLUSTERS_DIR
+        value: "deploy-edgecluster"
+      - name: DEPLOY_REGISTRY_DIR
+        value: "deploy-disconnected-registry"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-odf
+    - name: deploy-icsp-edgeclusters-pre
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_ODF_DIR}
-          ./deploy.sh
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
+          ./configure_disconnected.sh 'edgecluster' 'pre'
         else
-          echo "Deploy ODF: Mock mode on"
+          echo "Deploy ICSP Pre: Mock mode on"
         fi

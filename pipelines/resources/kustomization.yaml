@@ -1,11 +1,11 @@
 bases:
   - common
   - hub
-  - spokes
+  - edgeclusters
   - contrib
 resources:
   - deploy-ztp-hub.yaml
-  - deploy-ztp-spokes.yaml
-  - deploy-ztp-spokes-sno.yaml
+  - deploy-ztp-edgeclusters.yaml
+  - deploy-ztp-edgeclusters-sno.yaml
 
-namespace: spoke-deployer
+namespace: edgecluster-deployer

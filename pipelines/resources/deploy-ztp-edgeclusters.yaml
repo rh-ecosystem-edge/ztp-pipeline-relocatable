@@ -1,16 +1,16 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: deploy-ztp-spokes
+  name: deploy-ztp-edgeclusters
 spec:
-  description: Tekton Pipeline to deploy ZTPFW Spokes clusters
+  description: Tekton Pipeline to deploy ZTPFW Edge-clusters clusters
   params:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
     - name: kubeconfig
       type: string
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
     - name: mock
       type: string
@@ -22,10 +22,10 @@ spec:
   # Preflight
   - name: pre-flight
     taskRef:
-      name: common-pre-flight-spokes
+      name: common-pre-flight-edgeclusters
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -36,13 +36,13 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy Spokes
-  - name: deploy-spokes
+  # Deploy Edge-clusters
+  - name: deploy-edgeclusters
     taskRef:
-      name: spoke-deploy-spoke
+      name: edgecluster-deploy-edgecluster
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -55,13 +55,13 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy ICSP Spokes Pre
-  - name: deploy-icsp-spokes-pre
+  # Deploy ICSP Edge-clusters Pre
+  - name: deploy-icsp-edgeclusters-pre
     taskRef:
-      name: spoke-deploy-icsp-spokes-pre
+      name: edgecluster-deploy-icsp-edgeclusters-pre
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -69,7 +69,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-spokes
+      - deploy-edgeclusters
     workspaces:
       - name: ztp
         workspace: ztp
@@ -77,10 +77,10 @@ spec:
   # Deploy MetalLB
   - name: deploy-metallb
     taskRef:
-      name: spoke-deploy-metallb
+      name: edgecluster-deploy-metallb
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -88,18 +88,18 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-icsp-spokes-pre
+      - deploy-icsp-edgeclusters-pre
     workspaces:
       - name: ztp
         workspace: ztp
 
-  # Deploy Workers
+
   # - name: deploy-workers
   #   taskRef:
-  #     name: spoke-deploy-workers
+  #     name: edgecluster-deploy-workers
   #   params:
-  #     - name: spokes-config
-  #       value: $(params.spokes-config)
+  #     - name: edgeclusters-config
+  #       value: $(params.edgeclusters-config)
   #     - name: kubeconfig
   #       value: $(params.kubeconfig)
   #     - name: ztp-container-image
@@ -115,10 +115,10 @@ spec:
   # Deploy ZTPFWUI
   - name: deploy-ui
     taskRef:
-      name: spoke-deploy-ui
+      name: edgecluster-deploy-ui
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -134,10 +134,10 @@ spec:
   # Deploy ODF
   - name: deploy-odf
     taskRef:
-      name: spoke-deploy-odf
+      name: edgecluster-deploy-odf
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -154,10 +154,10 @@ spec:
   # Deploy Disconnected Registry
   - name: deploy-disconnected-registry
     taskRef:
-      name: spoke-deploy-disconnected-registry-spokes
+      name: edgecluster-deploy-disconnected-registry-edgeclusters
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -173,10 +173,10 @@ spec:
     # Mirror ocp step in disconnected registry
   - name: mirror-ocp-images
     taskRef:
-      name: spoke-deploy-disconnected-registry-spokes-ocp
+      name: edgecluster-deploy-disconnected-registry-edgeclusters-ocp
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -192,10 +192,10 @@ spec:
     # Mirror olm in disconnected registry
   - name: mirror-olm-images
     taskRef:
-      name: spoke-deploy-disconnected-registry-spokes-olm
+      name: edgecluster-deploy-disconnected-registry-edgeclusters-olm
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -211,10 +211,10 @@ spec:
     # Deploy Disconnected Registry Pull secret
   - name: deploy-disconnected-registry-ps
     taskRef:
-      name: spoke-deploy-disconnected-registry-spokes-ps
+      name: edgecluster-deploy-disconnected-registry-edgeclusters-ps
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -228,13 +228,13 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy ICSP Spokes Post
-  - name: deploy-icsp-spokes-post
+  # Deploy ICSP Edge-clusters Post
+  - name: deploy-icsp-edgeclusters-post
     taskRef:
-      name: spoke-deploy-icsp-spokes-post
+      name: edgecluster-deploy-icsp-edgeclusters-post
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -251,9 +251,10 @@ spec:
   - name: gpu-operator
     taskRef:
       name: contrib-gpu-operator
+
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -261,18 +262,18 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-icsp-spokes-post
+      - deploy-icsp-edgeclusters-post
     workspaces:
       - name: ztp
         workspace: ztp
 
-  # Detach Spoke Cluster
+  # Detach Edge-cluster Cluster
   - name: detach-cluster
     taskRef:
-      name: spoke-detach-cluster
+      name: edgecluster-detach-cluster
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image

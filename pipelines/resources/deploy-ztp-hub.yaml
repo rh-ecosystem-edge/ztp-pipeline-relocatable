@@ -10,7 +10,7 @@ spec:
       default: "quay.io/ztpfw/pipeline:latest"
     - name: kubeconfig
       type: string
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
     - name: mock
       type: string
@@ -24,8 +24,8 @@ spec:
     taskRef:
       name: common-pre-flight
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -41,8 +41,8 @@ spec:
     taskRef:
       name: hub-deploy-httpd-server
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -60,8 +60,8 @@ spec:
     taskRef:
       name: hub-deploy-disconnected-registry
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -79,8 +79,8 @@ spec:
     taskRef:
       name: hub-deploy-acm
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -98,8 +98,8 @@ spec:
     taskRef:
       name: hub-deploy-icsp-hub
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
@@ -117,8 +117,8 @@ spec:
     taskRef:
       name: hub-deploy-hub-config
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image

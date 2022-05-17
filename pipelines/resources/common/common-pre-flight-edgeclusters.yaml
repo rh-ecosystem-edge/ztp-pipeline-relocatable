@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: common-pre-flight-spokes
+  name: common-pre-flight-edgeclusters
   annotations:
     description: |
       This task will execute a quick check of some pre-requirements, like binaries, files, etc...
@@ -12,7 +12,7 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: kubeconfig
@@ -27,8 +27,8 @@ spec:
         value: "/workspace/ztp"
       - name: KUBECONFIG
         value: $(params.kubeconfig)
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
@@ -44,7 +44,7 @@ spec:
           mkdir -p ${WORKDIR}/build
           cd ${WORKDIR}/${SHARED_DIR}
           ./verify_preflight.sh
-          ./verify_preflight-spokes.sh
+          ./verify_preflight-edgeclusters.sh
         else
-          echo "Common Preflight Spoke: Mock mode on"
+          echo "Common Preflight Edge-cluster: Mock mode on"
         fi

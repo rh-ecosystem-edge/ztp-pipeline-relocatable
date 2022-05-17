@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-detach-cluster
+  name: edgecluster-deploy-workers
   annotations:
     description: |
-      This task will detach the Spoke Cluster from the Hub.
+      This task will deploy the worker in the Edge-cluster Cluster.
 spec:
   workspaces:
     - name: ztp
@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,26 +25,26 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: FINISH_DEP_DIR
-        value: "finish-deployment"
+      - name: DEPLOY_WORKER_DIR
+        value: "deploy-worker"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: detach-cluster
+    - name: deploy-worker
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${FINISH_DEP_DIR}
-          ./deploy.sh
+          cd ${WORKDIR}/${DEPLOY_WORKER_DIR}
+          ./render_worker.sh
         else
-          echo "Detach Cluster: Mock mode on"
+          echo "Deploy Workers Edge-cluster: Mock mode on"
         fi

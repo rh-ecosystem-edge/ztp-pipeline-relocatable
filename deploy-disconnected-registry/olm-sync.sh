@@ -9,10 +9,10 @@ function extract_kubeconfig() {
         cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
     fi
 
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${EDGE_KUBECONFIG}
 }
 
 function prepare_env() {
@@ -58,8 +58,8 @@ function mirror() {
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
         check_registry ${DESTINATION_REGISTRY}
-    elif [[ ${1} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         echo ">>>> Checking Source Registry: ${SOURCE_REGISTRY}"
         check_registry ${SOURCE_REGISTRY}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
@@ -247,8 +247,8 @@ function mirror_certified() {
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
         check_registry ${DESTINATION_REGISTRY}
-    elif [[ ${1} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         echo ">>>> Checking Source Registry: ${SOURCE_REGISTRY}"
         check_registry ${SOURCE_REGISTRY}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
@@ -400,28 +400,28 @@ if [[ ${1} == 'hub' ]]; then
     else
         echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
     fi
-elif [[ ${1} == "spoke" ]]; then
-    if [[ -z ${ALLSPOKES} ]]; then
-        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+elif [[ ${1} == "edgecluster" ]]; then
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
-    for spoke in ${ALLSPOKES}; do
-        # Get Spoke Kubeconfig
-        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
+    for edgecluster in ${ALLEDGECLUSTERS}; do
+        # Get Edge-cluster Kubeconfig
+        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${edgecluster}" ]]; then
+            extract_kubeconfig ${edgecluster}
         else
-            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${edgecluster}"
         fi
-        prepare_env 'spoke'
-        create_cs 'spoke' ${spoke}
+        prepare_env 'edgecluster'
+        create_cs 'edgecluster' ${edgecluster}
         trust_internal_registry 'hub'
-        trust_internal_registry 'spoke' ${spoke}
-        if ! ./verify_olm_sync.sh 'spoke'; then
-            mirror 'spoke'
+        trust_internal_registry 'edgecluster' ${edgecluster}
+        if ! ./verify_olm_sync.sh 'edgecluster'; then
+            mirror 'edgecluster'
             if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
                 echo ">>>> There are no certified operators to be mirrored"
             else
-                mirror_certified 'spoke'
+                mirror_certified 'edgecluster'
             fi
         else
             echo ">>>> This step to mirror olm is not neccesary, everything looks ready"

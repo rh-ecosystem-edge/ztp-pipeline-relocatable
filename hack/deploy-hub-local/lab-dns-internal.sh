@@ -41,10 +41,10 @@ resolv-file=/etc/resolv.upstream.conf
 address=/.apps.test-ci.alklabs.local/192.168.150.252
 address=/api.test-ci.alklabs.local/192.168.150.253
 address=/api-int.test-ci.alklabs.local/192.168.150.253
-# Spoke Cluster
-address=/.apps.spoke0-cluster.alklabs.local/192.168.150.200
-address=/api.spoke0-cluster.alklabs.local/192.168.150.201
-address=/api-int.spoke0-cluster.alklabs.local/192.168.150.201" > /etc/NetworkManager/dnsmasq.d/00-test-ci.conf
+# Edge-cluster Cluster
+address=/.apps.edgecluster0-cluster.alklabs.local/192.168.150.200
+address=/api.edgecluster0-cluster.alklabs.local/192.168.150.201
+address=/api-int.edgecluster0-cluster.alklabs.local/192.168.150.201" > /etc/NetworkManager/dnsmasq.d/00-test-ci.conf
 
     cat /etc/resolv.conf | grep nameserver > /etc/resolv.upstream.conf
 }

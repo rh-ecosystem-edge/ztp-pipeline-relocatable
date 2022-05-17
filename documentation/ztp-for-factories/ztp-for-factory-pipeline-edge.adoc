@@ -4,31 +4,31 @@ include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-pipeline-edge
 toc::[]
 
-The Edge Node Pipeline is an OpenShift Object that will be used to deploy the Spoke clusters (Spokes only on the factory, after that they will be typical Edge nodes).
+The Edge Node Pipeline is an OpenShift Object that will be used to deploy the Edge-cluster clusters (Edge-clusters only on the factory, after that they will be typical Edge nodes).
 
 We will need some prerequisited here:
 
 - Enough DHCP IPs in the external/factory network to hold the Edge Cluster
 - The API, API-INT and Ingress entries
-    . api.<spoke-cluster-name>.<network-domain>
-    . api-int.<spoke-cluster-name>.<network-domain>
-    . *.apps.<spoke-cluster-name>.<network-domain>
+    . api.<edgecluster-cluster-name>.<network-domain>
+    . api-int.<edgecluster-cluster-name>.<network-domain>
+    . *.apps.<edgecluster-cluster-name>.<network-domain>
 - Clean disks for the OCS/ODF StorageCluster
     . If the disks are not clean we will provide the way to clean them in other section.
-- DNS Resolution between the Spoke and the Hub API/Ingress entries.
+- DNS Resolution between the Edge-cluster and the Hub API/Ingress entries.
 
 This is how we execute the Pipeline:
 
 ```sh
-tkn pipeline start -n spoke-deployer -p git-revision=tekton -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+tkn pipeline start -n edgecluster-deployer -p git-revision=tekton -p edgeclusters-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
 ```
 
 After this command you will see this on the prompt:
 ```console
-PipelineRun started: deploy-ztp-spokes-run-w5k7l
+PipelineRun started: deploy-ztp-edgeclusters-run-w5k7l
 
 In order to track the PipelineRun progress run:
-tkn pipelinerun logs deploy-ztp-spokes-run-w5k7l -f -n spoke-deployer
+tkn pipelinerun logs deploy-ztp-edgeclusters-run-w5k7l -f -n edgecluster-deployer
 ```
 
 If you check the logs of just follow the PipelineRun on the OpenShift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
@@ -37,7 +37,7 @@ If you check the logs of just follow the PipelineRun on the OpenShift Console, y
 
 The Hub Workflow will be something like what you're seeing in the image, let's dig a bit on every step
 
-image::pipeline-spoke-workflow.png[]
+image::pipeline-edgecluster-workflow.png[]
 
 - **Download the code**:
 This phase will be mandatory or not, depending the scenario, if the environment it's fully disconnected, this source code will be embedded into the Container Image.
@@ -45,7 +45,7 @@ This phase will be mandatory or not, depending the scenario, if the environment 
 - **Check the Hub cluster**:
 We will ensure all the things are ready to start the Hub provisioning, things like ClusterOperators, ClusterVersion and Nodes up and ready are basic to start working.
 
-- **Deploy Spoke Cluster**:
+- **Deploy Edge-cluster Cluster**:
 The Pipeline will start with the Edge cluster Provisioning. This process will end pushing a notification from the Edge cluster to the Hub and answering with an ACK.
 
 - **Deploy NMState and MetalLB*:
@@ -60,5 +60,5 @@ We will deploy Quay Operator and components of Quay because the final customer w
 - **Deploy Worker Node**:
 At this point we will deploy the Worker node, and we will make it join to the Edge cluster.
 
-- **Detach Edge Cluster**:
-This final step will perform some actions, first ensure that the things are well set and working. After that it will save the SSH-RSA keys, Kubeconfig and Kubeadmin password into the Hub, more concretely in the <spoke-cluster-name> Namespace in the hub cluster. This could be sent afterwards to the customer, this policy should be set by the factory.
+- **Dettach Edge Cluster**:
+This final step will perform some actions, first ensure that the things are well set and working. After that it will save the SSH-RSA keys, Kubeconfig and Kubeadmin password into the Hub, more concretely in the <edgecluster-cluster-name> Namespace in the hub cluster. This could be sent afterwards to the customer, this policy should be set by the factory.

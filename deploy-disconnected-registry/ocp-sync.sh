@@ -15,10 +15,10 @@ function extract_kubeconfig() {
         cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
     fi
 
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${EDGE_KUBECONFIG}
 }
 
 function mirror_ocp() {
@@ -26,8 +26,8 @@ function mirror_ocp() {
     if [[ ${1} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster=${2}
-    elif [[ ${1} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         cluster=${2}
     fi
 
@@ -91,36 +91,36 @@ if [[ ${1} == 'hub' ]]; then
         echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"
     fi
 
-elif [[ ${1} == 'spoke' ]]; then
-    if [[ -z ${ALLSPOKES} ]]; then
-        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+elif [[ ${1} == 'edgecluster' ]]; then
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
-    for spoke in ${ALLSPOKES}; do
-        # Get Spoke Kubeconfig
-        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
+    for edgecluster in ${ALLEDGECLUSTERS}; do
+        # Get Edge-cluster Kubeconfig
+        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${edgecluster}" ]]; then
+            extract_kubeconfig ${edgecluster}
         else
-            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
-            echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
+            export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${edgecluster}"
+            echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
         fi
 
         # Loading variables here in purpose
-        source ./common.sh 'spoke'
+        source ./common.sh 'edgecluster'
         # Here we need to trust on both registries
         trust_internal_registry 'hub'
-        trust_internal_registry 'spoke' ${spoke}
+        trust_internal_registry 'edgecluster' ${edgecluster}
 
-        if ! ./verify_ocp_sync.sh 'spoke'; then
+        if ! ./verify_ocp_sync.sh 'edgecluster'; then
 
-            oc --kubeconfig=${SPOKE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
+            oc --kubeconfig=${EDGE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
             ## Logging into the Source and Destination registries
             ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
             ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
             ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
             ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
-            mirror_ocp 'spoke' ${spoke}
+            mirror_ocp 'edgecluster' ${edgecluster}
         else
             echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"
         fi

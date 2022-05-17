@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-disconnected-registry-spokes-olm
+  name: edgecluster-deploy-disconnected-registry-edgeclusters-olm
   annotations:
     description: |
       Will perform the OCP and OLM sync, based on the SYNC parameter.
@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,8 +25,8 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_REGISTRY_DIR
@@ -59,9 +59,9 @@ spec:
         if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
           echo "Starting OLM Catalog Image Mirroring Step"
-          ./olm-sync.sh 'spoke'
+          ./olm-sync.sh 'edgecluster'
         else
-          echo "Deploy Mirror OLM Spoke: Mock mode on"
+          echo "Deploy Mirror OLM Edge-cluster: Mock mode on"
         fi
 
 

@@ -36,8 +36,8 @@ source ./common.sh ${1}
 
 if [[ ${1} == 'hub' ]]; then
     TGT_KUBECONFIG=${KUBECONFIG_HUB}
-elif [[ ${1} == 'spoke' ]]; then
-    TGT_KUBECONFIG=${SPOKE_KUBECONFIG}
+elif [[ ${1} == 'edgecluster' ]]; then
+    TGT_KUBECONFIG=${EDGE_KUBECONFIG}
 fi
 
 echo ">>>> Verifying OLM Sync: ${1}"

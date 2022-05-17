@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,11 +25,11 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: RO_SPOKE_FOLDER
+      - name: RO_EDGE_FOLDER
         value: "/root/ztp-build-hub/"
       - name: SHARED_DIR
         value: "shared-utils"
@@ -45,7 +45,7 @@ spec:
         # different steps.
 
         if [[ "${MOCK}" == 'false' ]]; then
-          rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_SPOKE_FOLDER}
+          rsync -avr --progress --delete ${WORKDIR}/build/ ${RO_EDGE_FOLDER}
         else
           echo "Save Hub Configuration: Mock mode on"
         fi

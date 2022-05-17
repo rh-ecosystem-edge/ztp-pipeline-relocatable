@@ -30,17 +30,17 @@ function copy_files() {
 }
 
 function grab_master_ext_ips() {
-    spoke=${1}
-    spokeitem=${2}
+    edgecluster=${1}
+    edgeclusteritem=${2}
 
     ## Grab 1 master and 1 IP
-    agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
-    export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
-    master=${SPOKE_NODE_NAME##*-}
-    export MAC_EXT_DHCP=$(yq e ".spokes[$spokeitem].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+    agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${edgecluster} --no-headers -o name | head -1)
+    export EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${edgecluster} ${agent} -o jsonpath={.spec.hostname})
+    master=${EDGE_NODE_NAME##*-}
+    export MAC_EXT_DHCP=$(yq e ".edgeclusters[$edgeclusteritem].${edgecluster}.master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
     ## HAY QUE PROBAR ESTO
-    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
-    export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
+    EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${edgecluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+    export EDGE_NODE_IP=${EDGE_NODE_IP_RAW%%/*}
 }
 
 function check_connectivity() {
@@ -48,7 +48,7 @@ function check_connectivity() {
     echo ">> Checking connectivity against: ${IP}"
 
     if [[ -z ${IP} ]]; then
-        echo "ERROR: Variable \${IP} empty, this could means that the ARP does not match with the MAC address provided in the Spoke File ${SPOKES_FILE}"
+        echo "ERROR: Variable \${IP} empty, this could means that the ARP does not match with the MAC address provided in the Edge-cluster File ${EDGECLUSTERS_FILE}"
         exit 1
     fi
 
@@ -73,20 +73,20 @@ function extract_kubeconfig() {
         cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
     fi
 
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${EDGE_KUBECONFIG}
 }
 
 function icsp_mutate() {
-    echo ">>>> Mutating Registry for: ${spoke}"
+    echo ">>>> Mutating Registry for: ${edgecluster}"
     MAP=${1}
     DST_REG=${2}
-    SPOKE=${3}
+    EDGE=${3}
     HUB_REG_ROUTE="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-    export SPOKE_MAPPING_FILE="${MAP%%.*}-${spoke}.txt"
-    sed "s/${HUB_REG_ROUTE}/${DST_REG}/g" ${MAP} | tee "${MAP%%.*}-${spoke}.txt"
+    export EDGE_MAPPING_FILE="${MAP%%.*}-${edgecluster}.txt"
+    sed "s/${HUB_REG_ROUTE}/${DST_REG}/g" ${MAP} | tee "${MAP%%.*}-${edgecluster}.txt"
 }
 
 function generate_mapping() {
@@ -153,10 +153,10 @@ EOF
 }
 
 function icsp_maker() {
-    # This function generated the ICSP for the current spoke
+    # This function generated the ICSP for the current edgecluster
     if [[ $# -lt 3 ]]; then
         echo "Usage :"
-        echo "  icsp_maker (MAPPING FILE) (ICSP DESTINATION FILE) hub|<spoke>"
+        echo "  icsp_maker (MAPPING FILE) (ICSP DESTINATION FILE) hub|<edgecluster>"
         exit 1
     fi
 
@@ -214,7 +214,7 @@ function wait_for_mcp_ready() {
     # If the MCP is not ready after the given number of seconds, it will exit with an error
     if [[ $# -lt 3 ]]; then
         echo "Usage :"
-        echo "wait_for_mcp_ready (kubeconfig) (spoke) (TIMEOUT)"
+        echo "wait_for_mcp_ready (kubeconfig) (edgecluster) (TIMEOUT)"
         exit 1
     fi
 
@@ -250,7 +250,7 @@ if [[ ${1} == 'hub' ]]; then
     # Validation
     if [[ $# -lt 1 ]]; then
         echo "Usage :"
-        echo "  $0 hub|spoke (STAGE (mandatory on spoke MODE))"
+        echo "  $0 hub|edgecluster (STAGE (mandatory on edgecluster MODE))"
         exit 1
     fi
 
@@ -269,35 +269,35 @@ if [[ ${1} == 'hub' ]]; then
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/icsp-hub.yaml
     wait_for_mcp_ready ${KUBECONFIG_HUB} 'hub' 240
 
-elif [[ ${1} == 'spoke' ]]; then
+elif [[ ${1} == 'edgecluster' ]]; then
     # Validation
     if [[ $# -lt 2 ]]; then
         echo "Usage :"
-        echo "  $0 hub|spoke (STAGE (mandatory on spoke MODE))"
+        echo "  $0 hub|edgecluster (STAGE (mandatory on edgecluster MODE))"
         exit 1
     fi
 
     # STAGE is the value to reflect which step are you in
-    #    if you didn't synced from Hub to Spoke you need to put 'pre'
-    #    if you already synced from Hub to Spoke you need to put 'post'
+    #    if you didn't synced from Hub to Edge-cluster you need to put 'pre'
+    #    if you already synced from Hub to Edge-cluster you need to put 'post'
     STAGE=${2}
 
-    if [[ -z ${ALLSPOKES} ]]; then
-        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
     _index=0
-    for spoke in ${ALLSPOKES}; do
+    for edgecluster in ${ALLEDGECLUSTERS}; do
         # Logic
         # WC == 2 == SKIP / WC == 1 == Create ICSP
         if [[ ${STAGE} == 'pre' ]]; then
-            ### WARNING: yes is 'hub' mode the first time you wanna deploy the CatalogSources because at this point we dont have Spoke API yet, so becareful changing this flow.
+            ### WARNING: yes is 'hub' mode the first time you wanna deploy the CatalogSources because at this point we dont have Edge-cluster API yet, so becareful changing this flow.
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
 
-            # Get Spoke Kubeconfig
-            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-                extract_kubeconfig ${spoke}
+            # Get Edge-cluster Kubeconfig
+            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${edgecluster}" ]]; then
+                extract_kubeconfig ${edgecluster}
             else
-                export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+                export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${edgecluster}"
             fi
 
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
@@ -313,82 +313,82 @@ elif [[ ${1} == 'spoke' ]]; then
                 echo "ICSP Hub File does not exists, generating a new one..."
                 icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
             fi
-            recover_spoke_rsa ${spoke}
+            recover_edgecluster_rsa ${edgecluster}
 
-            # In this stage the spoke's registry does not exist, so we need to trust the Hub's ingress cert
+            # In this stage the edgecluster's registry does not exist, so we need to trust the Hub's ingress cert
             # Check API
-            echo ">> Checking spoke API: ${STAGE}"
-            echo ">> Kubeconfig: ${SPOKE_KUBECONFIG}"
-            RCAPI=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes)
+            echo ">> Checking edgecluster API: ${STAGE}"
+            echo ">> Kubeconfig: ${EDGE_KUBECONFIG}"
+            RCAPI=$(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes)
             # If not API
             if [[ -z ${RCAPI} ]]; then
-                # Grab SPOKE IP
-                grab_master_ext_ips ${spoke} ${_index}
-                check_connectivity "${SPOKE_NODE_IP}"
+                # Grab EDGE IP
+                grab_master_ext_ips ${edgecluster} ${_index}
+                check_connectivity "${EDGE_NODE_IP}"
                 # Execute commands and Copy files
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
-                copy_files "${SPOKE_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
-                copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
-                copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${SPOKE_NODE_IP}" "./manifests/icsp-hub.yaml"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+                copy_files "${EDGE_KUBECONFIG}" "${EDGE_NODE_IP}" "./.kube/config"
+                copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${EDGE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
+                copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${EDGE_NODE_IP}" "./manifests/icsp-hub.yaml"
                 # Check ICSP
-                RCICSP=$(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc get ImageContentSourcePolicy ztpfw-hub | wc -l || true")
-                OC_COMMAND="${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} oc"
+                RCICSP=$(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc get ImageContentSourcePolicy ztpfw-hub | wc -l || true")
+                OC_COMMAND="${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} oc"
                 MANIFESTS_PATH='manifests'
             else
-                RCICSP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${spoke} | wc -l || true)
-                OC_COMMAND="oc --kubeconfig=${SPOKE_KUBECONFIG}"
+                RCICSP=$(oc --kubeconfig=${EDGE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${edgecluster} | wc -l || true)
+                OC_COMMAND="oc --kubeconfig=${EDGE_KUBECONFIG}"
                 MANIFESTS_PATH="${OUTPUTDIR}"
             fi
 
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo "Skipping ICSP creation as it already exists"
             else
-                # Spoke Sync from the Hub cluster as a Source
-                echo ">>>> Deploying ICSP for: ${spoke} using the Hub as a source"
+                # Edge-cluster Sync from the Hub cluster as a Source
+                echo ">>>> Deploying ICSP for: ${edgecluster} using the Hub as a source"
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/catalogsource-hub.yaml
                 ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
             fi
         elif [[ ${STAGE} == 'post' ]]; then
-            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'spoke'
+            source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'edgecluster'
 
-            # Get Spoke Kubeconfig
-            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-                extract_kubeconfig ${spoke}
+            # Get Edge-cluster Kubeconfig
+            if [[ ! -f "${OUTPUTDIR}/kubeconfig-${edgecluster}" ]]; then
+                extract_kubeconfig ${edgecluster}
             else
-                export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+                export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${edgecluster}"
             fi
 
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
-            trust_internal_registry 'spoke' ${spoke}
-            if [[ ! -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml ]]; then
+            trust_internal_registry 'edgecluster' ${edgecluster}
+            if [[ ! -f ${OUTPUTDIR}/catalogsource-${edgecluster}.yaml ]]; then
                 echo "CatalogSource File does not exists, generating a new one..."
-                create_cs 'spoke' ${spoke}
+                create_cs 'edgecluster' ${edgecluster}
             fi
             recover_mapping
-            recover_spoke_rsa ${spoke}
+            recover_edgecluster_rsa ${edgecluster}
 
-            RCICSP=$(oc --kubeconfig=${SPOKE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${spoke} | wc -l || true)
+            RCICSP=$(oc --kubeconfig=${EDGE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${edgecluster} | wc -l || true)
             if [[ ${RCICSP} -eq 2 ]]; then
                 echo ">>>> Waiting for old stuff deletion..."
             else
-                echo ">>>> Creating ICSP for: ${spoke}"
-                # Use the Spoke's registry as a source
-                source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'spoke'
-                icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${spoke}
-                icsp_maker ${SPOKE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${spoke}.yaml ${spoke}
+                echo ">>>> Creating ICSP for: ${edgecluster}"
+                # Use the Edge-cluster's registry as a source
+                source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'edgecluster'
+                icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${edgecluster}
+                icsp_maker ${EDGE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${edgecluster}.yaml ${edgecluster}
 
                 # Clean Old stuff
-                oc --kubeconfig=${SPOKE_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml || echo "CatalogSoruce already deleted!"
-                oc --kubeconfig=${SPOKE_KUBECONFIG} delete -f ${OUTPUTDIR}/icsp-hub.yaml || echo "ICSP already deleted!"
+                oc --kubeconfig=${EDGE_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml || echo "CatalogSoruce already deleted!"
+                oc --kubeconfig=${EDGE_KUBECONFIG} delete -f ${OUTPUTDIR}/icsp-hub.yaml || echo "ICSP already deleted!"
 
                 echo ">>>> Waiting for old stuff deletion..."
                 sleep 20
 
                 # Deploy New ICSP + CS
-                oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${spoke}.yaml
-                oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${spoke}.yaml
+                oc --kubeconfig=${EDGE_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${edgecluster}.yaml
+                oc --kubeconfig=${EDGE_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${edgecluster}.yaml
 
-                wait_for_mcp_ready ${SPOKE_KUBECONFIG} ${spoke} 120
+                wait_for_mcp_ready ${EDGE_KUBECONFIG} ${edgecluster} 120
             fi
         fi
         _index=$((_index + 1))

@@ -81,21 +81,21 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     fi
 fi
 
-echo ">>>> Spokes.yaml file generation"
+echo ">>>> Edge-clusters.yaml file generation"
 
 #Empty file before we start
->spokes.yaml
+>edgeclusters.yaml
 
-cat <<EOF >>spokes.yaml
+cat <<EOF >>edgeclusters.yaml
 config:
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
   OC_ODF_VERSION: '${OC_ODF_VERSION}'
 EOF
 
-# Create header for spokes.yaml
-cat <<EOF >>spokes.yaml
-spokes:
+# Create header for edgeclusters.yaml
+cat <<EOF >>edgeclusters.yaml
+edgeclusters:
 EOF
 
 echo ">>>> Create the PV and sushy and dns"

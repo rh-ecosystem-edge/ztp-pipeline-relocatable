@@ -14,4 +14,3 @@ subjects:
   # name: system:serviceaccount:ztpfw-ui:default
   name: default
   namespace: $UI_NS
-

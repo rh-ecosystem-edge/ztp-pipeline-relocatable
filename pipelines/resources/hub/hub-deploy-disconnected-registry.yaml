@@ -6,8 +6,8 @@ metadata:
     description: |
       This task will deploy the Disconnected Internal registry.
       Then will perform the OCP and OLM sync.
-      Update the Global PullSecret for every spoke with the proper credentials
-      and in the end create a Tarball to be shared with every spoke provisioned.
+      Update the Global PullSecret for every edgecluster with the proper credentials
+      and in the end create a Tarball to be shared with every edgecluster provisioned.
 spec:
   workspaces:
     - name: ztp
@@ -18,7 +18,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -28,8 +28,8 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_REGISTRY_DIR

@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: spoke-deploy-spoke
+  name: edgecluster-deploy-odf
   annotations:
     description: |
-      This task will deploy the spokes based on the spokes.yaml file passed to the pipeline/task.
+      This task will deploy OCS/ODF on the Edge-cluster Cluster.
 spec:
   workspaces:
     - name: ztp
@@ -15,7 +15,7 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
-    - name: spokes-config
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -25,40 +25,26 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
-      - name: SPOKES_CONFIG
-        value: $(params.spokes-config)
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_SPOKES_DIR
-        value: "deploy-spoke"
+      - name: DEPLOY_ODF_DIR
+        value: "deploy-odf"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: render-spokes
+    - name: deploy-odf
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
-          ./render_spokes.sh
-          sleep 3
-        else
-          echo "Render Spoke: Mock mode on"
-        fi
-
-    - name: deploy-spokes
-      image: "$(params.ztp-container-image)"
-      imagePullPolicy: Always
-      script: |
-        #!/usr/bin/bash
-
-        if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_SPOKES_DIR}
+          cd ${WORKDIR}/${DEPLOY_ODF_DIR}
           ./deploy.sh
         else
-          echo "Deploy Spoke: Mock mode on"
+          echo "Deploy ODF: Mock mode on"
         fi
