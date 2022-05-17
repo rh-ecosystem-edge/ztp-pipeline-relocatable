@@ -1,3 +1,9 @@
+## [1.4.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.3...1.4.4) (2022-05-17)
+
+### Bug Fixes
+
+- **ansible:** current duplicated word ([67b0ff2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/67b0ff23c30f232872f728b43f1f5a9074c98a4b))
+
 ## [1.4.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.2...1.4.3) (2022-05-17)
 
 ### Bug Fixes
