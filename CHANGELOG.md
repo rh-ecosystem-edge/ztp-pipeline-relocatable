@@ -1,3 +1,9 @@
+## [1.4.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.0...1.4.1) (2022-05-17)
+
+### Bug Fixes
+
+- **finish-deployment/deploy.sh:** remove extra > ([41eac39](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/41eac39928949a64ecc28f0c32fe823698b8d063))
+
 # [1.4.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.3.1...1.4.0) (2022-05-17)
 
 ### Features
