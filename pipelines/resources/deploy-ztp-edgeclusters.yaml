@@ -93,24 +93,24 @@ spec:
       - name: ztp
         workspace: ztp
 
-
-  # - name: deploy-workers
-  #   taskRef:
-  #     name: edgecluster-deploy-workers
-  #   params:
-  #     - name: edgeclusters-config
-  #       value: $(params.edgeclusters-config)
-  #     - name: kubeconfig
-  #       value: $(params.kubeconfig)
-  #     - name: ztp-container-image
-  #       value: $(params.ztp-container-image)
-  #     - name: mock
-  #       value: $(params.mock)
-  #   runAfter:
-  #     - deploy-metallb
-  #   workspaces:
-  #     - name: ztp
-  #       workspace: ztp
+  # Deploy Workers
+  - name: deploy-workers
+    taskRef:
+      name: edgecluster-deploy-workers
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-metallb
+    workspaces:
+      - name: ztp
+        workspace: ztp
 
   # Deploy ZTPFWUI
   - name: deploy-ui
@@ -145,7 +145,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      # - deploy-workers
+      - deploy-workers
       - deploy-ui
     workspaces:
       - name: ztp
