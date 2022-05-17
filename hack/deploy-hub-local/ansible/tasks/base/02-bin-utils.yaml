@@ -35,3 +35,18 @@
     chdir: /root/src/ztp/hack/set-motd
     creates: /root/bin/set-motd
   tags: [ 02-bin-utils ]
+
+- name: Create set-motd disclaimer
+  file:
+    path: /etc/motd.d/set-motd
+    state: file
+    owner: root
+    group: root
+    mode: "0755"
+    content: |
+      
+      Set or unset current server's current status:
+      set-motd set [-user] [-motd] [-pr]
+      set-motd unset]
+
+  tags: [ 02-bin-utils ]
