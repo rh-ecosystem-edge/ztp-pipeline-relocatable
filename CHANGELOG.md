@@ -1,3 +1,9 @@
+## [1.4.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.1...1.4.2) (2022-05-17)
+
+### Bug Fixes
+
+- **ansible:** small motd fix ([1de6c8b](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/1de6c8b01a7dd4decdb732c13eeab7b6f4041ebd))
+
 ## [1.4.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.0...1.4.1) (2022-05-17)
 
 ### Bug Fixes
