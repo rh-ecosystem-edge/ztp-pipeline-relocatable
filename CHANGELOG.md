@@ -1,3 +1,9 @@
+# [1.3.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.6...1.3.0) (2022-05-17)
+
+### Features
+
+- **ansible:** add set-motd help in bashrc ([ddecce6](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/ddecce65fd17c034403ffa2fd9100a1e931b7e85))
+
 ## [1.2.6](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.5...1.2.6) (2022-05-16)
 
 ### Bug Fixes
