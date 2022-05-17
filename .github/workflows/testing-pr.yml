@@ -103,7 +103,7 @@ jobs:
             tkn pr cancel $i -n edgecluster-deployer || true
           done
 
-      - name: create new vms and requirements
+      - name: Launching pipeline execution
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
           export HOME=/root
