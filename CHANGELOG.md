@@ -1,3 +1,9 @@
+# [1.4.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.3.1...1.4.0) (2022-05-17)
+
+### Features
+
+- **ansible:** add set-motd disclaimer ([49cb940](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/49cb940e8dde55309733f50ddac513c202b98afc))
+
 ## [1.3.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.3.0...1.3.1) (2022-05-17)
 
 ### Bug Fixes
