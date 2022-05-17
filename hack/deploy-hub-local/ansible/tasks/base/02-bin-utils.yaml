@@ -46,6 +46,6 @@
       
       Set or unset current server's current status:
       set-motd set [-user] [-motd] [-pr]
-      set-motd unset]
+      set-motd unset
 
   tags: [ 02-bin-utils ]
