@@ -1,3 +1,9 @@
+## [1.3.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.3.0...1.3.1) (2022-05-17)
+
+### Bug Fixes
+
+- **ansible:** bashrc messages break ansible ([d4e424f](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/d4e424f6433814c16b5bc9d961ccb89e3ef3eace))
+
 # [1.3.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.2.6...1.3.0) (2022-05-17)
 
 ### Features
