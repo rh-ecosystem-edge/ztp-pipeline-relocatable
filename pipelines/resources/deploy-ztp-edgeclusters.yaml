@@ -96,10 +96,10 @@ spec:
   # Deploy Workers
   - name: deploy-workers
     taskRef:
-      name: spoke-deploy-workers
+      name: edgecluster-deploy-workers
     params:
-      - name: spokes-config
-        value: $(params.spokes-config)
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
       - name: kubeconfig
         value: $(params.kubeconfig)
       - name: ztp-container-image
