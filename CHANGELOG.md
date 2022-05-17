@@ -1,3 +1,9 @@
+## [1.4.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.2...1.4.3) (2022-05-17)
+
+### Bug Fixes
+
+- **ansible:** add final white space... ([c4a440d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/c4a440d8345a10a2ea15936d0d6bc76625e662d9))
+
 ## [1.4.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.1...1.4.2) (2022-05-17)
 
 ### Bug Fixes
