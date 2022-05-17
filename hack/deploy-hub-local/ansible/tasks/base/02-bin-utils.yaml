@@ -37,9 +37,8 @@
   tags: [ 02-bin-utils ]
 
 - name: Create set-motd disclaimer
-  file:
-    path: /etc/motd.d/set-motd
-    state: file
+  copy:
+    dest: /etc/motd.d/set-motd
     owner: root
     group: root
     mode: "0755"
