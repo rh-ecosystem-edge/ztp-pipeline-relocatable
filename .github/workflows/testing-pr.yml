@@ -78,7 +78,7 @@ jobs:
         continue-on-error: true
         run: |
           if [ -f /root/bin/set-motd ]; then
-            MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}")
+            MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Progressing.")
             /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
           fi
 
@@ -134,12 +134,20 @@ jobs:
 
           if [ $(tkn pr ls -n edgecluster-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
             echo "The pipeline has failed"
+            if [ -f /root/bin/set-motd ]; then
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: FAILURE! Check the logs!")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+            fi
             exit 1
           elif [ $(tkn pr ls -n edgecluster-deployer | head -2 | grep -i succeeded | wc -l) -gt 0 ]; then
             echo "The pipeline has succeeded"
             exit 0
           else
             echo "The pipeline has not finished"
+            if [ -f /root/bin/set-motd ]; then
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: FAILURE! Check the logs!")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+            fi
             exit 1
           fi
 
