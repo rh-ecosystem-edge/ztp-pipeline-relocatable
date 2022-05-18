@@ -5,11 +5,11 @@
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
-alias hub='export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig'
+alias hubkubeconfig='export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig'
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
-	. /etc/bashrc
+        . /etc/bashrc
 fi
 export GOPATH=~/go
 export PATH=$PATH:$GOPATH/bin
@@ -20,6 +20,37 @@ function hasBranch {
 
 function isSvn {
     test -d .svn && echo "(svn)"
+}
+
+function hub {
+    export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+
+    oc whoami &> /dev/null
+    if [ $? -ne 0 ]; then
+      echo "Hub Cluster not ready, try when the provisioning is complete"
+      export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
+    else
+      export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: [\e[0;36m\]$(oc whoami)@hub\e[0;32m\]] \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
+    fi
+}
+
+function edge {
+    hubkubeconfig
+    oc extract secret/edgecluster0-cluster-admin-kubeconfig -n edgecluster0-cluster --keys=kubeconfig --to=/root 1>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "Error extracting Edge Cluster Kubeconfig"
+    else
+      mv -f /root/kubeconfig /root/edge-kubeconfig
+      export KUBECONFIG=/root/edge-kubeconfig
+
+      oc whoami &> /dev/null
+      if [ $? -ne 0 ]; then
+        echo "Edge Cluster not ready, try when the provisioning is complete"
+        export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
+      else
+        export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: [\e[0;36m\]$(oc whoami)@edge\e[0;32m\]] \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
+      fi
+    fi
 }
 
 export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
