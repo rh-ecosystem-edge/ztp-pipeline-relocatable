@@ -130,6 +130,10 @@ function deploy_openshift_pipelines() {
 
     check_resource "deployment" "openshift-pipelines-operator" "Available" "openshift-operators"
     check_resource "deployment" "tekton-operator-webhook" "Available" "openshift-operators"
+    check_resource "crd" "tektonconfigs.operator.tekton.dev" "Established" "openshift-operators"
+
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${PIPELINES_DIR}/manifests/02-tektonconfig.yaml
+    sleep 2
 
     declare -a StringArray=("clustertasks.tekton.dev" "conditions.tekton.dev" "pipelineresources.tekton.dev" "pipelineruns.tekton.dev" "pipelines.tekton.dev" "runs.tekton.dev" "taskruns.tekton.dev" "tasks.tekton.dev" "tektonaddons.operator.tekton.dev" "tektonconfigs.operator.tekton.dev" "tektoninstallersets.operator.tekton.dev" "tektonpipelines.operator.tekton.dev" "tektontriggers.operator.tekton.dev")
     for crd in ${StringArray[@]}; do
