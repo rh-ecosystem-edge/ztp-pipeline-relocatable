@@ -5,6 +5,7 @@
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
+alias hub='export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig'
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
