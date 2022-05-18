@@ -1,0 +1,13 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: odf-lvm-operator
+  namespace: openshift-local-storage
+spec:
+  channel: "stable"
+  installPlanApproval: Automatic
+  name: odf-lvm-operator
+  source: ztpfw-catalog
+  sourceNamespace: openshift-marketplace
+  startingCSV: odf-lvm-operator.v4.10.0
