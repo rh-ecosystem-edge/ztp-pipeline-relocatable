@@ -1,7 +1,8 @@
 config:
-  OC_OCP_VERSION: "4.10.6"
+  OC_OCP_VERSION: "4.10.13"
   OC_ACM_VERSION: "2.4"
   OC_ODF_VERSION: "4.9"
+  REGISTRY: "flavio4.alklabs.local:5000"
 
 edgeclusters:
   - edgecluster1-name:

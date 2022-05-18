@@ -302,4 +302,6 @@ if [[ ${SPOKES_FILE_REGISTRY} == "" || ${SPOKES_FILE_REGISTRY} == null ]]; then
     export CUSTOM_REGISTRY=false
 else
     export CUSTOM_REGISTRY=true
+    REGISTRY=$(echo ${SPOKES_FILE_REGISTRY} | cut -d"." -f1 )
+    LOCAL_REG=${SPOKES_FILE_REGISTRY}
 fi

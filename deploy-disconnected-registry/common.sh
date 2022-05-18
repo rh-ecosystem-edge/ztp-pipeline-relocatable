@@ -102,8 +102,8 @@ function trust_internal_registry() {
         #? workaround running podman on openshift
         export STORAGE_DRIVER=vfs
         sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
-        CHECK_LOGIN=$(podman login ${LOCAL_REG} --authfile ${PULL_SECRET}  || echo "false" )
-        if [[ ${CHECK_LOGIN} == "false" ]]; then
+       
+        if [[ ! $( podman login ${LOCAL_REG} --authfile ${PULL_SECRET}) ]]; then
                 echo "ERROR: Failed to login to ${LOCAL_REG}, please check Pull Secret"
                 exit 1
         else

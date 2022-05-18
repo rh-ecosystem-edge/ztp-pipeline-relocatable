@@ -161,3 +161,26 @@ config:
     REGISTRY: my-registry.domain.local:5000
 
 ```
+
+Example: how to update openshift config pull secret 
+
+```shell
+
+# pull secret should be base64 
+export CUSTOM_REGISTRY_PULLSECRET="some base64 string"
+export CUSTOM_REGISTRY_URL=reg.domain.local:5000
+
+AUTHSTRING="{\"$CUSTOM_REGISTRY_URL\": {\"auth\": \"$CUSTOM_REGISTRY_PULLSECRET\"}}"
+
+echo "getting pull secret"
+oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d > origin-pullsecret.json
+echo "original pull secret saved as origin-pullsecret.json" 
+echo ""
+
+echo "Creating updated pull secret"
+jq ".auths += $AUTHSTRING" < origin-pullsecret.json > updated-pull-secret.json
+
+echo "pushing openshift config" 
+oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=updated-pull-secret.json
+
+```
