@@ -19,6 +19,7 @@ import {
 } from './constants';
 import { CLUSTER_ADMIN_ROLE_BINDING, HTPASSWD_SECRET } from './resourceTemplates';
 import { PersistErrorType } from './types';
+import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 
 const getHtpasswdData = async (
   setError: (error: PersistErrorType) => void,
@@ -136,11 +137,13 @@ export enum PersistIdentityProviderResult {
 
 export const persistIdentityProvider = async (
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   username: string,
   password: string,
 ): Promise<PersistIdentityProviderResult> => {
   if (!username || !password) {
     console.log('persistIdentityProvider: username or password missing, so skipping that step.');
+    setProgress(PersistSteps.PersistIDP);
     return PersistIdentityProviderResult.skipped;
   }
 
@@ -162,6 +165,7 @@ export const persistIdentityProvider = async (
     );
 
     // skip username/passwod wizard steps for that case
+    setProgress(PersistSteps.PersistIDP);
     return PersistIdentityProviderResult.skipped;
   }
 
@@ -187,6 +191,7 @@ export const persistIdentityProvider = async (
     return PersistIdentityProviderResult.error;
   }
 
+  setProgress(PersistSteps.PersistIDP);
   return PersistIdentityProviderResult.userCreated;
 };
 

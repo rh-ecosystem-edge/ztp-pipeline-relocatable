@@ -1,13 +1,16 @@
 import { postRequest } from '../../resources';
+import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { PERSIST_DOMAIN } from './constants';
 import { PersistErrorType } from './types';
 
 export const persistDomain = async (
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   domain?: string,
 ): Promise<boolean> => {
   if (!domain) {
     console.info('Domain change not requested, so skipping that step.');
+    setProgress(PersistSteps.PersistDomain);
     return true; // skip
   }
 
@@ -25,5 +28,6 @@ export const persistDomain = async (
     return false;
   }
 
+  setProgress(PersistSteps.PersistDomain);
   return true;
 };

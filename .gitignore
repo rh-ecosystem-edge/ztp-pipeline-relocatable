@@ -31,4 +31,4 @@ build/*
 **/pull-secret.json
 **/openshift_pull.json
 pipelines/ztp-pipeline-relocatable/
-hack/deploy-hub-local/spokes.yaml
+hack/deploy-hub-local/edgeclusters.yaml

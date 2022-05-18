@@ -1,4 +1,5 @@
 export * from './metadata';
+export * from './statuscondition';
 export * from './patches';
 export * from './resource';
 export * from './secret';
@@ -9,3 +10,4 @@ export * from './route';
 export * from './oauthclient';
 export * from './deployment';
 export * from './pod';
+export * from './clusteroperator';

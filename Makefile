@@ -4,15 +4,15 @@ UI_IMAGE = quay.io/ztpfw/ui
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
-FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
-FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
-SPOKES_FILE ?= ${PWD}/hack/deploy-hub-local/spokes.yaml
+FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
+FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
+EDGECLUSTERS_FILE ?= ${PWD}/hack/deploy-hub-local/edgeclusters.yaml
 PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.13
 ACM_VERSION ?= 2.4
-OCS_VERSION ?= 4.9
+ODF_VERSION ?= 4.9
 
-.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-spoke-sno all-spoke-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-spoke-sno build-spoke-compact deploy-pipe-spoke-sno deploy-pipe-spoke-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-spoke-sno-ci deploy-pipe-spoke-compact-ci all-hub-sno-ci all-hub-compact-ci all-spoke-sno-ci all-spoke-compact-ci all-images-ci
+.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci
 .EXPORT_ALL_VARIABLES:
 
 all-images: pipe-image ui-image
@@ -26,13 +26,13 @@ ui-image-ci: build-ui-image-ci push-ui-image-ci
 
 all-hub-sno: build-hub-sno bootstrap wait-for-hub-sno deploy-pipe-hub-sno
 all-hub-compact: build-hub-compact bootstrap deploy-pipe-hub-compact
-all-spoke-sno: build-spoke-sno bootstrap deploy-pipe-spoke-sno
-all-spoke-compact: build-spoke-compact bootstrap deploy-pipe-spoke-compact
+all-edgecluster-sno: build-edgecluster-sno bootstrap deploy-pipe-edgecluster-sno
+all-edgecluster-compact: build-edgecluster-compact bootstrap deploy-pipe-edgecluster-compact
 
 all-hub-sno-ci: build-hub-sno bootstrap-ci deploy-pipe-hub-ci
 all-hub-compact-ci: build-hub-compact bootstrap-ci deploy-pipe-hub-ci
-all-spoke-sno-ci: build-spoke-sno bootstrap-ci deploy-pipe-spoke-sno-ci
-all-spoke-compact-ci: build-spoke-compact bootstrap-ci deploy-pipe-spoke-compact-ci
+all-edgecluster-sno-ci: build-edgecluster-sno bootstrap-ci deploy-pipe-edgecluster-sno-ci
+all-edgecluster-compact-ci: build-edgecluster-compact bootstrap-ci deploy-pipe-edgecluster-compact-ci
 
 ### Manual builds
 build-pipe-image:
@@ -65,99 +65,99 @@ doc:
 
 build-hub-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno
 
 build-hub-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact
 
-build-spoke-sno:
+build-edgecluster-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) sno
+	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno
 
-build-spoke-compact:
+build-edgecluster-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
-	./build-spoke.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(OCS_VERSION) compact
+	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact
 
 wait-for-hub-sno:
 	${PWD}/shared-utils/wait_for_sno_mco.sh &
 
 deploy-pipe-hub-sno:
-	tkn pipeline start -n spoke-deployer \
+	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
 			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n spoke-deployer -f
+	tkn pr logs -L -n edgecluster-deployer -f
 
 deploy-pipe-hub-compact:
-	tkn pipeline start -n spoke-deployer \
+	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
 			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n spoke-deployer -f
+	tkn pr logs -L -n edgecluster-deployer -f
 
-deploy-pipe-spoke-sno:
-	tkn pipeline start -n spoke-deployer \
+deploy-pipe-edgecluster-sno:
+	tkn pipeline start -n edgecluster-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+    			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-spokes-sno && \
-	tkn pr logs -L -n spoke-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters-sno && \
+	tkn pr logs -L -n edgecluster-deployer -f
 
-deploy-pipe-spoke-compact:
-	tkn pipeline start -n spoke-deployer \
+deploy-pipe-edgecluster-compact:
+	tkn pipeline start -n edgecluster-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
-    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+    			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-spokes && \
-	tkn pr logs -L -n spoke-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters && \
+	tkn pr logs -L -n edgecluster-deployer -f
 
 deploy-pipe-hub-ci:
-	tkn pipeline start -n spoke-deployer \
+	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
 			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n spoke-deployer -f
+	tkn pr logs -L -n edgecluster-deployer -f
 
-deploy-pipe-spoke-sno-ci:
-	tkn pipeline start -n spoke-deployer \
+deploy-pipe-edgecluster-sno-ci:
+	tkn pipeline start -n edgecluster-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+    			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-spokes-sno && \
-	tkn pr logs -L -n spoke-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters-sno && \
+	tkn pr logs -L -n edgecluster-deployer -f
 
-deploy-pipe-spoke-compact-ci:
-	tkn pipeline start -n spoke-deployer \
+deploy-pipe-edgecluster-compact-ci:
+	tkn pipeline start -n edgecluster-deployer \
     			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
-    			-p spokes-config="$$(cat $(SPOKES_FILE))" \
+    			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-spokes && \
-	tkn pr logs -L -n spoke-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters && \
+	tkn pr logs -L -n edgecluster-deployer -f
 
 bootstrap:
 	cd ${PWD}/pipelines && \
@@ -168,7 +168,7 @@ bootstrap-ci:
 	./bootstrap.sh $(RELEASE)
 
 clean:
-	oc delete managedcluster $(SPOKE_NAME); \
-	oc delete ns $(SPOKE_NAME); \
+	oc delete managedcluster $(EDGE_NAME); \
+	oc delete ns $(EDGE_NAME); \
 	oc rollout restart -n openshift-machine-api deployment/metal3; \
-	kcli delete vm $(SPOKE_NAME)-m0 $(SPOKE_NAME)-m1 $(SPOKE_NAME)-m2 $(SPOKE_NAME)-w0
+	kcli delete vm $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0

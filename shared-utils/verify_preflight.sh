@@ -85,39 +85,39 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 if [[ $(oc version | grep -i server | grep ${OC_OCP_VERSION_FULL} | wc -l) -ne 1 ]]; then
     echo "Error: OCP version not supported"
-    exit 2
+    exit 1
 fi
 
 echo ">>>> Verify oc get nodes"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]]; then
     echo "Error: Nodes are not ready"
-    exit 3
+    exit 1
 fi
 
 echo ">>>> Verify the cluster operator ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 retry=1
-  while [ ${retry} != 0 ]; do
-   if [[ $(oc get co | awk '{print $3}' | grep -i true | wc -l) -ne $(($(oc get co | wc -l) - 1)) ]]; then
-       echo "Error: ClusterOperators are not ready. Trying again... ${retry}"
-       sleep 10
-       retry=$((retry + 1))
+while [ ${retry} != 0 ]; do
+    if [[ $(oc get co | awk '{print $3}' | grep -i true | wc -l) -ne $(($(oc get co | wc -l) - 1)) ]]; then
+        echo "Error: ClusterOperators are not ready. Trying again... ${retry}"
+        sleep 10
+        retry=$((retry + 1))
     else
-       echo ">>>> Cluster Operators are ready"
-       retry=0
+        echo ">>>> Cluster Operators are ready"
+        retry=0
     fi
     if [ ${retry} == 20 ]; then
         echo ">>>> ERROR: Retry limit reached to get Cluster Operators ready"
-        exit 4
+        exit 1
     fi
-   done
+done
 
 echo ">>>> Verify the metal3 pods ready"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get pod -n openshift-machine-api | wc -l) -lt 1 ]]; then
     echo "Error: metal3 pods are not available to use ztp"
-    exit 5
+    exit 1
 fi
 
 echo ">>>> Verify the PV available"
@@ -125,7 +125,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get pv | wc -l) -lt 3 ]]; then
     #TODO verify the PV size  and if does not exists, create it from disk
     echo "Error: Persistent volumes not available in the hub"
-    exit 6
+    exit 1
 fi
 
 echo ">>>> EOF"

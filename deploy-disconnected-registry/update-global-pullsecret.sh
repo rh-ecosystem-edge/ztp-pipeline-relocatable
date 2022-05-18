@@ -9,10 +9,10 @@ function extract_kubeconfig() {
         cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
     fi
 
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${EDGE_KUBECONFIG}
 }
 
 function prepare_env() {
@@ -45,24 +45,24 @@ if [[ ${1} == 'hub' && ${CUSTOM_REGISTRY} == "false"  ]]; then
     ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
     oc --kubeconfig=${KUBECONFIG_HUB} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${PULL_SECRET}
 
-elif [[ ${1} == "spoke" ]]; then
-    if [[ -z ${ALLSPOKES} ]]; then
-        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+elif [[ ${1} == "edgecluster" ]]; then
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
-    for spoke in ${ALLSPOKES}; do
-        # Get Spoke Kubeconfig
-        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
+    for edgecluster in ${ALLEDGECLUSTERS}; do
+        # Get Edge-cluster Kubeconfig
+        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${edgecluster}" ]]; then
+            extract_kubeconfig ${edgecluster}
         else
-            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${edgecluster}"
         fi
-        source ./common.sh 'spoke'
+        source ./common.sh 'edgecluster'
 
-        prepare_env 'spoke'
+        prepare_env 'edgecluster'
         ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
         ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-        oc --kubeconfig=${SPOKE_KUBECONFIG} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${PULL_SECRET}
+        oc --kubeconfig=${EDGE_KUBECONFIG} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${PULL_SECRET}
 
     done
 fi

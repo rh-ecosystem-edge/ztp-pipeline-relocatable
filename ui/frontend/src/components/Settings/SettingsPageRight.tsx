@@ -16,6 +16,7 @@ import { navigateToNewDomain, persist, PersistErrorType } from '../PersistPage';
 import { IpTripletsSelector } from '../IpTripletsSelector';
 import { useK8SStateContext } from '../K8SStateContext';
 import { DeleteKubeadminButton } from './DeleteKubeadminButton';
+import { PersistProgress, usePersistProgress } from '../PersistProgress';
 
 import './SettingsPageRight.css';
 
@@ -28,6 +29,7 @@ export const SettingsPageRight: React.FC<{
   const [isSaving, setIsSaving] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
   const state = useK8SStateContext();
+  const progress = usePersistProgress();
 
   const error: PersistErrorType | undefined = initialError
     ? {
@@ -53,7 +55,7 @@ export const SettingsPageRight: React.FC<{
   const onSave = async () => {
     setIsSaving(true);
     setError(undefined);
-    await persist(state, setError, onSuccess);
+    await persist(state, setError, progress.setProgress, onSuccess);
     setIsSaving(false);
   };
 
@@ -61,8 +63,9 @@ export const SettingsPageRight: React.FC<{
     setError(null);
     setEdit(false);
 
-    navigateToNewDomain(domain, '/settings');
+    navigateToNewDomain(domain, '/settings#redirected');
   };
+  const isAfterRedirection = window.location.hash === '#redirected';
 
   const onCancelEdit = () => {
     setEdit(false);
@@ -141,21 +144,30 @@ export const SettingsPageRight: React.FC<{
             </Alert>
           </StackItem>
         )}
-        {error === null && (
+        {isSaving && (
           <StackItem isFilled className="summary-page-sumamary__item">
-            <Alert
-              data-testid="settings-page-alert-all-saved"
-              title="Changes saved"
-              variant={AlertVariant.success}
-              isInline
-            >
-              All changes have been saved, waiting for them to take effect.
-              {/* TODO: show spinner */}
-            </Alert>
+            <PersistProgress
+              className="settings-page-sumamary__persist-progress"
+              {...progress}
+              progressError={!!error}
+            />
+            {error === null && (
+              <>
+                All changes have been saved, it might take several minutes for cluster to reconcile.
+              </>
+            )}
           </StackItem>
         )}
-        {error === undefined && (
-          <StackItem isFilled>{isSaving && <>Saving changes... {/* TODO: Spinner */}</>}</StackItem>
+        {!isSaving && !error && (
+          <StackItem isFilled className="summary-page-sumamary__item">
+            {/* Just a placeholder */}
+          </StackItem>
+        )}
+        {isAfterRedirection && !isSaving && !isEdit && (
+          <StackItem className="summary-page-sumamary__item">
+            {/* TODO: Do we want to shouw 100% progressbar here? After redirection, it can be a fake one... */}
+            All changes have been saved.
+          </StackItem>
         )}
         <StackItem className="settings-page-sumamary__item__footer">
           {!isEdit && (

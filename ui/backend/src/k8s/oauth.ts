@@ -44,7 +44,7 @@ export const getOauthInfoPromise = async () => {
     OAUTH_ROUTE_PREFIX,
   );
   const oauth = {
-    // https://oauth-openshift.apps.spoke0-cluster.alklabs.local/oauth/authorize
+    // https://oauth-openshift.apps.edgecluster0-cluster.alklabs.local/oauth/authorize
     authorization_endpoint: `${oauthServer}/oauth/authorize`,
     token_endpoint: `${oauthServer}/oauth/token`,
   };
@@ -52,19 +52,20 @@ export const getOauthInfoPromise = async () => {
   return oauth;
 };
 
-export const login = async (_: Request, res: Response): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   logger.log('Login requested');
   const oauthInfo = await getOauthInfoPromise();
+
+  const state = req.url.split('?state=')[1] || '';
 
   const queryString = stringifyQuery({
     response_type: `code`,
     client_id: process.env.OAUTH2_CLIENT_ID,
     redirect_uri: process.env.OAUTH2_REDIRECT_URL,
     scope: `user:full`,
-    state: '',
+    state,
   });
   const url = `${oauthInfo.authorization_endpoint}?${queryString}`;
-  logger.log('Login redirect: ', url);
 
   return redirect(res, url);
 };
@@ -78,7 +79,8 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
     const queryString = url.substr(url.indexOf('?') + 1);
     const query = parseQueryString(queryString);
     const code = query.code as string;
-    // const state = query.state
+    const state = (query.state || '') as string;
+
     const requestQuery: Record<string, string> = {
       grant_type: `authorization_code`,
       code: code,
@@ -92,7 +94,6 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
     );
     if (body.access_token) {
       let attributes: string;
-      // if (process.env.NODE_ENV === 'production') {
       if (process.env.FRONTEND_URL?.startsWith('https://')) {
         attributes = 'Secure; Path=/';
       } else {
@@ -102,7 +103,7 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
 
       const headers = {
         'Set-Cookie': `${K8S_ACCESS_TOKEN_COOKIE}=${body.access_token}; ${attributes}`,
-        location: process.env.FRONTEND_URL,
+        location: `${process.env.FRONTEND_URL || ''}${state}`,
       };
       res.writeHead(302, headers).end();
       return;
@@ -146,7 +147,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
   const host = req.headers.host;
 
   deleteCookie(res, { cookie: 'connect.sid' });
-  deleteCookie(res, { cookie:  K8S_ACCESS_TOKEN_COOKIE});
+  deleteCookie(res, { cookie: K8S_ACCESS_TOKEN_COOKIE });
   deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host || ''}` });
   res.writeHead(200).end();
 }

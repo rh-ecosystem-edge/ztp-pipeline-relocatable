@@ -19,6 +19,7 @@ import {
 } from './resourceTemplates';
 import { PersistErrorType } from './types';
 import { waitForLivenessProbe } from './utils';
+import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 
 const createAddressPool = async (
   setError: (error: PersistErrorType) => void,
@@ -86,6 +87,7 @@ const patchAddressPool = async (
 
 const saveService = async (
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   _serviceIp: string,
   template: Service,
   actionName: string,
@@ -136,6 +138,7 @@ const saveService = async (
     }
 
     // New Service and AddressPool created
+    setProgress(type === 'api' ? PersistSteps.SaveApi : PersistSteps.SaveIngress);
     return true;
   }
 
@@ -187,20 +190,30 @@ const saveService = async (
     console.log(`No changes to ${name} service detected. Skipping ${actionName}.`);
   }
 
+  setProgress(type === 'api' ? PersistSteps.SaveApi : PersistSteps.SaveIngress);
   return true;
 };
 
 export const saveIngress = async (
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   ingressIp: string,
 ): Promise<boolean> =>
-  saveService(setError, ingressIp, SERVICE_TEMPLATE_METALLB_INGRESS, 'ingress IP', 'ingress');
+  saveService(
+    setError,
+    setProgress,
+    ingressIp,
+    SERVICE_TEMPLATE_METALLB_INGRESS,
+    'ingress IP',
+    'ingress',
+  );
 
 export const saveApi = async (
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   apiip: string,
 ): Promise<boolean> => {
-  if (!(await saveService(setError, apiip, SERVICE_TEMPLATE_API, 'API IP', 'api'))) {
+  if (!(await saveService(setError, setProgress, apiip, SERVICE_TEMPLATE_API, 'API IP', 'api'))) {
     return false;
   }
 

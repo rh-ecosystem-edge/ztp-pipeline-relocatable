@@ -51,7 +51,7 @@ exports[`UsernameSelector can can handle invalid domain 1`] = `
             class="validation-failed-text"
             data-testid="validation-failed-text"
           >
-            Valid username wasn't provided
+            Valid username wasn't provided.
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@ exports[`UsernameSelector can can handle invalid domain 2`] = `
             class="validation-failed-text"
             data-testid="validation-failed-text"
           >
-            Valid username wasn't provided
+            Valid username wasn't provided.
           </div>
         </div>
       </div>

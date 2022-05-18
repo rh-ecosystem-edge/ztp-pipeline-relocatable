@@ -11,7 +11,7 @@ function create_cs() {
     if [[ ${mode} == 'hub' ]]; then
         local CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
         local cluster="hub"
-    elif [[ ${mode} == 'spoke' ]]; then
+    elif [[ ${mode} == 'edgecluster' ]]; then
         local cluster=${2}
         local CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
     fi
@@ -37,7 +37,7 @@ EOF
     if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
         echo ">>>> There are no certified operators to be mirrored"
     else
-           cat >>${CS_OUTFILE} <<EOF
+        cat >>${CS_OUTFILE} <<EOF
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
@@ -61,15 +61,15 @@ function trust_internal_registry() {
 
     if [[ $# -lt 1 ]]; then
         echo "Usage :"
-        echo "  trust_internal_registry hub|spoke <spoke name>"
+        echo "  trust_internal_registry hub|edgecluster <edgecluster name>"
         exit 1
     fi
 
     if [[ ${1} == 'hub' ]]; then
         KBKNFG=${KUBECONFIG_HUB}
         clus="hub"
-    elif [[ ${1} == 'spoke' ]]; then
-        KBKNFG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        KBKNFG=${EDGE_KUBECONFIG}
         clus=${2}
     fi
 
@@ -115,9 +115,9 @@ function trust_internal_registry() {
 
 if [[ $# -lt 1 ]]; then
     echo "Usage :"
-    echo '  $1: hub|spoke'
+    echo '  $1: hub|edgecluster'
     echo "Sample: "
-    echo "  ${0} hub|spoke"
+    echo "  ${0} hub|edgecluster"
     exit 1
 fi
 
@@ -163,14 +163,15 @@ if [[ ${1} == "hub" ]]; then
 
     export DESTINATION_REGISTRY=${LOCAL_REG}
     export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
-
+    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+    # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
     ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
     export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
     ## OLM INDEX IMAGE
     export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-    
+
     ## NS where the OLM CERTIFIED images will be mirrored
     export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
     ## Image name where the OLM INDEX for RH CERTIFIED OPERATORS image will be mirrored
@@ -183,16 +184,16 @@ if [[ ${1} == "hub" ]]; then
     ## OCP INDEX IMAGE
     export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
-elif [[ ${1} == "spoke" ]]; then
-    if [[ ${SPOKE_KUBECONFIG:-} == "" ]]; then
-        echo "Avoiding Hub <-> Spoke sync on favor of registry deployment"
+elif [[ ${1} == "edgecluster" ]]; then
+    if [[ ${EDGE_KUBECONFIG:-} == "" ]]; then
+        echo "Avoiding Hub <-> Edge-cluster sync on favor of registry deployment"
     else
-        echo ">>>> Filling variables for Registry sync on Spoke"
+        echo ">>>> Filling variables for Registry sync on Edge-cluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo "HUB: ${KUBECONFIG_HUB}"
-        echo "SPOKE: ${SPOKE_KUBECONFIG}"
+        echo "EDGE: ${EDGE_KUBECONFIG}"
         ## Common
-        export DESTINATION_REGISTRY="$(oc --kubeconfig=${SPOKE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
+        export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
         ## OCP Sync vars
         export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
         ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1

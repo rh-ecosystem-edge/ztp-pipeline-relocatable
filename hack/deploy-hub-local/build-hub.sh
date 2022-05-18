@@ -5,7 +5,7 @@ set -o pipefail
 set -o nounset
 set -m
 
-usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <ocs_version(4.8)> <hub_architecture(installer|sno)>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> <hub_architecture(installer|sno)>" 1>&2; exit 1; }
 
 if [ $# -lt 4 ]; then
     usage
@@ -14,9 +14,9 @@ fi
 export pull_secret=${1}
 export ocp_version=${2}
 export acm_version=${3}
-export ocs_version=${4}
+export odf_version=${4}
 
-if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" ] || [ -z "${acm_version}" ] || [ -z "${ocs_version}" ]; then
+if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" ] || [ -z "${acm_version}" ] || [ -z "${odf_version}" ]; then
     usage
 fi
 
@@ -42,7 +42,7 @@ export CLUSTERS=1
 export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
-export OC_OCS_VERSION="${ocs_version}"
+export OC_ODF_VERSION="${odf_version}"
 export HUB_ARCHITECTURE="${5:-compact}"
 
 echo ">>>> Set the Pull Secret"
@@ -81,21 +81,21 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     fi
 fi
 
-echo ">>>> Spokes.yaml file generation"
+echo ">>>> Edge-clusters.yaml file generation"
 
 #Empty file before we start
->spokes.yaml
+>edgeclusters.yaml
 
-cat <<EOF >>spokes.yaml
+cat <<EOF >>edgeclusters.yaml
 config:
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
-  OC_OCS_VERSION: '${OC_OCS_VERSION}'
+  OC_ODF_VERSION: '${OC_ODF_VERSION}'
 EOF
 
-# Create header for spokes.yaml
-cat <<EOF >>spokes.yaml
-spokes:
+# Create header for edgeclusters.yaml
+cat <<EOF >>edgeclusters.yaml
+edgeclusters:
 EOF
 
 echo ">>>> Create the PV and sushy and dns"

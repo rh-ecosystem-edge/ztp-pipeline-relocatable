@@ -1,10 +1,10 @@
 config:
   OC_OCP_VERSION: "4.10.6"
   OC_ACM_VERSION: "2.4"
-  OC_OCS_VERSION: "4.9"
+  OC_ODF_VERSION: "4.9"
 
-spokes:
-  - spoke1-name:
+edgeclusters:
+  - edgecluster1-name:
       contrib:
         gpu-operator:
           version: "v1.9.0"
@@ -62,7 +62,7 @@ spokes:
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
         root_disk: "/dev/sda"
-  - spoke2-name:
+  - edgecluster2-name:
       contrib:
         gpu-operator:
           version: "v1.9.0"

@@ -37,7 +37,7 @@ export const domainValidator = (domain: string): K8SStateContextData['domainVali
   if (!domain || domain?.match(DNS_NAME_REGEX)) {
     return ''; // passed ; optional - pass for empty as well
   }
-  return "Valid domain wasn't provided";
+  return "Valid domain wasn't provided.";
 };
 
 export const usernameValidator = (username = ''): K8SStateContextData['username'] => {
@@ -45,11 +45,15 @@ export const usernameValidator = (username = ''): K8SStateContextData['username'
     return 'Valid username can not be longer than 54 characters.';
   }
 
+  if (username === 'kubeadmin') {
+    return 'The kubeadmin username is reserved.';
+  }
+
   if (!username || username.match(USERNAME_REGEX)) {
     return ''; // passed
   }
 
-  return "Valid username wasn't provided";
+  return "Valid username wasn't provided.";
 };
 
 export const passwordValidator = (pwd: string): K8SStateContextData['passwordValidation'] => {
@@ -88,3 +92,5 @@ export const delay = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+
+export const getZtpfwUrl = () => `https://${window.location.hostname}:${window.location.port}`;

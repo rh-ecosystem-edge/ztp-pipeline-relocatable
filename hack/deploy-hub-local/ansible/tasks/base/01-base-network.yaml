@@ -1,0 +1,26 @@
+---
+- name: Check if lab-dns-internal.sh exists
+  stat: 
+    path: /root/src/ztp/hack/deploy-hub-local/lab-dns-internal.sh
+  register: dnsinternal
+  tags: [ 00-base-network ]
+
+- name: Check if lab-dns-external exists
+  stat: 
+    path: /root/src/ztp/hack/deploy-hub-local/lab-dns-internal.sh
+  register: dnsexternal
+  tags: [ 00-base-network ]
+
+- name: Configure dns internal
+  command:
+    cmd: /bin/bash -c "/root/src/ztp/hack/deploy-hub-local/lab-dns-internal.sh"
+  when: (network_type == "internal") and (dnsinternal.stat.exists == true)
+  ignore_errors: true
+  tags: [ 00-base-network ]
+
+- name: Configure dns external
+  command:
+    cmd: /bin/bash -c "/root/src/ztp/hack/deploy-hub-local/lab-dns-external.sh"
+  when: (network_type == "external") and (dnsexternal.stat.exists == true)
+  ignore_errors: true
+  tags: [ 00-base-network ]

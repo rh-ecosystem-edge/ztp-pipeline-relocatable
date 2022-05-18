@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: edgecluster-deploy-edgecluster
+  annotations:
+    description: |
+      This task will deploy the edgeclusters based on the edgeclusters.yaml file passed to the pipeline/task.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+      default: ""
+    - name: edgeclusters-config
+      type: string
+      default: ""
+    - name: mock
+      type: string
+      default: "false"
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp"
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_EDGECLUSTERS_DIR
+        value: "deploy-edgecluster"
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
+  steps:
+    - name: render-edgeclusters
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
+          ./render_edgeclusters.sh
+          sleep 3
+        else
+          echo "Render Edge-cluster: Mock mode on"
+        fi
+
+    - name: deploy-edgeclusters
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
+          ./deploy.sh
+        else
+          echo "Deploy Edge-cluster: Mock mode on"
+        fi

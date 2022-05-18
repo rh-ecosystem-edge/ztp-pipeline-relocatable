@@ -4,7 +4,7 @@ include::modules/common-attributes.adoc[]
 :context: ztp-for-factory-pipeline-hub
 toc::[]
 
-The Hub pipeline is an OpenShift Object that will be used to deploy the infrastructure for the HUB to be ready to deploy spokes. As we already explained before, it will need the following:
+The Hub pipeline is an OpenShift Object that will be used to deploy the infrastructure for the HUB to be ready to deploy edgeclusters. As we already explained before, it will need the following:
 
 - An OpenShift Hub Cluster available with 4.9 version
 - The proper DNS entries and the API/Ingress exposed in the factory Network (DHCP Ext Network)
@@ -15,7 +15,7 @@ The Hub pipeline is an OpenShift Object that will be used to deploy the infrastr
 Ok now we can continue with the Pipeline execution. It will be a command like this:
 
 ```sh
-tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p edgeclusters-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ```
 
 After the above command you will see something like this on the prompt:
@@ -24,7 +24,7 @@ After the above command you will see something like this on the prompt:
 PipelineRun started: deploy-ztp-hub-run-w5k7l
 
 In order to track the PipelineRun progress run:
-tkn pipelinerun logs deploy-ztp-hub-run-w5k7l -f -n spoke-deployer
+tkn pipelinerun logs deploy-ztp-hub-run-w5k7l -f -n edgecluster-deployer
 ```
 
 If you check the logs of just follow the PipelineRun on the OpenShift Console, you will see every step the Pipeline will follow. Let's explain which steps we have and what they do:
@@ -36,13 +36,13 @@ The Hub Workflow will be something like what you're seeing in the image, let's d
 image::pipeline-hub-workflow.png[]
 
 - **Download the code**:
-This phase will be mandatory or not, depending on the scenario. If the environemnt is fully disconnected, this source code will be embbeded into the Container Image.
+This phase will be mandatory or not, depending on the scenario. If the environment is fully disconnected, this source code will be embedded into the Container Image.
 
 - **Check the Hub cluster**:
 We will ensure all the things are ready to start the Hub provisioning. ClusterOperators, ClusterVersion and up and ready Nodes are all essential to start working.
 
 - **Deploy HTTPD Server**:
-In this step we will deploy an HTTPD server in order to host the RHCOS Images that will be used in the Spoke deployment as a base to bake the customized ISOS for the Bare Metal nodes.
+In this step we will deploy an HTTPD server in order to host the RHCOS Images that will be used in the Edge-cluster deployment as a base to bake the customized ISOS for the Bare Metal nodes.
 
 - **Deploy Image Registry**:
 We will host an internal registry in the Hub cluster, after that perform the Sync between the OCP and OLM images from Quay/RedHat registries to the internal one. This step will enable, in a future step, to change the ICSP and Catalog sources that allows us to use the this Hub cluster as an isolated one. Last step here is update the OCP global PullSecret to give the cluster the capability to access the images.

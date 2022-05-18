@@ -13,12 +13,10 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
-
-
 if [[ ${1} == 'hub' ]]; then
     TG_KUBECONFIG=${KUBECONFIG_HUB}
-elif [[ ${1} == 'spoke' ]]; then
-    TG_KUBECONFIG=${SPOKE_KUBECONFIG}
+elif [[ ${1} == 'edgecluster' ]]; then
+    TG_KUBECONFIG=${EDGE_KUBECONFIG}
 fi
 if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
     if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TG_KUBECONFIG} get -n ztpfw-registry deployment ztpfw-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then

@@ -3,7 +3,7 @@ parameters:
   clusters: 2 
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
-spoke{{ i }}-cluster-m{{ j }}:
+edgecluster{{ i }}-cluster-m{{ j }}:
   uefi_legacy: true
   start: false
   memory: 64000
@@ -24,7 +24,7 @@ spoke{{ i }}-cluster-m{{ j }}:
 {% endfor %}
 
 {% for i in range(0, clusters) %}
-spoke{{ i }}-cluster-w0:
+edgecluster{{ i }}-cluster-w0:
   uefi_legacy: true
   start: false
   memory: 16000

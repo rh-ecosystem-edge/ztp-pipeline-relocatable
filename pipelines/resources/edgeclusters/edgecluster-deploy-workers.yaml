@@ -1,0 +1,50 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: edgecluster-deploy-workers
+  annotations:
+    description: |
+      This task will deploy the worker in the Edge-cluster Cluster.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+      default: ""
+    - name: edgeclusters-config
+      type: string
+      default: ""
+    - name: mock
+      type: string
+      default: "false"
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp"
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_WORKER_DIR
+        value: "deploy-worker"
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
+  steps:
+    - name: deploy-worker
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_WORKER_DIR}
+          ./render_worker.sh
+        else
+          echo "Deploy Workers Edge-cluster: Mock mode on"
+        fi

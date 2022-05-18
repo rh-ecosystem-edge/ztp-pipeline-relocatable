@@ -29,7 +29,7 @@ if ./verify.sh; then
     echo "" >>01_Mirror_ConfigMap.yml
     cat registryconf.txt >>01_Mirror_ConfigMap.yml
     NEWTAG=${LOCAL_REG}/ocp4/openshift4:${OC_OCP_TAG}
-    sed -i "s/CHANGE_SPOKE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
+    sed -i "s/CHANGE_EDGE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
     sed -i "s%TAG_OCP_IMAGE_RELEASE%${NEWTAG}%g" 02-cluster_imageset.yml
 
     # HACK for SNO to have DNS with DNSMasq
@@ -69,11 +69,11 @@ address=/api.${MYDOMAIN}/${MYIP}
     """ | base64 -w0)
 
         DISPATCHER=$(
-            echo """
+            cat <<EOF | base64 -w0
 export IP="${MYIP}" # IP OF NODE (HUB)
 export BASE_RESOLV_CONF=/run/NetworkManager/resolv.conf
 if [ "\$2" = "dhcp4-change" ] || [ "\$2" = "dhcp6-change" ] || [ "\$2" = "up" ] || [ "\$2" = "connectivity-change" ]; then
-	export TMP_FILE=$(mktemp /etc/forcedns_resolv.conf.XXXXXX)
+	export TMP_FILE=\$(mktemp /etc/forcedns_resolv.conf.XXXXXX)
 	cp  \$BASE_RESOLV_CONF \$TMP_FILE
 	chmod --reference=\$BASE_RESOLV_CONF \$TMP_FILE
 	sed -i -e "s/${MYDOMAIN}//" \
@@ -84,7 +84,7 @@ if [ "\$2" = "dhcp4-change" ] || [ "\$2" = "dhcp6-change" ] || [ "\$2" = "up" ] 
             /" \$TMP_FILE
 	mv \$TMP_FILE /etc/resolv.conf
 fi
-  """ | base64 -w0
+EOF
         )
 
         # Write the manifest file for CoreDNS

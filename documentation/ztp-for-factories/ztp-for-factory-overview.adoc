@@ -12,7 +12,7 @@ purposes and are *not supported* by Red Hat at this time.
 endif::[]
 
 
-ZTP for Factory Workflow provides a way for installing on top of {product-title} the required pieces that will enable it to be used as a disconnected Hub Cluster and able to deploy Spoke Clusters that will be configured as the last step of the installation as disconnected too.
+ZTP for Factory Workflow provides a way for installing on top of {product-title} the required pieces that will enable it to be used as a disconnected Hub Cluster and able to deploy Edge-cluster Clusters that will be configured as the last step of the installation as disconnected too.
 
 Using OpenShift Container Agnostic Topology Integrated Chassis (OCATOPIC) to deploy ZTP for Factory Workflow, the whole procedure is managed and controlled end-to-end.
 
@@ -24,14 +24,14 @@ The pipeline will then cover several aspects:
 
 - Create required components (ACM, Registry, etc...)
 - Deploy and mirror a Registry with all required images and operators
-- Configure ACM to provision the spokes (based on the `spokes.yaml` file) cluster and deploy all required components on it.
+- Configure ACM to provision the edgeclusters (based on the `edgeclusters.yaml` file) cluster and deploy all required components on it.
 - Deploy Advanced Cluster Management (ACM) components
 - etc...
 
 The pipeline has two parts:
 
 - One that deploys the HUB cluster configuration (based on existing requirements, like OCP deployed with ODF and volumes created)
-- Another that deploys Spoke clusters based on the configuration `spokes.yaml` file using a HUB cluster configured with the previous pipeline.
+- Another that deploys Edge-cluster clusters based on the configuration `edgeclusters.yaml` file using a HUB cluster configured with the previous pipeline.
 
 The actual workflow and its details can be checked at the files inside the `pipelines` folder.
 

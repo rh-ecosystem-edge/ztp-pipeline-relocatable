@@ -9,10 +9,10 @@ function extract_kubeconfig() {
         cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
     fi
 
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    echo "Exporting SPOKE_KUBECONFIG: ${SPOKE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${EDGE_KUBECONFIG}
 }
 
 function prepare_env() {
@@ -36,7 +36,7 @@ function prepare_env() {
     if [[ ${fail_counter} -ge 1 ]]; then
         echo "#########"
         exit 1
-    fi   
+    fi
 }
 
 function check_registry() {
@@ -64,8 +64,8 @@ function mirror() {
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
         check_registry ${DESTINATION_REGISTRY}
-    elif [[ ${1} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         echo ">>>> Checking Source Registry: ${SOURCE_REGISTRY}"
         check_registry ${SOURCE_REGISTRY}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
@@ -197,21 +197,21 @@ function mirror() {
                     echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
                     skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     if [[ ${?} != 0 ]]; then
-                      retry=1
-                      while [ ${retry} != 0 ]; do
-                        echo "Error on Image Copy, retrying after 5 seconds..."
-                        skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
-                        if [[ ${?} == 0 ]]; then
-                          retry=0
-                        else
-                          sleep 10
-                          retry=$((retry + 1))
-                        fi
-                        if [ ${retry} == 12 ]; then
-                          echo ">>>> ERROR: Retry limit reached to copy image ${package}"
-                          exit 1
-                        fi
-                      done
+                        retry=1
+                        while [ ${retry} != 0 ]; do
+                            echo "Error on Image Copy, retrying after 5 seconds..."
+                            skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                            if [[ ${?} == 0 ]]; then
+                                retry=0
+                            else
+                                sleep 10
+                                retry=$((retry + 1))
+                            fi
+                            if [ ${retry} == 12 ]; then
+                                echo ">>>> ERROR: Retry limit reached to copy image ${package}"
+                                exit 1
+                            fi
+                        done
                     fi
                     sleep 1
                 fi
@@ -225,21 +225,21 @@ function mirror() {
         echo "skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}"
         skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
         if [[ ${?} != 0 ]]; then
-          retry=1
-          while [ ${retry} != 0 ]; do
-            echo "Error on Image Copy, retrying after 5 seconds..."
-            skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
-            if [[ ${?} == 0 ]]; then
-              retry=0
-            else
-              sleep 10
-              retry=$((retry + 1))
-            fi
-            if [ ${retry} == 12 ]; then
-              echo ">>>> ERROR: Retry limit reached to copy image ${image}"
-              exit 1
-            fi
-          done
+            retry=1
+            while [ ${retry} != 0 ]; do
+                echo "Error on Image Copy, retrying after 5 seconds..."
+                skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
+                if [[ ${?} == 0 ]]; then
+                    retry=0
+                else
+                    sleep 10
+                    retry=$((retry + 1))
+                fi
+                if [ ${retry} == 12 ]; then
+                    echo ">>>> ERROR: Retry limit reached to copy image ${image}"
+                    exit 1
+                fi
+            done
         fi
         sleep 1
     done
@@ -260,8 +260,8 @@ function mirror_certified() {
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
         check_registry ${DESTINATION_REGISTRY}
-    elif [[ ${1} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         echo ">>>> Checking Source Registry: ${SOURCE_REGISTRY}"
         check_registry ${SOURCE_REGISTRY}
         echo ">>>> Checking Destination Registry: ${DESTINATION_REGISTRY}"
@@ -298,12 +298,10 @@ function mirror_certified() {
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 
-    
-
     # Empty log file
     >${OUTPUTDIR}/mirror.log
 
-    # Certified Operators 
+    # Certified Operators
     SALIDA=1
 
     retry=1
@@ -415,28 +413,28 @@ if [[ ${1} == 'hub' ]]; then
     else
         echo ">>>> This step to mirror olm is not neccesary, everything looks ready"
     fi
-elif [[ ${1} == "spoke" ]]; then
-    if [[ -z ${ALLSPOKES} ]]; then
-        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+elif [[ ${1} == "edgecluster" ]]; then
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
-    for spoke in ${ALLSPOKES}; do
-        # Get Spoke Kubeconfig
-        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
+    for edgecluster in ${ALLEDGECLUSTERS}; do
+        # Get Edge-cluster Kubeconfig
+        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${edgecluster}" ]]; then
+            extract_kubeconfig ${edgecluster}
         else
-            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${edgecluster}"
         fi
-        prepare_env 'spoke'
-        create_cs 'spoke' ${spoke}
+        prepare_env 'edgecluster'
+        create_cs 'edgecluster' ${edgecluster}
         trust_internal_registry 'hub'
-        trust_internal_registry 'spoke' ${spoke}
-        if ! ./verify_olm_sync.sh 'spoke'; then
-            mirror 'spoke'
+        trust_internal_registry 'edgecluster' ${edgecluster}
+        if ! ./verify_olm_sync.sh 'edgecluster'; then
+            mirror 'edgecluster'
             if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
-            echo ">>>> There are no certified operators to be mirrored"
+                echo ">>>> There are no certified operators to be mirrored"
             else
-                mirror_certified 'spoke'
+                mirror_certified 'edgecluster'
             fi
         else
             echo ">>>> This step to mirror olm is not neccesary, everything looks ready"

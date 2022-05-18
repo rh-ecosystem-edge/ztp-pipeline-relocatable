@@ -25,10 +25,10 @@ curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-reloc
 - An  output similar to this one, will be shown:
 
 ```console
->>>> Creating NS spoke-deployer and giving permissions to SA spoke-deployer
+>>>> Creating NS edgecluster-deployer and giving permissions to SA edgecluster-deployer
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-namespace/spoke-deployer configured
-serviceaccount/spoke-deployer configured
+namespace/edgecluster-deployer configured
+serviceaccount/edgecluster-deployer configured
 clusterrolebinding.rbac.authorization.k8s.io/cluster-admin-0 configured
 
 >>>> Cloning Repository into your local folder
@@ -49,7 +49,7 @@ subscription.operators.coreos.com/openshift-pipelines-operator-rh unchanged
 >>>> Deploying ZTPFW Pipelines and tasks
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 pipeline.tekton.dev/deploy-ztp-hub configured
-pipeline.tekton.dev/deploy-ztp-spokes configured
+pipeline.tekton.dev/deploy-ztp-edgeclusters configured
 task.tekton.dev/common-pre-flight configured
 task.tekton.dev/hub-deploy-acm configured
 task.tekton.dev/hub-deploy-disconnected-registry configured
@@ -57,18 +57,18 @@ task.tekton.dev/hub-deploy-httpd-server configured
 task.tekton.dev/hub-deploy-hub-config configured
 task.tekton.dev/hub-deploy-icsp-hub configured
 task.tekton.dev/hub-save-config configured
-task.tekton.dev/spoke-deploy-disconnected-registry-spokes configured
-task.tekton.dev/spoke-deploy-icsp-spokes-post configured
-task.tekton.dev/spoke-deploy-icsp-spokes-pre configured
-task.tekton.dev/spoke-deploy-metallb configured
-task.tekton.dev/spoke-deploy-ocs configured
-task.tekton.dev/spoke-deploy-spoke configured
-task.tekton.dev/spoke-deploy-workers configured
-task.tekton.dev/spoke-detach-cluster configured
-task.tekton.dev/spoke-restore-hub-config configured
+task.tekton.dev/edgecluster-deploy-disconnected-registry-edgeclusters configured
+task.tekton.dev/edgecluster-deploy-icsp-edgeclusters-post configured
+task.tekton.dev/edgecluster-deploy-icsp-edgeclusters-pre configured
+task.tekton.dev/edgecluster-deploy-metallb configured
+task.tekton.dev/edgecluster-deploy-odf configured
+task.tekton.dev/edgecluster-deploy-edgecluster configured
+task.tekton.dev/edgecluster-deploy-workers configured
+task.tekton.dev/edgecluster-detach-cluster configured
+task.tekton.dev/edgecluster-restore-hub-config configured
 ```
 
-This script will deploy OpenShift-Pipelines and enable the Tasks and Pipelines in the Hub cluster under the `spoke-deployer` Namespace.
+This script will deploy OpenShift-Pipelines and enable the Tasks and Pipelines in the Hub cluster under the `edgecluster-deployer` Namespace.
 
 We can now continue the flow using either the command line or the UI to interact with OpenShift Pipelines. To interact with OpenShift Pipelines using CLI, it is recommended to install the Tekton CLI `tkn` from this https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64-0.21.0.tar.gz[link].
 
@@ -79,7 +79,7 @@ We have 2 Pipelines created composed by some tasks each ones. Every Pipeline wil
 Let's explain the pipeline arguments and Flags we use in the ZTPFW, for that we will use this sample command as a base:
 
 ```sh
-tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p edgeclusters-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ```
 
 .Pipeline Flags
@@ -114,8 +114,8 @@ tkn pipeline start -n spoke-deployer -p ztp-container-image="quay.io/ztpfw/pipel
 | This will download the ZTPFW code from a concrete branch. This optional argument can be used for testing changes. Default: `main`
 | No
 
-| [[spokes-config]] `spokes-config`
-| This `spokes.yaml` file will contain the configuration for all the clusters you want to deploy at the same time. You need to put it with a `cat` command as we do in the example execution.
+| [[edgeclusters-config]] `edgeclusters-config`
+| This `edgeclusters.yaml` file will contain the configuration for all the clusters you want to deploy at the same time. You need to put it with a `cat` command as we do in the example execution.
 | Yes
 
 | [[kubeconfig]] `kubeconfig`

@@ -261,7 +261,7 @@ exports[`Seetings can render data 1`] = `
                 </div>
               </div>
               <div
-                class="pf-l-stack__item pf-m-fill"
+                class="pf-l-stack__item pf-m-fill summary-page-sumamary__item"
               />
               <div
                 class="pf-l-stack__item settings-page-sumamary__item__footer"
@@ -631,7 +631,7 @@ exports[`Seetings can render data 2`] = `
                 </div>
               </div>
               <div
-                class="pf-l-stack__item pf-m-fill"
+                class="pf-l-stack__item pf-m-fill summary-page-sumamary__item"
               />
               <div
                 class="pf-l-stack__item settings-page-sumamary__item__footer"
@@ -929,7 +929,7 @@ exports[`Seetings can render data 3`] = `
                 </div>
               </div>
               <div
-                class="pf-l-stack__item pf-m-fill"
+                class="pf-l-stack__item pf-m-fill summary-page-sumamary__item"
               />
               <div
                 class="pf-l-stack__item settings-page-sumamary__item__footer"
