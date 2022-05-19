@@ -1,3 +1,11 @@
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-19)
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
 # [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-18)
 
 ### Features
