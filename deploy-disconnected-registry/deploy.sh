@@ -204,6 +204,26 @@ function deploy_registry() {
         echo ">> Waiting for the registry Quay CR to be ready"
         for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo); do
             echo ">> waiting for deployment ${dep} in Quay operator to be ready"
+        
+            # SELinux fixes: Due to selinux relabling the edge deployment always fail in virtual/slow 
+            # which can't handle relabeling of a lot of files during mirroring.
+            # BZ: https://bugzilla.redhat.com/show_bug.cgi?id=2033639
+            if [[ "${dep}" == *"quay-database"* ]]; then
+                echo ">> Fixing SELinux context for ${dep}"
+                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=0
+                oc adm policy add-scc-to-user privileged -z "${dep}" -n ${REGISTRY}
+                oc patch deployment/"${dep}" -n ${REGISTRY} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
+                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=1
+            fi
+
+            if [[ "${dep}" == *"clair-postgres"* ]]; then
+                echo ">> Fixing SELinux context for ${dep}"
+                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=0
+                oc adm policy add-scc-to-user privileged -z "${dep}" -n ${REGISTRY}
+                oc patch deployment/"${dep}" -n ${REGISTRY} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
+                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=1
+            fi
+        
             check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
         done
 
