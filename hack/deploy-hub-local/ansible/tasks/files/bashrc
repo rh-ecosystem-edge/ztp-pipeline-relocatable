@@ -5,7 +5,6 @@
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
-alias hubkubeconfig='export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig'
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
@@ -35,8 +34,8 @@ function hub {
 }
 
 function edge {
-    hubkubeconfig
-    oc extract secret/edgecluster0-cluster-admin-kubeconfig -n edgecluster0-cluster --keys=kubeconfig --to=/root 1>/dev/null
+    hub
+    oc extract secret/edgecluster0-cluster-admin-kubeconfig -n edgecluster0-cluster --keys=kubeconfig --to=/root &>/dev/null
     if [ $? -ne 0 ]; then
       echo "Error extracting Edge Cluster Kubeconfig"
     else
