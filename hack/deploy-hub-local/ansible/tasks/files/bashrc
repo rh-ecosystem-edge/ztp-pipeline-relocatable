@@ -22,5 +22,16 @@ function isSvn {
     test -d .svn && echo "(svn)"
 }
 
+function edge {
+    hub
+    oc extract secret/edgecluster0-cluster-admin-kubeconfig -n edgecluster0-cluster --keys=kubeconfig --to=/root 1>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "Error extracting Edge Cluster Kubeconfig"
+    else
+      mv -f /root/kubeconfig /root/edge-kubeconfig
+      export KUBECONFIG=/root/edge-kubeconfig
+    fi
+}
+
 export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
 export RUNNER_ALLOW_RUNASROOT="1"
