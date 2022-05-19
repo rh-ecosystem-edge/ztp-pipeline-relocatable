@@ -163,7 +163,6 @@ function clean_openshift_pipelines() {
 
 }
 
-function main {
 
 if [[ "${0}" == *"bootstrap.sh" ]]; then
     echo "Running locally"
@@ -212,6 +211,4 @@ fi
 create_permissions
 deploy_openshift_pipelines
 deploy_pipeline
-}
 
-main
