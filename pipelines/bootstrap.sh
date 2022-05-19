@@ -163,16 +163,35 @@ function clean_openshift_pipelines() {
 
 }
 
-export BASEDIR=$(dirname "$0")
+function main {
+
+if [[ "${0}" == *"bootstrap.sh" ]]; then
+    echo "Running locally"
+    export WORKDIR=$PWD
+
+    if [[ $PWD == *'pipelines' ]]; then
+        export PIPELINES_DIR=${WORKDIR}
+    elif [[ $PWD == *'ztp-pipeline-relocatable' ]]; then
+        export PIPELINES_DIR=${WORKDIR}/pipelines
+    else
+        echo 'ERROR: Please run the script from "ztp-pipeline-relocatable" folder'
+        exit 1
+    fi
+else 
+    echo "Running from Remote source"
+    export BASEDIR=$(dirname "$0")
+    export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
+    export PIPELINES_DIR=${WORKDIR}/pipelines
+    clone_ztp
+fi
+
 export BRANCH=${1:-main}
-export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${KUBECONFIG}"
-export PIPELINES_DIR=${WORKDIR}/pipelines
 
 get_clients
 get_tkn
 get_yq
-clone_ztp
+
 export EDGE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
 export EDGE_DEPLOYER_SA=${EDGE_DEPLOYER_NS}
 export EDGE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
@@ -193,3 +212,6 @@ fi
 create_permissions
 deploy_openshift_pipelines
 deploy_pipeline
+}
+
+main
