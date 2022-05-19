@@ -1,4 +1,4 @@
-import { getCondition } from '../../copy-backend-common';
+import { getCondition, ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
 import { getClusterOperator } from '../../resources/clusteroperator';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { K8SStateContextData } from '../types';
@@ -8,7 +8,6 @@ import {
   MAX_LIVENESS_CHECK_COUNT,
   UI_POD_NOT_READY,
   WAIT_ON_OPERATOR_TITLE,
-  ZTPFW_UI_ROUTE_PREFIX,
 } from './constants';
 import { persistDomain } from './persistDomain';
 import { persistIdentityProvider, PersistIdentityProviderResult } from './persistIdentityProvider';
@@ -36,7 +35,7 @@ const waitForClusterOperator = async (
       }
     } catch (e) {
       console.error('waitForClusterOperator error: ', e);
-      // keep trying
+      // do not report, keep trying
 
       // setError({
       //   title: WAIT_ON_OPERATOR_TITLE,
@@ -109,10 +108,11 @@ export const persist = async (
     state.password,
   );
   if (
+    (await persistDomain(setError, setProgress, state.domain, state.customCerts)) &&
     persistIdpResult !== PersistIdentityProviderResult.error &&
     (await saveIngress(setError, setProgress, state.ingressIp)) &&
     (await saveApi(setError, setProgress, state.apiaddr)) &&
-    (await persistDomain(setError, setProgress, state.domain))
+    (await persistDomain(setError, setProgress, state.domain, state.customCerts))
   ) {
     // finished with success
     console.log('Data persisted, blocking progress till reconciled');

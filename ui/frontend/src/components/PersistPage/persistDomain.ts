@@ -8,6 +8,7 @@ export const persistDomain = async (
   setError: (error: PersistErrorType) => void,
   setProgress: UsePersistProgressType['setProgress'],
   clusterDomain?: string,
+  customCerts?: ChangeDomainInputType['customCerts'],
 ): Promise<boolean> => {
   if (!clusterDomain) {
     console.info('Domain change not requested, so skipping that step.');
@@ -17,9 +18,7 @@ export const persistDomain = async (
 
   const input: ChangeDomainInputType = {
     clusterDomain,
-    customCerts: [
-      // TODO: Add custom-provided certificates here
-    ],
+    customCerts,
   };
 
   try {

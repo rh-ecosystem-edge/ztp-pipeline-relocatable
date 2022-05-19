@@ -3,7 +3,9 @@ export type PersistErrorType = {
   message: string;
 } | null;
 
-export type TlsCertificate = {
-  'tls.crt': string;
-  'tls.key': string;
-};
+// Remove me
+// Take it form common
+// export type TlsCertificate = {
+//   'tls.crt': string;
+//   'tls.key': string;
+// };

@@ -1,12 +1,14 @@
 export type TlsCertificate = {
   'tls.crt': string;
   'tls.key': string;
+
+  'tls.crt.filename'?: string;
+  'tls.key.filename'?: string;
 };
 
 export type ChangeDomainInputType = {
   clusterDomain?: string;
-  customCerts: {
-    domain: string;
-    certificate: TlsCertificate;
-  }[];
+  customCerts?: {
+    [key: /* ~ domain */ string]: TlsCertificate;
+  };
 };

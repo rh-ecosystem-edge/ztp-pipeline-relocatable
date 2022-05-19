@@ -6,13 +6,16 @@ import {
   getApiDomain,
   getIngressDomain,
   TlsCertificate,
+  getConsoleDomain,
+  getOauthDomain,
+  getZtpfwDomain,
+  ZTPFW_UI_ROUTE_PREFIX,
 } from '../common';
 import {
   ZTPFW_DEPLOYMENT_NAME,
   ZTPFW_NAMESPACE,
   ZTPFW_OAUTHCLIENT_NAME,
   ZTPFW_ROUTE_NAME,
-  ZTPFW_UI_ROUTE_PREFIX,
 } from '../constants';
 import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
 import { getToken, PostResponse, unauthorized } from '../k8s';
@@ -32,15 +35,19 @@ const createTlsSecret = async (
   token: string,
   domain: string,
   namePrefix: string,
-  customCerts: ChangeDomainInputType['customCerts'] = [],
+  customCerts: ChangeDomainInputType['customCerts'] = {},
 ): Promise<string | undefined> => {
-  let certificate: TlsCertificate | undefined = customCerts.find(
-    (c) => c.domain === domain,
-  )?.certificate;
-  // not provided, so generate self-signed one
-  certificate = certificate || (await generateCertificate(res, domain));
-  if (!certificate) {
-    return undefined;
+  let certificate: TlsCertificate | undefined = customCerts[domain];
+
+  // if not provided, so generate self-signed one
+  if (certificate) {
+    logger.debug('Custom certificate provided for domain: ', domain);
+  } else {
+    certificate = await generateCertificate(res, domain);
+
+    if (!certificate) {
+      return undefined;
+    }
   }
 
   const certSecret = await createCertSecret(res, token, namePrefix, certificate);
@@ -62,6 +69,7 @@ const updateIngressComponentRoutes = async (
   namePrefix: string,
   routeNamespace: string,
 ): Promise<string | undefined /* secretName */> => {
+  logger.debug(`updateIngressComponentRoutes called for ${routeName} and domain ${domain}`);
   const secretName = await createTlsSecret(res, token, domain, namePrefix, customCerts);
   if (secretName) {
     const route = componentRoutes.find((r) => r.name === routeName);
@@ -347,9 +355,9 @@ const changeDomainImpl = async (
   };
 
   // Prepare ingress /cluster resource patch - will be executed at the end of the flow
-  const consoleDomain = `console-openshift-console.${ingressDomain}`;
-  const oauthDomain = `oauth-openshift.${ingressDomain}`;
-  const ztpfwDomain = `${ZTPFW_UI_ROUTE_PREFIX}.${ingressDomain}`;
+  const consoleDomain = getConsoleDomain(clusterDomain);
+  const oauthDomain = getOauthDomain(clusterDomain);
+  const ztpfwDomain = getZtpfwDomain(clusterDomain);
 
   const componentRoutes = ingress?.spec?.componentRoutes || [];
   const consoleTlsSecretName = await updateIngressComponentRoutes(

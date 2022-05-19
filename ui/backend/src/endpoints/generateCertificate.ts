@@ -66,6 +66,22 @@ export const createCertSecret = async (
     const object = cloneDeep(TLS_SECRET);
     object.metadata.generateName = namePrefix;
     object.data = certificate;
+    object.data = {
+      'tls.crt': certificate['tls.crt'],
+      'tls.key': certificate['tls.key'],
+    };
+
+    if (!object.data['tls.crt'] || !object.data['tls.key']) {
+      res
+        .writeHead(
+          400,
+          `Can not create ${namePrefix} TLS secret in the ${
+            TLS_SECRET.metadata.namespace || ''
+          } namespace, missing either tls.crt or tls.key.`,
+        )
+        .end();
+      return;
+    }
 
     // TODO: what about clean-up?
     const response = await createSecret(token, object);
@@ -74,6 +90,13 @@ export const createCertSecret = async (
       return response.body;
     }
 
+    logger.error(
+      `Can not create ${namePrefix} TLS secret in the ${
+        TLS_SECRET.metadata.namespace || ''
+      } namespace.`,
+      ' Response: ',
+      response,
+    );
     res
       .writeHead(
         response.statusCode,
@@ -83,6 +106,13 @@ export const createCertSecret = async (
       )
       .end();
   } catch (e) {
+    logger.error(
+      `Can not create ${namePrefix} TLS secret in the ${
+        TLS_SECRET.metadata.namespace || ''
+      } namespace. Internal error.`,
+      ' Error: ',
+      e,
+    );
     res
       .writeHead(
         500,
