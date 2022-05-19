@@ -98,7 +98,7 @@ then
     fi
 else
     echo "CLOUD_DEPLOYMENT=${CLOUD_DEPLOYMENT}"
-    if [[ $(oc get nodes  | grep worker | grep -i ready | wc -l) -ne 3 ]]; then
+    if [[ $(oc get nodes  | grep worker | grep -i ready | wc -l) -ne $(oc get nodes | grep -v NAME | grep worker | wc -l) ]]; then
         echo "Error: Worker nodes are not ready"
         exit 1
     fi
