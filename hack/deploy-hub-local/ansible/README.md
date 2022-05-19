@@ -164,11 +164,13 @@ ansible-playbook -i path/to/inventory --skip-tags 00-base-dns -l host-dummy setu
 ansible-playbook -i path/to/inventory --tags 00-base --skip-tags 02-bin-utils -l host-dummy setup.yaml
 ```
 
+**Note:** For using `slack` Notifications and `ssh-keygen` tasks, install the modules using 
+1.  `ansible-galaxy collection install community.general` for using `community.general.slack` task.
+2.  `ansible-galaxy collection install community.crypto`  for using `community.crypto.openssh_keypair` task. 
+
 #### WIP - Technical debt braindump
 
 ```bash
-Create root id_rsa
 Install github agent
 crontab logrotate
-slack notifications on completion
 ```

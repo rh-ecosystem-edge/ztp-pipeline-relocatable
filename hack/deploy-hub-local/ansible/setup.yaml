@@ -79,3 +79,18 @@
       service:
         name: sshd
         state: restarted
+
+    - name: Add Slack notifications
+      community.general.slack:
+        token: #Add-your-slack-token
+        msg: '{{ inventory_hostname }} completed'
+        channel: #Add-your-slack-channel
+      delegate_to: localhost
+      tags: [ 00-slack ]
+
+    - name: Generate an OpenSSH keypair with the default values (4096 bits, rsa)
+      community.crypto.openssh_keypair:
+        path: /tmp/id_ssh_rsa
+        backend: auto
+        force: yes
+      tags: [ 01-ssh ]
