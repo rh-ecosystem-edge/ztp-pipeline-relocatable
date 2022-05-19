@@ -92,7 +92,7 @@ echo ">>>> Verify oc get nodes"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 if [  ! -z "${CLOUD_DEPLOYMENT}" ];
 then 
-    if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]]; then
+    if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne $(oc get nodes | grep -v NAME | grep -i ready | wc -l) ]]; then
         echo "Error: Nodes are not ready"
         exit 1
     fi
