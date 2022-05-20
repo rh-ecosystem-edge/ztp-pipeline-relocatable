@@ -200,30 +200,48 @@ function deploy_registry() {
         # Create the registry Quay CR
         echo ">> Creating the registry Quay CR"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-cr.yaml
+
+        # SELinux fixes: Due to selinux relabling the edge deployment always fail in virtual/slow 
+        # which can't handle relabeling of a lot of files during mirroring.
+        # BZ: https://bugzilla.redhat.com/show_bug.cgi?id=2033639
+        #
+        # When Quay deploys, it takes around 50/60 seconds to create all the objects,
+        # so we start watching for the needed deployments as soon as Quay is created
+        #
+        # We have to perform this operations *before* the pods are Ready,
+        # so the databases are *not* created and *not* populated
+        # with users and organizations.
+        sleep 5
+        patchedquay=false
+        patchedclair=false
+        while [ "$patchedquay" != "true" ] & [ "$patchedclair" != "true" ]; do
+            for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep -E "ztpfw-registry-clair-postgres|ztpfw-registry-quay-database" | cut -d '/' -f 2 | xargs echo); do
+                echo ">> Detected creation of ${dep}"
+                if [[ ${dep} == *"quay-database"* && "$patchedquay" == "false" ]]; then
+                    echo ">> Fixing SELinux context for ${dep}"
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=0
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} adm policy add-scc-to-user privileged -z ${dep}
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} patch deployment/${dep} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=1
+                    patchedquay=true
+                fi
+
+                if [[ ${dep} == *"clair-postgres"* && "$patchedclair" == "false" ]]; then
+                    echo ">> Fixing SELinux context for ${dep}"
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=0
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} adm policy add-scc-to-user privileged -z ${dep}
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} patch deployment/${dep} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
+                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=1
+                    patchedclair=true
+                fi
+            done
+            sleep 0.5
+        done
+
         sleep 240 # wait for the firsts pods and deployment
         echo ">> Waiting for the registry Quay CR to be ready"
         for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo); do
-            echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-        
-            # SELinux fixes: Due to selinux relabling the edge deployment always fail in virtual/slow 
-            # which can't handle relabeling of a lot of files during mirroring.
-            # BZ: https://bugzilla.redhat.com/show_bug.cgi?id=2033639
-            if [[ "${dep}" == *"quay-database"* ]]; then
-                echo ">> Fixing SELinux context for ${dep}"
-                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=0
-                oc adm policy add-scc-to-user privileged -z "${dep}" -n ${REGISTRY}
-                oc patch deployment/"${dep}" -n ${REGISTRY} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
-                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=1
-            fi
-
-            if [[ "${dep}" == *"clair-postgres"* ]]; then
-                echo ">> Fixing SELinux context for ${dep}"
-                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=0
-                oc adm policy add-scc-to-user privileged -z "${dep}" -n ${REGISTRY}
-                oc patch deployment/"${dep}" -n ${REGISTRY} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
-                oc scale deployment/"${dep}" -n ${REGISTRY} --replicas=1
-            fi
-        
+            echo ">> waiting for deployment ${dep} in Quay operator to be ready"      
             check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
         done
 
