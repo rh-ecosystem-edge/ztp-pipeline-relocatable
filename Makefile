@@ -12,6 +12,13 @@ OCP_VERSION ?= 4.10.13
 ACM_VERSION ?= 2.4
 ODF_VERSION ?= 4.9
 
+
+
+
+ifeq ($(BRANCH),)
+BRANCH := $(RELEASE)
+endif
+
 .PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci
 .EXPORT_ALL_VARIABLES:
 
@@ -55,10 +62,10 @@ build-ui-image-ci:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(UI_IMAGE):$(RELEASE) -f $(CI_FOLDER)/Containerfile.UI .
 
 push-pipe-image-ci: build-pipe-image-ci
-	podman push $(PIPE_IMAGE):$(RELEASE)
+	podman push $(PIPE_IMAGE):$(BRANCH)
 
 push-ui-image-ci: build-ui-image-ci
-	podman push $(UI_IMAGE):$(RELEASE)
+	podman push $(UI_IMAGE):$(BRANCH)
 
 doc:
 	bash build.sh
