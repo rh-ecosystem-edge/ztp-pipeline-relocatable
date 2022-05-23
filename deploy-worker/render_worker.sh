@@ -183,3 +183,6 @@ for EDGE in ${ALLEDGECLUSTERS}; do
     verify_worker ${EDGE}
     index=$((index + 1))
 done
+
+
+sleep 4500
