@@ -166,16 +166,8 @@ function clean_openshift_pipelines() {
 
 if [[ "${0}" == *"bootstrap.sh" ]]; then
     echo "Running locally"
-    export WORKDIR=$PWD
-
-    if [[ $PWD == *'pipelines' ]]; then
-        export PIPELINES_DIR=${WORKDIR}
-    elif [[ $PWD == *'ztp-pipeline-relocatable' ]]; then
-        export PIPELINES_DIR=${WORKDIR}/pipelines
-    else
-        echo 'ERROR: Please run the script from "ztp-pipeline-relocatable" folder'
-        exit 1
-    fi
+    export WORKDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    export PIPELINES_DIR=${WORKDIR}
 else 
     echo "Running from Remote source"
     export BASEDIR=$(dirname "$0")
@@ -195,12 +187,11 @@ export EDGE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kusto
 export EDGE_DEPLOYER_SA=${EDGE_DEPLOYER_NS}
 export EDGE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
-if [[ ${#} -ge 2 ]]; then
-    if [[ ${2} == 'clean' ]]; then
-        clean_openshift_pipelines
-        echo "Done!"
-        exit 0
-    fi
+
+if [[ ${@} == *'clean'* ]]; then
+    clean_openshift_pipelines
+    echo "Done!"
+    exit 0
 fi
 
 if [[ -z ${KUBECONFIG} ]]; then
