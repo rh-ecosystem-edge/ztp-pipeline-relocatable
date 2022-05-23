@@ -13,7 +13,7 @@ parameters:
   csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
   csi.storage.k8s.io/provisioner-secret-namespace: openshift-storage
   fsName: ocs-storagecluster-cephfilesystem
-  kernelMountOptions: "context=system_u:object_r:container_file_t:s0"
+  kernelMountOptions: context="system_u:object_r:cephfs_t:s0"
 provisioner: openshift-storage.cephfs.csi.ceph.com
 reclaimPolicy: Delete
 allowVolumeExpansion: true
