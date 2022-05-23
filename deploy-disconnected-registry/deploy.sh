@@ -211,32 +211,32 @@ function deploy_registry() {
         # We have to perform this operations *before* the pods are Ready,
         # so the databases are *not* created and *not* populated
         # with users and organizations.
-        sleep 5
-        patchedquay=false
-        patchedclair=false
-        while [ "$patchedquay" != "true" ] & [ "$patchedclair" != "true" ]; do
-            for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep -E "ztpfw-registry-clair-postgres|ztpfw-registry-quay-database" | cut -d '/' -f 2 | xargs echo); do
-                echo ">> Detected creation of ${dep}"
-                if [[ ${dep} == *"quay-database"* && "$patchedquay" == "false" ]]; then
-                    echo ">> Fixing SELinux context for ${dep}"
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=0
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} adm policy add-scc-to-user privileged -z ${dep}
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} patch deployment/${dep} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=1
-                    patchedquay=true
-                fi
+        #sleep 5
+        #patchedquay=false
+        #patchedclair=false
+        #while [ "$patchedquay" != "true" ] & [ "$patchedclair" != "true" ]; do
+        #    for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep -E "ztpfw-registry-clair-postgres|ztpfw-registry-quay-database" | cut -d '/' -f 2 | xargs echo); do
+        #        echo ">> Detected creation of ${dep}"
+        #        if [[ ${dep} == *"quay-database"* && "$patchedquay" == "false" ]]; then
+        #            echo ">> Fixing SELinux context for ${dep}"
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=0
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} adm policy add-scc-to-user privileged -z ${dep}
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} patch deployment/${dep} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=1
+        #            patchedquay=true
+        #        fi
 
-                if [[ ${dep} == *"clair-postgres"* && "$patchedclair" == "false" ]]; then
-                    echo ">> Fixing SELinux context for ${dep}"
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=0
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} adm policy add-scc-to-user privileged -z ${dep}
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} patch deployment/${dep} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
-                    oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=1
-                    patchedclair=true
-                fi
-            done
-            sleep 0.5
-        done
+        #        if [[ ${dep} == *"clair-postgres"* && "$patchedclair" == "false" ]]; then
+        #            echo ">> Fixing SELinux context for ${dep}"
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=0
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} adm policy add-scc-to-user privileged -z ${dep}
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} patch deployment/${dep} -p '{"spec":{"template":{"spec":{"securityContext":{"seLinuxOptions":{"type":"spc_t"}}}}}}'
+        #            oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} scale deployment/${dep} --replicas=1
+        #            patchedclair=true
+        #        fi
+        #    done
+        #    sleep 0.5
+        #done
 
         sleep 240 # wait for the firsts pods and deployment
         echo ">> Waiting for the registry Quay CR to be ready"
