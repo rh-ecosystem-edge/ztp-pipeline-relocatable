@@ -241,7 +241,7 @@ function deploy_registry() {
         sleep 240 # wait for the firsts pods and deployment
         echo ">> Waiting for the registry Quay CR to be ready"
         for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo); do
-            echo ">> waiting for deployment ${dep} in Quay operator to be ready"      
+            echo ">> waiting for deployment ${dep} in Quay operator to be ready"
             check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
         done
 

@@ -26,10 +26,11 @@ function hub {
 
     oc whoami &> /dev/null
     if [ $? -ne 0 ]; then
-      echo "Hub Cluster not ready, try when the provisioning is complete"
+      echo "> Hub Cluster is not ready or not deployed."
+      echo "> Check with 'kcli list vm' or in '/root/.kcli/clusters'"
       export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
     else
-      export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: [\e[0;36m\]$(oc whoami)@hub\e[0;32m\]] \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
+      export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: [\e[0;36m\]$(oc whoami)@\e[1;31m\]hub\e[0;32m\]] \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
     fi
 }
 
@@ -37,14 +38,17 @@ function edge {
     hub
     oc extract secret/edgecluster0-cluster-admin-kubeconfig -n edgecluster0-cluster --keys=kubeconfig --to=/root &>/dev/null
     if [ $? -ne 0 ]; then
-      echo "Error extracting Edge Cluster Kubeconfig"
+      echo "> Error extracting Edge Cluster Kubeconfig!"
+      echo "> Check if the edge cluster is deployed."
+      unset KUBECONFIG
     else
       mv -f /root/kubeconfig /root/edge-kubeconfig
       export KUBECONFIG=/root/edge-kubeconfig
 
       oc whoami &> /dev/null
       if [ $? -ne 0 ]; then
-        echo "Edge Cluster not ready, try when the provisioning is complete"
+        echo "> Edge Cluster is not ready or not deployed."
+        echo "> Check if the edge cluster is deployed."
         export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
       else
         export PS1="\[\e[0;35m\]\u:\[\e[0;35m\]\h \[\e[0;35m\]\[\e[0;32m\]: [\e[0;36m\]$(oc whoami)@edge\e[0;32m\]] \w \[\e[1;31m\]\$(hasBranch)\$(isSvn) \n\[\e[0;35m\]\$ \[\e[0m\]"
