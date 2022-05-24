@@ -14,7 +14,7 @@ spec:
       kind: tls
     - managed: true
       kind: objectstorage
-    - managed: true
+    - managed: false
       kind: clair
     - managed: true
       kind: redis
