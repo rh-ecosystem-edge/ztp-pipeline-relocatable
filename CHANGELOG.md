@@ -1,3 +1,9 @@
+## [1.5.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.5.0...1.5.1) (2022-05-24)
+
+### Bug Fixes
+
+- **Makefile:** Properly revert changes in commit 0f63eb190a21788d0b521b1d741b11bf9878c6f3 ([8074815](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/807481514a12ba70435d7ce0cb2ef1934c78a259))
+
 # [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-24)
 
 ### Bug Fixes
