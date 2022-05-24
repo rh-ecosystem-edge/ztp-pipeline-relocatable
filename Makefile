@@ -4,13 +4,20 @@ UI_IMAGE = quay.io/ztpfw/ui
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
-FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
-FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
+FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
+FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
 EDGECLUSTERS_FILE ?= ${PWD}/hack/deploy-hub-local/edgeclusters.yaml
 PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.13
 ACM_VERSION ?= 2.4
 ODF_VERSION ?= 4.9
+
+
+
+
+ifeq ($(BRANCH),)
+BRANCH := $(RELEASE)
+endif
 
 .PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci
 .EXPORT_ALL_VARIABLES:

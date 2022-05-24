@@ -159,7 +159,7 @@ if ! ./verify.sh; then
         echo ">>>> Labeling nodes for ODF"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
         counter=0
-        for node in $(oc --kubeconfig=${EDGE_KUBECONFIG} get node -o name); do
+        for node in $(oc --kubeconfig=${EDGE_KUBECONFIG} get node -o name -l node-role.kubernetes.io/master); do
             oc --kubeconfig=${EDGE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage='' --overwrite=true
             oc --kubeconfig=${EDGE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter} --overwrite=true
             let "counter+=1"

@@ -107,8 +107,8 @@ function generate_edgecluster_csr-approver_kubeconfig() {
     # Create resources if they don't exist yet. We need this for multi-node clusters.
     # Then, create the ClusterRoleBinding and final kubeconfig
     oc --kubeconfig=${EDGE_KUBECONFIG} apply -f ${EDGE_CSR_RESOURCES}
-    oc --kubeconfig=${SPOKE_KUBECONFIG} adm policy add-cluster-role-to-user ztpfw-csr-approver -z ztpfw-csr-approver -n openshift-infra
-    oc --kubeconfig=${SPOKE_KUBECONFIG} serviceaccounts create-kubeconfig ztpfw-csr-approver -n openshift-infra >${EDGE_CSR_KUBECONFIG}
+    oc --kubeconfig=${EDGE_KUBECONFIG} adm policy add-cluster-role-to-user ztpfw-csr-approver -z ztpfw-csr-approver -n openshift-infra
+    oc --kubeconfig=${EDGE_KUBECONFIG} serviceaccounts create-kubeconfig ztpfw-csr-approver -n openshift-infra >${EDGE_CSR_KUBECONFIG}
 }
 
 function save_files() {

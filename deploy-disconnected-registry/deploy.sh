@@ -146,7 +146,7 @@ function check_route_ready() {
     timeout=0
     ready=false
     while [ "$timeout" -lt "1000" ]; do
-        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -eq 3 ]]; then
+        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -ge 3 ]]; then
             ready=true
             break
         fi

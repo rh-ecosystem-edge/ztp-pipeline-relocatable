@@ -1,3 +1,175 @@
+## [1.5.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.5.0...1.5.1) (2022-05-24)
+
+### Bug Fixes
+
+- **Makefile:** Properly revert changes in commit 0f63eb190a21788d0b521b1d741b11bf9878c6f3 ([8074815](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/807481514a12ba70435d7ce0cb2ef1934c78a259))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-24)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **ci:** adapt ui ci to new workflow ([f617b20](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f617b20cb2dc63955a81cd9a3a001104c6cc6430))
+- **odfdeploy:** apply labels only to master nodes ([f52936c](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f52936c32916f724fe1593cdcdeceac29f73dfa1))
+- **README.md:** Fake fix to trigger tagging ([4d28b62](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/4d28b629fcf5f096b31aa17e0dfe879e967438a0))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ansible:** add some minor tweak to bashrc ([a3f333d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a3f333d23a7b288e977ab94cfbb9f417760a2942))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-23)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **ci:** adapt ui ci to new workflow ([f617b20](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f617b20cb2dc63955a81cd9a3a001104c6cc6430))
+- **README.md:** Fake fix to trigger tagging ([4d28b62](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/4d28b629fcf5f096b31aa17e0dfe879e967438a0))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ansible:** add some minor tweak to bashrc ([a3f333d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a3f333d23a7b288e977ab94cfbb9f417760a2942))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-23)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **ci:** adapt ui ci to new workflow ([f617b20](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f617b20cb2dc63955a81cd9a3a001104c6cc6430))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ansible:** add some minor tweak to bashrc ([a3f333d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a3f333d23a7b288e977ab94cfbb9f417760a2942))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-23)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **ci:** adapt ui ci to new workflow ([f617b20](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f617b20cb2dc63955a81cd9a3a001104c6cc6430))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ansible:** add some minor tweak to bashrc ([a3f333d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a3f333d23a7b288e977ab94cfbb9f417760a2942))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-23)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ansible:** add some minor tweak to bashrc ([a3f333d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a3f333d23a7b288e977ab94cfbb9f417760a2942))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-23)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ansible:** add some minor tweak to bashrc ([a3f333d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a3f333d23a7b288e977ab94cfbb9f417760a2942))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-20)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ansible:** add some minor tweak to bashrc ([a3f333d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/a3f333d23a7b288e977ab94cfbb9f417760a2942))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-19)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+- **registry:** selinux patch to handle BZ[#2033639](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/2033639) ([69aab83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/69aab83a994a7d7d5acae1cdcdad01f2fc268afb))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-19)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+- **registry:** fix the registry route check ([8c52d6d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8c52d6d323eaab5db63d4eed08514000b5bbe06d))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-19)
+
+### Bug Fixes
+
+- **ansible:** control hub and edge function errors properly ([14f24d5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/14f24d508d92fba5c3c879b555d7aa23fc41e134))
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-19)
+
+### Features
+
+- **ansible:** add function edge to export edge kubeconfig ([7938dd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7938dd8e84c53495480eb0b786703098684b4ec6))
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
+# [1.5.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.5...1.5.0) (2022-05-18)
+
+### Features
+
+- **ansible:** add hub kubeconfig alias to bashrc ([fbf4624](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbf4624fc61d9e790f354c4acdfcc10623cecff0))
+- **ci:** show in motd when a job has failed ([6a56d33](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6a56d3354198c1be26438837228b85739e7e20f3))
+
 ## [1.4.5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.4.4...1.4.5) (2022-05-18)
 
 ### Bug Fixes
