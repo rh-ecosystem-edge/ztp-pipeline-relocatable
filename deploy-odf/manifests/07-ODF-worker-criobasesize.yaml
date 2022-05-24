@@ -1,0 +1,10 @@
+kind: ContainerRuntimeConfig
+apiVersion: machineconfiguration.openshift.io/v1
+metadata:
+  name: ztpfw-crio-worker-basesize
+spec:
+  machineConfigPoolSelector:
+    matchLabels:
+      pools.operator.machineconfiguration.openshift.io/worker: ""
+  containerRuntimeConfig:
+    overlaySize: "50G"
