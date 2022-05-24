@@ -22,23 +22,3 @@ edgecluster{{ i }}-cluster-m{{ j }}:
   - size: 50  
 {% endfor %}
 {% endfor %}
-
-{% for i in range(0, clusters) %}
-edgecluster{{ i }}-cluster-w0:
-  uefi_legacy: true
-  start: false
-  memory: 16000
-  numcpus: 12
-  nets:
-  - name: bare-net
-    mac: ee:ee:ee:0{{ i }}:0{{ i }}:0e
-  - name: ztpfw
-    nic: enp2s0
-    mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
-  disks:
-  - size: 120
-  - size: 50
-  - size: 50
-  - size: 50
-  - size: 50  
-{% endfor %}

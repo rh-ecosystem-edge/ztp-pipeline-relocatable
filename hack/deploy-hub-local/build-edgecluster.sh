@@ -134,30 +134,6 @@ EOF
           - /dev/vde
 EOF
     done
-
-  if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
-    # Add the single worker
-    worker=0
-    WORKERUID=$(kcli info vm edgecluster${edgecluster}-cluster-w${worker} -f id -v)
-
-    cat <<EOF >>edgeclusters.yaml
-      worker${worker}:
-        nic_ext_dhcp: enp1s0
-        nic_int_static: enp2s0
-        mac_ext_dhcp: "ee:ee:ee:${worker}${edgecluster}:${worker}${edgecluster}:${worker}e"
-        mac_int_static: "aa:aa:aa:${worker}${edgecluster}:${worker}${edgecluster}:${worker}a"
-        bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
-        bmc_user: "amorgant"
-        bmc_pass: "alknopfler"
-        root_disk: /dev/vda
-        storage_disk:
-          - /dev/vdb
-          - /dev/vdc
-          - /dev/vdd
-          - /dev/vde
-EOF
-  fi
-
 done
 
 echo ">>>> EOF"
