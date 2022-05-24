@@ -4,7 +4,6 @@ set -o pipefail
 set -o nounset
 #set -o errexit
 set -m
-set -x
 
 function get_clients() {
     if ! (command -v oc &>/dev/null); then

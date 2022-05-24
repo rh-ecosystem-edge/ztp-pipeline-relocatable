@@ -297,11 +297,11 @@ fi
 
 export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
 
-export SPOKES_FILE_REGISTRY=$(yq eval ".config.REGISTRY" ${SPOKES_FILE} || null )
-if [[ ${SPOKES_FILE_REGISTRY} == "" || ${SPOKES_FILE_REGISTRY} == null ]]; then
+export EDGECLUSTERS_REGISTRY=$(yq eval ".config.REGISTRY" ${EDGECLUSTERS_FILE} || null )
+if [[ ${EDGECLUSTERS_REGISTRY} == "" || ${EDGECLUSTERS_REGISTRY} == null ]]; then
     export CUSTOM_REGISTRY=false
 else
     export CUSTOM_REGISTRY=true
-    REGISTRY=$(echo ${SPOKES_FILE_REGISTRY} | cut -d"." -f1 )
-    LOCAL_REG=${SPOKES_FILE_REGISTRY}
+    REGISTRY=$(echo ${EDGECLUSTERS_REGISTRY} | cut -d"." -f1 )
+    LOCAL_REG=${EDGECLUSTERS_REGISTRY}
 fi

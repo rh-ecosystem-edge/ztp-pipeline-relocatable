@@ -132,8 +132,8 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ ${CUSTOM_REGISTRY} == "false"  ]]; then
     REGISTRY=ztpfw-registry
 else
-    REGISTRY=$(echo ${SPOKES_FILE_REGISTRY} | cut -d"." -f1 )
-    LOCAL_REG=${SPOKES_FILE_REGISTRY}
+    REGISTRY=$(echo ${EDGECLUSTERS_REGISTRY} | cut -d"." -f1 )
+    LOCAL_REG=${EDGECLUSTERS_REGISTRY}
 fi
 
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
@@ -163,7 +163,6 @@ if [[ ${1} == "hub" ]]; then
 
     export DESTINATION_REGISTRY=${LOCAL_REG}
     export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
-    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
     # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
@@ -193,7 +192,12 @@ elif [[ ${1} == "edgecluster" ]]; then
         echo "HUB: ${KUBECONFIG_HUB}"
         echo "EDGE: ${EDGE_KUBECONFIG}"
         ## Common
-        export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
+        export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+            LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        fi
+
+        export DESTINATION_REGISTRY=${LOCAL_REG}
         ## OCP Sync vars
         export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
         ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
