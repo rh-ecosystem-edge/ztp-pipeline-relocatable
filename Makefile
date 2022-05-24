@@ -4,8 +4,8 @@ UI_IMAGE = quay.io/ztpfw/ui
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
-FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(RELEASE)
-FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(RELEASE)
+FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
+FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
 EDGECLUSTERS_FILE ?= ${PWD}/hack/deploy-hub-local/edgeclusters.yaml
 PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.13
@@ -62,10 +62,10 @@ build-ui-image-ci:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(UI_IMAGE):$(RELEASE) -f $(CI_FOLDER)/Containerfile.UI .
 
 push-pipe-image-ci: build-pipe-image-ci
-	podman push $(PIPE_IMAGE):$(BRANCH)
+	podman push $(PIPE_IMAGE):$(RELEASE)
 
 push-ui-image-ci: build-ui-image-ci
-	podman push $(UI_IMAGE):$(BRANCH)
+	podman push $(UI_IMAGE):$(RELEASE)
 
 doc:
 	bash build.sh
