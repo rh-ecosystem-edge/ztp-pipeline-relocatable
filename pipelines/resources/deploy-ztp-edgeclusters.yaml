@@ -203,7 +203,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-disconnected-registry
+      - mirror-ocp-images
     workspaces:
       - name: ztp
         workspace: ztp
@@ -222,7 +222,6 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - mirror-ocp-images
       - mirror-olm-images
     workspaces:
       - name: ztp
