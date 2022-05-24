@@ -188,11 +188,12 @@ if ! ./verify.sh; then
             exit 1
         fi
     done
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/05-PDF-StorageClass.yaml
-    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ztpfw-ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/06-ODF-master-criobasesize.yaml
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/07-ODF-worker-criobasesize.yaml
-    sleep 2700
+    #oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/05-PDF-StorageClass.yaml
+    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    #oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/06-ODF-master-criobasesize.yaml
+    #oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/07-ODF-worker-criobasesize.yaml
+    #oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/08-ODF-runtimeclass.yaml
+    #sleep 900
 fi
 echo ">>>>EOF"
 echo ">>>>>>>"
