@@ -30,7 +30,7 @@ if ./verify.sh; then
     InstallPlan=$(oc --kubeconfig=${KUBECONFIG_HUB} get installplan -n open-cluster-management -o name)
     RESOURCE_KIND=${InstallPlan%%/*}
     RESOURCE_NAME=${InstallPlan##*/}
-    check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Deployed" "open-cluster-management" "${KUBECONFIG_HUB}"
+    check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Installed" "open-cluster-management" "${KUBECONFIG_HUB}"
 
     echo ">>>> Deploy RHACM cr manifest"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -40,8 +40,7 @@ if ./verify.sh; then
 
     echo ">>>> Wait until RHACM ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    for helmchart in $(oc --kubeconfig=${KUBECONFIG_HUB} get helmreleases -o name)
-    do
+    for helmchart in $(oc --kubeconfig=${KUBECONFIG_HUB} get helmreleases -o name); do
         RESOURCE_KIND=${helmchart%%/*}
         RESOURCE_NAME=${helmchart##*/}
         check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Deployed" "open-cluster-management" "${KUBECONFIG_HUB}"
