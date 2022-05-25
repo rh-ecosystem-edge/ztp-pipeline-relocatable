@@ -21,38 +21,31 @@ if ./verify.sh; then
 
     echo ">>>> Deploy manifests to install ACM ${OC_ACM_VERSION}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc apply -f 01-namespace.yml -o yaml --dry-run=client | oc apply -f -
+    oc apply -f 01-namespace.yml
     sleep 2
     oc apply -f 02-operatorgroup.yml
     sleep 2
     oc apply -f 03-subscription.yml
-    sleep 240
+    sleep 40
+    InstallPlan=$(oc --kubeconfig=${KUBECONFIG_HUB} get installplan -n open-cluster-management -o name)
+    RESOURCE_KIND=${InstallPlan%%/*}
+    RESOURCE_NAME=${InstallPlan##*/}
+    check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Deployed" "open-cluster-management" "${KUBECONFIG_HUB}"
 
-    echo ">>>> Deploy ACM cr manifest"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo ">>>> Deploy RHACM cr manifest"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 04-acm-cr.yml
+    # We need to give some time to ACM Operator to create the proper helmcharts
     sleep 60
 
-    echo ">>>> Wait until acm ready"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-    timeout=0
-    ready=false
-    sleep 240
-    while [ "${timeout}" -lt "120" ]; do
-        if [[ $(oc get pod -n open-cluster-management | grep -i running | wc -l) -eq $(oc get pod -n open-cluster-management | grep -v NAME | wc -l) ]]; then
-            ready=true
-            break
-        fi
-        sleep 5
-        timeout=$((timeout + 1))
+    echo ">>>> Wait until RHACM ready"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    for helmchart in $(oc --kubeconfig=${KUBECONFIG_HUB} get helmreleases -o name)
+    do
+        RESOURCE_KIND=${helmchart%%/*}
+        RESOURCE_NAME=${helmchart##*/}
+        check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Deployed" "open-cluster-management" "${KUBECONFIG_HUB}"
     done
-    if [ "$ready" == "false" ]; then
-        echo "timeout waiting for ACM pods "
-        exit 1
-    fi
-elif [[ $? -eq 50 ]]; then
-    echo ">>>> Verify failed...Some pods are failing..." #TODO change to remove and launch again
-    exit 50
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi

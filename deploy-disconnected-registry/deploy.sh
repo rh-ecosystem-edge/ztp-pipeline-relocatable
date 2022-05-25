@@ -244,9 +244,10 @@ if [[ ${1} == 'hub' ]]; then
         deploy_registry 'hub'
         trust_internal_registry 'hub'
         check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
+        check_mcp 'hub'
         render_file manifests/machine-config-certs-master.yaml 'hub'
         render_file manifests/machine-config-certs-worker.yaml 'hub'
-        check_mcp 'hub'
+        check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
         check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"

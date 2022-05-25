@@ -4,38 +4,6 @@ set -o pipefail
 set -o nounset
 set -m
 
-function check_managedcluster() {
-    cluster=${1}
-    wait_time=${2}
-    condition=${3}
-    desired_status=${4}
-
-    timeout=0
-    ready=false
-
-    while [ "${timeout}" -lt "${wait_time}" ]; do
-        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}") == "${desired_status}" ]]; then
-            ready=true
-            break
-        fi
-        echo ">> Waiting for ManagedCluster"
-        echo "Edge-cluster: ${cluster}"
-        echo "Condition: ${condition}"
-        echo "Desired State: ${desired_status}"
-        echo
-        timeout=$((timeout + 10))
-        sleep 10
-    done
-
-    if [ "$ready" == "false" ]; then
-        echo "Timeout waiting for Edge-cluster ${cluster} on condition ${condition}"
-        echo "Expected: ${desired_status} Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get managedcluster ${cluster} -o jsonpath="{.status.conditions[?(@.type==\"${condition}\")].status}")"
-        exit 1
-    else
-        echo "ManagedCluster for ${cluster} condition: ${condition} verified"
-    fi
-}
-
 function detach_cluster() {
     # Function to clean cluster from hub
     cluster=${1}
@@ -143,11 +111,11 @@ function check_cluster() {
     cluster=${1}
     wait_time=10000
 
-    echo ">>>> Check edgecluster cluster: ${cluster}"
-    echo ">> Check ManagedCluster for edgecluster: ${cluster}"
-    check_managedcluster "${cluster}" "${wait_time}" "ManagedClusterConditionAvailable" "True"
-    check_managedcluster "${cluster}" "${wait_time}" "ManagedClusterImportSucceeded" "True"
-    check_managedcluster "${cluster}" "${wait_time}" "ManagedClusterJoined" "True"
+    echo ">>>> Check Edge cluster: ${cluster}"
+    echo ">> Check ManagedCluster for Edge: ${cluster}"
+    check_resource "managedcluster" "${cluster}" "ManagedClusterConditionAvailable" "edgecluster-deployer"
+    check_resource "managedcluster" "${cluster}" "ManagedClusterImportSucceeded" "edgecluster-deployer"
+    check_resource "managedcluster" "${cluster}" "ManagedClusterJoined" "edgecluster-deployer"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 }
 
