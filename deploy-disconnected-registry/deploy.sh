@@ -244,7 +244,8 @@ if [[ ${1} == 'hub' ]]; then
         deploy_registry 'hub'
         trust_internal_registry 'hub'
         check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
-        render_file manifests/machine-config-certs.yaml 'hub'
+        render_file manifests/machine-config-certs-master.yaml 'hub'
+        render_file manifests/machine-config-certs-worker.yaml 'hub'
         check_mcp 'hub'
         check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
     else
