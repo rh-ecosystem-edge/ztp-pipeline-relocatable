@@ -132,6 +132,8 @@ EOF
 
         echo ">>>> Deploying BMH Worker ${worker} for ${1}"
         oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUT}
+        # Give some time for the agent to be created
+        sleep 60
     done
 }
 
