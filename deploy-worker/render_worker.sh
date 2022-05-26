@@ -157,6 +157,12 @@ index=0
 for EDGE in ${ALLEDGECLUSTERS}; do
     create_worker_definitions ${EDGE} ${index}
     WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${EDGE} --no-headers | grep worker | awk '{print $1}')
+    if [ "x${WORKER_AGENT}" == "x" ]; then
+        echo "Worker agent is empty for ${EDGE}, sleeping a bit more... 120 secs"
+        sleep 120
+        WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${EDGE} --no-headers | grep worker | awk '{print $1}')
+        echo "Now worker agent is ${WORKER_AGENT}"
+    fi
     check_resource "agent" "${WORKER_AGENT}" "Installed" "${EDGE}" "${KUBECONFIG_HUB}"
     index=$((index + 1))
 done
