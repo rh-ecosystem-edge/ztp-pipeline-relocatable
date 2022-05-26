@@ -22,7 +22,7 @@ function get_tkn() {
         echo ">>>> Downloading TKN Client into: ${BIN_FOLDER}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         mkdir -p ${BIN_FOLDER}
-        curl -k -s  ${URL} -O "${BIN_FOLDER}/tkn.tar.gz" | tar xvzf -C "${BIN_FOLDER}"
+        curl -k -s  ${URL} | tar xvz -C "${BIN_FOLDER}"
         chmod 755 ${BIN_FOLDER}/tkn
         rm -rf "${BIN_FOLDER}/LICENSE"
     else
