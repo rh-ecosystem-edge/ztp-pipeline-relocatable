@@ -24,6 +24,8 @@ export const initialDataLoad = async ({
   handleSetDomain: K8SStateContextData['handleSetDomain'];
   setClean: K8SStateContextData['setClean'];
 }) => {
+  console.log('Initial data load');
+
   let ingressService, apiService, oauth, ingressConfig;
   try {
     oauth = await getOAuth().promise;

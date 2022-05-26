@@ -1,18 +1,8 @@
 .domain-certificates .pf-c-panel__main {
   max-height: 16rem !important;
 }
-
-.domain-certificates .pf-c-panel__main-body {
-  /* TODO: Make this responsive */
-  max-width: 60rem;
-  min-width: 50rem;
-}
-.domain-certificate__section {
-  width: 100%;
-}
-
-.domain-certificate-item {
-  width: 50%;
+.domain-certificate__item {
+  width: 58rem;
 }
 
 /* override default wizard style, we have too much content to show */
@@ -23,4 +13,8 @@
 
 .pf-c-form__helper-text.pf-m-error {
   color: var(--pf-global--danger-color--100);
+}
+
+.domain-certificates .pf-c-expandable-section__toggle-text {
+  text-align: left;
 }

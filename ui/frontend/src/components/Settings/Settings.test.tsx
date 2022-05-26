@@ -32,7 +32,7 @@ const Component: React.FC<CTX_TYPE> = (props) => (
   </K8SStateContextProvider>
 );
 
-describe('Seetings', () => {
+describe('Settings', () => {
   it('can render loading state', () => {
     const { container } = render(<SettingsLoading />);
     expect(container).toMatchSnapshot();

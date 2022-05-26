@@ -155,20 +155,20 @@ exports[`PersistPage can render 1`] = `
                   <span
                     class="pf-c-progress__measure"
                   >
-                    Saving Ingress IP
+                    Waiting for the configuration pod
                   </span>
                 </div>
                 <div
                   aria-labelledby="persist-progress-description"
                   aria-valuemax="100"
                   aria-valuemin="0"
-                  aria-valuenow="14.285714285714285"
+                  aria-valuenow="57.14285714285714"
                   class="pf-c-progress__bar"
                   role="progressbar"
                 >
                   <div
                     class="pf-c-progress__indicator"
-                    style="width: 14%;"
+                    style="width: 57%;"
                   >
                     <span
                       class="pf-c-progress__measure"

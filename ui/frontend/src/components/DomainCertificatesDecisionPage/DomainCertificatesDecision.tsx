@@ -1,12 +1,43 @@
 import React from 'react';
 import { Radio, Split, SplitItem, Stack, StackItem, Title } from '@patternfly/react-core';
 
-// import './DomainCertificatesDecision.css';
-
-export const DomainCertificatesDecision: React.FC<{
+type AutomaticManualDecisionProps = {
+  id?: string;
   isAutomatic: boolean;
   setAutomatic: (isAutomatic: boolean) => void;
-}> = ({ isAutomatic, setAutomatic }) => {
+};
+
+export const AutomaticManualDecision: React.FC<AutomaticManualDecisionProps> = ({
+  id,
+  isAutomatic,
+  setAutomatic,
+}) => (
+  <Split hasGutter id={id}>
+    {/* TODO: Improve positioning on the Wizard's page */}
+    <SplitItem>
+      <Radio
+        data-testid="domain-cert-decision__automatic"
+        id="domain-cert-decision__automatic"
+        label="Automatic"
+        name="automatic"
+        isChecked={isAutomatic}
+        onChange={() => setAutomatic(true)}
+      />
+    </SplitItem>
+    <SplitItem>
+      <Radio
+        data-testid="domain-cert-decision__manual"
+        id="domain-cert-decision__manual"
+        label="Manual"
+        name="manual"
+        isChecked={!isAutomatic}
+        onChange={() => setAutomatic(false)}
+      />
+    </SplitItem>
+  </Split>
+);
+
+export const DomainCertificatesDecision: React.FC<AutomaticManualDecisionProps> = (props) => {
   return (
     <Stack className="wizard-content" hasGutter>
       <StackItem>
@@ -17,29 +48,7 @@ export const DomainCertificatesDecision: React.FC<{
         custom domain.
       </StackItem>
       <StackItem>
-        <Split hasGutter>
-          {/* TODO: Improve positioning on the page */}
-          <SplitItem>
-            <Radio
-              data-testid="domain-cert-decision__automatic"
-              id="domain-cert-decision__automatic"
-              label="Automatic"
-              name="automatic"
-              isChecked={isAutomatic}
-              onChange={() => setAutomatic(true)}
-            />
-          </SplitItem>
-          <SplitItem>
-            <Radio
-              data-testid="domain-cert-decision__manual"
-              id="domain-cert-decision__manual"
-              label="Manual"
-              name="manual"
-              isChecked={!isAutomatic}
-              onChange={() => setAutomatic(false)}
-            />
-          </SplitItem>
-        </Split>
+        <AutomaticManualDecision {...props} />
       </StackItem>
     </Stack>
   );
