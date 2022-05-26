@@ -121,7 +121,7 @@ function mirror() {
             echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
         else
-            echo ">>>> INFO: Failed runing index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> INFO: Failed pruning index image: ${OLM_DESTINATION_INDEX}"
             echo ">>>> INFO: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
