@@ -17,6 +17,11 @@ pipelines:
 GHA:
   - .github/**/*
 
+ansible:
+  - hack/deploy-hub-local/ansible/**/*
+
+test-ci-ansible:
+  - hack/deploy-hub-local/ansible/**/*
 
 ui:
   - deploy-ui/**/*
