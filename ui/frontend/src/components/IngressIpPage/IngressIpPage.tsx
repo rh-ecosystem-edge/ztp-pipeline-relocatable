@@ -11,8 +11,16 @@ import { useK8SStateContext } from '../K8SStateContext';
 
 export const IngressIpPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
-  React.useEffect(() => setActiveStep('ingressip'));
-  const { ingressIp, ingressIpValidation } = useK8SStateContext();
+  const { ingressIp, ingressIpValidation, handleSetIngressIp } = useK8SStateContext();
+
+  React.useEffect(() => setActiveStep('ingressip'), [setActiveStep]);
+  React.useEffect(
+    () => handleSetIngressIp(ingressIp),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      // force revalidation when entering the page (i.e. after Go Back)
+    ],
+  );
 
   return (
     <Page>

@@ -15,7 +15,10 @@ export const addIpDots = (addressWithoutDots: string): string => {
   throw new Error('Invalid address: ' + addressWithoutDots);
 };
 
-export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValidationType => {
+export const ipTripletAddressValidator = (
+  addr: string,
+  reservedIp?: string,
+): IpTripletSelectorValidationType => {
   const validation: IpTripletSelectorValidationType = { valid: true, triplets: [] };
 
   for (let i = 0; i <= 3; i++) {
@@ -30,6 +33,12 @@ export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValida
   if (!validation.valid) {
     validation.message = 'Provided IP address is incorrect.';
   }
+
+  if (reservedIp === addr) {
+    validation.message = 'Provided IP address is already used.';
+    validation.valid = false;
+  }
+
   return validation;
 };
 
