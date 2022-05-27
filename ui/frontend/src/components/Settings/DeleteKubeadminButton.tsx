@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from '@patternfly/react-core';
 import { getSecret } from '../../resources/secret';
-import { kubeadminSecret } from '../PersistPage/constants';
+import { kubeadminSecret, KUBEADMIN_REMOVE_OK } from '../PersistPage/constants';
 import { deleteKubeAdmin } from '../PersistPage/persistIdentityProvider';
 import { PersistErrorType } from '../PersistPage';
 import { getBackendUrl, getRequest } from '../../resources';
@@ -25,10 +25,14 @@ const DeleteKubeadminModal: React.FC<DeleteKubeadminModalProps> = ({
   onClose: _onClose,
 }) => {
   const [error, setError] = React.useState<PersistErrorType>();
+  const [message, setMessage] = React.useState<PersistErrorType>();
   const [inProgress, setInProgress] = React.useState(false);
 
   const onClose = () => {
     setError(undefined);
+    setMessage(undefined);
+    setInProgress(false);
+
     _onClose();
   };
 
@@ -37,8 +41,12 @@ const DeleteKubeadminModal: React.FC<DeleteKubeadminModalProps> = ({
     setInProgress(true);
 
     if (await deleteKubeAdmin(setError)) {
-      onClose();
+      setMessage({
+        title: KUBEADMIN_REMOVE_OK,
+        message: 'The kubeadmin user account is removed now.',
+      });
     }
+
     setInProgress(false);
   };
 
@@ -53,12 +61,12 @@ const DeleteKubeadminModal: React.FC<DeleteKubeadminModalProps> = ({
           key="confirm"
           variant={ButtonVariant.danger}
           onClick={onDelete}
-          isDisabled={inProgress}
+          isDisabled={inProgress || !!message}
         >
           Confirm
         </Button>,
         <Button key="cancel" variant={ButtonVariant.link} onClick={onClose}>
-          Cancel
+          {message ? 'Close' : 'Cancel'}
         </Button>,
       ]}
     >
@@ -68,6 +76,11 @@ const DeleteKubeadminModal: React.FC<DeleteKubeadminModalProps> = ({
       {error && (
         <Alert title={error.title} variant={AlertVariant.warning} isInline>
           {error.message}
+        </Alert>
+      )}
+      {message && (
+        <Alert title={message.title} variant={AlertVariant.success} isInline>
+          {message.message}
         </Alert>
       )}
     </Modal>
@@ -101,6 +114,7 @@ export const DeleteKubeadminButton: React.FC = () => {
       }
 
       const name = (await getUsername())?.body?.username;
+
       if (name === 'kube:admin') {
         setKubeadminDisabledReason(
           'You are logged in as kubeadmin. Use another cluster-admin account to delete kubeadmin user.',
