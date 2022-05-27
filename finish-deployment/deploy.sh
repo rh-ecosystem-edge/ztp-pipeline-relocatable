@@ -113,9 +113,9 @@ function check_cluster() {
 
     echo ">>>> Check Edge cluster: ${cluster}"
     echo ">> Check ManagedCluster for Edge: ${cluster}"
-    check_resource "managedcluster" "${cluster}" "ManagedClusterConditionAvailable" "edgecluster-deployer"
-    check_resource "managedcluster" "${cluster}" "ManagedClusterImportSucceeded" "edgecluster-deployer"
-    check_resource "managedcluster" "${cluster}" "ManagedClusterJoined" "edgecluster-deployer"
+    check_resource "managedcluster" "${cluster}" "ManagedClusterConditionAvailable" "edgecluster-deployer" "${KUBECONFIG_HUB}"
+    check_resource "managedcluster" "${cluster}" "ManagedClusterImportSucceeded" "edgecluster-deployer" "${KUBECONFIG_HUB}"
+    check_resource "managedcluster" "${cluster}" "ManagedClusterJoined" "edgecluster-deployer" "${KUBECONFIG_HUB}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 }
 
