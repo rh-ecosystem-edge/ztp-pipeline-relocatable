@@ -94,3 +94,29 @@
         backend: auto
         force: yes
       tags: [ 01-ssh ]
+
+
+    - name: Install logrotate
+      package:
+        name: logrotate
+        state: present
+      tags: [ 02-rotate ]
+
+    - name: Creating a file with content
+      copy:
+        dest: "/etc/logrotate.d/test-rotate.conf"
+        content: |
+          /var/log/* {
+          weekly
+          rotate 3
+          size 5M
+          compress
+          notifempty
+          delaycompress
+          }
+      tags: [ 04-rfile ]
+
+    - name: Issue log rotate command
+      ansible.builtin.command:
+        cmd: logrotate -d /etc/logrotate.d/test-rotate.conf
+      tags: [ 04-rfile ]
