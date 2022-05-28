@@ -1,3 +1,16 @@
+# [1.7.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.6.0...1.7.0) (2022-05-28)
+
+### Bug Fixes
+
+- **deploy-acm:** Check correct type ([039a957](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/039a9579284524622d8aef0692f6727a5a0d4ff1))
+- **deploy-worker:** field grabbing was not done properly ([f86393b](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f86393b1bff60d0811f73175147e69a798f0cc03))
+- **detach:** Add missing kubeconfig to the calls for check_resource ([0fa510b](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/0fa510bc26536c3fe19d033e5f9b471dec1d9747))
+- **render_worker:** Give some time for worker to be created after applying manifests ([fbab8f5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbab8f59aa7fd9abe6909e6ee19c5670e969b508))
+
+### Features
+
+- Add debug.. ([921dc9d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/921dc9d762c24e36fe3e5c6b7dfe37bf3aaae8e3))
+
 # [1.6.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.5.1...1.6.0) (2022-05-28)
 
 ### Bug Fixes
