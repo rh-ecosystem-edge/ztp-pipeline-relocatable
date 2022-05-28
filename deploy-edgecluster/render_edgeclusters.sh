@@ -308,9 +308,10 @@ EOF
         echo ">> Checking Ignored Interfaces"
         echo "Edge-cluster: ${cluster}"
         echo "Master: ${master}"
-        IGN_IFACES=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master${master}.ignore_ifaces" ${EDGECLUSTERS_FILE})
+        IGN_IFACES=$(yq eval ".edgeclusters[${edgeclusternumber}].[].master${master}.ignore_ifaces" ${EDGECLUSTERS_FILE})
         if [[ ${IGN_IFACES} != "null" ]]; then
-            yq eval -ojson ".edgeclusters[${edgeclusternumber}].${cluster}.master${master}.ignore_ifaces" ${EDGECLUSTERS_FILE} | jq -c '.[]' | while read IFACE; do
+            for IFACE in $(echo ${IGN_IFACES}); do
+
                 echo "Ignoring Interface: ${IFACE}"
                 echo "     - name: ${IFACE}" >>${OUTPUT}
 
@@ -325,7 +326,7 @@ EOF
          next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
 EOF
         if [[ ${IGN_IFACES} != "null" ]]; then
-            yq eval -ojson ".edgeclusters[${edgeclusternumber}].${cluster}.master${master}.ignore_ifaces" ${EDGECLUSTERS_FILE} | jq -c '.[]' | while read IFACE; do
+            for IFACE in $(echo ${IGN_IFACES}); do
                 echo "Ignoring route for: ${IFACE}"
                 echo "       - next-hop-interface: ${IFACE}" >>${OUTPUT}
                 echo "         state: absent" >>${OUTPUT}
