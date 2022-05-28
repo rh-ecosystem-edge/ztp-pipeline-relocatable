@@ -132,33 +132,9 @@ EOF
 
         echo ">>>> Deploying BMH Worker ${worker} for ${1}"
         oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUT}
+        # Give some time for the agent to be created
+        sleep 60
     done
-}
-
-function verify_worker() {
-
-    cluster=${1}
-    timeout=0
-    ready=false
-
-    echo ">>>> Waiting for Worker Agent: ${cluster}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    while [ "$timeout" -lt "1000" ]; do
-        WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} --no-headers | grep worker | cut -f1 -d\ )
-        echo "Waiting for Worker's agent installation for edgecluster: ${cluster} - Agent: ${WORKER_AGENT}"
-        if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${WORKER_AGENT} -o jsonpath='{.status.conditions[?(@.reason=="InstallationCompleted")].status}') == True ]]; then
-            ready=true
-            break
-        fi
-        sleep 5
-        timeout=$((timeout + 1))
-    done
-
-    if [ "$ready" == "false" ]; then
-        echo "Timeout waiting for Worker's agent installation for edgecluster: ${cluster}"
-        exit 1
-    fi
-
 }
 
 # Load common vars
@@ -180,6 +156,13 @@ index=0
 
 for EDGE in ${ALLEDGECLUSTERS}; do
     create_worker_definitions ${EDGE} ${index}
-    verify_worker ${EDGE}
+    WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${EDGE} --no-headers | grep worker | awk '{print $1}')
+    if [ "x${WORKER_AGENT}" == "x" ]; then
+        echo "Worker agent is empty for ${EDGE}, sleeping a bit more... 120 secs"
+        sleep 120
+        WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${EDGE} --no-headers | grep worker | awk '{print $1}')
+        echo "Now worker agent is ${WORKER_AGENT}"
+    fi
+    check_resource "agent" "${WORKER_AGENT}" "Installed" "${EDGE}" "${KUBECONFIG_HUB}"
     index=$((index + 1))
 done
