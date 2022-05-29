@@ -21,7 +21,7 @@ function check_aci() {
             break
         fi
         echo ">> Waiting for ACI"
-        echo "Edge-cluster: ${cluster}"
+        echo "Edgecluster: ${cluster}"
         echo "Current: $(oc --kubeconfig=${KUBECONFIG_HUB} get aci -n ${cluster} ${cluster} -o jsonpath='{.status.debugInfo.stateInfo}')"
         echo "Desired State: Cluster is Installed"
         echo

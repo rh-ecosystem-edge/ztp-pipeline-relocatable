@@ -46,7 +46,7 @@ function check_resource() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    while [ "$timeout" -lt "1000" ]; do
+    while [ "${timeout}" -lt "1000" ]; do
         if [[ $(oc --kubeconfig=${KUBE} -n ${NAMESPACE} get ${RESOURCE} ${RESOURCE_NAME} -o jsonpath="{.status.conditions[?(@.type==\"${TYPE_STATUS}\")].status}") == 'True' ]]; then
             ready=true
             break

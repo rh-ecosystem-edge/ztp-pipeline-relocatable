@@ -178,4 +178,4 @@ clean:
 	oc delete managedcluster $(EDGE_NAME); \
 	oc delete ns $(EDGE_NAME); \
 	oc rollout restart -n openshift-machine-api deployment/metal3; \
-	kcli delete vm $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0
+	kcli delete vm -y $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0

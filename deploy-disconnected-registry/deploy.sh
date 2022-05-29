@@ -245,17 +245,20 @@ if [[ ${1} == 'hub' ]]; then
         if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
             deploy_registry 'hub'
             trust_internal_registry 'hub'
+            render_file manifests/machine-config-certs-master.yaml 'hub'
+            render_file manifests/machine-config-certs-worker.yaml 'hub'
 
-            render_file manifests/machine-config-certs.yaml 'hub'
             check_mcp 'hub'
+            check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
             check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
-            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
 
         elif  [[ ${CUSTOM_REGISTRY} == "true" ]]; then
             trust_internal_registry 'hub'
-            render_file manifests/machine-config-certs.yaml 'hub'
+            render_file manifests/machine-config-certs-master.yaml 'hub'
+            render_file manifests/machine-config-certs-worker.yaml 'hub'
             check_mcp 'hub'
         fi   
+
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
     fi
