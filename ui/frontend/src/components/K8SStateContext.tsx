@@ -35,6 +35,7 @@ export const K8SStateContextProvider: React.FC<{
   );
 
   const [apiaddr, setApiaddr] = React.useState(ipWithoutDots('192.168.7.200')); // 192168  7200
+  const [ingressIp, setIngressIp] = React.useState(ipWithoutDots('192.168.7.201')); // 192168  7201
   const [apiaddrValidation, setApiaddrValidation] = React.useState<IpTripletSelectorValidationType>(
     {
       valid: true,
@@ -43,13 +44,12 @@ export const K8SStateContextProvider: React.FC<{
   );
   const handleSetApiaddr = React.useCallback(
     (newIp: string) => {
-      setApiaddrValidation(ipTripletAddressValidator(newIp));
+      setApiaddrValidation(ipTripletAddressValidator(newIp, ingressIp));
       setApiaddr(newIp);
     },
-    [setApiaddr],
+    [setApiaddr, ingressIp],
   );
 
-  const [ingressIp, setIngressIp] = React.useState(ipWithoutDots('192.168.7.201')); // 192168  7201
   const [ingressIpValidation, setIngressIpValidation] =
     React.useState<IpTripletSelectorValidationType>({
       valid: true,
@@ -57,10 +57,10 @@ export const K8SStateContextProvider: React.FC<{
     });
   const handleSetIngressIp = React.useCallback(
     (newIp: string) => {
-      setIngressIpValidation(ipTripletAddressValidator(newIp));
+      setIngressIpValidation(ipTripletAddressValidator(newIp, apiaddr));
       setIngressIp(newIp);
     },
-    [setIngressIp],
+    [setIngressIp, apiaddr],
   );
 
   const [domain, setDomain] = React.useState<string>('');
