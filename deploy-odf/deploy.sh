@@ -7,7 +7,7 @@ set -m
 
 function render_file() {
     SOURCE_FILE=${1}
-    if [[ $# -lt 1 ]]; then
+    if [[ ${#} -lt 1 ]]; then
         echo "Usage :"
         echo "  $0 <SOURCE FILE> <(optional) DESTINATION_FILE>"
         exit 1
@@ -25,10 +25,10 @@ function extract_vars() {
     # Extract variables from config file
     DISKS_PATH=${1}
     raw_disks=$(yq eval "${DISKS_PATH}" "${EDGECLUSTERS_FILE}" | sed s/null//)
-    disks=$(echo ${raw_disks} | tr -d '\ ' | sed s#-#,#g | sed 's/,*//' | sed 's/,*//')
+    disks=$(echo ${raw_disks} | tr -d '\ ' | sed 's/-/,/g' | sed 's/,*//' | sed 's/,*//')
     disks_count=$(echo ${disks} | sed 's/,/\n/g' | wc -l)
 
-    for node in $(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes -o name | sed s#node\/##); do
+    for node in $(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes -o name | cut -f2 -d/); do
         nodes+="${node},"
     done
 
@@ -102,49 +102,23 @@ if ! ./verify.sh; then
         oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-LSO-OperatorGroup.yaml
         sleep 2
         oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-LSO-Subscription.yaml
-        sleep 2
+        sleep 5
 
         echo ">>>> Waiting for subscription and crd on: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        timeout=0
-        ready=false
-        while [ "$timeout" -lt "1000" ]; do
-            echo KUBEEDGE=${EDGE_KUBECONFIG}
-            if [[ $(oc --kubeconfig=${EDGE_KUBECONFIG} get crd | grep localvolumes.local.storage.openshift.io | wc -l) -eq 1 ]]; then
-                ready=true
-                break
-            fi
-            echo "Waiting for CRD localvolumes.local.storage.openshift.io to be created"
-            sleep 5
-            timeout=$((timeout + 5))
+        declare -a LSOCRDS=("localvolumediscoveries.local.storage.openshift.io" "localvolumediscoveryresults.local.storage.openshift.io" "localvolumes.local.storage.openshift.io" "localvolumesets.local.storage.openshift.io")
+        for crd in ${LSOCRDS[@]}; do
+            check_resource "crd" "${crd}" "Established" "openshift-local-storage" "${EDGE_KUBECONFIG}"
         done
-        if [ "$ready" == "false" ]; then
-            echo timeout waiting for CRD localvolumes.local.storage.openshift.io
-            exit 1
-        fi
 
         echo ">>>> Render and apply manifests for LocalVolume on: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         render_file manifests/04-LSO-LocalVolume.yaml
         sleep 20
 
-        echo ">>>> Waiting for: LSO PVs on ${edgecluster}"
+        echo ">>>> Waiting for: LSO LocalVolume on ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        timeout=0
-        ready=false
-        while [ "$timeout" -lt "1000" ]; do
-            if [[ $(oc --kubeconfig=${EDGE_KUBECONFIG} get pv -o name | wc -l) -ge 3 ]]; then
-                ready=true
-                break
-            fi
-            sleep 5
-            timeout=$((timeout + 5))
-        done
-
-        if [ "$ready" == "false" ]; then
-            echo "timeout waiting for LSO PVs..."
-            exit 1
-        fi
+        check_resource "localvolume" "localstorage-disks-block" "Available" "openshift-local-storage" "${EDGE_KUBECONFIG}"
 
         echo ">>>> Deploy manifests to install ODF $OC_ODF_VERSION"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
