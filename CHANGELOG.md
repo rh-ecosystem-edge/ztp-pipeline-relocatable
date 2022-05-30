@@ -1,3 +1,9 @@
+## [1.7.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.7.0...1.7.1) (2022-05-30)
+
+### Bug Fixes
+
+- **Makefile:** do not ask for confirmation for deleting vms ([ae1f274](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/ae1f2747a9f6d07d51238bdde332119343e8121b))
+
 # [1.7.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.6.0...1.7.0) (2022-05-28)
 
 ### Bug Fixes
