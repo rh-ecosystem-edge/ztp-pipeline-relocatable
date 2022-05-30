@@ -1,3 +1,9 @@
+# [1.8.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.7.1...1.8.0) (2022-05-30)
+
+### Features
+
+- **ci:** set motd based on final workflow status ([ca6caa1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/ca6caa129cf81437e017b0ea3292bb5a5c39a8c4))
+
 ## [1.7.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.7.0...1.7.1) (2022-05-30)
 
 ### Bug Fixes
