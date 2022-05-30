@@ -107,8 +107,7 @@ if ! ./verify.sh; then
         echo ">>>> Waiting for subscription and crd on: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         declare -a LSOCRDS=("localvolumediscoveries.local.storage.openshift.io" "localvolumediscoveryresults.local.storage.openshift.io" "localvolumes.local.storage.openshift.io" "localvolumesets.local.storage.openshift.io")
-        for crd in ${LSOCRDS[@]}
-        do
+        for crd in ${LSOCRDS[@]}; do
             check_resource "crd" "${crd}" "Established" "openshift-local-storage" "${EDGE_KUBECONFIG}"
         done
 
