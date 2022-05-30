@@ -2,7 +2,9 @@ name: "User Interface"
 
 on:
   pull_request:
-    branches: [ main ]
+    types: [labeled]
+  pull_request_review:
+    types: [submitted, edited]
 
 jobs:
   build:
