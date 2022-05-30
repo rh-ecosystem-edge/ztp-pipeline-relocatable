@@ -84,5 +84,7 @@
     - spice-protocol
     - qemu-kvm-ui-spice
     - golang
+    - glibc-langpack-es
+    - mosh
   ignore_errors: true
   tags: [ 01-packages ]

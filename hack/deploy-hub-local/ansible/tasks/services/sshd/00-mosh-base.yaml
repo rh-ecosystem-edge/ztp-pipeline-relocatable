@@ -1,0 +1,8 @@
+---
+- name: MOSH Firewall rule
+  firewalld:
+    service: mosh
+    permanent: true
+    state: enabled
+    immediate: yes
+  tags: configure-sshd

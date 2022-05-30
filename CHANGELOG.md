@@ -1,3 +1,33 @@
+# [1.7.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.6.0...1.7.0) (2022-05-28)
+
+### Bug Fixes
+
+- **deploy-acm:** Check correct type ([039a957](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/039a9579284524622d8aef0692f6727a5a0d4ff1))
+- **deploy-worker:** field grabbing was not done properly ([f86393b](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f86393b1bff60d0811f73175147e69a798f0cc03))
+- **detach:** Add missing kubeconfig to the calls for check_resource ([0fa510b](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/0fa510bc26536c3fe19d033e5f9b471dec1d9747))
+- **render_worker:** Give some time for worker to be created after applying manifests ([fbab8f5](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fbab8f59aa7fd9abe6909e6ee19c5670e969b508))
+
+### Features
+
+- Add debug.. ([921dc9d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/921dc9d762c24e36fe3e5c6b7dfe37bf3aaae8e3))
+
+# [1.6.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.5.1...1.6.0) (2022-05-28)
+
+### Bug Fixes
+
+- Apply certificate from registry also on workers ([6223089](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6223089117344af05ba9678e16d40a286f94e6e4))
+- **deploy-acm:** Check correct type ([2890ba1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/2890ba128f98a7d154807c55cda6d1314837977c))
+- **deploy-worker:** field grabbing was not done properly ([9497782](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/94977825df6c6e50c84467abd5cc941383d3cfd1))
+- **detach:** Add missing kubeconfig to the calls for check_resource ([15351a1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/15351a1a8eca24a212fed93520bc245c4f567ead))
+- **Makefile:** do not ask for confirmation for deleting vms ([9b5a62b](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/9b5a62b62404262275abfc8c2d123c0d623596e9))
+- **ODF:** Set back replicas to 3 because of lack of stability ([0f1b78f](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/0f1b78ff23e2b25990c93ac36e81f187ebce26ba))
+- **render_edgeclusters.sh:** Fix interface iteration for creating ignored entries ([6db7348](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/6db73483af229e904264f2d8bb4e9e7bcf42d1a7))
+- **render_worker:** Give some time for worker to be created after applying manifests ([fefbc74](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/fefbc7438c0001e0e756e263efbb888dacf1801c))
+
+### Features
+
+- Add debug.. ([7441d38](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7441d38bf614a250c5466d869cf0686bf8c3adf0))
+
 ## [1.5.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.5.0...1.5.1) (2022-05-24)
 
 ### Bug Fixes
