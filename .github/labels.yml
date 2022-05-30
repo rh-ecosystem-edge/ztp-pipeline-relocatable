@@ -22,6 +22,10 @@ ui:
   - deploy-ui/**/*
   - ui/**/*
 
+# Autolabel to test-ci-ui when we're touching it
+test-ci-ui:
+  - ui/**/*
+
 acm:
   - deploy-acm/**/*
 
