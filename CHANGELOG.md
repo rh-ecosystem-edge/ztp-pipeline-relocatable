@@ -1,3 +1,9 @@
+## [1.8.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.0...1.8.1) (2022-05-30)
+
+### Bug Fixes
+
+- **metallb:** update nmstate api to v1 ([f5b329d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f5b329db9360a07860b7d77d64be2756f870ffb5))
+
 # [1.8.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.7.1...1.8.0) (2022-05-30)
 
 ### Features
