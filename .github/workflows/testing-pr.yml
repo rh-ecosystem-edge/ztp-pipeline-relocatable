@@ -151,9 +151,19 @@ jobs:
             exit 1
           fi
 
-      - name: Unset MOTD
+      - name: Unset MOTD if workflow succeeded
+        if: ${{ success() }}
         continue-on-error: true
         run: |
           if [ -f /root/bin/set-motd ]; then
             /root/bin/set-motd unset
+          fi
+      
+      - name: Unset MOTD if workflow failed
+        if: ${{ failure() }}
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: FAILURE! Check the logs!")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
           fi
