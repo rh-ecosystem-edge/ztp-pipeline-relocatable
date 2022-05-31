@@ -10,6 +10,7 @@ import { deleteSecret, getSecret } from '../../resources/secret';
 import { IResource, Secret, PatchType } from '../../backend-shared';
 import {
   IDENTITY_PROVIDER_NAME,
+  kubeadminSecret,
   KUBEADMIN_REMOVE,
   PERSIST_IDP,
   RESOURCE_CREATE_TITLE,
@@ -18,6 +19,7 @@ import {
 } from './constants';
 import { CLUSTER_ADMIN_ROLE_BINDING, HTPASSWD_SECRET } from './resourceTemplates';
 import { PersistErrorType } from './types';
+import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 
 const getHtpasswdData = async (
   setError: (error: PersistErrorType) => void,
@@ -135,11 +137,13 @@ export enum PersistIdentityProviderResult {
 
 export const persistIdentityProvider = async (
   setError: (error: PersistErrorType) => void,
+  setProgress: UsePersistProgressType['setProgress'],
   username: string,
   password: string,
 ): Promise<PersistIdentityProviderResult> => {
   if (!username || !password) {
     console.log('persistIdentityProvider: username or password missing, so skipping that step.');
+    setProgress(PersistSteps.PersistIDP);
     return PersistIdentityProviderResult.skipped;
   }
 
@@ -161,6 +165,7 @@ export const persistIdentityProvider = async (
     );
 
     // skip username/passwod wizard steps for that case
+    setProgress(PersistSteps.PersistIDP);
     return PersistIdentityProviderResult.skipped;
   }
 
@@ -186,6 +191,7 @@ export const persistIdentityProvider = async (
     return PersistIdentityProviderResult.error;
   }
 
+  setProgress(PersistSteps.PersistIDP);
   return PersistIdentityProviderResult.userCreated;
 };
 
@@ -194,12 +200,11 @@ export const deleteKubeAdmin = async (
 ): Promise<boolean> => {
   let secret;
   try {
-    const kubeadmin = { name: 'kubeadmin', namespace: 'kube-system' };
     // The 404 is a valid state in this flow
-    secret = await getSecret(kubeadmin).promise;
+    secret = await getSecret(kubeadminSecret).promise;
 
     // Ok, it is still there, so remove it
-    await deleteSecret(kubeadmin).promise;
+    await deleteSecret(kubeadminSecret).promise;
   } catch (e) {
     if (secret) {
       // It is not a failure if the secret is already missing

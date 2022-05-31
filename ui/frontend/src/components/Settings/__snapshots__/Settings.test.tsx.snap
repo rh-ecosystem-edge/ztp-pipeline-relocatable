@@ -76,7 +76,6 @@ exports[`Seetings can render data 1`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-3"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -262,11 +261,23 @@ exports[`Seetings can render data 1`] = `
                 </div>
               </div>
               <div
-                class="pf-l-stack__item pf-m-fill"
+                class="pf-l-stack__item pf-m-fill summary-page-sumamary__item"
               />
               <div
                 class="pf-l-stack__item settings-page-sumamary__item__footer"
               >
+                <button
+                  aria-disabled="true"
+                  class="pf-c-button pf-m-danger pf-m-aria-disabled"
+                  data-ouia-component-id="OUIA-Generated-Button-danger-2"
+                  data-ouia-component-type="PF4/Button"
+                  data-ouia-safe="true"
+                  data-testid="settings-page-button-delete-kubeadmin"
+                  type="button"
+                >
+                  Delete kubeadmin
+                </button>
+                 
                 <button
                   aria-disabled="false"
                   class="pf-c-button pf-m-primary"
@@ -364,7 +375,6 @@ exports[`Seetings can render data 2`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-3"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -621,7 +631,7 @@ exports[`Seetings can render data 2`] = `
                 </div>
               </div>
               <div
-                class="pf-l-stack__item pf-m-fill"
+                class="pf-l-stack__item pf-m-fill summary-page-sumamary__item"
               />
               <div
                 class="pf-l-stack__item settings-page-sumamary__item__footer"
@@ -734,7 +744,6 @@ exports[`Seetings can render data 3`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-3"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -920,11 +929,23 @@ exports[`Seetings can render data 3`] = `
                 </div>
               </div>
               <div
-                class="pf-l-stack__item pf-m-fill"
+                class="pf-l-stack__item pf-m-fill summary-page-sumamary__item"
               />
               <div
                 class="pf-l-stack__item settings-page-sumamary__item__footer"
               >
+                <button
+                  aria-disabled="true"
+                  class="pf-c-button pf-m-danger pf-m-aria-disabled"
+                  data-ouia-component-id="OUIA-Generated-Button-danger-3"
+                  data-ouia-component-type="PF4/Button"
+                  data-ouia-safe="true"
+                  data-testid="settings-page-button-delete-kubeadmin"
+                  type="button"
+                >
+                  Delete kubeadmin
+                </button>
+                 
                 <button
                   aria-disabled="false"
                   class="pf-c-button pf-m-primary"
@@ -1022,7 +1043,6 @@ exports[`Seetings can render error 1`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-2"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -1256,6 +1276,18 @@ exports[`Seetings can render error 1`] = `
                 class="pf-l-stack__item settings-page-sumamary__item__footer"
               >
                 <button
+                  aria-disabled="true"
+                  class="pf-c-button pf-m-danger pf-m-aria-disabled"
+                  data-ouia-component-id="OUIA-Generated-Button-danger-1"
+                  data-ouia-component-type="PF4/Button"
+                  data-ouia-safe="true"
+                  data-testid="settings-page-button-delete-kubeadmin"
+                  type="button"
+                >
+                  Delete kubeadmin
+                </button>
+                 
+                <button
                   aria-disabled="false"
                   class="pf-c-button pf-m-primary"
                   data-ouia-component-id="OUIA-Generated-Button-primary-1"
@@ -1352,7 +1384,6 @@ exports[`Seetings can render loading state 1`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-1"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>

@@ -30,20 +30,32 @@ jobs:
         id: build-pipe
         run: |
           cd ${{ github.workspace }}
-
           if [[ "${{ github.ref_name }}" == 'main' ]];then
-            RELEASE=latest
+            echo ">> Building 2 Images: Main and Latest"
+            echo ">>>> Building Pipe Release"
+            echo "Release: main"
+            echo "Image Branch: ${{ github.ref_name }}"
+            echo "Git hash: ${{ github.sha }}"
+            echo ">>>>"
+            RELEASE=main make pipe-image-ci
+
+            echo ">>>> Building Pipe Release"
+            echo "Release: latest"
+            echo "Image Branch: ${{ github.ref_name }}"
+            echo "Git hash: ${{ github.sha }}"
+            echo ">>>>"
+            RELEASE=latest make pipe-image-ci
+
           else
-            RELEASE=${{ github.ref_name }}
+            echo ">> Building Branch Image"
+            RELEASE=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
+            echo ">>>> Building Pipe Release"
+            echo "Release: ${RELEASE}"
+            echo "Image Branch: ${{ github.ref_name }}"
+            echo "Git hash: ${{ github.sha }}"
+            echo ">>>>"
+            RELEASE=${RELEASE} make pipe-image-ci
           fi
-
-          echo ">>>> Building Pipe Release"
-          echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.ref_name }}"
-          echo "Git hash: ${{ github.sha }}"
-          echo ">>>>"
-
-          RELEASE=${RELEASE} make pipe-image
 
       - name: Build and Push UI Image
         id: build-ui
@@ -51,15 +63,28 @@ jobs:
           cd ${{ github.workspace }}
 
           if [[ "${{ github.ref_name }}" == 'main' ]];then
-            RELEASE=latest
+            echo ">> Building 2 Images: Main and Latest"
+            echo ">>>> Building UI Release"
+            echo "Release: main"
+            echo "Image Branch: ${{ github.ref_name }}"
+            echo "Git hash: ${{ github.sha }}"
+            echo ">>>>"
+            RELEASE=main make ui-image-ci
+
+            echo ">>>> Building UI Release"
+            echo "Release: latest"
+            echo "Image Branch: ${{ github.ref_name }}"
+            echo "Git hash: ${{ github.sha }}"
+            echo ">>>>"
+            RELEASE=latest make ui-image-ci
+
           else
-            RELEASE=${{ github.ref_name }}
+            echo ">> Building Branch Image"
+            RELEASE=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
+            echo ">>>> Building UI Release"
+            echo "Release: ${RELEASE}"
+            echo "Image Branch: ${{ github.ref_name }}"
+            echo "Git hash: ${{ github.sha }}"
+            echo ">>>>"
+            RELEASE=${RELEASE} make ui-image-ci
           fi
-
-          echo ">>>> Building UI Release"
-          echo "Release: ${RELEASE}"
-          echo "Image Branch: ${{ github.ref_name }}"
-          echo "Git hash: ${{ github.sha }}"
-          echo ">>>>"
-
-          RELEASE=${RELEASE} make ui-image

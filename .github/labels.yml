@@ -17,9 +17,20 @@ pipelines:
 GHA:
   - .github/**/*
 
+ansible:
+  - hack/deploy-hub-local/ansible/**/*
+  - .github/workflows/ci-test-ansible.yml
+
+test-ci-ansible:
+  - hack/deploy-hub-local/ansible/**/*
+  - .github/workflows/ci-test-ansible.yml
 
 ui:
   - deploy-ui/**/*
+  - ui/**/*
+
+# Autolabel to test-ci-ui when we're touching it
+test-ci-ui:
   - ui/**/*
 
 acm:
@@ -31,14 +42,14 @@ registry:
 metallb:
   - deploy-metallb/**/*
 
-spoke:
-  - deploy-spoke/**/*
+edgecluster:
+  - deploy-edgecluster/**/*
 
 worker:
   - deploy-worker/**/*
 
-ocs:
-  - deploy-ocs/**/*
+odf:
+  - deploy-odf/**/*
 
 
 finalization:

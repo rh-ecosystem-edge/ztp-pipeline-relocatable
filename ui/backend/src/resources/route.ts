@@ -1,6 +1,9 @@
+import { RouteKind } from '../common';
 import { PatchType, Route, RouteApiVersion } from '../frontend-shared';
-import { getClusterApiUrl, jsonPatch, jsonRequest } from '../k8s';
+import { getClusterApiUrl, jsonDelete, jsonPatch, jsonPost, jsonRequest } from '../k8s';
 import { ListResult } from './types';
+
+const logger = console;
 
 export const getAllRoutes = async (token: string) =>
   (
@@ -10,16 +13,57 @@ export const getAllRoutes = async (token: string) =>
     )
   ).items;
 
-// https://api.spoke0-cluster.alklabs.com:6443/apis/route.openshift.io/v1/namespaces/ztpfw-ui/routes/ztpfw-ui
+const getRouteUrl = (namespace: string, name: string) =>
+  `${getClusterApiUrl()}/apis/${RouteApiVersion}/namespaces/${namespace}/routes/${name}`;
+
+export const getRoute = async (token: string, metadata: { name: string; namespace: string }) =>
+  await jsonRequest<Route>(getRouteUrl(metadata.namespace, metadata.name), token);
+
 export const patchRoute = (
   token: string,
   metadata: { name: string; namespace: string },
   patches: PatchType[],
-) =>
-  jsonPatch<Route>(
-    `${getClusterApiUrl()}/apis/${RouteApiVersion}/namespaces/${metadata.namespace}/routes/${
-      metadata.name
-    }`,
-    patches,
-    token,
-  );
+) => jsonPatch<Route>(getRouteUrl(metadata.namespace, metadata.name), patches, token);
+
+export const backupRoute = async (token: string, route: Route) => {
+  const { namespace, name } = route.metadata;
+  if (!namespace || !name) {
+    logger.warn('backupRoute: no route provided');
+    return;
+  }
+
+  const backupRouteName = `${name}-copy`;
+  try {
+    await jsonDelete<Route>(getRouteUrl(namespace, backupRouteName), token);
+  } catch (e) {
+    console.log('Attempt to delete route-backup failed. This is not an error: ', e);
+  }
+
+  try {
+    const routeCopy: Route = {
+      apiVersion: RouteApiVersion,
+      kind: RouteKind,
+      metadata: {
+        labels: route.metadata.labels,
+        name: backupRouteName,
+        namespace: namespace,
+      },
+      spec: {
+        host: route.spec?.host,
+        port: route.spec?.port,
+        tls: route.spec?.tls,
+        to: route.spec?.to,
+        wildcardPolicy: route.spec?.wildcardPolicy,
+      },
+    };
+    await jsonPost<Route>(
+      `${getClusterApiUrl()}/apis/${RouteApiVersion}/namespaces/${namespace}/routes`,
+      routeCopy,
+      token,
+    );
+
+    logger.debug('Backup route created');
+  } catch (e) {
+    console.error(`Failed to create copy of ${namespace}/${name} route: `, e);
+  }
+};

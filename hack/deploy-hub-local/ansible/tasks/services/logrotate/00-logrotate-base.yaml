@@ -1,0 +1,15 @@
+---
+- name: Configure logrotate.conf
+  lineinfile:
+    dest: /etc/logrotate.conf
+    create: true
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "^compress", line: "compress" }
+    - { regexp: "^rotate.*", line: "rotate 14" }
+    - { regexp: "^daily", line: "daily" }
+    - { regexp: "^weekly.*", line: "" }
+    - { regexp: "^dateext.*", line: "" }
+  tags: configure-logrotate

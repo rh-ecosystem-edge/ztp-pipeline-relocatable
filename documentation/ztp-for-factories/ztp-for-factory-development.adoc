@@ -62,7 +62,7 @@ You can customize the parameter `git-revision=<BRANCH>` to point to your own bra
 
 ```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p edgeclusters-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ```
 
 === Creating the Edge Cluster VMs
@@ -70,7 +70,7 @@ tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(ca
 Creates 4 VMs and the proper DNS entries for the involved network
 
 ```sh
-./build-spoke.sh ${HOME}/openshift_pull.json 1
+./build-edgecluster.sh ${HOME}/openshift_pull.json 1
 ```
 
 === Executing the Edge Cluster Pipeline
@@ -79,7 +79,7 @@ You can customize the parameter `git-revision=<BRANCH>` to point to your own bra
 
 ```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-tkn pipeline start -n spoke-deployer -p git-revision=main -p spokes-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw/pipeline:main" -p edgeclusters-config="$(cat /root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
 ```
 
 == Build Images
@@ -101,10 +101,10 @@ Imagine you have an environment already deployed and you need to test the step y
 - First step you updates the code in the PVC (This can change in the futurte when we embed the code in the Container Image)
 
 ```sh
-tkn task start -n spoke-deployer -p git-revision=<YOUR BRANCH> -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults fetch-from-git
+tkn task start -n edgecluster-deployer -p git-revision=<YOUR BRANCH> -p edgeclusters-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults fetch-from-git
 ```
 
 - This second one executes the Pipeline Step
 ```sh
-tkn task start -n spoke-deployer -p git-revision=<YOUR BRANCH> -p spokes-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults spoke-deploy-ui
+tkn task start -n edgecluster-deployer -p git-revision=<YOUR BRANCH> -p edgeclusters-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults edgecluster-deploy-ui
 ```

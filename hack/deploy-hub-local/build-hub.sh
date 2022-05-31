@@ -5,7 +5,7 @@ set -o pipefail
 set -o nounset
 set -m
 
-usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <ocs_version(4.8)> <hub_architecture(installer|sno)>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> <hub_architecture(installer|sno)>" 1>&2; exit 1; }
 
 if [ $# -lt 4 ]; then
     usage
@@ -14,9 +14,9 @@ fi
 export pull_secret=${1}
 export ocp_version=${2}
 export acm_version=${3}
-export ocs_version=${4}
+export odf_version=${4}
 
-if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" ] || [ -z "${acm_version}" ] || [ -z "${ocs_version}" ]; then
+if [ -z "${pull_secret}" ] || [ -z "${ocp_version}" ] || [ -z "${acm_version}" ] || [ -z "${odf_version}" ]; then
     usage
 fi
 
@@ -42,7 +42,7 @@ export CLUSTERS=1
 export OC_PULL_SECRET="'$(cat $pull_secret)'"
 export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
-export OC_OCS_VERSION="${ocs_version}"
+export OC_ODF_VERSION="${odf_version}"
 export HUB_ARCHITECTURE="${5:-compact}"
 
 echo ">>>> Set the Pull Secret"
@@ -60,7 +60,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
                 echo "SNO + Metal3 + Ipv4 + connected"
                 t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
                 kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
-                kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
+                kcli create network --nodhcp -c 192.168.7.0/24 ztpfw -i
                 kcli create network -c 192.168.150.0/24 bare-net
                 echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
                 kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
@@ -69,11 +69,11 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             else
                 echo "Multinode + Metal3 + Ipv4 + connected"
              	t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-             	kcli delete vm test-ci-sno -y || true; kcli delete vm test-ci-master-0 -y || true; kcli delete vm test-ci-master-1 -y || true; kcli delete vm test-ci-master-2 -y || true; kcli delete network bare-net -y || true
-             	kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
-             	kcli create network -c 192.168.150.0/24 bare-net
-             	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
-             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
+             	kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
+             	kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
+             	kcli create network  -c 192.168.150.0/24 bare-net
+             	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
              	export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
              	oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
             fi
@@ -81,21 +81,21 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     fi
 fi
 
-echo ">>>> Spokes.yaml file generation"
+echo ">>>> Edge-clusters.yaml file generation"
 
 #Empty file before we start
->spokes.yaml
+>edgeclusters.yaml
 
-cat <<EOF >>spokes.yaml
+cat <<EOF >>edgeclusters.yaml
 config:
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
-  OC_OCS_VERSION: '${OC_OCS_VERSION}'
+  OC_ODF_VERSION: '${OC_ODF_VERSION}'
 EOF
 
-# Create header for spokes.yaml
-cat <<EOF >>spokes.yaml
-spokes:
+# Create header for edgeclusters.yaml
+cat <<EOF >>edgeclusters.yaml
+edgeclusters:
 EOF
 
 echo ">>>> Create the PV and sushy and dns"

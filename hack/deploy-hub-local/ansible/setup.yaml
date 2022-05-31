@@ -2,31 +2,75 @@
 - hosts: all
   user: root
 
-  vars:
-    console_keymap: en
-    console_font: eurlatgr
-    system_locale: en_US.UTF-8
-    system_timezone: Europe/Madrid
-    root_shell: /bin/bash
-    domain: "{{ ansible_nodename.split('.')[1:] | join('.') }}"
-    keys:
-      - key: "{{ sshkey }}"
-
   tasks:
-    - name: Include base tasks
-      include_tasks: "{{item}}"
-      with_fileglob:
-        - "tasks/base/*.yaml"
+    - name: Base OS configuration
+      include_tasks: tasks/base/00-base-os.yaml
+      tags: [ 00-base-os ]
 
+    - name: Base network configuration
+      include_tasks: tasks/base/00-base-network.yaml
+      tags: [ 00-base-network ]
+
+    - name: Install common packages
+      include_tasks: tasks/base/01-packages.yaml
+      tags: [ 01-packages, 01-configure-dnf ]
+
+    - name: Install common bin-utils
+      include_tasks: tasks/base/02-bin-utils.yaml
+      tags: [ 02-bin-utils ]
+
+    - name: Enable common services
+      include_tasks: tasks/services/00-services-common.yaml
+      tags: [ 00-common-services ]
+
+    - name: Configure sshd
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "tasks/services/sshd/*.yaml"
+      when: ssh_configure == true
+      tags: [ configure-sshd ]
+    
+    - name: Configure tuned
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "tasks/services/tuned/*.yaml"
+      when: tuned_configure == true
+      tags: [ configure-tuned ]
+
+    - name: Configure chronyd
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "tasks/services/chronyd/*.yaml"
+      when: chronyd_configure == true
+      tags: [ configure-chronyd ]
+
+    - name: Configure logrotate
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "tasks/services/logrotate/*.yaml"
+      when: logrotate_configure == true
+      tags: [ configure-logrotate ]
+
+    - name: Configure libvirtd
+      include_tasks: "{{ item }}"
+      with_fileglob:
+        - "tasks/services/libvirtd/*.yaml"
+      tags: [ configure-libvirtd ]
+
+    - name: Base network configuration
+      include_tasks: tasks/base/01-base-network.yaml
+      tags: [ 00-base-network ]
+
+    - name: Finalize playbook
+      include_tasks: tasks/finalizers/99-finalizers.yaml
+      tags: [ 00-base-os, 00-base-network, 01-packages, 
+            01-configure-dnf, 02-bin-utils, 
+            00-common-services, configure-sshd,
+            configure-tuned, configure-chronyd,
+            configure-logrotate, configure-libvirtd ]
+    
     - name: Flush handlers
       meta: flush_handlers
-
-  handlers:
-    - name: Restart monit
-      service:
-        name: monit
-        state: restarted
-      when: monit
 
     - name: Restart systemd
       shell: systemctl daemon-reload

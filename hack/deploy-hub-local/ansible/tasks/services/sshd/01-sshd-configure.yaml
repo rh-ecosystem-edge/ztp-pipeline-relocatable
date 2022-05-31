@@ -1,0 +1,45 @@
+---
+- name: Install SSH keys from github.com/USER.keys
+  authorized_key:
+    user: "root"
+    key: "https://github.com/{{ item }}.keys"
+  with_items:
+    - "{{ ssh_keys_users }}"
+  when: ssh_keys_update == True
+  tags: configure-sshd
+
+- name: Disable root login over ssh with password
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin .*"
+    state: present
+    line: "PermitRootLogin prohibit-password"
+  tags: configure-sshd
+
+- name: Disable password authentication
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication .*"
+    state: present
+    line: "PasswordAuthentication no"
+  tags: configure-sshd
+
+- name: SSH Listen on all interfaces
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^ListenAddress .*"
+    state: absent
+  tags: configure-sshd
+
+- name: Disable LastLogin
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PrintLastLog .*"
+    state: present
+    line: "PrintLastLog no"
+  tags: configure-sshd
+
+- name: Restart sshd
+  service:
+    name: sshd
+    state: restarted

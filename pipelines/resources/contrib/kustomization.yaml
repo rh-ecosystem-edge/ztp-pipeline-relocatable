@@ -1,0 +1,3 @@
+resources:
+  - contrib-template.yaml
+  - contrib-gpu-operator.yaml

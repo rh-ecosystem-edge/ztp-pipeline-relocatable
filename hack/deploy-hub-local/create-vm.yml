@@ -3,7 +3,7 @@ parameters:
   clusters: 2 
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
-spoke{{ i }}-cluster-m{{ j }}:
+edgecluster{{ i }}-cluster-m{{ j }}:
   uefi_legacy: true
   start: false
   memory: 64000
@@ -15,16 +15,16 @@ spoke{{ i }}-cluster-m{{ j }}:
     nic: enp2s0
     mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
   disks:
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200  
+  - size: 120
+  - size: 50
+  - size: 50
+  - size: 50
+  - size: 50  
 {% endfor %}
 {% endfor %}
 
 {% for i in range(0, clusters) %}
-spoke{{ i }}-cluster-w0:
+edgecluster{{ i }}-cluster-w0:
   uefi_legacy: true
   start: false
   memory: 16000
@@ -36,9 +36,9 @@ spoke{{ i }}-cluster-w0:
     nic: enp2s0
     mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
   disks:
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200
-  - size: 200  
+  - size: 120
+  - size: 50
+  - size: 50
+  - size: 50
+  - size: 50  
 {% endfor %}

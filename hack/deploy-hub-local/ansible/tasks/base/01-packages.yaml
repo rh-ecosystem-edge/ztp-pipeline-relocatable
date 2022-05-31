@@ -1,0 +1,90 @@
+---
+- name: Use DNF fastest mirror
+  ini_file:
+    path: /etc/dnf/dnf.conf
+    section: main
+    option: fastestmirror
+    value: 1
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
+
+- name: Use DNF drpm
+  ini_file:
+    path: /etc/dnf/dnf.conf
+    section: main
+    option: deltarpm
+    value: true
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
+
+- name: Use DNF parallel downloads
+  ini_file:
+    path: /etc/dnf/dnf.conf
+    section: main
+    option: max_parallel_downloads
+    value: 20
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
+
+- name: Enable copr repo karmab/kcli
+  command: "dnf copr enable -y karmab/kcli"
+  ignore_errors: true
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
+
+- name: Enable EPEL repository
+  package: name=epel-release state=present
+  ignore_errors: true
+  when: pkg_manager == "dnf"
+  tags: [ 01-packages, 01-configure-dnf ]
+
+- name: Uninstall packages
+  package: name={{ item }} state=absent
+  with_items:
+    - motd-news-config
+    - command-not-found
+    - update-notifier-common
+    - "abrt*"
+  ignore_errors: true
+  tags: [ 01-packages ]
+
+- name: Install common packages
+  package: name={{ item }} state=present
+  with_items:
+    - bash-completion
+    - bc
+    - sysstat
+    - tmux
+    - curl
+    - util-linux
+    - cmake
+    - mc
+    - nmap
+    - tar
+    - unzip
+    - rsync
+    - net-tools
+    - logrotate
+    - make
+    - wget
+    - git
+    - jq
+    - mlocate
+    - libvirt
+    - qemu-kvm-core
+    - kcli
+    - skopeo
+    - firewalld
+    - bind-utils
+    - httpd-tools
+    - joe
+    - ansible
+    - podman
+    - spice-server
+    - spice-protocol
+    - qemu-kvm-ui-spice
+    - golang
+    - glibc-langpack-es
+    - mosh
+  ignore_errors: true
+  tags: [ 01-packages ]

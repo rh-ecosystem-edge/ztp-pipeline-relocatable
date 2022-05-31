@@ -1,0 +1,8 @@
+---
+- name: Enable common services
+  service: name={{ item }} enabled=yes state=started
+  with_items:
+    - fstrim.timer
+    - firewalld
+  ignore_errors: true
+  tags: 00-common-services

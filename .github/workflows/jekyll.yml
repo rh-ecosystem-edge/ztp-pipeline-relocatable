@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'website/**'
+      - 'documentation/**'
   schedule:
     - cron:  '0 0 * * *'
 
@@ -21,7 +24,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gems-
 
-    - uses: iranzo/gh-pages-jekyll-action@1.0.1
+    - uses: iranzo/gh-pages-jekyll-action@1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GHAREPO }}
         SOURCE_FOLDER: website

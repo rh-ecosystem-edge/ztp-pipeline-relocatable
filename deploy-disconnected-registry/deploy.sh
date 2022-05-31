@@ -15,15 +15,15 @@ function render_file() {
     SOURCE_FILE=${1}
     if [[ $# -lt 2 ]]; then
         echo "Usage :"
-        echo "  $0 <SOURCE FILE> <MODE> [<SPOKE_NAME>]"
+        echo "  $0 <SOURCE FILE> <MODE> [<EDGE_NAME>]"
         exit 1
     fi
     if [[ ${2} == 'hub' ]]; then
         cluster='hub'
         envsubst <${SOURCE_FILE} | oc --kubeconfig=${KUBECONFIG_HUB} apply -f -
-    elif [[ ${2} == 'spoke' ]]; then
+    elif [[ ${2} == 'edgecluster' ]]; then
         cluster=${3}
-        envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+        envsubst <${SOURCE_FILE} | oc --kubeconfig=${EDGE_KUBECONFIG} apply -f -
     fi
 }
 
@@ -33,9 +33,9 @@ function extract_kubeconfig() {
         cp ${KUBECONFIG_HUB} "${OUTPUTDIR}/kubeconfig-hub"
     fi
 
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $spoke $spoke-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
+    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${EDGE_KUBECONFIG}
 }
 
 function side_evict_error() {
@@ -50,28 +50,33 @@ function side_evict_error() {
         echo "No masters on ${status}"
     else
         conflicting_daemon_pod=$(oc --kubeconfig=${KUBEC} get pod -n openshift-machine-config-operator -o wide --no-headers | grep daemon | grep ${conflicting_node} | cut -f1 -d\ )
-        pattern_1="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep evicting | tail -1 | grep pods)"
-        pattern_2="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep "Draining failed" | tail -1 | grep pod)"
 
-        for log_entry in "${pattern_1}" "${pattern_2}"; do
-            if [[ -z ${log_entry} ]]; then
-                echo "No Conflicting LogEntry on ${conflicting_daemon_pod}"
-            else
-                echo ">> Conflicting LogEntry Found!!"
-                pod=$(echo ${log_entry##*pods/} | cut -d\" -f2)
-                conflicting_ns=$(oc --kubeconfig=${KUBEC} get pod -A | grep ${pod} | cut -f1 -d\ )
+        # Check if conflicting_daemon_pod is not empty
+        if [[ -z ${conflicting_daemon_pod} ]]; then
+            echo "No conflicting daemon pod exists in ${conflicting_node}"
+        else
+            pattern_1="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep evicting | tail -1 | grep pods)"
+            pattern_2="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep "Draining failed" | tail -1 | grep pod)"
 
-                echo ">> Clean Eviction triggered info: "
-                echo NODE: ${conflicting_node}
-                echo DAEMON: ${conflicting_daemon_pod}
-                echo NS: ${conflicting_ns}
-                echo LOG: ${log_entry}
-                echo POD: ${pod}
+            for log_entry in "${pattern_1}" "${pattern_2}"; do
+                if [[ -z ${log_entry} ]]; then
+                    echo "No Conflicting LogEntry on ${conflicting_daemon_pod}"
+                else
+                    echo ">> Conflicting LogEntry Found!!"
+                    pod=$(echo ${log_entry##*pods/} | cut -d\" -f2)
+                    conflicting_ns=$(oc --kubeconfig=${KUBEC} get pod -A | grep ${pod} | cut -f1 -d\ )
 
-                oc --kubeconfig=${KUBEC} delete pod -n ${conflicting_ns} ${pod} --force --grace-period=0
-            fi
-        done
+                    echo ">> Clean Eviction triggered info: "
+                    echo NODE: ${conflicting_node}
+                    echo DAEMON: ${conflicting_daemon_pod}
+                    echo NS: ${conflicting_ns}
+                    echo LOG: ${log_entry}
+                    echo POD: ${pod}
 
+                    oc --kubeconfig=${KUBEC} delete pod -n ${conflicting_ns} ${pod} --force --grace-period=0
+                fi
+            done
+        fi
     fi
 }
 
@@ -81,8 +86,8 @@ function check_mcp() {
     if [[ ${1} == 'hub' ]]; then
         TARGET_KUBECONFIG=${KUBECONFIG_HUB}
         cluster=hub
-    elif [[ ${1} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         cluster=${2}
     fi
     echo ">> Waiting for the MCO to grab the new MachineConfig for the certificate..."
@@ -116,13 +121,13 @@ function check_mcp() {
     fi
 }
 
-function check_ocs_ready() {
-    echo ">>>> Waiting for OCS Cluster Ready"
+function check_odf_ready() {
+    echo ">>>> Waiting for ODF Cluster Ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
     while [ "$timeout" -lt "1000" ]; do
-        if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
+        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
             ready=true
             break
         fi
@@ -130,7 +135,7 @@ function check_ocs_ready() {
         timeout=$((timeout + 1))
     done
     if [ "$ready" == "false" ]; then
-        echo "timeout waiting for OCS deployment to be ready..."
+        echo "timeout waiting for ODF deployment to be ready..."
         exit 1
     fi
 }
@@ -141,7 +146,7 @@ function check_route_ready() {
     timeout=0
     ready=false
     while [ "$timeout" -lt "1000" ]; do
-        if [[ $(oc get --kubeconfig=${SPOKE_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -eq 3 ]]; then
+        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -ge 3 ]]; then
             ready=true
             break
         fi
@@ -170,16 +175,15 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
-    elif [[ ${1} == 'spoke' ]]; then
-        TARGET_KUBECONFIG=${SPOKE_KUBECONFIG}
-        export KUBECONFIG=${SPOKE_KUBECONFIG}
+    elif [[ ${1} == 'edgecluster' ]]; then
+        TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         source ./common.sh ${1}
         cluster=${2}
         echo ">>>> Deploy internal Quay Registry: ${REGISTRY} - Namespace: (${cluster})"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         # TODO: Render variables instead being static
-        # check if ocs is ready before deploying registry
-        check_ocs_ready
+        # check if odf is ready before deploying registry
+        check_odf_ready
 
         # Create the registry deployment and wait for it
         echo ">> Creating the registry deployment"
@@ -187,7 +191,7 @@ function deploy_registry() {
         sleep 30
         QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n "${REGISTRY}" get deployment -o name | grep quay-operator | cut -d '/' -f 2)
         echo ">> Waiting for the registry deployment to be ready"
-        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${QUAY_OPERATOR}"
+        check_resource "deployment" "${QUAY_OPERATOR}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
 
         # Create the config for the registry
         echo ">> Creating the config for the registry"
@@ -200,7 +204,7 @@ function deploy_registry() {
         echo ">> Waiting for the registry Quay CR to be ready"
         for dep in $(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo); do
             echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-            ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+            check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
         done
 
         # wait for route to be ready
@@ -227,11 +231,10 @@ function deploy_registry() {
 
         echo ">> Creating organizations for mirror to succeed"
         APIURL="https://${ROUTE}/api/v1/organization/"
-        for organization in ocp4 olm jparrill ocatopic ztpfw; do
+        for organization in ocp4 olm olm-certified jparrill ocatopic ztpfw; do
             echo ">> Creating organization ${organization}"
             curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"${organization}@redhat.com\"}"
         done
-        export KUBECONFIG=${KUBECONFIG_HUB}
     fi
 
 }
@@ -240,57 +243,56 @@ if [[ ${1} == 'hub' ]]; then
     if ! ./verify.sh 'hub'; then
         deploy_registry 'hub'
         trust_internal_registry 'hub'
-        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
-        render_file manifests/machine-config-certs.yaml 'hub'
-        # after machine config is applied, we need to wait for the registry and acm pods and deployments to be ready
+        check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
         check_mcp 'hub'
-        ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${REGISTRY}"
+        render_file manifests/machine-config-certs-master.yaml 'hub'
+        render_file manifests/machine-config-certs-worker.yaml 'hub'
+        check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
+        check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
     fi
-elif [[ ${1} == 'spoke' ]]; then
+elif [[ ${1} == 'edgecluster' ]]; then
 
-    if [[ -z ${ALLSPOKES} ]]; then
-        ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
-    for spoke in ${ALLSPOKES}; do
-        # Get Spoke Kubeconfig
-        echo "spoke: ${spoke}"
-        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${spoke}" ]]; then
-            extract_kubeconfig ${spoke}
+    i=0
+    for edgecluster in ${ALLEDGECLUSTERS}; do
+        # Get Edge-cluster Kubeconfig
+        echo "edgecluster: ${edgecluster}"
+        if [[ ! -f "${OUTPUTDIR}/kubeconfig-${edgecluster}" ]]; then
+            extract_kubeconfig ${edgecluster}
         else
-            export SPOKE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${spoke}"
+            export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${edgecluster}"
         fi
 
         # Verify step
-        if ! ./verify.sh 'spoke'; then
-            deploy_registry 'spoke' ${spoke}
-            trust_internal_registry 'spoke' ${spoke}
+        if ! ./verify.sh 'edgecluster'; then
+            deploy_registry 'edgecluster' ${edgecluster}
+            trust_internal_registry 'edgecluster' ${edgecluster}
 
-            # TODO: Implement KUBECONFIG as a parameter in wait_for_deployment.sh file
-            export KUBECONFIG=${SPOKE_KUBECONFIG}
-            LIST_DEP=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo)
+            LIST_DEP=$(oc --kubeconfig=${EDGE_KUBECONFIG} -n ${REGISTRY} get deployment -o name | grep ${REGISTRY} | cut -d '/' -f 2 | xargs echo)
             echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
             for dep in $LIST_DEP; do
-                echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-                ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+                echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
+                check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${EDGE_KUBECONFIG}"
             done
 
-            # updated with machine config
-            echo ">> Updating machine config certs"
-            render_file manifests/machine-config-certs.yaml 'spoke' ${spoke}
-            check_mcp 'spoke' "${spoke}"
+            echo ">> Updating Node CA Root chain manually"
+            recover_edgecluster_rsa ${edgecluster}
+            trust_node_certificates ${edgecluster} ${i}
 
             echo ">> Waiting for the registry Quay CR to be ready after updating the MCP"
             for dep in $LIST_DEP; do
-                echo ">> waiting for deployment ${dep} in Quay operator to be ready"
-                ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n "${REGISTRY}" "${dep}"
+                echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
+                check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${EDGE_KUBECONFIG}"
             done
-            export KUBECONFIG=${KUBECONFIG_HUB}
 
         else
-            echo ">>>> This step to deploy registry on Spoke: ${spoke} is not neccesary, everything looks ready"
+            echo ">>>> This step to deploy registry on Edge-cluster: ${edgecluster} is not neccesary, everything looks ready"
         fi
+        i=$((i + 1))
     done
 fi

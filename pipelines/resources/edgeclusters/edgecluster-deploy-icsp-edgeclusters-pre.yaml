@@ -1,0 +1,52 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: edgecluster-deploy-icsp-edgeclusters-pre
+  annotations:
+    description: |
+      This task will deploy the ICSP on the edgecluster cluster to point to the Hub's images and work as a disconnected one.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+      default: ""
+    - name: edgeclusters-config
+      type: string
+      default: ""
+    - name: mock
+      type: string
+      default: "false"
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp"
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_EDGECLUSTERS_DIR
+        value: "deploy-edgecluster"
+      - name: DEPLOY_REGISTRY_DIR
+        value: "deploy-disconnected-registry"
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
+  steps:
+    - name: deploy-icsp-edgeclusters-pre
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}
+          ./configure_disconnected.sh 'edgecluster' 'pre'
+        else
+          echo "Deploy ICSP Pre: Mock mode on"
+        fi

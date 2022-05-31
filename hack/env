@@ -1,9 +1,9 @@
-export KUBECONFIG=/root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/build/kubeconfig-spoke0-cluster
-export SPOKES_FILE=/root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/spokes.yaml
+export KUBECONFIG=/root/actions-runner/_work/ztp-pipeline-relocatable/ztp-pipeline-relocatable/build/kubeconfig-edgecluster0-cluster
+export EDGECLUSTERS_FILE=/root/amorgant/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml
 export DEPLOY_ACM_DIR=deploy-acm
 export DEPLOY_REGISTRY_DIR=deploy-disconnected-registry
 export DEPLOY_HTTPD_SERVER_DIR=deploy-httpd-server
 export DEPLOY_HUB_CONFIGS_DIR=deploy-hub-configs
-export DEPLOY_SPOKES_DIR=deploy-spoke
-export DEPLOY_OCS_DIR=deploy-ocs
+export DEPLOY_EDGECLUSTERS_DIR=deploy-edgecluster
+export DEPLOY_ODF_DIR=deploy-ods
 export SHARED_DIR=shared-utils

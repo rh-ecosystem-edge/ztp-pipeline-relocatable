@@ -14,14 +14,14 @@ dns=dnsmasq" > /etc/NetworkManager/conf.d/00-dnsmasq.conf
 
     export hostname=$(hostname -f)
     echo ">>>> Configuring IPTables"
-    iptables -C FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24 2&>1 > /dev/null
+    iptables -C FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24 2>&1 > /dev/null
     if [[ $? == 0 ]];then
         echo "Adding Rule ztpfw > bare-net..."
         iptables -I FORWARD -j ACCEPT -i ztpfw -o bare-net -s 192.168.7.0/24 -d 192.168.150.0/24
         firewall-cmd --reload
     fi
 
-    iptables -C FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24 2&>1 > /dev/null
+    iptables -C FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24 2>&1 > /dev/null
     if [[ $? == 0 ]];then
         echo "Adding Rule bare-net > ztpfw..."
         iptables -I FORWARD -j ACCEPT -i bare-net -o ztpfw -s 192.168.150.0/24 -d 192.168.7.0/24
@@ -41,10 +41,10 @@ resolv-file=/etc/resolv.upstream.conf
 address=/.apps.test-ci.alklabs.local/192.168.150.252
 address=/api.test-ci.alklabs.local/192.168.150.253
 address=/api-int.test-ci.alklabs.local/192.168.150.253
-# Spoke Cluster
-address=/.apps.spoke0-cluster.alklabs.local/192.168.150.200
-address=/api.spoke0-cluster.alklabs.local/192.168.150.201
-address=/api-int.spoke0-cluster.alklabs.local/192.168.150.201" > /etc/NetworkManager/dnsmasq.d/00-test-ci.conf
+# Edge-cluster Cluster
+address=/.apps.edgecluster0-cluster.alklabs.local/192.168.150.200
+address=/api.edgecluster0-cluster.alklabs.local/192.168.150.201
+address=/api-int.edgecluster0-cluster.alklabs.local/192.168.150.201" > /etc/NetworkManager/dnsmasq.d/00-test-ci.conf
 
     cat /etc/resolv.conf | grep nameserver > /etc/resolv.upstream.conf
 }

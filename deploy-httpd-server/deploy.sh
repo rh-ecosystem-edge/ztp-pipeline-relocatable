@@ -22,7 +22,7 @@ if ./verify.sh; then
 
     # TODO: create on their proper NS
     oc apply -n ${HTTPD_NS} -f http-server.yml
-    ../"${SHARED_DIR}"/wait_for_deployment.sh -t 1000 -n ${HTTPD_NS} httpd
+    check_resource "deployment" "httpd" "Available" "${HTTPD_NS}" "${KUBECONFIG_HUB}"
 
     echo ">>>> Pre-load the images rhcos to be available"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

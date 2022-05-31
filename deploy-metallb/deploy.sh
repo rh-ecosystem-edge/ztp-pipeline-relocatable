@@ -6,9 +6,9 @@ set -o nounset
 set -m
 
 function extract_kubeconfig() {
-    ## Extract the Spoke kubeconfig and put it on the shared folder
-    export SPOKE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${1} secret/${1}-admin-kubeconfig --to - >${SPOKE_KUBECONFIG}
+    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
+    export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${1} secret/${1}-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
 }
 
 function render_file() {
@@ -23,7 +23,7 @@ function render_file() {
     ready=false
     if [[ ${DESTINATION_FILE} == "" ]]; then
         for try in seq {0..10}; do
-            envsubst <${SOURCE_FILE} | oc --kubeconfig=${SPOKE_KUBECONFIG} apply -f -
+            envsubst <${SOURCE_FILE} | oc --kubeconfig=${EDGE_KUBECONFIG} apply -f -
             if [[ $? == 0 ]]; then
                 ready=true
                 break
@@ -43,7 +43,7 @@ function verify_remote_pod() {
     NAME=${4}
     STATUS=${5:-running}
 
-    echo ">>>> Verifying Spoke cluster: ${cluster}"
+    echo ">>>> Verifying Edge-cluster cluster: ${cluster}"
     echo ">>>> Wait until ${KIND} ${NAME} is ready for ${cluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
@@ -59,7 +59,7 @@ function verify_remote_pod() {
             echo
         fi
 
-        if [[ $(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} -l ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
+        if [[ $(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc -n ${NS} get ${KIND} -l ${NAME} --no-headers | grep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
             break
         fi
@@ -79,7 +79,7 @@ function verify_remote_resource() {
     NAME=${4}
     STATUS=${5:-running}
 
-    echo ">>>> Verifying Spoke cluster: ${cluster}"
+    echo ">>>> Verifying Edge-cluster cluster: ${cluster}"
     echo ">>>> Wait until ${KIND} ${NAME} is ready for ${cluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
@@ -95,7 +95,7 @@ function verify_remote_resource() {
             echo
         fi
 
-        if [[ $(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | egrep -i "${STATUS}" | wc -l") -ge 1 ]]; then
+        if [[ $(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc -n ${NS} get ${KIND} ${NAME} --no-headers | egrep -i "${STATUS}" | wc -l") -ge 1 ]]; then
             ready=true
             break
         fi
@@ -113,76 +113,77 @@ function render_manifests() {
     # Files rendered will be stored in this array
     declare -ga files=()
 
-    # Each call to this function affects to 1 Spoke at the same time and the ${index} is the number of the spoke
+    # Each call to this function affects to 1 Edge-cluster at the same time and the ${index} is the number of the edgecluster
     index=${1}
-    echo ">> Rendering Manifests for Spoke ${index}"
+    echo ">> Rendering Manifests for Edge-cluster ${index}"
 
     # Render the subscription to be connected or disconnected (assuming sno is connected)
-    export NUM_M=$(yq e ".spokes[0].[]|keys" ${SPOKES_FILE} | grep master | wc -l | xargs)
-    if [ "${NUM_M}" -eq "3" ]; then  # 3 masters and disconnected
+    export NUM_M=$(yq e ".edgeclusters[0].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
+    if [ "${NUM_M}" -eq "3" ]; then # 3 masters and disconnected
         sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-MLB-Subscription.yaml
         sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-NMS-Subscription.yaml
-    else  # sno is connected so the source should be upstream
+    else # sno is connected so the source should be upstream
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-MLB-Subscription.yaml
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-NMS-Subscription.yaml
     fi
 
     # Render NNCP Manifests
-    for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-        export NODENAME=ztpfw-${spoke}-master-${master}
+    for master in $(echo $(seq 0 $(($(yq eval ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l) - 1)))); do
+        export NODENAME=ztpfw-${edgecluster}-master-${master}
         echo "Rendering NNCP for: ${NODENAME}"
-        export NIC_EXT_DHCP=$(yq e ".spokes[${index}].${spoke}.master${master}.nic_ext_dhcp" ${SPOKES_FILE})
-        render_file manifests/nncp.yaml ${OUTPUTDIR}/${spoke}-nncp-${NODENAME}.yaml
-        files+=(${OUTPUTDIR}/${spoke}-nncp-${NODENAME}.yaml)
+        export NIC_EXT_DHCP=$(yq e ".edgeclusters[${index}].${edgecluster}.master${master}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
+        render_file manifests/nncp.yaml ${OUTPUTDIR}/${edgecluster}-nncp-${NODENAME}.yaml
+        files+=(${OUTPUTDIR}/${edgecluster}-nncp-${NODENAME}.yaml)
     done
 
     # Render MetalLB Manifests
-    grab_api_ingress ${spoke}
+    grab_api_ingress ${edgecluster}
 
-    export METALLB_API_IP="${SPOKE_API_IP}"
-    export METALLB_INGRESS_IP="${SPOKE_INGRESS_IP}"
+    export METALLB_API_IP="${EDGE_API_IP}"
+    export METALLB_INGRESS_IP="${EDGE_INGRESS_IP}"
 
     if [[ -z ${METALLB_API_IP} ]]; then
-        echo "You need to add the 'metallb_api_ip' field in your Spoke cluster definition"
+        echo "You need to add the 'metallb_api_ip' field in your Edge-cluster cluster definition"
         exit 1
     fi
 
     if [[ -z ${METALLB_INGRESS_IP} ]]; then
-        echo "You need to add the 'metallb_ingress_ip' field in your Spoke cluster definition"
+        echo "You need to add the 'metallb_ingress_ip' field in your Edge-cluster cluster definition"
         exit 1
     fi
-    echo ">> Rendering MetalLB for: ${spoke}"
+    echo ">> Rendering MetalLB for: ${edgecluster}"
     # API First
     export SVC_NAME='api-public-ip'
     export METALLB_IP=${METALLB_API_IP}
-    render_file manifests/address_pool.yaml ${OUTPUTDIR}/${spoke}-metallb-api.yaml
-    files+=(${OUTPUTDIR}/${spoke}-metallb-api.yaml)
-    render_file manifests/metallb-api-svc.yaml ${OUTPUTDIR}/${spoke}-metallb-api-svc.yaml
-    files+=(${OUTPUTDIR}/${spoke}-metallb-api-svc.yaml)
+    render_file manifests/address_pool.yaml ${OUTPUTDIR}/${edgecluster}-metallb-api.yaml
+    files+=(${OUTPUTDIR}/${edgecluster}-metallb-api.yaml)
+    render_file manifests/metallb-api-svc.yaml ${OUTPUTDIR}/${edgecluster}-metallb-api-svc.yaml
+    files+=(${OUTPUTDIR}/${edgecluster}-metallb-api-svc.yaml)
 
     # Ingress First
     export SVC_NAME='ingress-public-ip'
     export METALLB_IP=${METALLB_INGRESS_IP}
-    render_file manifests/address_pool.yaml ${OUTPUTDIR}/${spoke}-metallb-ingress.yaml
-    files+=(${OUTPUTDIR}/${spoke}-metallb-ingress.yaml)
-    render_file manifests/metallb-ingress-svc.yaml ${OUTPUTDIR}/${spoke}-metallb-ingress-svc.yaml
-    files+=(${OUTPUTDIR}/${spoke}-metallb-ingress-svc.yaml)
+    render_file manifests/address_pool.yaml ${OUTPUTDIR}/${edgecluster}-metallb-ingress.yaml
+    files+=(${OUTPUTDIR}/${edgecluster}-metallb-ingress.yaml)
+    render_file manifests/metallb-ingress-svc.yaml ${OUTPUTDIR}/${edgecluster}-metallb-ingress-svc.yaml
+    files+=(${OUTPUTDIR}/${edgecluster}-metallb-ingress-svc.yaml)
     echo ">> Rendering Done!"
     echo
 }
 
 function grab_master_ext_ips() {
-    spoke=${1}
-    local spokenumber=${2}
+    edgecluster=${1}
+    local edgeclusternumber=${2}
 
     ## Grab 1 master and 1 IP
-    agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${spoke} --no-headers -o name | head -1)
-    export SPOKE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${spoke} ${agent} -o jsonpath={.spec.hostname})
-    master=${SPOKE_NODE_NAME##*-}
-    export MAC_EXT_DHCP=$(yq e ".spokes[${spokenumber}].${spoke}.master${master}.mac_ext_dhcp" ${SPOKES_FILE})
+    agent=$(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${edgecluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}' | awk '{print $1}')
+
+    export EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${edgecluster} ${agent} -o jsonpath={.spec.hostname})
+    master=${EDGE_NODE_NAME##*-}
+    export MAC_EXT_DHCP=$(yq e ".edgeclusters[${edgeclusternumber}].${edgecluster}.master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
     ## HAY QUE PROBAR ESTO
-    SPOKE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${spoke} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
-    export SPOKE_NODE_IP=${SPOKE_NODE_IP_RAW%%/*}
+    EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${edgecluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+    export EDGE_NODE_IP=${EDGE_NODE_IP_RAW%%/*}
 }
 
 function copy_files() {
@@ -211,13 +212,13 @@ function copy_files() {
 
 function check_external_access() {
     cluster=${1}
-    echo ">> Checking external access to the spoke ${cluster}"
-    oc --kubeconfig=${SPOKE_KUBECONFIG} get nodes --no-headers
+    echo ">> Checking external access to the edgecluster ${cluster}"
+    oc --kubeconfig=${EDGE_KUBECONFIG} get nodes --no-headers
     if [[ ${?} != 0 ]]; then
-        echo "ERROR: You cannot access ${cluster} spoke cluster externally"
+        echo "ERROR: You cannot access ${cluster} edgecluster cluster externally"
         exit 1
     fi
-    echo ">> external access with spoke ${cluster} Verified"
+    echo ">> external access with edgecluster ${cluster} Verified"
     echo
 }
 
@@ -226,7 +227,7 @@ function check_connectivity() {
     echo ">> Checking connectivity against: ${IP}"
 
     if [[ -z ${IP} ]]; then
-        echo "ERROR: Variable \${IP} empty, this could means that the ARP does not match with the MAC address provided in the Spoke File ${SPOKES_FILE}"
+        echo "ERROR: Variable \${IP} empty, this could means that the ARP does not match with the MAC address provided in the Edge-cluster File ${EDGECLUSTERS_FILE}"
         exit 1
     fi
 
@@ -251,88 +252,88 @@ if ! ./verify.sh; then
     echo ">>>> Deploying NMState and MetalLB operators"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-    if [[ -z ${ALLSPOKES} ]]; then
-        export ALLSPOKES=$(yq e '(.spokes[] | keys)[]' ${SPOKES_FILE})
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
-    # This var reflects the spoke cluster you're working with
+    # This var reflects the edgecluster cluster you're working with
     index=0
     wait_time=240
 
-    for spoke in ${ALLSPOKES}; do
-        echo ">>>> Starting the MetalLB process for Spoke: ${spoke} in position ${index}"
-        echo ">> Extract Kubeconfig for ${spoke}"
-        extract_kubeconfig ${spoke}
-        grab_master_ext_ips ${spoke} ${index}
-        recover_spoke_rsa ${spoke}
-        check_connectivity "${SPOKE_NODE_IP}"
+    for edgecluster in ${ALLEDGECLUSTERS}; do
+        echo ">>>> Starting the MetalLB process for Edge-cluster: ${edgecluster} in position ${index}"
+        echo ">> Extract Kubeconfig for ${edgecluster}"
+        extract_kubeconfig ${edgecluster}
+        grab_master_ext_ips ${edgecluster} ${index}
+        recover_edgecluster_rsa ${edgecluster}
+        check_connectivity "${EDGE_NODE_IP}"
         render_manifests ${index}
 
         # Remote working
-        echo ">> Copying files to the Spoke ${spoke}"
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+        echo ">> Copying files to the Edge-cluster ${edgecluster}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
         for _file in ${files[@]}; do
-            copy_files "${_file}" "${SPOKE_NODE_IP}" "./manifests/"
+            copy_files "${_file}" "${EDGE_NODE_IP}" "./manifests/"
         done
-        copy_files "./manifests/*.yaml" "${SPOKE_NODE_IP}" "./manifests/"
-        copy_files "${SPOKE_KUBECONFIG}" "${SPOKE_NODE_IP}" "./.kube/config"
+        copy_files "./manifests/*.yaml" "${EDGE_NODE_IP}" "./manifests/"
+        copy_files "${EDGE_KUBECONFIG}" "${EDGE_NODE_IP}" "./.kube/config"
         echo
 
-        echo ">> Deploying NMState and MetalLB for ${spoke}"
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
+        echo ">> Deploying NMState and MetalLB for ${edgecluster}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
         sleep 2
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/03-NMS-Subscription.yaml -f manifests/03-MLB-Subscription.yaml"
         sleep 10
         echo
 
-        verify_remote_pod ${spoke} "openshift-nmstate" "pod" "name=kubernetes-nmstate-operator"
+        verify_remote_pod ${edgecluster} "openshift-nmstate" "pod" "name=kubernetes-nmstate-operator"
         # This empty quotes is because we don't know the pod name for MetalLB
-        verify_remote_pod ${spoke} "metallb" "pod" "control-plane=controller-manager"
+        verify_remote_pod ${edgecluster} "metallb" "pod" "control-plane=controller-manager"
         # These empty quotes (down bellow) are just to verify the CRDs and we don't want a 'running'
-        verify_remote_resource ${spoke} "default" "crd" "nmstates.nmstate.io" "."
-        verify_remote_resource ${spoke} "default" "crd" "metallbs.metallb.io" "."
+        verify_remote_resource ${edgecluster} "default" "crd" "nmstates.nmstate.io" "."
+        verify_remote_resource ${edgecluster} "default" "crd" "metallbs.metallb.io" "."
         echo
 
-        echo ">>>> Deploying NMState Operand for ${spoke}"
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
+        echo ">>>> Deploying NMState Operand for ${edgecluster}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
         sleep 2
         for dep in {nmstate-cert-manager,nmstate-webhook}; do
-            verify_remote_resource ${spoke} "openshift-nmstate" "deployment.apps" ${dep} "."
+            verify_remote_resource ${edgecluster} "openshift-nmstate" "deployment.apps" ${dep} "."
         done
 
         # Waiting a bit to avoid webhook readyness issue
         # Internal error occurred: failed calling webhook "nodenetworkconfigurationpolicies-mutate.nmstate.io"
         sleep 60
 
-        for master in $(echo $(seq 0 $(($(yq eval ".spokes[${index}].[]|keys" ${SPOKES_FILE} | grep master | wc -l) - 1)))); do
-            export NODENAME=ztpfw-${spoke}-master-${master}
-            export FILENAME=${spoke}-nncp-${NODENAME}
+        for master in $(echo $(seq 0 $(($(yq eval ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l) - 1)))); do
+            export NODENAME=ztpfw-${edgecluster}-master-${master}
+            export FILENAME=${edgecluster}-nncp-${NODENAME}
             # I've been forced to do that, don't blame me :(
-            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${FILENAME}.yaml"
-            verify_remote_resource ${spoke} "default" "nncp" "${NODENAME}-nncp" "Available"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/${FILENAME}.yaml"
+            verify_remote_resource ${edgecluster} "default" "nncp" "${NODENAME}-nncp" "Available"
         done
         echo
 
-        echo ">> Deploying MetalLB Operand for ${spoke}"
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
+        echo ">> Deploying MetalLB Operand for ${edgecluster}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/04-MLB-Operand.yaml"
         sleep 2
-        verify_remote_resource ${spoke} "metallb" "deployment.apps" "controller" "."
-        verify_remote_pod ${spoke} "metallb" "pod" "component=speaker"
+        verify_remote_resource ${edgecluster} "metallb" "deployment.apps" "controller" "."
+        verify_remote_pod ${edgecluster} "metallb" "pod" "component=speaker"
 
-        echo ">> Deploying MetalLB AddressPools and Services for ${spoke}"
-        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${SPOKE_NODE_IP} "oc apply -f manifests/${spoke}-metallb-api.yaml -f manifests/${spoke}-metallb-api-svc.yaml -f manifests/${spoke}-metallb-ingress-svc.yaml -f manifests/${spoke}-metallb-ingress.yaml"
+        echo ">> Deploying MetalLB AddressPools and Services for ${edgecluster}"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/${edgecluster}-metallb-api.yaml -f manifests/${edgecluster}-metallb-api-svc.yaml -f manifests/${edgecluster}-metallb-ingress-svc.yaml -f manifests/${edgecluster}-metallb-ingress.yaml"
         echo
 
         sleep 2
-        verify_remote_resource ${spoke} "metallb" "AddressPool" "api-public-ip" "."
-        verify_remote_resource ${spoke} "openshift-kube-apiserver" "service" "metallb-api" "."
-        verify_remote_resource ${spoke} "metallb" "AddressPool" "ingress-public-ip" "."
-        verify_remote_resource ${spoke} "openshift-ingress" "service" "metallb-ingress" "."
+        verify_remote_resource ${edgecluster} "metallb" "AddressPool" "api-public-ip" "."
+        verify_remote_resource ${edgecluster} "openshift-kube-apiserver" "service" "metallb-api" "."
+        verify_remote_resource ${edgecluster} "metallb" "AddressPool" "ingress-public-ip" "."
+        verify_remote_resource ${edgecluster} "openshift-ingress" "service" "metallb-ingress" "."
         echo
-        check_external_access ${spoke}
+        check_external_access ${edgecluster}
         echo 'Patch external CatalogSources'
-        oc --kubeconfig=${SPOKE_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-        echo ">>>> Spoke ${spoke} finished!"
+        oc --kubeconfig=${EDGE_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+        echo ">>>> Edge-cluster ${edgecluster} finished!"
         let index++
     done
 else

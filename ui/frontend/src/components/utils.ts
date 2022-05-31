@@ -15,7 +15,10 @@ export const addIpDots = (addressWithoutDots: string): string => {
   throw new Error('Invalid address: ' + addressWithoutDots);
 };
 
-export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValidationType => {
+export const ipTripletAddressValidator = (
+  addr: string,
+  reservedIp?: string,
+): IpTripletSelectorValidationType => {
   const validation: IpTripletSelectorValidationType = { valid: true, triplets: [] };
 
   for (let i = 0; i <= 3; i++) {
@@ -30,6 +33,12 @@ export const ipTripletAddressValidator = (addr: string): IpTripletSelectorValida
   if (!validation.valid) {
     validation.message = 'Provided IP address is incorrect.';
   }
+
+  if (reservedIp === addr) {
+    validation.message = 'Provided IP address is already used.';
+    validation.valid = false;
+  }
+
   return validation;
 };
 
@@ -37,7 +46,7 @@ export const domainValidator = (domain: string): K8SStateContextData['domainVali
   if (!domain || domain?.match(DNS_NAME_REGEX)) {
     return ''; // passed ; optional - pass for empty as well
   }
-  return "Valid domain wasn't provided";
+  return "Valid domain wasn't provided.";
 };
 
 export const usernameValidator = (username = ''): K8SStateContextData['username'] => {
@@ -45,11 +54,15 @@ export const usernameValidator = (username = ''): K8SStateContextData['username'
     return 'Valid username can not be longer than 54 characters.';
   }
 
+  if (username === 'kubeadmin') {
+    return 'The kubeadmin username is reserved.';
+  }
+
   if (!username || username.match(USERNAME_REGEX)) {
     return ''; // passed
   }
 
-  return "Valid username wasn't provided";
+  return "Valid username wasn't provided.";
 };
 
 export const passwordValidator = (pwd: string): K8SStateContextData['passwordValidation'] => {
@@ -83,3 +96,10 @@ export const ipWithoutDots = (ip?: string): string => {
   console.info('Unrecognized ip address format "', ip, '"');
   return '            '; // 12 characters
 };
+
+export const delay = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+export const getZtpfwUrl = () => `https://${window.location.hostname}:${window.location.port}`;

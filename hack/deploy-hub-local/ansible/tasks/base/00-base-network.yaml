@@ -1,0 +1,16 @@
+---
+- name: Create resolv.conf
+  copy:
+    dest: "/etc/resolv.conf"
+    content: |
+      nameserver {{ ns_int1 }}
+      nameserver {{ ns_int2 }}
+  tags: [ 00-base-network ]
+
+- name: Create resolv.upstream.conf
+  copy:
+    dest: "/etc/resolv.upstream.conf"
+    content: |
+      nameserver {{ ns_ext1 }}
+      nameserver {{ ns_ext2 }}
+  tags: [ 00-base-network ]

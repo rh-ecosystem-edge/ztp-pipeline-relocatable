@@ -1,24 +1,25 @@
 import { Request, Response } from 'express';
 import { createHash } from 'crypto';
-import { IncomingMessage } from 'http';
-import { Agent, request } from 'https';
+import got from 'got';
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring';
 
-import { setDead } from '../endpoints/liveness';
 import { getClusterApiUrl } from './utils';
 import { deleteCookie } from './cookies';
 import { jsonRequest } from './json-request';
 import { getToken, K8S_ACCESS_TOKEN_COOKIE } from './token';
 import { redirect, respondInternalServerError, unauthorized } from './respond';
+import { OAUTH_ROUTE_PREFIX, ZTPFW_UI_ROUTE_PREFIX } from '../constants';
+import { setDead } from '../endpoints';
 
 const logger = console;
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string };
-let oauthInfoPromise: Promise<OAuthInfo>;
 
-export const getOauthInfoPromise = () => {
-  if (oauthInfoPromise === undefined) {
-    oauthInfoPromise = jsonRequest<OAuthInfo>(
+export const getOauthInfoPromise = async () => {
+  if (process.env.FRONTEND_URL?.startsWith('https://localhost')) {
+    // dev environment
+    // In production, this does not work after domain change
+    const oauthInfo = await jsonRequest<OAuthInfo>(
       `${getClusterApiUrl()}/.well-known/oauth-authorization-server`,
     ).catch((err: Error) => {
       logger.error({
@@ -31,21 +32,42 @@ export const getOauthInfoPromise = () => {
         token_endpoint: '',
       };
     });
+    return {
+      authorization_endpoint: oauthInfo.authorization_endpoint,
+      token_endpoint: oauthInfo.token_endpoint,
+    };
   }
-  return oauthInfoPromise;
+
+  // We need to hardcode it in production
+  const oauthServer = (process.env.FRONTEND_URL || 'missing-frontend-url').replace(
+    ZTPFW_UI_ROUTE_PREFIX,
+    OAUTH_ROUTE_PREFIX,
+  );
+  const oauth = {
+    // https://oauth-openshift.apps.edgecluster0-cluster.alklabs.local/oauth/authorize
+    authorization_endpoint: `${oauthServer}/oauth/authorize`,
+    token_endpoint: `${oauthServer}/oauth/token`,
+  };
+
+  return oauth;
 };
 
-export const login = async (_: Request, res: Response): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   logger.log('Login requested');
   const oauthInfo = await getOauthInfoPromise();
+
+  const state = req.url.split('?state=')[1] || '';
+
   const queryString = stringifyQuery({
     response_type: `code`,
     client_id: process.env.OAUTH2_CLIENT_ID,
     redirect_uri: process.env.OAUTH2_REDIRECT_URL,
     scope: `user:full`,
-    state: '',
+    state,
   });
-  return redirect(res, `${oauthInfo.authorization_endpoint}?${queryString}`);
+  const url = `${oauthInfo.authorization_endpoint}?${queryString}`;
+
+  return redirect(res, url);
 };
 
 export const loginCallback = async (req: Request, res: Response): Promise<void> => {
@@ -57,7 +79,8 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
     const queryString = url.substr(url.indexOf('?') + 1);
     const query = parseQueryString(queryString);
     const code = query.code as string;
-    // const state = query.state
+    const state = (query.state || '') as string;
+
     const requestQuery: Record<string, string> = {
       grant_type: `authorization_code`,
       code: code,
@@ -71,7 +94,6 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
     );
     if (body.access_token) {
       let attributes: string;
-      // if (process.env.NODE_ENV === 'production') {
       if (process.env.FRONTEND_URL?.startsWith('https://')) {
         attributes = 'Secure; Path=/';
       } else {
@@ -81,7 +103,7 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
 
       const headers = {
         'Set-Cookie': `${K8S_ACCESS_TOKEN_COOKIE}=${body.access_token}; ${attributes}`,
-        location: process.env.FRONTEND_URL,
+        location: `${process.env.FRONTEND_URL || ''}${state}`,
       };
       res.writeHead(302, headers).end();
       return;
@@ -93,10 +115,16 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-export function logout(req: Request, res: Response): void {
+export async function logout(req: Request, res: Response): Promise<void> {
   logger.debug('Logout called');
+
   const token = getToken(req);
   if (!token) return unauthorized(req, res);
+
+  const gotOptions = {
+    headers: { Authorization: `Bearer ${token}` },
+    https: { rejectUnauthorized: false },
+  };
 
   let tokenName = token;
   const sha256Prefix = 'sha256~';
@@ -109,23 +137,17 @@ export function logout(req: Request, res: Response): void {
       .replace(/\//g, '_')}`;
   }
 
-  const clientRequest = request(
-    // /apis/oauth.openshift.io/v1/oauthaccesstokens/sha256~e49cNiBYVhrRff3jpdZY2o1U2mjeEGQDRjvSKVREvNs
-    `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
-    {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-      agent: new Agent({ rejectUnauthorized: false }),
-    },
-    (response: IncomingMessage) => {
-      logger.debug('OAuth access token deleted');
-      deleteCookie(res, K8S_ACCESS_TOKEN_COOKIE);
-      res.writeHead(response.statusCode || 500).end();
-    },
-  );
-  clientRequest.on('error', () => {
-    logger.warn('Failed to delete OAuth access token');
-    respondInternalServerError(req, res);
-  });
-  clientRequest.end();
+  try {
+    const url = `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`;
+    await got.delete(url, gotOptions);
+  } catch (err) {
+    logger.error(err);
+  }
+
+  const host = req.headers.host;
+
+  deleteCookie(res, { cookie: 'connect.sid' });
+  deleteCookie(res, { cookie: K8S_ACCESS_TOKEN_COOKIE });
+  deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host || ''}` });
+  res.writeHead(200).end();
 }

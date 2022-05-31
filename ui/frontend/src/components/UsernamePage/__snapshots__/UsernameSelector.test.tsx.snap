@@ -25,7 +25,7 @@ exports[`UsernameSelector can can handle invalid domain 1`] = `
     <div
       class="pf-l-stack__item wizard-sublabel"
     >
-      Create a new personalized, account for future access replacing recent kbeadmin user.
+      Create a new personalized account for future access replacing the kubeadmin user.
     </div>
     <div
       class="pf-l-stack__item pf-m-fill username-item"
@@ -51,7 +51,7 @@ exports[`UsernameSelector can can handle invalid domain 1`] = `
             class="validation-failed-text"
             data-testid="validation-failed-text"
           >
-            Valid username wasn't provided
+            Valid username wasn't provided.
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@ exports[`UsernameSelector can can handle invalid domain 2`] = `
     <div
       class="pf-l-stack__item wizard-sublabel"
     >
-      Create a new personalized, account for future access replacing recent kbeadmin user.
+      Create a new personalized account for future access replacing the kubeadmin user.
     </div>
     <div
       class="pf-l-stack__item pf-m-fill username-item"
@@ -111,7 +111,7 @@ exports[`UsernameSelector can can handle invalid domain 2`] = `
             class="validation-failed-text"
             data-testid="validation-failed-text"
           >
-            Valid username wasn't provided
+            Valid username wasn't provided.
           </div>
         </div>
       </div>
@@ -145,7 +145,7 @@ exports[`UsernameSelector can render 1`] = `
     <div
       class="pf-l-stack__item wizard-sublabel"
     >
-      Create a new personalized, account for future access replacing recent kbeadmin user.
+      Create a new personalized account for future access replacing the kubeadmin user.
     </div>
     <div
       class="pf-l-stack__item pf-m-fill username-item"

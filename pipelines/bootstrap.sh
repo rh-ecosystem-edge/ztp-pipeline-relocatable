@@ -5,6 +5,14 @@ set -o nounset
 #set -o errexit
 set -m
 
+function get_clients() {
+    if ! (command -v oc &>/dev/null); then
+        curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz | tar xvz -C /usr/bin
+        rm -f /usr/bin/README.md
+        chmod +x /usr/bin/oc /usr/bin/kubectl
+    fi
+}
+
 function get_tkn() {
     URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/pipeline/latest/tkn-linux-amd64.tar.gz"
     BIN_FOLDER="${HOME}/bin"
@@ -72,7 +80,7 @@ function check_resource() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    while [ "$timeout" -lt "1000" ]; do
+    while [ "${timeout}" -lt "1000" ]; do
         if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} -n ${NAMESPACE} get ${RESOURCE} ${RESOURCE_NAME} -o jsonpath="{.status.conditions[?(@.type==\"${TYPE_STATUS}\")].status}") == 'True' ]]; then
             ready=true
             break
@@ -89,13 +97,13 @@ function check_resource() {
 }
 
 function create_permissions() {
-    echo ">>>> Creating NS ${SPOKE_DEPLOYER_NS} and giving permissions to SA ${SPOKE_DEPLOYER_SA}"
+    echo ">>>> Creating NS ${EDGE_DEPLOYER_NS} and giving permissions to SA ${EDGE_DEPLOYER_SA}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${SPOKE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} create sa ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-scc-to-user -z anyuid ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} create clusterrolebinding ${SPOKE_DEPLOYER_ROLEBINDING} --clusterrole=cluster-admin --serviceaccount=spoke-deployer:pipeline -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${EDGE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} create sa ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} adm policy add-scc-to-user -z anyuid ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} create clusterrolebinding ${EDGE_DEPLOYER_ROLEBINDING} --clusterrole=cluster-admin --serviceaccount=edgecluster-deployer:pipeline -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
     echo
 }
 
@@ -122,6 +130,10 @@ function deploy_openshift_pipelines() {
 
     check_resource "deployment" "openshift-pipelines-operator" "Available" "openshift-operators"
     check_resource "deployment" "tekton-operator-webhook" "Available" "openshift-operators"
+    check_resource "crd" "tektonconfigs.operator.tekton.dev" "Established" "openshift-operators"
+
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${PIPELINES_DIR}/manifests/02-tektonconfig.yaml
+    sleep 2
 
     declare -a StringArray=("clustertasks.tekton.dev" "conditions.tekton.dev" "pipelineresources.tekton.dev" "pipelineruns.tekton.dev" "pipelines.tekton.dev" "runs.tekton.dev" "taskruns.tekton.dev" "tasks.tekton.dev" "tektonaddons.operator.tekton.dev" "tektonconfigs.operator.tekton.dev" "tektoninstallersets.operator.tekton.dev" "tektonpipelines.operator.tekton.dev" "tektontriggers.operator.tekton.dev")
     for crd in ${StringArray[@]}; do
@@ -136,7 +148,7 @@ function clean_openshift_pipelines() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc delete subscriptions.operators.coreos.com -n openshift-operators openshift-pipelines-operator-rh
     oc delete csv -n openshift-operators $(oc get csv -n openshift-operators --no-headers | grep openshift-pipelines-operator | cut -f1 -d\ )
-    oc delete ns ${SPOKE_DEPLOYER_NS}
+    oc delete ns ${EDGE_DEPLOYER_NS}
     oc delete mutatingwebhookconfigurations webhook.operator.tekton.dev webhook.pipeline.tekton.dev webhook.triggers.tekton.dev
     oc delete validatingwebhookconfigurations validation.webhook.operator.tekton.dev validation.webhook.pipeline.tekton.dev validation.webhook.triggers.tekton.dev
     oc delete apiservices v1alpha1.operator.tekton.dev v1alpha1.tekton.dev v1alpha1.triggers.tekton.dev v1beta1.tekton.dev v1beta1.triggers.tekton.dev
@@ -157,12 +169,13 @@ export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
 
+get_clients
 get_tkn
 get_yq
 clone_ztp
-export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
-export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
-export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
+export EDGE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
+export EDGE_DEPLOYER_SA=${EDGE_DEPLOYER_NS}
+export EDGE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
 if [[ ${#} -ge 2 ]]; then
     if [[ ${2} == 'clean' ]]; then

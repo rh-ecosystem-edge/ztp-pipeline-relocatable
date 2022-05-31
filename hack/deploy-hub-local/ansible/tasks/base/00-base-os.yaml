@@ -1,0 +1,146 @@
+---
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+  tags: [ 00-base-os ]
+
+- name: Remove rescue images
+  file: path={{ item }} state=absent
+  with_fileglob: /boot/*rescue*
+  tags: [ 00-base-os ]
+
+- name: Configure console
+  copy:
+    dest: /etc/vconsole.conf
+    content: |
+      KEYMAP="{{ console_keymap }}"
+      FONT="{{ console_font }}"
+  tags: [ 00-base-os ]
+
+- name: Configure locale
+  copy:
+    dest: /etc/locale.conf
+    content: |
+      LANG="{{ system_locale }}"
+  tags: [ 00-base-os ]
+
+- name: Set timezone
+  timezone: name="{{ system_timezone }}"
+  tags: [ 00-base-os ]
+
+- name: Create go bin path
+  file:
+    path: /root/go/bin
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  tags: [ 00-base-os ]
+
+- name: Copy root .bashrc
+  copy: 
+    src: ../files/bashrc
+    dest: /root/.bashrc
+    owner: root 
+    group: root 
+    mode: 0644
+  tags: [ 00-base-os ]
+
+- name: Change root shell
+  user: name=root shell={{ root_shell }}
+  tags: [ 00-base-os ]
+
+- name: Clean unused files
+  file: path={{ item }} state=absent
+  with_items:
+    - /root/.cache
+    - /root/.lesshst
+    - /root/.rnd
+    - /root/anaconda-ks.cfg
+    - /root/setup.retry
+    - /var/tmp/abrt
+    - /etc/motd.d/cockpit
+    - /root/original-ks.cfg
+  tags: [ 00-base-os ]
+
+- name: Check if platform is virtual
+  lineinfile:
+    dest: /sys/devices/virtual/dmi/id/sys_vendor
+    line: "QEMU"
+  check_mode: yes
+  register: virtual
+  failed_when: (virtual is changed) or (virtual is failed)
+  ignore_errors: true
+  tags: [ 00-base-os ]
+
+- name: Check if platform is physical
+  set_fact:
+    physical: true
+    virtual: false
+  when: virtual is changed
+  tags: [ 00-base-os ]
+
+- name: Set fact for virtual
+  set_fact:
+    physical: false
+    virtual: true
+  when: virtual
+  tags: [ 00-base-os ]
+
+- name: Get system chassis
+  shell: hostnamectl status | grep Chassis | cut -f2 -d ":" | tr -d ' '
+  register: chassis
+  tags: [ 00-base-os ]
+
+- name: Workaround Proliant
+  lineinfile:
+    dest: /sys/devices/virtual/dmi/id/product_name
+    line: "ProLiant"
+  check_mode: yes
+  register: proliant
+  failed_when: (proliant is changed) or (proliant is failed)
+  ignore_errors: true
+  tags: [ 00-base-os ]
+
+- name: Set server facts
+  set_fact:
+    physical: true
+    virtual: false
+    chassis: "server"
+  when: proliant
+  tags: [ 00-base-os ]
+  
+- name: Configure systemd for ignoring closed lid on power
+  ini_file:
+    path: /etc/systemd/logind.conf
+    section: Login
+    option: HandleLidSwitchExternalPower
+    value: ignore
+  when: physical and chassis == 'laptop'
+  tags: [ 00-base-os ]
+
+- name: Configure systemd for ignoring closed lid on Docked
+  ini_file:
+    path: /etc/systemd/logind.conf
+    section: Login
+    option: HandleLidSwitchDocked
+    value: ignore
+  when: physical and chassis == 'laptop'
+  tags: [ 00-base-os ]
+
+- name: Limit journald file size
+  ini_file:
+    path: /etc/systemd/journald.conf
+    section: Journal
+    option: SystemMaxUse
+    value: "{{ journal_SystemMaxUse | default('500M') }}"
+  tags: [ 00-base-os ]
+
+- name: Update root user password
+  ignore_errors: true 
+  user:
+    name: root
+    password: "{{ root_password }}"
+    append: yes
+  when: root_update_pwd == True
+  tags: [ 00-base-os ]

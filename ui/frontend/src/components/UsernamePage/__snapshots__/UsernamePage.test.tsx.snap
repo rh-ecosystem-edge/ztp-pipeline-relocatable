@@ -76,7 +76,6 @@ exports[`UsernamePage can render 1`] = `
         data-ouia-component-id="OUIA-Generated-Button-tertiary-1"
         data-ouia-component-type="PF4/Button"
         data-ouia-safe="true"
-        href="/logout"
       >
         Log out
       </a>
@@ -283,7 +282,7 @@ exports[`UsernamePage can render 1`] = `
             <div
               class="pf-l-stack__item wizard-sublabel"
             >
-              Create a new personalized, account for future access replacing recent kbeadmin user.
+              Create a new personalized account for future access replacing the kubeadmin user.
             </div>
             <div
               class="pf-l-stack__item pf-m-fill username-item"

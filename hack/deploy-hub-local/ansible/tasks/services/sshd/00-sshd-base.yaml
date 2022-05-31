@@ -1,0 +1,8 @@
+---
+- name: SSH Firewall rule
+  firewalld:
+    service: ssh
+    permanent: true
+    state: enabled
+    immediate: yes
+  tags: configure-sshd

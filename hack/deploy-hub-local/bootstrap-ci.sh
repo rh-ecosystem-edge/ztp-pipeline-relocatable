@@ -40,7 +40,7 @@ function check_resource() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     timeout=0
     ready=false
-    while [ "$timeout" -lt "1000" ]; do
+    while [ "${timeout}" -lt "1000" ]; do
         if [[ $(oc --kubeconfig=${KUBECONFIG_HUB} -n ${NAMESPACE} get ${RESOURCE} ${RESOURCE_NAME} -o jsonpath="{.status.conditions[?(@.type==\"${TYPE_STATUS}\")].status}") == 'True' ]]; then
             ready=true
             break
@@ -57,13 +57,13 @@ function check_resource() {
 }
 
 function create_permissions() {
-    echo ">>>> Creating NS ${SPOKE_DEPLOYER_NS} and giving permissions to SA ${SPOKE_DEPLOYER_SA}"
+    echo ">>>> Creating NS ${EDGE_DEPLOYER_NS} and giving permissions to SA ${EDGE_DEPLOYER_SA}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${SPOKE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} create sa ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-scc-to-user -z anyuid ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} create clusterrolebinding ${SPOKE_DEPLOYER_ROLEBINDING} --clusterrole=cluster-admin --serviceaccount=spoke-deployer:pipeline -o yaml --dry-run=client | oc apply -f -
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${SPOKE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${SPOKE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${EDGE_DEPLOYER_NS} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} create sa ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} adm policy add-scc-to-user -z anyuid ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} create clusterrolebinding ${EDGE_DEPLOYER_ROLEBINDING} --clusterrole=cluster-admin --serviceaccount=edgecluster-deployer:pipeline -o yaml --dry-run=client | oc apply -f -
+    oc --kubeconfig=${KUBECONFIG_HUB} -n ${EDGE_DEPLOYER_NS} adm policy add-cluster-role-to-user cluster-admin -z ${EDGE_DEPLOYER_SA} -o yaml --dry-run=client | oc apply -f -
     echo
 }
 
@@ -94,9 +94,9 @@ export BASEDIR=$(dirname "$0")
 export WORKDIR=${BASEDIR}/../../
 export KUBECONFIG_HUB="${KUBECONFIG}"
 export PIPELINES_DIR=${WORKDIR}/pipelines
-export SPOKE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
-export SPOKE_DEPLOYER_SA=${SPOKE_DEPLOYER_NS}
-export SPOKE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
+export EDGE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
+export EDGE_DEPLOYER_SA=${EDGE_DEPLOYER_NS}
+export EDGE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
 if [[ -z ${KUBECONFIG} ]]; then
     echo "KUBECONFIG var is empty"

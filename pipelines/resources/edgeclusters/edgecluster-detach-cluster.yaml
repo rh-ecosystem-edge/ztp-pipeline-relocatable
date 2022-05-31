@@ -1,0 +1,50 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: edgecluster-detach-cluster
+  annotations:
+    description: |
+      This task will detach the Edge-cluster Cluster from the Hub.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+      default: ""
+    - name: edgeclusters-config
+      type: string
+      default: ""
+    - name: mock
+      type: string
+      default: "false"
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp"
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: FINISH_DEP_DIR
+        value: "finish-deployment"
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
+  steps:
+    - name: detach-cluster
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${FINISH_DEP_DIR}
+          ./deploy.sh
+        else
+          echo "Detach Cluster: Mock mode on"
+        fi
