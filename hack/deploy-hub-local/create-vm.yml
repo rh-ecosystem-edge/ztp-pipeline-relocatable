@@ -16,10 +16,10 @@ edgecluster{{ i }}-cluster-m{{ j }}:
     mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
   disks:
   - size: 120
-  - size: 50
-  - size: 50
-  - size: 50
-  - size: 50  
+  - size: 75
+  - size: 75
+  - size: 75
+  - size: 75
 {% endfor %}
 {% endfor %}
 
@@ -37,8 +37,8 @@ edgecluster{{ i }}-cluster-w0:
     mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
   disks:
   - size: 120
-  - size: 50
-  - size: 50
-  - size: 50
-  - size: 50  
+  - size: 75
+  - size: 75
+  - size: 75
+  - size: 75
 {% endfor %}
