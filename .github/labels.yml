@@ -29,12 +29,6 @@ ansible:
   - hack/deploy-hub-local/ansible/**/*
   - .github/workflows/ci-test-ansible.yml
 
-## changes affecting hub/edge deployments
-test-ci:
-  - .github/workflows/testing-pr.yml
-  - deploy-*/**/*
-  - shared-utils/**/*
-
 # ztpfw-ui components
 ui:
   - deploy-ui/**/*
