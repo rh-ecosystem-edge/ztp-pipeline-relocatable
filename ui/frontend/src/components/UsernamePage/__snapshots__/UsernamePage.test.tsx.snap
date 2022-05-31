@@ -282,7 +282,7 @@ exports[`UsernamePage can render 1`] = `
             <div
               class="pf-l-stack__item wizard-sublabel"
             >
-              Create a new personalized, account for future access replacing recent kubeadmin user.
+              Create a new personalized account for future access replacing the kubeadmin user.
             </div>
             <div
               class="pf-l-stack__item pf-m-fill username-item"
