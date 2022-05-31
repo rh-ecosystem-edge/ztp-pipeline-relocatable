@@ -7,10 +7,10 @@ all:
     system_locale: en_US.UTF-8
     system_timezone: Europe/Madrid
     domain: "{{ ansible_nodename.split('.')[1:] | join('.') }}"
-    ns_int1: "8.8.8.8"
-    ns_int2: "8.8.4.4"
-    ns_ext1: "8.8.8.8"
-    ns_ext2: "8.8.4.4"
+    ns_int1: "192.168.122.1"
+    ns_int2: "127.0.0.1"
+    ns_ext1: "192.168.122.1"
+    ns_ext2: "127.0.0.1"
     network_type: "external"
     pkg_manager: "dnf"
 
