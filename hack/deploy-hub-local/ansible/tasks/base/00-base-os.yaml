@@ -137,6 +137,7 @@
   tags: [ 00-base-os ]
 
 - name: Update root user password
+  ignore_errors: true 
   user:
     name: root
     password: "{{ root_password }}"

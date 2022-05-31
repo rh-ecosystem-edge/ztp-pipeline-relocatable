@@ -7,18 +7,20 @@ on:
     inputs:
       manual:
         description: 'Is this a manual dispatch?'
-        required: true 
+        default: true
+        required: false 
         type: boolean 
       tag:
         description: 'Ansible CI manually triggered!'
-        required: true 
+        default: 'Ansible CI manually triggered!'
+        required: false 
         type: string
 
 jobs:
 
   ansible-test-ci:
     if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci-ansible') || contains(github.event.pull_request.labels.*.name, 'test-ci-ansible') || github.event_name == 'workflow_dispatch'
-    runs-on: dev
+    runs-on: kni4
     
     steps:
 
@@ -43,7 +45,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Clean Ansible CI Test Environment
+        continue-on-error: true
         run: |
+          sed -i '/ansible-ci-target/d' /etc/hosts
           if [ $(which kcli) ]; then
             kcli list vm | grep ansible-ci-target &> /dev/null
             if [ $? -eq 0 ]; then
@@ -55,24 +59,19 @@ jobs:
         run: |
           if [ $(which kcli) ]; then
             kcli create vm -i centos8stream ansible-ci-target
-            ANSIBLE_CI_TARGET_IP=$(kcli show vm ansible-ci-target2 | grep ip | awk '{print $2}')
-            ANSIBLE_CONFIG=${{ github.workspace }}/hack/deploy-hub-local/ansible/ansible.cfg
-            ANSIBLE_INVENTORY=${{ github.workspace }}/hack/deploy-hub-local/ansible/inventory-ci
-            sed -i 's|CHANGEME|'"$ANSIBLE_CI_TARGET_IP"'|g' ANSIBLE_INVENTORY
+            sleep 90
+            printf "%s\t%s" $(kcli info vm ansible-ci-target | grep ip | awk '{print $2}') ansible-ci-target >> /etc/hosts
           fi
 
       - name: Run Ansible CI Test Playbooks
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: ${{ github.workspace }}/hack/deploy-hub-local/ansible/test.yml
-          key: ~/.ssh/id_rsa
-          options: |
-            --inventory ${ANSIBLE_INVENTORY}
-            --limit ansible-ci-target
-            --verbose
+        run: |
+          cd ${{ github.workspace }}/hack/deploy-hub-local/ansible
+          ansible-galaxy collection install ansible.posix
+          ansible-playbook -i inventory-ci -l ansible-ci-target setup.yaml 
 
       - name: Clean Ansible CI Test Environment
         run: |
+          sed -i '/ansible-ci-target/d' /etc/hosts
           if [ $(which kcli) ]; then
             kcli list vm | grep ansible-ci-target &> /dev/null
             if [ $? -eq 0 ]; then
