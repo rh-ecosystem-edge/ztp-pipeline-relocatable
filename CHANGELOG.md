@@ -1,3 +1,21 @@
+## [1.8.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.1...1.8.2) (2022-05-31)
+
+### Bug Fixes
+
+- **Containerfile:** add netcat for SNO DNS testing and workaround ([9ddd7a8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/9ddd7a8fefdf39dab677e6231d909bb5cb845986))
+
+## [1.8.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.0...1.8.1) (2022-05-30)
+
+### Bug Fixes
+
+- **metallb:** update nmstate api to v1 ([f5b329d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/f5b329db9360a07860b7d77d64be2756f870ffb5))
+
+# [1.8.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.7.1...1.8.0) (2022-05-30)
+
+### Features
+
+- **ci:** set motd based on final workflow status ([ca6caa1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/ca6caa129cf81437e017b0ea3292bb5a5c39a8c4))
+
 ## [1.7.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.7.0...1.7.1) (2022-05-30)
 
 ### Bug Fixes

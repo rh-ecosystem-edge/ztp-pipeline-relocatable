@@ -16,6 +16,10 @@ jobs:
     name: Build Container images and push to repositories
     runs-on: kni4
     steps:
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: ok-to-merge
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -47,6 +51,7 @@ jobs:
           RELEASE=${RELEASE} make pipe-image-ci
 
       - name: Build and Push UI Image
+        continue-on-error: true  # Workaround until the generation is fixed
         id: build-ui
         run: |
           cd ${{ github.workspace }}
@@ -81,6 +86,10 @@ jobs:
             MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Progressing.")
             /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
           fi
+
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: ok-to-merge
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -151,9 +160,24 @@ jobs:
             exit 1
           fi
 
-      - name: Unset MOTD
+      - name: Unset MOTD if workflow succeeded
+        if: ${{ success() }}
         continue-on-error: true
         run: |
           if [ -f /root/bin/set-motd ]; then
             /root/bin/set-motd unset
           fi
+
+      - name: Unset MOTD if workflow failed
+        if: ${{ failure() }}
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: FAILURE! Check the logs!")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+          fi
+
+      - uses: actions-ecosystem/action-add-labels@v1
+        if: ${{ success() }}
+        with:
+          labels: ok-to-merge
