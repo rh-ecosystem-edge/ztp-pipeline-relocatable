@@ -53,4 +53,3 @@ all:
     local:
       hosts:
         ansible-ci-target:
-          ansible_host: CHANGEME

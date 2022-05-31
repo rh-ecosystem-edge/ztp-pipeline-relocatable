@@ -19,9 +19,11 @@ GHA:
 
 ansible:
   - hack/deploy-hub-local/ansible/**/*
+  - .github/workflows/ci-test-ansible.yml
 
 test-ci-ansible:
   - hack/deploy-hub-local/ansible/**/*
+  - .github/workflows/ci-test-ansible.yml
 
 ui:
   - deploy-ui/**/*
