@@ -1,0 +1,56 @@
+all:
+  vars:
+    ansible_connection: ssh
+    ansible_ssh_user: root
+    console_keymap: en
+    console_font: eurlatgr
+    system_locale: en_US.UTF-8
+    system_timezone: Europe/Madrid
+    domain: "{{ ansible_nodename.split('.')[1:] | join('.') }}"
+    ns_int1: "8.8.8.8"
+    ns_int2: "8.8.4.4"
+    ns_ext1: "8.8.8.8"
+    ns_ext2: "8.8.4.4"
+    network_type: "external"
+    pkg_manager: "dnf"
+
+    # Root random password
+    root_update_pwd: True
+    root_password: "$6$e4Nk9dU7W6XyvWqG$xWfb2IbMkyttLfQkpKQivocd1v.NOAGV8pT8YZZEwNZXjvGp2dBhyEPvJ0vcS9JJfkG4d0e1oIJA0VDABG4xL0"
+    root_shell: /bin/bash
+    
+    # Motd user
+    motd_user: "ZTPFW Ansible Playbooks"
+
+    # SSH configuration
+    ssh_configure: True
+    ssh_keys_update: True
+    ssh_keys_users:
+      - iranzo
+      - alknopfler
+      - jparrill
+      - flaper87
+      - DirectedSoul1
+      - eifrach
+      - danielchg
+      - fbac
+
+    # Tuned configuration
+    tuned_configure: True
+    tuned_profile: latency-performance
+
+    # Chronyd configuration
+    chronyd_configure: True
+
+    # Journal
+    journal_SystemMaxUse: 500M
+
+    # Logrotate
+    logrotate_configure: True
+
+  # Hosts inventory
+  children:
+    local:
+      hosts:
+        ansible-ci-target:
+          ansible_host: CHANGEME

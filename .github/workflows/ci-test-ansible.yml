@@ -1,0 +1,103 @@
+name: Ansible CI Test Workflow
+on:
+  pull_request:
+    paths:
+      - 'hack/deploy-hub-local/ansible/**'
+  workflow_dispatch:
+    inputs:
+      manual:
+        description: 'Is this a manual dispatch?'
+        required: true 
+        type: boolean 
+      tag:
+        description: 'Ansible CI manually triggered!'
+        required: true 
+        type: string
+
+jobs:
+
+  ansible-test-ci:
+    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci-ansible') || contains(github.event.pull_request.labels.*.name, 'test-ci-ansible') || github.event_name == 'workflow_dispatch'
+    runs-on: dev
+    
+    steps:
+
+      - name: Set Ansible CI MOTD
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+            if [ ${{ github.event.inputs.manual }} ]; then
+              MOTD=$(printf "Title: ${{ github.event.inputs.tag }}\nStatus: Ansible CI Test PROGRESSING.")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -motd "$MOTD"
+            else
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Ansible CI Test PROGRESSING.")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+            fi
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Clean Ansible CI Test Environment
+        run: |
+          if [ $(which kcli) ]; then
+            kcli list vm | grep ansible-ci-target &> /dev/null
+            if [ $? -eq 0 ]; then
+              kcli delete vm -y ansible-ci-target
+            fi
+          fi
+
+      - name: Create Ansible CI Test Environment
+        run: |
+          if [ $(which kcli) ]; then
+            kcli create vm -i centos8stream ansible-ci-target
+            ANSIBLE_CI_TARGET_IP=$(kcli show vm ansible-ci-target2 | grep ip | awk '{print $2}')
+            ANSIBLE_CONFIG=${{ github.workspace }}/hack/deploy-hub-local/ansible/ansible.cfg
+            ANSIBLE_INVENTORY=${{ github.workspace }}/hack/deploy-hub-local/ansible/inventory-ci
+            sed -i 's|CHANGEME|'"$ANSIBLE_CI_TARGET_IP"'|g' ANSIBLE_INVENTORY
+          fi
+
+      - name: Run Ansible CI Test Playbooks
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: ${{ github.workspace }}/hack/deploy-hub-local/ansible/test.yml
+          key: ~/.ssh/id_rsa
+          options: |
+            --inventory ${ANSIBLE_INVENTORY}
+            --limit ansible-ci-target
+            --verbose
+
+      - name: Clean Ansible CI Test Environment
+        run: |
+          if [ $(which kcli) ]; then
+            kcli list vm | grep ansible-ci-target &> /dev/null
+            if [ $? -eq 0 ]; then
+              kcli delete vm -y ansible-ci-target
+            fi
+          fi
+
+      - name: Unset Ansible CI Test if job succeeded
+        if: ${{ success() }}
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+            /root/bin/set-motd unset
+          fi
+
+      - name: Unset Ansible CI MOTD if job failed
+        if: ${{ failure() }}
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+            if [ ${{ github.event.inputs.manual }} ]; then
+              MOTD=$(printf "Title: ${{ github.event.inputs.tag }}\nStatus: Ansible CI Test FAILED.")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -motd "$MOTD"
+            else
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Ansible CI Test FAILED.")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+            fi
+          fi
