@@ -276,13 +276,12 @@ metadata:
 spec:
  config:
    interfaces:
-     - name: $CHANGE_EDGE_MASTER_MGMT_INT
-       type: ethernet
+     - name: $CHANGE_EDGE_MASTER_MGMT_INT.101
+       type: vlan
        state: up
-       ethernet:
-         auto-negotiation: true
-         duplex: full
-         speed: 10000
+       vlan:
+         base-iface: $CHANGE_EDGE_MASTER_MGMT_INT
+         id: 101
        ipv4:
          enabled: true
          dhcp: true
@@ -290,13 +289,12 @@ spec:
          auto-gateway: true
          auto-routes: true
        mtu: 1500
-     - name: $CHANGE_EDGE_MASTER_PUB_INT
-       type: ethernet
+     - name: $CHANGE_EDGE_MASTER_PUB_INT.102
+       type: vlan
        state: up
-       ethernet:
-         auto-negotiation: true
-         duplex: full
-         speed: 1000
+       vlan:
+         base-iface: $CHANGE_EDGE_MASTER_PUB_INT
+         id: 102
        ipv4:
          enabled: true
          address:
@@ -334,9 +332,9 @@ EOF
         fi
         cat <<EOF >>${OUTPUT}
  interfaces:
-   - name: "$CHANGE_EDGE_MASTER_MGMT_INT"
+   - name: "$CHANGE_EDGE_MASTER_MGMT_INT".101
      macAddress: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
-   - name: "$CHANGE_EDGE_MASTER_PUB_INT"
+   - name: "$CHANGE_EDGE_MASTER_PUB_INT".102
      macAddress: '$CHANGE_EDGE_MASTER_PUB_INT_MAC'
 ---
 apiVersion: v1
