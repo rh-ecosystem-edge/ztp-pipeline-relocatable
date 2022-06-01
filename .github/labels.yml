@@ -2,26 +2,44 @@
 repo:
   - ./*
 
+# documentation
 documentation:
   - documentation/**/*
   - website/**/*
   - utils/**/*
   - examples/**/*
 
+# internal components
 internal:
   - hack/**/*
+  - .github/workflows/**/*
+  - shared-utils/**/*
+  - hack/set-motd/**/*
+
+## actions, pipelines and workflows
+github-actions:
+  - .github/**/*
 
 pipelines:
   - pipelines/**/*
+  - images/Containerfile.pipeline
 
-GHA:
-  - .github/**/*
+## ansible
+ansible:
+  - hack/deploy-hub-local/ansible/**/*
+  - .github/workflows/ci-test-ansible.yml
 
-
+# ztpfw-ui components
 ui:
   - deploy-ui/**/*
   - ui/**/*
+  - images/Containerfile.UI
+  - .github/workflows/ui.yml
 
+test-ci-ui:
+  - images/Containerfile.UI
+
+# ztpfw-core components
 acm:
   - deploy-acm/**/*
 
@@ -40,9 +58,14 @@ worker:
 odf:
   - deploy-odf/**/*
 
-
 finalization:
   - finish-deployment/**/*
 
 hubconfig:
   - deploy-hub-config/**/*
+
+contrib:
+  - contrib/**/*
+
+images:
+  - images/**/*

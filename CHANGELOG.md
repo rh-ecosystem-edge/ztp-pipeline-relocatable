@@ -1,3 +1,9 @@
+## [1.8.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.1...1.8.2) (2022-05-31)
+
+### Bug Fixes
+
+- **Containerfile:** add netcat for SNO DNS testing and workaround ([9ddd7a8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/9ddd7a8fefdf39dab677e6231d909bb5cb845986))
+
 ## [1.8.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.0...1.8.1) (2022-05-30)
 
 ### Bug Fixes
