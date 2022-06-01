@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'ui/**'
-    types: [labeled]
+    types: [labeled,synchronize]
   pull_request_review:
     types: [submitted, edited]
 
