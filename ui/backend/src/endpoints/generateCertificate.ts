@@ -24,9 +24,9 @@ export const generateCertificate = async (
     const delimiter = '-----generateCertificateDelimiter-----';
 
     try {
-      const { stdout: _stdout } = await exec(
-        `/usr/bin/openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ${keyFile} -out ${certFile} -subj "/CN=${domain}" -addext "subjectAltName = DNS:${domain}" && cat ${keyFile} && echo ${delimiter} && cat ${certFile}`,
-      );
+      const command = `/usr/bin/openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ${keyFile} -out ${certFile} -subj "/CN=${domain}" -addext "subjectAltName = DNS:${domain}" && cat ${keyFile} && echo ${delimiter} && cat ${certFile}`;
+      logger.debug('Executing: ', command);
+      const { stdout: _stdout } = await exec(command);
       rmdirSync(tmpdir, { recursive: true, maxRetries: 5 });
 
       const stdout = _stdout?.toString();
