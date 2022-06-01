@@ -65,8 +65,8 @@ function mirror_ocp() {
             echo ">>>> OCP release image mirror step finished: ${OPENSHIFT_RELEASE_IMAGE}"
             retry=0
         else
-            echo ">>>> ERROR: Mirroring the release image: ${OPENSHIFT_RELEASE_IMAGE}"
-            echo ">>>> ERROR: Retrying in 10 seconds"
+            echo ">>>> INFO: Failed mirroring the release image: ${OPENSHIFT_RELEASE_IMAGE}"
+            echo ">>>> INFO: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi

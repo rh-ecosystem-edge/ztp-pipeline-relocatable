@@ -51,12 +51,13 @@ export const initialDataLoad = async ({
 
   handleSetIngressIp(
     ipWithoutDots(
-      ingressService.spec?.loadBalancerIP || ingressService.status?.loadBalancer?.ingress?.[0]?.ip,
+      ingressService?.spec?.loadBalancerIP ||
+        ingressService?.status?.loadBalancer?.ingress?.[0]?.ip,
     ),
   );
   handleSetApiaddr(
     ipWithoutDots(
-      apiService?.spec?.loadBalancerIP || apiService.status?.loadBalancer?.ingress?.[0]?.ip,
+      apiService?.spec?.loadBalancerIP || apiService?.status?.loadBalancer?.ingress?.[0]?.ip,
     ),
   );
 
