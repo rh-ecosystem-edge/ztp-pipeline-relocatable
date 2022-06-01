@@ -17,7 +17,7 @@ include::modules/common-attributes.adoc[]
 [discrete]
 === Storage prerequisites
 
-* Storage can be provided by installing the Local Storage Operator and by using local volumes or by using OpenShift Data Foundation (ODF). 
+* Storage can be provided by installing the Local Storage Operator and by using local volumes or by using OpenShift Data Foundation (ODF).
 +
 [NOTE]
 ====

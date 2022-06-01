@@ -8,12 +8,12 @@ on:
       manual:
         description: 'Is this a manual dispatch?'
         default: true
-        required: false 
-        type: boolean 
+        required: false
+        type: boolean
       tag:
         description: 'Ansible CI manually triggered!'
         default: 'Ansible CI manually triggered!'
-        required: false 
+        required: false
         type: string
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
   ansible-test-ci:
     if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci-ansible') || contains(github.event.pull_request.labels.*.name, 'test-ci-ansible') || github.event_name == 'workflow_dispatch'
     runs-on: kni4
-    
+
     steps:
 
       - name: Set Ansible CI MOTD
@@ -67,7 +67,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}/hack/deploy-hub-local/ansible
           ansible-galaxy collection install ansible.posix
-          ansible-playbook -i inventory-ci -l ansible-ci-target setup.yaml 
+          ansible-playbook -i inventory-ci -l ansible-ci-target setup.yaml
 
       - name: Clean Ansible CI Test Environment
         run: |
