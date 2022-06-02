@@ -290,6 +290,7 @@ spec:
          auto-gateway: true
          auto-routes: true
        mtu: 1500
+       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
      - name: $CHANGE_EDGE_MASTER_MGMT_INT.102
        type: vlan
        state: up
@@ -302,7 +303,6 @@ spec:
            - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
              prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
        mtu: 1500
-       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
 EOF
         echo ">> Checking Ignored Interfaces"
         echo "Edge-cluster: ${cluster}"
