@@ -276,12 +276,13 @@ metadata:
 spec:
  config:
    interfaces:
-     - name: $CHANGE_EDGE_MASTER_MGMT_INT.101
-       type: vlan
+     - name: $CHANGE_EDGE_MASTER_MGMT_INT
+       type: ethernet
        state: up
-       vlan:
-         base-iface: $CHANGE_EDGE_MASTER_MGMT_INT
-         id: 101
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 10000
        ipv4:
          enabled: true
          dhcp: true
