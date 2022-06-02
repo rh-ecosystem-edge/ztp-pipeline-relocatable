@@ -49,7 +49,7 @@ describe('Test component utils', () => {
   it('Validates IP tripplet', () => {
     expect(ipTripletAddressValidator('127  1  1  1')).toMatchObject(IP_TRIPLET_SUCCESS);
     expect(ipTripletAddressValidator('127001  1001')).toMatchObject(IP_TRIPLET_SUCCESS);
-    expect(ipTripletAddressValidator('127001  1')).toMatchObject(IP_TRIPLET_DEFAULT3);
+    expect(ipTripletAddressValidator('127001  1   ')).toMatchObject(IP_TRIPLET_DEFAULT3);
     expect(ipTripletAddressValidator(TWELVE_SPACES)).toMatchObject(IP_TRIPLET_DEFAULT);
     expect(ipTripletAddressValidator('227  1  1  1')).toMatchObject(IP_TRIPLET_SUCCESS);
     expect(ipTripletAddressValidator('267  1  1  1')).toMatchObject(IP_TRIPLET_DEFAULT0);
