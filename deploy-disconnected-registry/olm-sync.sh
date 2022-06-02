@@ -74,7 +74,7 @@ function mirror() {
     ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
 
     if [ ! -f ~/.docker/config.json ]; then
-        echo "ERROR: missing ~/.docker/config.json config"
+        echo "INFO: missing ~/.docker/config.json config"
         echo "Creating file"
         unalias cp &>/dev/null || echo "Unaliased cp: Done!"
         mkdir -p ~/.docker/
@@ -121,8 +121,8 @@ function mirror() {
             echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
         else
-            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retrying in 10 seconds"
+            echo ">>>> INFO: Failed pruning index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> INFO: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi
@@ -145,8 +145,8 @@ function mirror() {
             echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
             retry=0
         else
-            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retrying in 10 seconds"
+            echo ">>>> INFO: Failed Pushing index image: ${OLM_DESTINATION_INDEX}"
+            echo ">>>> INFO: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi
@@ -186,7 +186,7 @@ function mirror() {
                     if [[ ${?} != 0 ]]; then
                         retry=1
                         while [ ${retry} != 0 ]; do
-                            echo "Error on Image Copy, retrying after 5 seconds..."
+                            echo "INFO: Failed Image Copy, retrying after 5 seconds..."
                             skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                             if [[ ${?} == 0 ]]; then
                                 retry=0
@@ -214,7 +214,7 @@ function mirror() {
         if [[ ${?} != 0 ]]; then
             retry=1
             while [ ${retry} != 0 ]; do
-                echo "Error on Image Copy, retrying after 5 seconds..."
+                echo "INFO: Failed Image Copy, retrying after 5 seconds..."
                 skopeo copy docker://${image} docker://${DESTINATION_REGISTRY}/${image#*/} --all --authfile ${PULL_SECRET}
                 if [[ ${?} == 0 ]]; then
                     retry=0
@@ -263,7 +263,7 @@ function mirror_certified() {
     ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
 
     if [ ! -f ~/.docker/config.json ]; then
-        echo "ERROR: missing ~/.docker/config.json config"
+        echo "INFO: missing ~/.docker/config.json config"
         echo "Creating file"
         unalias cp &>/dev/null || echo "Unaliased cp: Done!"
         mkdir -p ~/.docker/
@@ -304,13 +304,13 @@ function mirror_certified() {
             echo ">>>> Pruning index image finished: ${OLM_CERTIFIED_DESTINATION_INDEX}"
             retry=0
         else
-            echo ">>>> ERROR: Pruning index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retrying in 10 seconds"
+            echo ">>>> INFO: Failed pruning index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
+            echo ">>>> INFO: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi
         if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Pruning index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Failed pruning index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
             echo ">>>> ERROR: Retry limit reached"
             exit 1
         fi
@@ -328,13 +328,13 @@ function mirror_certified() {
             echo ">>>> Push index image finished: ${OLM_CERTIFIED_DESTINATION_INDEX}"
             retry=0
         else
-            echo ">>>> ERROR: Pushing index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retrying in 10 seconds"
+            echo ">>>> INFO: Failed pushing index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
+            echo ">>>> INFO: Retrying in 10 seconds"
             sleep 10
             retry=$((retry + 1))
         fi
         if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Pushing index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
+            echo ">>>> ERROR: Failed pushing index image: ${OLM_CERTIFIED_DESTINATION_INDEX}"
             echo ">>>> ERROR: Retry limit reached"
             exit 1
         fi
@@ -367,7 +367,7 @@ function mirror_certified() {
                     echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
                     skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     if [[ ${?} != 0 ]]; then
-                        echo "Error on Image Copy, retrying after 5 seconds..."
+                        echo "INFO: Failed Image Copy, retrying after 5 seconds..."
                         sleep 10
                         skopeo copy docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     fi

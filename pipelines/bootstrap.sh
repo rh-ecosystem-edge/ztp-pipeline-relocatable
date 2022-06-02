@@ -7,6 +7,7 @@ set -m
 
 function get_clients() {
     if ! (command -v oc &>/dev/null); then
+        echo "INFO: oc command not found. Installing..."
         curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz | tar xvz -C /usr/bin
         rm -f /usr/bin/README.md
         chmod +x /usr/bin/oc /usr/bin/kubectl
@@ -21,8 +22,7 @@ function get_tkn() {
         echo ">>>> Downloading TKN Client into: ${BIN_FOLDER}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         mkdir -p ${BIN_FOLDER}
-        wget ${URL} -O "${BIN_FOLDER}/tkn.tar.gz"
-        tar xvzf "${BIN_FOLDER}/tkn.tar.gz" -C "${BIN_FOLDER}"
+        curl -k -s ${URL} | tar xvz -C "${BIN_FOLDER}"
         chmod 755 ${BIN_FOLDER}/tkn
         rm -rf "${BIN_FOLDER}/LICENSE"
     else
