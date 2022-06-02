@@ -333,12 +333,12 @@ exports[`DomainPage can render 1`] = `
             <div
               class="pf-l-stack__item wizard-sublabel"
             >
-              Create unique URLs for your edge cluster, such as device setup and console.
               <span
                 class="pf-c-badge pf-m-read"
               >
                 Optional
               </span>
+               Create unique URLs for your edge cluster, such as device setup and console.
             </div>
             <div
               class="pf-l-stack__item domain-item"

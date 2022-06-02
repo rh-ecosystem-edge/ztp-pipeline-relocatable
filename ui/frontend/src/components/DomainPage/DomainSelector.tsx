@@ -17,8 +17,8 @@ export const DomainSelector: React.FC = () => {
         <Title headingLevel="h1">Do you want to use a custom domain?</Title>
       </StackItem>
       <StackItem className="wizard-sublabel">
-        Create unique URLs for your edge cluster, such as device setup and console.
-        <OptionalBadge />
+        <OptionalBadge /> Create unique URLs for your edge cluster, such as device setup and
+        console.
       </StackItem>
       <StackItem className="domain-item">
         <FormGroup

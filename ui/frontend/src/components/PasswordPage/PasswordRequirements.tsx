@@ -7,10 +7,11 @@ import {
 } from '@patternfly/react-tokens';
 
 import { useK8SStateContext } from '../K8SStateContext';
-
-const isPasswordPolicyLength = (pwd?: string): boolean => !!pwd && pwd.length >= 8;
-const isPasswordPolicyUppercase = (pwd?: string): boolean =>
-  !!pwd && pwd.toLocaleLowerCase() !== pwd;
+import {
+  isPasswordPolicyCharSet,
+  isPasswordPolicyLength,
+  isPasswordPolicyUppercase,
+} from './utils';
 
 const PolicyIcon: React.FC<{ idPrefix: string; policyMet: boolean }> = ({ idPrefix, policyMet }) =>
   policyMet ? (
@@ -33,7 +34,13 @@ export const PasswordRequirements: React.FC = () => {
           policyMet={isPasswordPolicyUppercase(password)}
           idPrefix="requirement-uppercase"
         />
-        <span className="password-requirement-text">One uppercase character</span>
+        <span className="password-requirement-text">One uppercase letter</span>
+      </li>
+      <li className="pf-c-helper-text__item pf-m-dynamic pf-m-error">
+        <PolicyIcon policyMet={isPasswordPolicyCharSet(password)} idPrefix="requirement-charset" />
+        <span className="password-requirement-text">
+          Leading letter, otherwise a-Z, numbers or special (#?!@$%^&amp;*-)
+        </span>
       </li>
     </ul>
   );
