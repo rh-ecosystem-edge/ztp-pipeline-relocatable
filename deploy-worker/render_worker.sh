@@ -64,24 +64,23 @@ spec:
        ipv4:
          enabled: true
          dhcp: true
-         auto-dns: false
+         auto-dns: true
          auto-gateway: true
          auto-routes: true
        mtu: 1500
-     - name: $CHANGE_EDGE_WORKER_PUB_INT
-       type: ethernet
+       mac-address: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
+     - name: $CHANGE_EDGE_WORKER_MGMT_INT.102
+       type: vlan
        state: up
-       ethernet:
-         auto-negotiation: true
-         duplex: full
-         speed: 1000
+       vlan:
+         base-iface: $CHANGE_EDGE_WORKER_MGMT_INT
+         id: 102
        ipv4:
          enabled: true
          address:
            - ip: $CHANGE_EDGE_WORKER_PUB_INT_IP
              prefix-length: $CHANGE_EDGE_WORKER_PUB_INT_MASK
        mtu: 1500
-       mac-address: '$CHANGE_EDGE_WORKER_PUB_INT_MAC'
    dns-resolver:
      config:
        server:
@@ -90,12 +89,10 @@ spec:
      config:
        - destination: $CHANGE_EDGE_WORKER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_WORKER_PUB_INT_GW
-         next-hop-interface: $CHANGE_EDGE_WORKER_PUB_INT
+         next-hop-interface: $CHANGE_EDGE_WORKER_PUB_INT.102
  interfaces:
    - name: "$CHANGE_EDGE_WORKER_MGMT_INT"
      macAddress: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
-   - name: "$CHANGE_EDGE_WORKER_PUB_INT"
-     macAddress: '$CHANGE_EDGE_WORKER_PUB_INT_MAC'
 ---
 apiVersion: v1
 kind: Secret
