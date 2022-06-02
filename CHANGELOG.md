@@ -1,3 +1,11 @@
+## [1.8.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.2...1.8.3) (2022-06-02)
+
+### Bug Fixes
+
+- change default size vm and odf storagecluster manifest to 75 ([7724bc2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/7724bc2fbb28248c4a93f2ecdea113c11b2ff99c))
+- mgmt-10251-change default size vm and odf storagecluster manifest to 1 ([#337](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/issues/337)) ([13f21c7](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/13f21c7654838fcde7f9d38fd6606bcbbfff1048))
+- remove to default vm value and odf storagecluster manifest to 1 ([120de6a](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/120de6aab99d1dabaae2e643d5f635f04fa694a4))
+
 ## [1.8.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.1...1.8.2) (2022-05-31)
 
 ### Bug Fixes
