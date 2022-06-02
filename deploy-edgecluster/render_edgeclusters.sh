@@ -290,11 +290,11 @@ spec:
          auto-gateway: true
          auto-routes: true
        mtu: 1500
-     - name: $CHANGE_EDGE_MASTER_PUB_INT.102
+     - name: $CHANGE_EDGE_MASTER_MGMT_INT.102
        type: vlan
        state: up
        vlan:
-         base-iface: $CHANGE_EDGE_MASTER_PUB_INT
+         base-iface: $CHANGE_EDGE_MASTER_MGMT_INT
          id: 102
        ipv4:
          enabled: true
@@ -302,7 +302,7 @@ spec:
            - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
              prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
        mtu: 1500
-       mac-address: '$CHANGE_EDGE_MASTER_PUB_INT_MAC'
+       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
 EOF
         echo ">> Checking Ignored Interfaces"
         echo "Edge-cluster: ${cluster}"
@@ -322,7 +322,7 @@ EOF
      config:
        - destination: $CHANGE_EDGE_MASTER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
-         next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
+         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT
 EOF
         if [[ ${IGN_IFACES} != "null" ]]; then
             for IFACE in $(echo ${IGN_IFACES}); do
