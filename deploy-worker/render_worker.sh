@@ -89,7 +89,7 @@ spec:
      config:
        - destination: $CHANGE_EDGE_WORKER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_WORKER_PUB_INT_GW
-         next-hop-interface: $CHANGE_EDGE_WORKER_PUB_INT.102
+         next-hop-interface: $CHANGE_EDGE_WORKER_MGMT_INT.102
  interfaces:
    - name: "$CHANGE_EDGE_WORKER_MGMT_INT"
      macAddress: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
