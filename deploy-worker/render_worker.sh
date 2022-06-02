@@ -64,7 +64,7 @@ spec:
        ipv4:
          enabled: true
          dhcp: true
-         auto-dns: true
+         auto-dns: false
          auto-gateway: true
          auto-routes: true
        mtu: 1500
