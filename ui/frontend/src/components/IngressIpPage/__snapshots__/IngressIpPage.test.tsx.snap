@@ -333,7 +333,7 @@ exports[`IngressIpPage can render 1`] = `
               <input
                 aria-invalid="false"
                 aria-label="IP triplet, position 1"
-                class="pf-c-form-control ip-triplet ip-triplet__wide"
+                class="pf-c-form-control ip-triplet ip-triplet-success ip-triplet__wide"
                 data-ouia-component-id="OUIA-Generated-TextInputBase-1"
                 data-ouia-component-type="PF4/TextInput"
                 data-ouia-safe="true"
@@ -345,7 +345,7 @@ exports[`IngressIpPage can render 1`] = `
               <input
                 aria-invalid="false"
                 aria-label="IP triplet, position 2"
-                class="pf-c-form-control ip-triplet ip-triplet__wide"
+                class="pf-c-form-control ip-triplet ip-triplet-success ip-triplet__wide"
                 data-ouia-component-id="OUIA-Generated-TextInputBase-2"
                 data-ouia-component-type="PF4/TextInput"
                 data-ouia-safe="true"
@@ -357,7 +357,7 @@ exports[`IngressIpPage can render 1`] = `
               <input
                 aria-invalid="false"
                 aria-label="IP triplet, position 3"
-                class="pf-c-form-control ip-triplet ip-triplet__wide"
+                class="pf-c-form-control ip-triplet ip-triplet-success ip-triplet__wide"
                 data-ouia-component-id="OUIA-Generated-TextInputBase-3"
                 data-ouia-component-type="PF4/TextInput"
                 data-ouia-safe="true"
@@ -369,7 +369,7 @@ exports[`IngressIpPage can render 1`] = `
               <input
                 aria-invalid="false"
                 aria-label="IP triplet, position 4"
-                class="pf-c-form-control ip-triplet ip-triplet__wide"
+                class="pf-c-form-control ip-triplet ip-triplet-success ip-triplet__wide"
                 data-ouia-component-id="OUIA-Generated-TextInputBase-4"
                 data-ouia-component-type="PF4/TextInput"
                 data-ouia-safe="true"
