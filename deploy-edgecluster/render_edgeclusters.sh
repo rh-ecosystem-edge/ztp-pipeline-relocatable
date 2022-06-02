@@ -333,10 +333,8 @@ EOF
         fi
         cat <<EOF >>${OUTPUT}
  interfaces:
-   - name: "$CHANGE_EDGE_MASTER_MGMT_INT".101
+   - name: "$CHANGE_EDGE_MASTER_MGMT_INT"
      macAddress: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
-   - name: "$CHANGE_EDGE_MASTER_PUB_INT".102
-     macAddress: '$CHANGE_EDGE_MASTER_PUB_INT_MAC'
 ---
 apiVersion: v1
 kind: Secret
