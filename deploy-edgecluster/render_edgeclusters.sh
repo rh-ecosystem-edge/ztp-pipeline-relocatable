@@ -322,7 +322,7 @@ EOF
      config:
        - destination: $CHANGE_EDGE_MASTER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
-         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT
+         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
 EOF
         if [[ ${IGN_IFACES} != "null" ]]; then
             for IFACE in $(echo ${IGN_IFACES}); do
