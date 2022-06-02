@@ -24,7 +24,7 @@ export const ipTripletAddressValidator = (
   for (let i = 0; i <= 3; i++) {
     const triplet = addr.substring(i * 3, (i + 1) * 3).trim();
     const num = parseInt(triplet);
-    const valid = num > 0 && num < 256;
+    const valid = num >= 0 && num <= 255;
 
     validation.valid = validation.valid && valid;
     validation.triplets.push(valid ? 'success' : 'default');
@@ -38,6 +38,14 @@ export const ipTripletAddressValidator = (
     validation.message = 'Provided IP address is already used.';
     validation.valid = false;
   }
+
+  const dottedIp = addIpDots(addr);
+  if (dottedIp === '255.255.255.255' || dottedIp === '127.0.0.1' || dottedIp === '0.0.0.0') {
+    validation.message = 'Provided IP address is reserved.';
+    validation.valid = false;
+  }
+
+  // We do not know subnet, the user _is expected_ not to provide subnet address or broadcast
 
   return validation;
 };
@@ -69,18 +77,6 @@ export const passwordValidator = (pwd: string): K8SStateContextData['passwordVal
   return isPasswordPolicyMet(pwd);
 };
 
-/*
-export const ipWithDots = (ip: string): string =>
-  (
-    ip.substring(0, 3) +
-    '.' +
-    ip.substring(3, 6) +
-    '.' +
-    ip.substring(6, 9) +
-    '.' +
-    ip.substring(9, 12)
-  ).replaceAll(' ', '');
-*/
 export const ipWithoutDots = (ip?: string): string => {
   if (ip) {
     const triplets = ip.split('.');

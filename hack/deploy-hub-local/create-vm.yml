@@ -16,7 +16,7 @@ edgecluster{{ i }}-cluster-m{{ j }}:
   - size: 50
   - size: 50
   - size: 50
-  - size: 50  
+  - size: 50
 {% endfor %}
 {% endfor %}
 
@@ -34,5 +34,5 @@ edgecluster{{ i }}-cluster-w0:
   - size: 50
   - size: 50
   - size: 50
-  - size: 50  
+  - size: 50
 {% endfor %}
