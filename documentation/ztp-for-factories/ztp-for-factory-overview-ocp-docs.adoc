@@ -27,7 +27,7 @@ The hub cluster can be a single-node OpenShift cluster deploying multiple single
 The hub cluster is also known as the factory cluster.
 ====
 
-The following are the possible combinations of hub and spoke cluster topologies:
+The following are the possible combinations of hub and edgecluster cluster topologies:
 
 .Cluster topologies
 [options="header"]

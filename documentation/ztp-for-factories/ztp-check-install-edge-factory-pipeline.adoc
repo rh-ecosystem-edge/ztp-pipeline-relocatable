@@ -10,18 +10,18 @@ You can watch the progress of the pipelines by using the {product-title} web con
 
 .Procedure
 
-. Examine the logs to watch the progress of the `deploy-ztp-spokes`.
+. Examine the logs to watch the progress of the `deploy-ztp-edgeclusters`.
 +
 [source,terminal]
 ----
-$ tkn pipeline logs deploy-ztp-spoke-run-2rklt -f -n spoke-deployer
+$ tkn pipeline logs deploy-ztp-edgecluster-run-2rklt -f -n edgecluster-deployer
 ----
 . Log in to the {product-title} web console.
-. Navigate to *Pipelines* -> *Pipelines* and select the Project *spoke-deployer*.
+. Navigate to *Pipelines* -> *Pipelines* and select the Project *edgecluster-deployer*.
 +
 [NOTE]
 ====
-The `spoke-deployer` pipeline stores all the artefacts for {product-title} Pipelines.
+The `edgecluster-deployer` pipeline stores all the artefacts for {product-title} Pipelines.
 ====
 . Select **PipelineRuns** to drill down into the details of the pipeline runs.
 
