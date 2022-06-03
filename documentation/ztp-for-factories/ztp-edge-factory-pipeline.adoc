@@ -31,7 +31,7 @@ This step deploys the NMState and the MetalLB Operators. NMState creates one pro
 
 Deploy OpenShift Data Foundation::
 
-This step deploys the Local Storage Operator and also OpenShift Data Foundation (ODF). ODF and the Local Storage Operator uses disks defined in the `storage_disk` section of the `spokes.yaml` configuration file to create persistent volumes. ODF generates the storage classes and dynamically provisions the persistent volumes. This provides the storage necessary to host the disconnected registry images (Quay).
+This step deploys the Local Storage Operator and also OpenShift Data Foundation (ODF). ODF and the Local Storage Operator uses disks defined in the `storage_disk` section of the `edgeclusters.yaml` configuration file to create persistent volumes. ODF generates the storage classes and dynamically provisions the persistent volumes. This provides the storage necessary to host the disconnected registry images (Quay).
 
 Deploy Quay::
 

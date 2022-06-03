@@ -13,7 +13,7 @@
 
 include::ztp-for-factory-overview-ocp-docs.adoc[leveloffset=+1]
 
-include::ztp-install-factory-hubspoke-architecture.adoc[leveloffset=+1]
+include::ztp-install-factory-hubedge-architecture.adoc[leveloffset=+1]
 
 include::ztp-create-factory-hub-cluster.adoc[leveloffset=+1]
 
@@ -23,7 +23,7 @@ include::ztp-install-factory-pipeline-overview.adoc[leveloffset=+1]
 
 include::ztp-hub-factory-pipeline.adoc[leveloffset=+2]
 
-include::ztp-spoke-factory-pipeline.adoc[leveloffset=+2]
+include::ztp-edge-factory-pipeline.adoc[leveloffset=+2]
 
 include::ztp-pre-hub-install-factory-pipeline-checks.adoc[leveloffset=+1]
 
@@ -35,17 +35,17 @@ include::ztp-check-install-hub-factory-pipeline.adoc[leveloffset=+2]
 
 include::ztp-post-install-hub-factory-pipeline-checks.adoc[leveloffset=+2]
 
-include::ztp-install-factory-spoke-pipeline.adoc[leveloffset=+1]
+include::ztp-install-factory-edge-pipeline.adoc[leveloffset=+1]
 
-include::ztp-check-install-spoke-factory-pipeline.adoc[leveloffset=+2]
+include::ztp-check-install-edge-factory-pipeline.adoc[leveloffset=+2]
 
-include::ztp-post-install-spoke-factory-pipeline-checks.adoc[leveloffset=+2]
+include::ztp-post-install-edge-factory-pipeline-checks.adoc[leveloffset=+2]
 
 include::ztp-troubleshooting-factory-pipelines.adoc[leveloffset=+1]
 
 include::ztp-common-expected-errors.adoc[leveloffset=+1]
 
-include::ztp-configuring-spoke-at-remote-site.adoc[leveloffset=+1]
+include::ztp-configuring-edge-at-remote-site.adoc[leveloffset=+1]
 
 include::ztpfw-pipelines-flags-arguments.adoc[leveloffset=+1]
 

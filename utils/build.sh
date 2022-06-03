@@ -11,20 +11,18 @@ DEVRELEASE="1.0"
 STATICRELEASE="${DEVRELEASE}"
 
 # Versioned documents
-DOCS=(
-
-)
+DOCS=()
 
 # Documents using latest
 STATIC=()
 
-DEV=(
-    'ZTP-for-factories'
-)
+DEV=('ZTP-for-factories')
 
 # Get latest version for 'static' documents
 LATEST=$(echo ${RELEASES} | tr " " "\n" | sort -V -r | head -1)
 
+# This function uses asciidoctor to render the document
+# it reads all the documentation/ folder and outputs the final html
 build_for_release() {
     doc="${1}"
     release="${2}"

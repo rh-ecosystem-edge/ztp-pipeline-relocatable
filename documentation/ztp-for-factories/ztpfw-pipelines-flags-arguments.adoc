@@ -39,8 +39,8 @@ The pipeline arguments and flags are described in the following tables.
 |This is a namespace where all the Tasks and Pipelines will be deployed.
 |Yes
 
-| `spokes-config`
-|This `spokes.yaml` file has the configuration for all the clusters you want to deploy at the same time. Run it with the `cat` command.
+| `edgeclusters-config`
+|This `edgeclusters.yaml` file has the configuration for all the clusters you want to deploy at the same time. Run it with the `cat` command.
 |Yes
 
 | `kubeconfig`
