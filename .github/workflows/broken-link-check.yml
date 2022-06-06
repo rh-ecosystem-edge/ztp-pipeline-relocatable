@@ -1,10 +1,9 @@
 on:
   schedule:
-    - cron: "0 0 * * *" # daily
-  repository_dispatch: # run manually
+    - cron: "0 0 * * *"
+  repository_dispatch:
     types: [check-link]
-  # push:
-  # ...
+  workflow_dispatch:
 
 name: Broken Link Check
 jobs:
@@ -14,3 +13,5 @@ jobs:
     steps:
       - name: Broken Link Check
         uses: technote-space/broken-link-checker-action@v2.3.0
+        env:
+          EXCLUDED_KEYWORDS: ["docs.github.com", "camo.githubusercontent.com"]
