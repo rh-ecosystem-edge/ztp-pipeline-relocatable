@@ -17,3 +17,4 @@ jobs:
           EXCLUDED_KEYWORDS: |
             docs.github.com
             camo.githubusercontent.com
+            github.com/apps/dependabot
