@@ -15,5 +15,5 @@ jobs:
         uses: technote-space/broken-link-checker-action@v2.3.0
         env:
           EXCLUDED_KEYWORDS:
-            - docs.github.com
-            - camo.githubusercontent.com
+            docs.github.com
+            camo.githubusercontent.com
