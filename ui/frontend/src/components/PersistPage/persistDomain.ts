@@ -14,7 +14,7 @@ export const persistDomain = async (
 ): Promise<boolean> => {
   if (!clusterDomain) {
     console.info('Domain change not requested, so skipping that step.');
-    setProgress(PersistSteps.PersistDomain);
+    setProgress(PersistSteps.ReconcilePersistDomain);
     return true; // skip
   }
 

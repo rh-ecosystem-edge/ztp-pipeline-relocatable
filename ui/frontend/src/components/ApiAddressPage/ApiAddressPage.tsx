@@ -29,7 +29,7 @@ export const ApiAddressPage: React.FC = () => {
         middle={<ApiAddressSelector />}
         bottom={
           <WizardFooter
-            back="password"
+            back="hostips"
             next="ingressip"
             isNextEnabled={() => !!apiaddr.trim() && apiaddrValidation.valid}
           />

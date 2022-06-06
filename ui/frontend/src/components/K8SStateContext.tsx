@@ -7,13 +7,15 @@ import {
   K8SStateContextDataFields,
   CustomCertsValidationType,
 } from './types';
-import { ChangeDomainInputType, TlsCertificate } from '../copy-backend-common';
+import { ChangeDomainInputType, HostType, TlsCertificate } from '../copy-backend-common';
 import {
   customCertsValidator,
   domainValidator,
+  ipAddressValidator,
   ipTripletAddressValidator,
   ipWithoutDots,
   passwordValidator,
+  prefixLengthValidator,
   usernameValidator,
 } from './utils';
 
@@ -101,6 +103,51 @@ export const K8SStateContextProvider: React.FC<{
     [customCertsValidation, customCerts, setCustomCerts],
   );
 
+  const [hosts, setHosts] = React.useState<HostType[]>([]);
+  const handleSetHost = React.useCallback(
+    (newHost: HostType) => {
+      // List of DNS servers
+      newHost.dnsValidation = undefined;
+      newHost.dns?.some((dnsIp) => {
+        const validation = ipAddressValidator(dnsIp);
+        if (validation) {
+          newHost.dnsValidation = validation;
+          return true; // break
+        }
+        return false;
+      });
+
+      newHost.interfaces?.forEach((intf) => {
+        // single GW
+        if (intf.ipv4.address?.gateway) {
+          intf.ipv4.address.gatewayValidation = ipAddressValidator(intf.ipv4.address.gateway);
+        }
+
+        // single static IP and subnet prefix
+        if (intf.ipv4?.address) {
+          const validation = ipAddressValidator(intf.ipv4?.address?.ip);
+          intf.ipv4.address.validation = validation;
+
+          if (!validation && intf.ipv4.address.prefixLength !== undefined) {
+            // prefix-length
+            intf.ipv4.address.validation = prefixLengthValidator(intf.ipv4.address.prefixLength);
+          }
+        }
+      });
+
+      // find host by nodeName or add new record
+      const hostIndex = hosts.findIndex((h) => h.nodeName === newHost.nodeName);
+      if (hostIndex >= 0) {
+        hosts[hostIndex] = newHost;
+      } else {
+        hosts.push(newHost);
+      }
+
+      setHosts([...hosts]);
+    },
+    [hosts, setHosts],
+  );
+
   const isAllValid = React.useCallback(() => {
     const result =
       !usernameValidation &&
@@ -113,6 +160,8 @@ export const K8SStateContextProvider: React.FC<{
           customCertsValidation[d].certValidated === 'error' ||
           customCertsValidation[d].keyValidated === 'error',
       );
+
+    // TODO: include result of hosts' validation (static ips)
     return result;
   }, [
     apiaddrValidation.valid,
@@ -131,6 +180,7 @@ export const K8SStateContextProvider: React.FC<{
     domain,
     originalDomain,
     customCerts,
+    hosts,
   };
 
   const fieldValues = React.useRef<K8SStateContextDataFields>(_fv);
@@ -168,6 +218,8 @@ export const K8SStateContextProvider: React.FC<{
 
     customCertsValidation,
     setCustomCertificate,
+
+    handleSetHost,
   };
 
   return <K8SStateContext.Provider value={value}>{children}</K8SStateContext.Provider>;

@@ -1,5 +1,5 @@
 import { FormGroupProps, TextInputProps } from '@patternfly/react-core';
-import { TlsCertificate } from '../copy-backend-common';
+import { HostType, TlsCertificate } from '../copy-backend-common';
 import { ChangeDomainInputType } from '../backend-shared';
 
 export type IpTripletIndex = 0 | 1 | 2 | 3;
@@ -40,6 +40,7 @@ export type K8SStateContextDataFields = {
   domain: string;
   originalDomain?: string;
   customCerts: ChangeDomainInputType['customCerts'];
+  hosts: HostType[];
 };
 
 export type K8SStateContextData = K8SStateContextDataFields & {
@@ -64,4 +65,6 @@ export type K8SStateContextData = K8SStateContextDataFields & {
 
   setCustomCertificate: (domain: string, certificate: TlsCertificate) => void;
   customCertsValidation: CustomCertsValidationType;
+
+  handleSetHost: (newHost: HostType) => void;
 };

@@ -7,19 +7,23 @@ type WizardProgressStep = Pick<ProgressStepProps, 'isCurrent' | 'variant'>;
 export type WizardProgressStepType =
   | 'username'
   | 'password'
+  | 'hostips'
   | 'apiaddr'
   | 'ingressip'
   | 'domain'
   | 'sshkey';
+
 export type WizardStepType =
   | WizardProgressStepType
   | 'persist'
   | 'domaincertsdecision'
-  | 'domaincertificates';
+  | 'domaincertificates'
+  | 'staticips';
 
 export type WizardProgressSteps = {
   username: WizardProgressStep;
   password: WizardProgressStep;
+  hostips: WizardProgressStep;
   apiaddr: WizardProgressStep;
   ingressip: WizardProgressStep;
   domain: WizardProgressStep;
@@ -34,10 +38,11 @@ export type WizardProgressContextData = {
 const WIZARD_STEP_INDEXES: { [key in WizardProgressStepType]: number } = {
   username: 0,
   password: 1,
-  apiaddr: 2,
-  ingressip: 3,
-  domain: 4,
-  sshkey: 5,
+  hostips: 2,
+  apiaddr: 3,
+  ingressip: 4,
+  domain: 5,
+  sshkey: 6,
 };
 
 const WizardProgressContext = React.createContext<WizardProgressContextData | null>(null);
@@ -51,6 +56,10 @@ export const WizardProgressContextProvider: React.FC<{
       variant: 'info',
     },
     password: {
+      isCurrent: false,
+      variant: 'pending',
+    },
+    hostips: {
       isCurrent: false,
       variant: 'pending',
     },
@@ -78,6 +87,7 @@ export const WizardProgressContextProvider: React.FC<{
 
       setActiveStep: (step: WizardProgressStepType) => {
         if (!steps[step].isCurrent) {
+          console.log('--- setActiveStep ', step, ', steps: ', steps);
           const newSteps = { ...steps };
           const stepIdx = WIZARD_STEP_INDEXES[step];
 

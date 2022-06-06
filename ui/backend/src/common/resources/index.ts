@@ -11,3 +11,6 @@ export * from './oauthclient';
 export * from './deployment';
 export * from './pod';
 export * from './clusteroperator';
+export * from './NodeNetworkState';
+export * from './NodeNetworkConfigurationPolicy';
+export * from './node';

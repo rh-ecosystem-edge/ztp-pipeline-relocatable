@@ -1,7 +1,7 @@
-.domain-certificates .pf-c-panel__main {
+.page-inner-panel .pf-c-panel__main {
   max-height: 16rem !important;
 }
-.domain-certificate__item {
+.page-inner-panel__item {
   width: 58rem;
 }
 
@@ -15,6 +15,6 @@
   color: var(--pf-global--danger-color--100);
 }
 
-.domain-certificates .pf-c-expandable-section__toggle-text {
+.page-inner-panel .pf-c-expandable-section__toggle-text {
   text-align: left;
 }

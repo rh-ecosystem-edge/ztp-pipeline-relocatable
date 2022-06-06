@@ -13,19 +13,19 @@ export const IpTripletsSelector: React.FC<{
   id?: string;
   address: string;
   setAddress: IpTripletProps['setAddress'];
-  validation: IpTripletSelectorValidationType;
+  validation?: IpTripletSelectorValidationType;
   isNarrow?: boolean;
   isDisabled?: boolean;
 }> = ({ id = 'ip-triplet', address, setAddress, validation, isNarrow, isDisabled }) => {
   const [focus, setFocus] = React.useState<IpTripletIndex | null>(0);
-  const validated = validation.triplets || [];
+  const validated = validation?.triplets || [];
 
   if (isDisabled) {
     return <TextInput id={id} data-testid={id} value={addIpDots(address)} isDisabled={true} />;
   }
 
   return (
-    <>
+    <span id={id}>
       {([0, 1, 2, 3] as IpTripletIndex[]).map((position) => (
         <React.Fragment key={position}>
           {position > 0 ? '.' : ''}
@@ -42,9 +42,9 @@ export const IpTripletsSelector: React.FC<{
           />
         </React.Fragment>
       ))}
-      {!validation.valid && (
+      {!validation?.valid && (
         <ExclamationCircleIcon color={dangerColor.value} className="validation-icon" />
       )}
-    </>
+    </span>
   );
 };

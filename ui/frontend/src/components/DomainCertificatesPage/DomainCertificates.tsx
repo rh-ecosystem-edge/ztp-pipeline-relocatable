@@ -18,7 +18,7 @@ export const DomainCertificates: React.FC = () => {
       <StackItem className="wizard-sublabel wizard-sublabel-dense">
         If a certificate is not provided, a self-signed one will be automatically generated.
       </StackItem>
-      <StackItem className="domain-certificate__item">
+      <StackItem className="page-inner-panel__item">
         <DomainCertificatesPanel isScrollable />
       </StackItem>
     </Stack>

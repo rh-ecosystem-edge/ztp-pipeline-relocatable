@@ -6,6 +6,7 @@ import { MAX_LIVENESS_CHECK_COUNT, UI_POD_NOT_READY } from './constants';
 import { persistDomain } from './persistDomain';
 import { persistIdentityProvider, PersistIdentityProviderResult } from './persistIdentityProvider';
 import { saveApi, saveIngress } from './persistServices';
+import { persistStaticIPs } from './persistStaticIPs';
 import { PersistErrorType } from './types';
 import { waitForClusterOperator, waitForZtpfwPodToBeRecreated } from './utils';
 
@@ -83,6 +84,10 @@ export const persist = async (
 
     if (!(await saveApi(setError, setProgress, state.apiaddr))) {
       console.error('Failed to persist API IP, giving up.');
+      return false;
+    }
+
+    if (!(await persistStaticIPs(setError, setProgress, state.hosts))) {
       return false;
     }
 

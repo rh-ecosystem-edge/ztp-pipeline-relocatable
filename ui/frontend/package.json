@@ -15,6 +15,7 @@
     "@types/react-dom": "^17.0.9",
     "buffer": "^6.0.3",
     "file-saver": "^2.0.5",
+    "ip-address": "^7.1.0",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -36,7 +37,7 @@
   },
   "scripts": {
     "start": "HTTPS=true SSL_CRT_FILE=${TLS_CERT_FILE} SSL_KEY_FILE=${TLS_KEY_FILE} react-scripts start",
-    "build": "react-scripts build",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "backend-common": "rm -rf src/copy-backend-common ; cp -r ../backend/src/common src/copy-backend-common",
     "get-sha": "SHA=$(git rev-parse HEAD) ; echo ${SHA} ; echo \"GIT_BUILD_SHA = '${SHA}';\" >> src/sha.ts",
     "prebuild": "yarn backend-common",

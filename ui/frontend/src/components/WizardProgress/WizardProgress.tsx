@@ -27,6 +27,9 @@ export const WizardProgress: React.FC = () => {
       >
         Password
       </ProgressStep>
+      <ProgressStep id="hostips" titleId="hostips-title" aria-label="Host IPs" {...steps.hostips}>
+        Networking
+      </ProgressStep>
       <ProgressStep id="apiaddr" titleId="apiaddr-title" aria-label="API step" {...steps.apiaddr}>
         API
       </ProgressStep>

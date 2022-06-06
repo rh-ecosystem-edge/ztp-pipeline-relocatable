@@ -20,6 +20,9 @@ export const PersistSteps = {
   SaveApi: persistStepsCount++,
   ReconcileSaveApi: persistStepsCount++,
 
+  PersistStaticIPs: persistStepsCount++,
+  ReconcilePersistStaticIPs: persistStepsCount++,
+
   PersistDomain: persistStepsCount++,
   ReconcilePersistDomain: persistStepsCount++,
 
@@ -37,6 +40,9 @@ PersistStepLabels[PersistSteps.SaveIngress] = 'Saving Ingress IP';
 PersistStepLabels[PersistSteps.ReconcileSaveIngress] = 'Waiting for the Ingress IP reconciliation';
 PersistStepLabels[PersistSteps.SaveApi] = 'Saving API IP';
 PersistStepLabels[PersistSteps.ReconcileSaveApi] = 'Waiting for the API IP to reconcile';
+PersistStepLabels[PersistSteps.PersistStaticIPs] = 'Saving TCP/IP configuration';
+PersistStepLabels[PersistSteps.ReconcilePersistStaticIPs] =
+  'Waiting for the TCP/IP configuration to reconcile';
 PersistStepLabels[PersistSteps.PersistDomain] = 'Saving domain change';
 PersistStepLabels[PersistSteps.ReconcilePersistDomain] = 'Waiting for the domain to reconcile';
 PersistStepLabels[PersistSteps.ReconcileUIPod] = 'Final waiting for the configuration pod';

@@ -73,7 +73,7 @@ const start = () => {
 
   const app = express();
 
-  app.use(helmet.frameguard()) // to enable X-Frame-Options header for logout
+  app.use(helmet.frameguard()); // to enable X-Frame-Options header for logout
 
   if (process.env.CORS) {
     app.use(
@@ -93,6 +93,7 @@ const start = () => {
   app.get(`/logout`, logout);
 
   app.post(`/htpasswd`, htpasswd);
+  app.post(`/changeStaticIps`, changeStaticIps);
   app.post(`/changeDomain`, changeDomain);
 
   app.get('/user', user);

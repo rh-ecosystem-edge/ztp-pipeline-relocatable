@@ -210,7 +210,7 @@ export const DomainCertificatesPanel: React.FC<{
   const { domain } = useK8SStateContext();
 
   return (
-    <Panel isScrollable={isScrollable} className="domain-certificates">
+    <Panel isScrollable={isScrollable} className="page-inner-panel">
       <PanelMain tabIndex={0}>
         <PanelMainBody>
           <Certificate

@@ -27,7 +27,7 @@ export const PasswordPage: React.FC = () => {
         bottom={
           <WizardFooter
             back="username"
-            next="apiaddr"
+            next="hostips"
             isNextEnabled={() => !!password && !!validation && !equalityValidationCheck}
           />
         }

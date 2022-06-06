@@ -4,6 +4,8 @@ import { Routes, Route } from 'react-router';
 import {
   UsernamePage,
   PasswordPage,
+  HostIPDecisionPage,
+  StaticIPPage,
   ApiAddressPage,
   IngressIpPage,
   DomainPage,
@@ -24,6 +26,8 @@ export const Wizard: React.FC = () => {
       <Routes>
         <Route path="/username" element={<UsernamePage />} />
         <Route path="/password" element={<PasswordPage />} />
+        <Route path="/hostips" element={<HostIPDecisionPage />} />
+        <Route path="/staticips" element={<StaticIPPage />} />
         <Route path="/apiaddr" element={<ApiAddressPage />} />
         <Route path="/ingressip" element={<IngressIpPage />} />
         <Route path="/domain" element={<DomainPage />} />
