@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Broken Link Check
         uses: technote-space/broken-link-checker-action@v2.3.0
-        env:
+        with:
           EXCLUDED_KEYWORDS:
             docs.github.com
             camo.githubusercontent.com
