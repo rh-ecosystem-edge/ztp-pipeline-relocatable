@@ -291,6 +291,12 @@ spec:
          auto-routes: true
        mtu: 1500
        mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
+EOF
+        echo ">> Checking Number of Interfaces"
+        echo "Edge-cluster: ${cluster}"
+        echo "Master: ${master}"
+        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
+          cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_MASTER_MGMT_INT.102
        type: vlan
        state: up
@@ -304,6 +310,23 @@ spec:
              prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
        mtu: 1500
 EOF
+        else
+          cat <<EOF >>${OUTPUT}
+     - name: $CHANGE_EDGE_MASTER_PUB_INT
+       type: ethernet
+       state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 1000
+       ipv4:
+         enabled: true
+         address:
+           - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
+             prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
+       mtu: 1500
+EOF
+        fi
         echo ">> Checking Ignored Interfaces"
         echo "Edge-cluster: ${cluster}"
         echo "Master: ${master}"
@@ -322,8 +345,16 @@ EOF
      config:
        - destination: $CHANGE_EDGE_MASTER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
+EOF
+        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
+          cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
 EOF
+        else
+          cat <<EOF >>${OUTPUT}
+         next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
+EOF
+        fi
         if [[ ${IGN_IFACES} != "null" ]]; then
             for IFACE in $(echo ${IGN_IFACES}); do
                 echo "Ignoring route for: ${IFACE}"
@@ -335,6 +366,14 @@ EOF
  interfaces:
    - name: "$CHANGE_EDGE_MASTER_MGMT_INT"
      macAddress: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
+EOF
+       if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} != "null" ]]; then
+          cat <<EOF >>${OUTPUT}
+   - name: "$CHANGE_EDGE_MASTER_PUB_INT"
+     macAddress: '$CHANGE_EDGE_MASTER_PUB_INT_MAC'
+EOF
+       fi
+       cat <<EOF >>${OUTPUT}
 ---
 apiVersion: v1
 kind: Secret
