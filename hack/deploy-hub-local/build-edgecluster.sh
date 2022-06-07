@@ -122,6 +122,14 @@ EOF
       master${master}:
         nic_ext_dhcp: enp1s0
         mac_ext_dhcp: "ee:ee:ee:ee:${master}${edgecluster}:${master}e"
+EOF
+        if [ "${SINGLE_NIC}" = "false" ]; then
+          cat <<EOF >>edgeclusters.yaml
+        nic_int_static: enp2s0
+        mac_int_static: "aa:aa:aa:aa:${master}${edgecluster}:${master}a"
+EOF
+        fi
+        cat <<EOF >>edgeclusters.yaml
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
@@ -143,6 +151,14 @@ EOF
       worker${worker}:
         nic_ext_dhcp: enp1s0
         mac_ext_dhcp: "ee:ee:ee:${worker}${edgecluster}:${worker}${edgecluster}:${worker}e"
+EOF
+        if [ "${SINGLE_NIC}" = "false" ]; then
+          cat <<EOF >>edgeclusters.yaml
+        nic_int_static: enp2s0
+        mac_int_static: "aa:aa:aa:${worker}${edgecluster}:${worker}${edgecluster}:${worker}a"
+EOF
+        fi
+        cat <<EOF >>edgeclusters.yaml
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
