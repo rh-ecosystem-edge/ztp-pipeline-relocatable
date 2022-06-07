@@ -22,7 +22,7 @@ Installer-provisioned installation of {product-title} requires:
         . `api.<edgecluster-domain>.<net-domain>` and `api-int.<edgecluster-domain>.<net-domain>` entries to the same IP address
         . ingress (*.apps.<edgecluster-domain>.<net-domain>)
 - External DHCP with some free IPs on the factory to provide access to the Edge-cluster using the external network interface
-    - Every Edge-cluster will need at least ~6 IPs from this External Network (without the broadcast and network ip)
+    - Every Edge-cluster will need at least ~6 IPs from this External Network (without the broadcast and network IP)
         . 1 per node
         . 1 API and same for API-INT
         . 1 for the Ingress entry (*.apps.<edgecluster-domain>.<net-domain>)

@@ -2,7 +2,7 @@
 //
 // * scalability_and_performance/ztp-factory-install-clusters.adoc
 :_content-type: PROCEDURE
-[id="post-spoke-factory-pipeline-verification-checks_{context}"]
+[id="post-edgecluster-factory-pipeline-verification-checks_{context}"]
 = Post edge cluster factory pipeline verification checks
 include::modules/common-attributes.adoc[]
 
@@ -43,9 +43,9 @@ $ oc get nncp -A
 [source,terminal]
 ----
 NAME                                    STATUS
-kubeframe-spoke-0-master-0-nccp         Available
-kubeframe-spoke-0-master-1-nccp         Available
-kubeframe-spoke-0-master-2-nccp         Available
+kubeframe-edgecluster-0-master-0-nccp         Available
+kubeframe-edgecluster-0-master-1-nccp         Available
+kubeframe-edgecluster-0-master-2-nccp         Available
 ----
 
 . Verify the internal registry is running:
@@ -72,5 +72,5 @@ This shows the duration of every step, the parameters supplied to the pipeline. 
 +
 [source,terminal]
 ----
-$ tkn pr describe deploy-ztp-spoke-run-2rklt -n spoke-deployer
+$ tkn pr describe deploy-ztp-edgecluster-run-2rklt -n edgecluster-deployer
 ----

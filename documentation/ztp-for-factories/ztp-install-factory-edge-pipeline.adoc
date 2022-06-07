@@ -15,6 +15,12 @@ Run the following steps to run the edge factory install pipeline.
 ** `api.<edge-cluster-name>.<network-domain>`
 ** `api-int.<edge-cluster-name>.<network-domain>`
 ** `*.apps.<edge-cluster-name>.<network-domain>`
+
+[NOTE]
+====
+When deploying a single-node OpenShift cluster, the `api.<edge-cluster-name>.<baseDomain>` and `*.apps.<edge-cluster-name>.<baseDomain>` must be configured with different IP addresses.
+====
+
 * Clean disks for the OpenShift Data Foundation Storage cluster.
 * DNS Resolution between the edge and the hub API and ingress entries.
 * An {product-title} hub cluster.
@@ -22,11 +28,11 @@ Run the following steps to run the edge factory install pipeline.
 
 .Procedure
 
-. Edit the `spokes.yaml` with sample details as shown. A sample configuration file is present in `examples/config.yaml`.
+. Edit the `edgeclusters.yaml` with sample details as shown. A sample configuration file is present in `examples/config.yaml`.
 +
 [NOTE]
 ====
-At this stage you are populating the `spokes` section.
+At this stage you are populating the `edgeclusters` section.
 ====
 +
 [source,yaml]
@@ -36,8 +42,8 @@ config:
   OC_ACM_VERSION: "2.4"
   OC_OCS_VERSION: "4.9"
 
-spokes:
-  - spoke1-name: <1>
+edgeclusters:
+  - edgecluster1-name: <1>
       master0: <2>
         ignore_ifaces: eno1,eno2 <3>
         nic_ext_dhcp: eno4 <4>
@@ -91,7 +97,7 @@ spokes:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-  - spoke2-name:
+  - edgecluster2-name:
       master0:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -168,20 +174,20 @@ $ export KUBECONFIG=<path_to_kubeconfig>/kubeconfig-file
 +
 [source,terminal]
 ----
-$ tkn pipeline start -n spoke-deployer spokes-config="$(cat /path-to-spoke-yaml/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-spokes
+$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster-yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
 ----
 +
 [NOTE]
 ====
-This command starts the pipeline in the namespace `spoke-deployer` with the defined configuration and the `kube` configuration in the workspace ztp with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
+This command starts the pipeline in the namespace `edgecluster-deployer` with the defined configuration and the `kube` configuration in the workspace ztp with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
 ====
 +
 .Example output
 +
 [source,terminal]
 ----
-PipelineRun started: deploy-ztp-spoke-run-2rklt
+PipelineRun started: deploy-ztp-edgecluster-run-2rklt
 
 In order to track the PipelineRun progress run:
-tkn pipeline logs deploy-ztp-spoke-run-2rklt -f -n spoke-deployer
+tkn pipeline logs deploy-ztp-edgecluster-run-2rklt -f -n edgecluster-deployer
 ----
