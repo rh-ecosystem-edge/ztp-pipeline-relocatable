@@ -21,12 +21,19 @@ Documentation in this folder will be created by using asciidoc via the `utils/bu
 
 For easing development and preview, a gulp configuration has been created in the root of the repository.
 
-Remember that this still requires your environment to be able to execute `tools/build.sh` so dependencies like `asciidoctor` should be made available first.
+Remember that this still requires your environment to be able to execute `utils/build.sh`.
+
+Dependencies should be made available first. If you're using Fedora, the dependencies can be resolved with:
+
+```bash
+sudo dnf install yarnpkg rubygem-asciidoctor rubygem-asciidoctor-pdf
+sudo yarn global add gulp-cli
+```
+
+**Important**: Check your distribution/OS as this naming may change.
 
 For starting `gulp` environment:
 
-- Install `NodeJS` and `Yarn` using your system package manager
-- Install `gulp` via: `yarn global add gulp-cli`
 - In the root of the repository, run `yarn install`
 - Use Live Reload `gulp`
 

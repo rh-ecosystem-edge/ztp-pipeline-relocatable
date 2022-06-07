@@ -15,7 +15,7 @@ Run the following steps to run the hub factory install pipeline.
 
 .Procedure
 
-. Create a file `spokes.yaml` with sample details as shown. A sample configuration file is present in `examples/config.yaml`.
+. Create a file `edgeclusters.yaml` with sample details as shown. A sample configuration file is present in `examples/config.yaml`.
 +
 [NOTE]
 ====
@@ -38,12 +38,12 @@ config:
 +
 [source,terminal]
 ----
-$ tkn pipeline start -n spoke-deployer spokes-config="$(cat /path-to-spoke.yaml/spokes.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster.yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
 ----
 +
 [NOTE]
 ====
-This command starts the pipeline in the namespace `spoke-deployer` with the defined edge cluster configuration and the `kube` configuration in the workspace `ztp` with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
+This command starts the pipeline in the namespace `edgecluster-deployer` with the defined edge cluster configuration and the `kube` configuration in the workspace `ztp` with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
 ====
 +
 .Example output
@@ -52,5 +52,5 @@ This command starts the pipeline in the namespace `spoke-deployer` with the defi
 PipelineRun started: deploy-ztp-hub-run-2h44k
 
 In order to track the PipelineRun progress run:
-tkn pipelinerun logs deploy-ztp-hub-run-2h44k -f -n spoke-deployer
+tkn pipelinerun logs deploy-ztp-hub-run-2h44k -f -n edgecluster-deployer
 ----

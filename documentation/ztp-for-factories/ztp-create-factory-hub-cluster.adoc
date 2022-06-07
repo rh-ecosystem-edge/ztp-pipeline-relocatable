@@ -9,10 +9,19 @@ include::modules/common-attributes.adoc[]
 [discrete]
 === Base prerequisites
 
-* Deploy the {product-title} cluster with three control plane nodes following the guidance in the section "Deploying installer-provisioned clusters on bare metal". Alternatively you can use the technology preview Assisted Installer from link:https://cloud.redhat.com/[cloud.redhat.com] to create the cluster. To install single-node OpenShift follow the guidance in "Installing on a single node" in the {product-title} documentation.
-** All cluster Operators are available.
-** Cluster is reachable using a `KUBECONFIG` file.
-** The API, API-INT and ingress should be deployed on edge cluster on the DHCP external network.
+* Deploy the {product-title} cluster with three control plane nodes following the guidance in the section link:https://docs.openshift.com/container-platform/4.10/installing/installing_bare_metal_ipi/ipi-install-prerequisites.html[Deploying installer-provisioned clusters on bare metal]. 
+
+** Alternatively you can use the technology preview Assisted Installer from link:https://cloud.redhat.com/[cloud.redhat.com] to create the cluster. 
+
+* To install single-node OpenShift follow the guidance in link:https://docs.openshift.com/container-platform/4.10/installing/installing_sno/install-sno-installing-sno.html[Installing on a single node] in the {product-title} documentation.
+
+* All cluster Operators are available.
+
+* Cluster is reachable using a `KUBECONFIG` file.
+
+* The dns names for `api.<hub-clustername>.<baseDomain>`, `api-int.<hub-clustername>.<baseDomain>` and `*.apps.<hub-clustername>.<baseDomain>` should be deployed on edge cluster on the DHCP external network.
+
+* link:https://metal3.io/[Metal³] has to be available in the hub cluster.
 
 [discrete]
 === Storage prerequisites
@@ -47,8 +56,13 @@ Specific requirements are:
 ** ingress (`*.apps.<hub-clustername>.<baseDomain>`).
 
 * Edge
-** `api.<spoke-clustername>.<baseDomain>` and `api-int.<spoke-clustername>.<baseDomain>` entries to the same IP address.
-** ingress (`*.apps.<spoke-clustername>.<baseDomain>`).
+** `api.<edge-cluster-name>.<baseDomain>` and `api-int.<edge-cluster-name>.<baseDomain>` entries to the same IP address.
+** ingress (`*.apps.<edge-cluster-name>.<baseDomain>`).
+
+[NOTE]
+====
+When deploying a single-node OpenShift cluster, the `api.<edge-cluster-name>.<baseDomain>` and `*.apps.<edge-cluster-name>.<baseDomain>` must be configured with different IP addresses.
+====
 
 * External DHCP with enough free IPs on the factory network to provide access to the edge cluster by using the external network interface.
 
@@ -56,4 +70,4 @@ Specific requirements are:
 ** 1 per node.
 ** 1 for API.
 ** 1 for API-INT.
-** 1 for the Ingress entry (`*.apps.<spoke-clustername>.<baseDomain>`).
+** 1 for the Ingress entry (`*.apps.<edge-cluster-name>.<baseDomain>`).
