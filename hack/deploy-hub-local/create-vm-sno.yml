@@ -1,7 +1,7 @@
 parameters:
   nodes: 1
   clusters: 2
-  singlenic: false
+  singlenic: true
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
 edgecluster{{ i }}-cluster-m{{ j }}:

@@ -5,7 +5,7 @@ set -o pipefail
 set -o nounset
 set -m
 
-usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> <hub_architecture(installer|sno)>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> [<hub_architecture(compact|sno)>] [<single_nic(true|false)>]" 1>&2; exit 1; }
 
 if [ $# -lt 4 ]; then
     usage
@@ -44,6 +44,7 @@ export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_ODF_VERSION="${odf_version}"
 export HUB_ARCHITECTURE="${5:-compact}"
+export SINGLE_NIC="${6:-true}"
 
 
 
@@ -60,11 +61,11 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
           if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan -k -f create-vm-sno.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
+            kcli create plan -k -f create-vm-sno.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
           else
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan -k -f create-vm.yml -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
+            kcli create plan -k -f create-vm.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" "${OC_CLUSTER_NAME}"
           fi
         else
             echo "Metal3 + ipv4 + disconnected"

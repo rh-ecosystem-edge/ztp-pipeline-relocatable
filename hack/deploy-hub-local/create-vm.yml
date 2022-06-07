@@ -1,7 +1,7 @@
 parameters:
   nodes: 3
   clusters: 2
-  singlenic: false
+  singlenic: true
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
 edgecluster{{ i }}-cluster-m{{ j }}:
@@ -38,7 +38,7 @@ edgecluster{{ i }}-cluster-w0:
 {% if not singlenic %}
   - name: ztpfw
     nic: enp2s0
-    mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
+    mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
 {% endif %}
   disks:
   - size: 120
