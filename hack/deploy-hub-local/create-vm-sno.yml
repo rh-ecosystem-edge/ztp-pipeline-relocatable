@@ -1,6 +1,7 @@
 parameters:
   nodes: 1
   clusters: 2
+  singlenic: true
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
 edgecluster{{ i }}-cluster-m{{ j }}:
@@ -13,9 +14,11 @@ edgecluster{{ i }}-cluster-m{{ j }}:
     mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
     reserveip: true
     ip: 192.168.150.201
+{% if not singlenic %}
   - name: ztpfw
     nic: enp2s0
     mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
+{% endif %}
   disks:
   - size: 200
   - size: 200
