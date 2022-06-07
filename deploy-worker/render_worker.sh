@@ -69,6 +69,9 @@ spec:
          auto-routes: true
        mtu: 1500
        mac-address: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
+EOF
+        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
+                  cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_WORKER_MGMT_INT.102
        type: vlan
        state: up
@@ -81,6 +84,25 @@ spec:
            - ip: $CHANGE_EDGE_WORKER_PUB_INT_IP
              prefix-length: $CHANGE_EDGE_WORKER_PUB_INT_MASK
        mtu: 1500
+EOF
+        else
+          cat <<EOF >>${OUTPUT}
+     - name: $CHANGE_EDGE_WORKER_PUB_INT
+       type: ethernet
+       state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 1000
+       ipv4:
+         enabled: true
+         address:
+           - ip: $CHANGE_EDGE_WORKER_PUB_INT_IP
+             prefix-length: $CHANGE_EDGE_WORKER_PUB_INT_MASK
+       mtu: 1500
+EOF
+        fi
+        cat <<EOF >>${OUTPUT}
    dns-resolver:
      config:
        server:
@@ -89,10 +111,28 @@ spec:
      config:
        - destination: $CHANGE_EDGE_WORKER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_WORKER_PUB_INT_GW
+EOF
+        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
+          cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_WORKER_MGMT_INT.102
+EOF
+        else
+          cat <<EOF >>${OUTPUT}
+         next-hop-interface: $CHANGE_EDGE_WORKER_PUB_INT
+EOF
+        fi
+        cat <<EOF >>${OUTPUT}
  interfaces:
    - name: "$CHANGE_EDGE_WORKER_MGMT_INT"
      macAddress: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
+EOF
+        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} != "null" ]]; then
+          cat <<EOF >>${OUTPUT}
+   - name: "$CHANGE_EDGE_WORKER_PUB_INT"
+     macAddress: '$CHANGE_EDGE_WORKER_PUB_INT_MAC'
+EOF
+        fi
+        cat <<EOF >>${OUTPUT}
 ---
 apiVersion: v1
 kind: Secret
