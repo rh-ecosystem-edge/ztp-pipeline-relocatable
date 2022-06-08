@@ -190,4 +190,5 @@ clean-ci:
 	list=$$(oc get secret -n $(EDGE_NAME) --no-headers |grep bmc|awk '{print $$1}'); \
 	for i in $${list}; do oc patch -n $(EDGE_NAME) secret $${i} --type json -p '[ { "op": "remove", "path": "/metadata/finalizers" } ]'; done; \
 	oc delete --ignore-not-found=true ns $(EDGE_NAME); \
+	oc rollout restart -n openshift-machine-api deployment/metal3; \
 	kcli delete vm -y $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0
