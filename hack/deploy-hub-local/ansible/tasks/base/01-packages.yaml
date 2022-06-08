@@ -86,5 +86,6 @@
     - golang
     - glibc-langpack-es
     - mosh
+    - fpaste
   ignore_errors: true
   tags: [ 01-packages ]
