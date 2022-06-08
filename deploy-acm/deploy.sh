@@ -15,17 +15,13 @@ if ./verify.sh; then
     # Load common vars
     source ${WORKDIR}/shared-utils/common.sh
 
-    echo ">>>> Modify files to replace with pipeline info gathered"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    sed -i "s/CHANGEME/${OC_ACM_VERSION}/g" 03-subscription.yml
-
     echo ">>>> Deploy manifests to install ACM ${OC_ACM_VERSION}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 01-namespace.yml
     sleep 2
     oc apply -f 02-operatorgroup.yml
     sleep 2
-    oc apply -f 03-subscription.yml
+    envsubst < 03-subscription.yml | oc apply -f -
     sleep 40
     InstallPlan=$(oc --kubeconfig=${KUBECONFIG_HUB} get installplan -n open-cluster-management -o name)
     RESOURCE_KIND=${InstallPlan%%/*}
