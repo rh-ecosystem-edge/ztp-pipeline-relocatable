@@ -14,6 +14,8 @@ Installer-provisioned installation of {product-title} requires:
     . The API/API-INT/Ingress should be deployed on the DHCP Ext Network (Factory network)
 
 == Networking
+- Only one physical nic is required (the NIC used for the DHCP Ext Network). In this case, the internal network will be a sub-interface from the external network using a vlan tag in the edge cluster configuration. However, you could define 2 nics in the config yaml file (internal and external), and the internal network will be another physical interface instead of using vlan tag.
+
 - DNS entries configured and resolvable from both internal and external network, with DNS on the DHCP Factory network
     - HUB
         . `api.<hub-domain>.<domain>` and `api-int.<hub-domain>.<domain>` entries to the same IP address
