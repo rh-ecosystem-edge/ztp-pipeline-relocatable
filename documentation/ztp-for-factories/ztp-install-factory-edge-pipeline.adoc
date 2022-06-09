@@ -155,7 +155,7 @@ edgeclusters:
 <4> NIC connected to the external DHCP.
 <5> NIC connected to the internal network (This interface is optional).
 <6> MAC address for the NIC connected to the external DHCP network.
-<7> MAC address for the NIC connected to the internal network (This MAC address is optional).
+<7> MAC address for the NIC connected to the internal network (This MAC address is optional if we're using only 1 interface nic in <5>).
 <8> URL for the Baseboard Management Controller (BMC).
 <9> The BMC username.
 <10> The BMC password.

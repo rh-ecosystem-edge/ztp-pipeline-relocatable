@@ -20,7 +20,7 @@ We will need some prerequisited here:
 This is how we execute the Pipeline:
 
 ```sh
-tkn pipeline start -n edgecluster-deployer -p git-revision=tekton -p edgeclusters-config="$(cat /root/jparrill/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
+tkn pipeline start -n edgecluster-deployer -p git-revision=tekton -p edgeclusters-config="$(cat /root/src/ztp-pipeline-relocatable/hack/deploy-hub-local/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
 ```
 
 After this command you will see this on the prompt:
