@@ -1,3 +1,9 @@
+## [1.8.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.3...1.8.4) (2022-06-10)
+
+### Bug Fixes
+
+- **registry:** Add certificate to OpenShift objects to be able to pull after ICSP ([0495654](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/04956541ca18672459aaa5ab5bda10eedc6f1e36))
+
 ## [1.8.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.2...1.8.3) (2022-06-02)
 
 ### Bug Fixes
