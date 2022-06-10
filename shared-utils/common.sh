@@ -71,8 +71,7 @@ function trust_node_certificates() {
     cluster=${1}
     i=${2}
     cp -f ${PATH_CA_CERT} ${EDGE_SAFE_FOLDER}
-
-    echo ">>>> Copying Registry Certificates to cluster: ${cluster}"
+    echo ">>>> Copying Registry Certificates to cluster: ${cluster} masters"
     for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}'); do
         echo
         EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
@@ -93,6 +92,29 @@ function trust_node_certificates() {
             sleep 50
         fi
     done
+
+    echo ">>>> Copying Registry Certificates to cluster: ${cluster} workers"
+    for agent in $(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} -o jsonpath='{.items[?(@.status.role=="worker")].metadata.name}'); do
+        echo
+        EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
+        worker=${EDGE_NODE_NAME##*-}
+        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].${cluster}.worker${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
+        EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
+        NODE_IP=${EDGE_NODE_IP_RAW%%/*}
+        if [[ -n ${NODE_IP} ]]; then
+            echo "Worker Node: ${worker}"
+            echo "AGENT: ${agent}"
+            echo "IP: ${NODE_IP%%/*}"
+            echo ">>>>>>>>>"
+            copy_files_common "${PATH_CA_CERT}" "${NODE_IP%%/*}" "./edgecluster-reg-cert.crt"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo mv ~/edgecluster-reg-cert.crt /etc/pki/ca-trust/source/anchors/"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo update-ca-trust"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo systemctl restart crio kubelet"
+            ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "test -f ~/.kube/config && oc delete pod -n openshift-marketplace --all"
+            sleep 50
+        fi
+    done
+
 }
 
 function recover_edgecluster_rsa() {
