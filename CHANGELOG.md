@@ -1,3 +1,9 @@
+# [1.9.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.4...1.9.0) (2022-06-10)
+
+### Features
+
+- Do the detach ([c41286e](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/c41286eb2fadd9a2ce942a12355d14378622ef11))
+
 ## [1.8.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.3...1.8.4) (2022-06-10)
 
 ### Bug Fixes
