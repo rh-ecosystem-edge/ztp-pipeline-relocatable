@@ -39,6 +39,9 @@ export const SettingsPageRight: React.FC<{
     : _error;
 
   const {
+    isDirty,
+    setClean,
+
     apiaddr,
     apiaddrValidation,
     handleSetApiaddr,
@@ -52,6 +55,14 @@ export const SettingsPageRight: React.FC<{
     handleSetDomain,
   } = state;
 
+  const onSuccess = () => {
+    setError(null);
+    setEdit(false);
+    setClean();
+
+    navigateToNewDomain(domain, '/settings#redirected');
+  };
+
   const onSave = async () => {
     setIsSaving(true);
     setError(undefined);
@@ -59,18 +70,14 @@ export const SettingsPageRight: React.FC<{
     setIsSaving(false);
   };
 
-  const onSuccess = () => {
-    setError(null);
-    setEdit(false);
-
-    navigateToNewDomain(domain, '/settings#redirected');
-  };
   const isAfterRedirection = window.location.hash === '#redirected';
 
   const onCancelEdit = () => {
     setEdit(false);
     forceReload();
   };
+
+  const isSaveDisabled = isSaving || !isDirty();
 
   return (
     <Form className="settings-page-sumamary__form">
@@ -192,7 +199,7 @@ export const SettingsPageRight: React.FC<{
                 data-testid="settings-page-button-save"
                 variant={ButtonVariant.primary}
                 onClick={onSave}
-                isDisabled={isSaving}
+                isDisabled={isSaveDisabled}
               >
                 Save
               </Button>
