@@ -164,6 +164,9 @@ function clean_openshift_pipelines() {
 }
 
 
+export BRANCH=${1:-main}
+export KUBECONFIG_HUB="${KUBECONFIG}"
+
 if [[ "${0}" == *"bootstrap.sh" ]]; then
     echo "Running locally"
     export WORKDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -175,9 +178,6 @@ else
     export PIPELINES_DIR=${WORKDIR}/pipelines
     clone_ztp
 fi
-
-export BRANCH=${1:-main}
-export KUBECONFIG_HUB="${KUBECONFIG}"
 
 get_clients
 get_tkn
