@@ -1,6 +1,7 @@
 parameters:
   nodes: 3
-  clusters: 2 
+  clusters: 2
+  singlenic: true
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
 edgecluster{{ i }}-cluster-m{{ j }}:
@@ -11,9 +12,11 @@ edgecluster{{ i }}-cluster-m{{ j }}:
   nets:
   - name: bare-net
     mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
+{% if not singlenic %}
   - name: ztpfw
     nic: enp2s0
     mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
+{% endif %}
   disks:
   - size: 120
   - size: 50
@@ -32,9 +35,11 @@ edgecluster{{ i }}-cluster-w0:
   nets:
   - name: bare-net
     mac: ee:ee:ee:0{{ i }}:0{{ i }}:0e
+{% if not singlenic %}
   - name: ztpfw
     nic: enp2s0
     mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
+{% endif %}
   disks:
   - size: 120
   - size: 50
