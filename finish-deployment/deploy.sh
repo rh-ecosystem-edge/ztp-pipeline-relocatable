@@ -153,6 +153,6 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     recover_edgecluster_rsa ${edgecluster}
     recover_edgecluster_files ${edgecluster} ${i}
     store_rsa_secrets ${edgecluster}
-    #detach_cluster ${edgecluster}
+    detach_cluster ${edgecluster}
     i=$((i + 1))
 done
