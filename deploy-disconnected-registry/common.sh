@@ -68,9 +68,11 @@ function trust_internal_registry() {
     if [[ ${1} == 'hub' ]]; then
         KBKNFG=${KUBECONFIG_HUB}
         clus="hub"
+        MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry -o jsonpath='{.spec.host}')
     elif [[ ${1} == 'edgecluster' ]]; then
         KBKNFG=${EDGE_KUBECONFIG}
         clus=${2}
+        MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry-quay -o jsonpath='{.spec.host}')
     fi
 
     echo ">>>> Trusting internal registry: ${1}"
@@ -79,7 +81,7 @@ function trust_internal_registry() {
     echo ">> Mode: ${1}"
     echo ">> Cluster: ${clus}"
     ## Update trusted CA from Helper
-    #TODO despues el sync pull secret global porque crictl no puede usar flags y usa el generico with https://access.redhat.com/solutions/4902871
+    #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
     export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
     export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
     echo ">> Cert: ${PATH_CA_CERT}"
@@ -90,6 +92,12 @@ function trust_internal_registry() {
     update-ca-trust extract
     echo ">> Done!"
     echo
+
+    # Add certificate to OpenShift configuration
+
+    oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry -n openshift-config --from-file=${MYREGISTRY}=${PATH_CA_CERT}
+    oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry"}}}' --type=merge
+
 }
 
 if [[ $# -lt 1 ]]; then

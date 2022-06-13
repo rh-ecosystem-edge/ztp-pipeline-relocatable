@@ -163,26 +163,35 @@ function clean_openshift_pipelines() {
 
 }
 
-export BASEDIR=$(dirname "$0")
+
+if [[ "${0}" == *"bootstrap.sh" ]]; then
+    echo "Running locally"
+    export WORKDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    export PIPELINES_DIR=${WORKDIR}
+else 
+    echo "Running from Remote source"
+    export BASEDIR=$(dirname "$0")
+    export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
+    export PIPELINES_DIR=${WORKDIR}/pipelines
+    clone_ztp
+fi
+
 export BRANCH=${1:-main}
-export WORKDIR=${BASEDIR}/ztp-pipeline-relocatable
 export KUBECONFIG_HUB="${KUBECONFIG}"
-export PIPELINES_DIR=${WORKDIR}/pipelines
 
 get_clients
 get_tkn
 get_yq
-clone_ztp
+
 export EDGE_DEPLOYER_NS=$(yq eval '.namespace' "${PIPELINES_DIR}/resources/kustomization.yaml")
 export EDGE_DEPLOYER_SA=${EDGE_DEPLOYER_NS}
 export EDGE_DEPLOYER_ROLEBINDING=ztp-cluster-admin
 
-if [[ ${#} -ge 2 ]]; then
-    if [[ ${2} == 'clean' ]]; then
-        clean_openshift_pipelines
-        echo "Done!"
-        exit 0
-    fi
+
+if [[ ${@} == *'clean'* ]]; then
+    clean_openshift_pipelines
+    echo "Done!"
+    exit 0
 fi
 
 if [[ -z ${KUBECONFIG} ]]; then
@@ -193,3 +202,4 @@ fi
 create_permissions
 deploy_openshift_pipelines
 deploy_pipeline
+

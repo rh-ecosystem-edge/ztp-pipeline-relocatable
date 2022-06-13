@@ -5,7 +5,7 @@ on:
   pull_request_review:
     types: [submitted, edited]
   pull_request:
-    types: [labeled]
+    types: [labeled, synchronize]
   #pull_request_target:
   #  types: [labeled]
   workflow_dispatch:
@@ -93,16 +93,7 @@ jobs:
       - name: remove all old deployments and vms
         run: |
           export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-          oc delete --ignore-not-found=true managedcluster edgecluster0-cluster || true
-          oc delete --ignore-not-found=true ns edgecluster0-cluster || true
-          kcli delete vm edgecluster0-cluster-m0 -y || true
-          kcli delete vm edgecluster0-cluster-m1 -y || true
-          kcli delete vm edgecluster0-cluster-m2 -y || true
-          kcli delete vm edgecluster0-cluster-w0 -y || true
-          list=$(tkn pr ls -n edgecluster-deployer |grep -i running | cut -d' ' -f1)
-          for i in $list; do
-            tkn pr cancel $i -n edgecluster-deployer || true
-          done
+          EDGE_NAME=edgecluster0-cluster make clean-ci || true
 
       - name: Launching pipeline execution
         run: |
