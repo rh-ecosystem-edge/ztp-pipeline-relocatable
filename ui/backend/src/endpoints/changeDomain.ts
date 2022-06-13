@@ -397,11 +397,11 @@ const changeDomainImpl = async (
   }
 
   const ingressPatches: PatchType[] = [
-    {
-      op: ingress?.spec?.domain ? 'replace' : 'add',
-      path: '/spec/domain',
-      value: ingressDomain,
-    },
+    // { Do not change domain but add a new one
+    //   op: ingress?.spec?.domain ? 'replace' : 'add',
+    //   path: '/spec/domain',
+    //   value: ingressDomain,
+    // },
     {
       op: ingress?.spec?.componentRoutes ? 'replace' : 'add',
       path: '/spec/componentRoutes',
