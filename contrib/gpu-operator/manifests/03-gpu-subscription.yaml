@@ -10,4 +10,3 @@ spec:
   name: gpu-operator-certified
   source: ztpfw-catalog-certfied
   sourceNamespace: openshift-marketplace
-  startingCSV: "gpu-operator-certified.$CHANGEME_VERSION"
