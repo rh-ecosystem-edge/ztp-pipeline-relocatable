@@ -47,7 +47,7 @@ function check_resource() {
     timeout=0
     ready=false
     while [ "${timeout}" -lt "1000" ]; do
-        if [[ $(oc --kubeconfig=${KUBE} -n ${NAMESPACE} get ${RESOURCE} ${RESOURCE_NAME} -o jsonpath="{.status.conditions[?(@.type==\"${TYPE_STATUS}\")].status}") == 'True' ]]; then
+        if [[ $(oc --kubeconfig="${KUBE}" -n ${NAMESPACE} get ${RESOURCE} ${RESOURCE_NAME} -o jsonpath="{.status.conditions[?(@.type==\"${TYPE_STATUS}\")].status}") == 'True' ]]; then
             ready=true
             break
         fi
@@ -197,7 +197,7 @@ function copy_files_common() {
     dst_folder=${3}
 
     if [[ -z ${src_files} ]]; then
-        echo "Source files variable empty: ${src_files[@]}"
+        echo "Source files variable empty:" "${src_files[@]}"
         exit 1
     fi
 
@@ -216,8 +216,8 @@ function copy_files_common() {
         exit 1
     fi
 
-    echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
-    ${SCP_COMMAND} -i ${RSA_KEY_FILE} ${src_files[@]} core@${dst_node}:${dst_folder}
+    echo "Copying source files:" "${src_files[@]}" "to Node ${dst_node}"
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} "${src_files[@]}" core@${dst_node}:${dst_folder}
 }
 
 function grab_domain() {
@@ -311,9 +311,10 @@ fi
 export KUBECONFIG_HUB=${KUBECONFIG}
 export PULL_SECRET=${OUTPUTDIR}/pull-secret.json
 
-if [[ ! -f ${PULL_SECRET} ]]; then
+if [[ ! -z "${PRESERVE_SECRET:-false}" ]]; then
     echo "Pull secret file ${PULL_SECRET} does not exist, grabbing from OpenShift"
     oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d >${PULL_SECRET}
+    export PRESERVE_SECRET=true
 fi
 
 export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})

@@ -11,7 +11,7 @@ function copy_files() {
     dst_folder=${3}
 
     if [[ -z ${src_files} ]]; then
-        echo "Source files variable empty: ${src_files[@]}"
+        echo "Source files variable empty:" "${src_files[@]}"
         exit 1
     fi
 
@@ -25,8 +25,8 @@ function copy_files() {
         exit 1
     fi
 
-    echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
-    ${SCP_COMMAND} -i ${RSA_KEY_FILE} ${src_files[@]} core@${dst_node}:${dst_folder}
+    echo "Copying source files:" "${src_files[@]}" "to Node ${dst_node}"
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} "${src_files[@]}" core@${dst_node}:${dst_folder}
 }
 
 function grab_master_ext_ips() {

@@ -17,6 +17,7 @@ function get_config() {
     edgecluster_name=${2}
     index=${3}
 
+    # Switch this to a boolean
     export CHANGEME_VERSION=$(yq eval ".edgeclusters[${index}].${edgecluster_name}.contrib.gpu-operator.version" ${edgeclusters_file})
 }
 
