@@ -1,5 +1,5 @@
 CI_FOLDER = images
-PIPE_IMAGE = quay.io/ztpfw/pipeline
+PIPE_IMAGE ?= quay.io/ztpfw/pipeline
 UI_IMAGE = quay.io/ztpfw/ui
 BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
@@ -99,7 +99,7 @@ wait-for-hub-sno:
 
 deploy-pipe-hub-sno:
 	tkn pipeline start -n edgecluster-deployer \
-			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
@@ -110,7 +110,7 @@ deploy-pipe-hub-sno:
 
 deploy-pipe-hub-compact:
 	tkn pipeline start -n edgecluster-deployer \
-			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
@@ -121,7 +121,7 @@ deploy-pipe-hub-compact:
 
 deploy-pipe-edgecluster-sno:
 	tkn pipeline start -n edgecluster-deployer \
-    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+    			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
@@ -132,7 +132,7 @@ deploy-pipe-edgecluster-sno:
 
 deploy-pipe-edgecluster-compact:
 	tkn pipeline start -n edgecluster-deployer \
-    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(BRANCH)" \
+    			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
@@ -143,7 +143,7 @@ deploy-pipe-edgecluster-compact:
 
 deploy-pipe-hub-ci:
 	tkn pipeline start -n edgecluster-deployer \
-			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
+			-p ztp-container-image="$(PIPE_IMAGE):$(RELEASE)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
@@ -154,7 +154,7 @@ deploy-pipe-hub-ci:
 
 deploy-pipe-edgecluster-sno-ci:
 	tkn pipeline start -n edgecluster-deployer \
-    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
+    			-p ztp-container-image="$(PIPE_IMAGE):$(RELEASE)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
@@ -165,7 +165,7 @@ deploy-pipe-edgecluster-sno-ci:
 
 deploy-pipe-edgecluster-compact-ci:
 	tkn pipeline start -n edgecluster-deployer \
-    			-p ztp-container-image="quay.io/ztpfw/pipeline:$(RELEASE)" \
+    			-p ztp-container-image="$(PIPE_IMAGE):$(RELEASE)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
     			-w name=ztp,claimName=ztp-pvc \
