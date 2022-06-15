@@ -11,9 +11,7 @@ edgeclusters:
       master0:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4 # ext_dhcp -> DHCP
-        nic_int_static: eno5 # int_static -> Internal IP for cluster communication
         mac_ext_dhcp: "aa:ss:dd:ee:b0:10"
-        mac_int_static: "aa:ss:dd:ee:b1:10"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc" #TODO  may be clear test and render with script
         bmc_pass: "user-pass" #TODO  may be clear test and render with script
@@ -26,9 +24,7 @@ edgeclusters:
       master1:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
-        nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:11"
-        mac_int_static: "aa:ss:dd:ee:b1:11"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
@@ -41,9 +37,7 @@ edgeclusters:
       master2:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
-        nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:12"
-        mac_int_static: "aa:ss:dd:ee:b1:12"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
@@ -55,9 +49,7 @@ edgeclusters:
           - /dev/sdd
       worker0:
         nic_ext_dhcp: eno4
-        nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:19"
-        mac_int_static: "aa:ss:dd:ee:b1:19"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
@@ -69,9 +61,9 @@ edgeclusters:
       master0:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
-        nic_int_static: eno5
+        nic_int_static: eno5 # int_static -> Internal IP for cluster communication
         mac_ext_dhcp: "aa:ss:dd:ee:b0:20"
-        mac_int_static: "aa:ss:dd:ee:b1:20"
+        mac_int_static: "aa:ss:dd:ee:b1:10"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
@@ -86,7 +78,7 @@ edgeclusters:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:21"
-        mac_int_static: "aa:ss:dd:ee:b1:21"
+        mac_int_static: "aa:ss:dd:ee:b1:11"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
@@ -101,7 +93,7 @@ edgeclusters:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:22"
-        mac_int_static: "aa:ss:dd:ee:b1:22"
+        mac_int_static: "aa:ss:dd:ee:b1:21"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
@@ -116,7 +108,7 @@ edgeclusters:
         nic_ext_dhcp: eno4
         nic_int_static: eno5
         mac_ext_dhcp: "aa:ss:dd:ee:b0:29"
-        mac_int_static: "aa:ss:dd:ee:b1:29"
+        mac_int_static: "aa:ss:dd:ee:b1:31"
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"

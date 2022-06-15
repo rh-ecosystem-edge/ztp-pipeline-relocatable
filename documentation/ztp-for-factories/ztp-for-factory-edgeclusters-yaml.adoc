@@ -11,9 +11,7 @@ xref:edgeclusters[edgeclusters]:
       xref:mastername[master0]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
-        xref:nic_int_static[nic_int_static]: eno5
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:10"
-        xref:mac_int_static[mac_int_static]: "aa:ss:dd:ee:b1:10"
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
@@ -26,9 +24,7 @@ xref:edgeclusters[edgeclusters]:
       xref:mastername[master1]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
-        xref:nic_int_static[nic_int_static]: eno5
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:11"
-        xref:mac_int_static[mac_int_static]: "aa:ss:dd:ee:b1:11"
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
@@ -41,9 +37,7 @@ xref:edgeclusters[edgeclusters]:
       xref:mastername[master2]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
-        xref:nic_int_static[nic_int_static]: eno5
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:12"
-        xref:mac_int_static[mac_int_static]: "aa:ss:dd:ee:b1:12"
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
@@ -55,9 +49,7 @@ xref:edgeclusters[edgeclusters]:
           - sdd
     xref:workername[worker0]:
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
-        xref:nic_int_static[nic_int_static]: eno5
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:19"
-        xref:mac_int_static[mac_int_static]: "aa:ss:dd:ee:b1:19"
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"

@@ -100,3 +100,10 @@ jobs:
               /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
             fi
           fi
+
+      - name: Delete Ansible CI Test Environment
+        continue-on-error: true
+        run: |
+          if [ $(which kcli) ]; then
+            kcli delete vm -y ansible-ci-target
+          fi

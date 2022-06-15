@@ -90,7 +90,7 @@ function checks() {
         fi
     done
 
-    if [[ $fail > 0 ]];then
+    if [[ $fail -gt 0 ]];then
         echo "ERROR: DNS Configuration has issues, check before continue"
         exit 1
     fi
