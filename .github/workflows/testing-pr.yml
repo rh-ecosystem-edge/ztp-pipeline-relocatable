@@ -10,6 +10,10 @@ on:
   #  types: [labeled]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build-and-push-docker-image:
     if: (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci')

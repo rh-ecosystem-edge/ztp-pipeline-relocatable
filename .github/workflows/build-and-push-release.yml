@@ -3,6 +3,9 @@ name: Build and Publish
 on:
   push:
     branches: [main]
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
   build-and-push-container-images:
     name: Build Container images and push to repositories
