@@ -36,10 +36,10 @@ if ./verify.sh; then
 
     echo ">>>> Wait until MCE ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    for helmchart in $(oc --kubeconfig=${KUBECONFIG_HUB} get helmreleases -o name); do
-        RESOURCE_KIND=${helmchart%%/*}
-        RESOURCE_NAME=${helmchart##*/}
-        check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Deployed" "multicluster-engine" "${KUBECONFIG_HUB}"
+    for dep in $(oc --kubeconfig=${KUBECONFIG_HUB} get deployment -n multicluster-engine -o name); do
+        RESOURCE_KIND=${dep%%/*}
+        RESOURCE_NAME=${dep##*/}
+        check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Available" "multicluster-engine" "${KUBECONFIG_HUB}"
     done
 else
     echo ">>>> This step is not neccesary, everything looks ready"
