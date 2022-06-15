@@ -1,3 +1,9 @@
+## [1.9.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.0...1.9.1) (2022-06-15)
+
+### Bug Fixes
+
+- **hub-config/deploy:** Remove obsolete Hive patch ([e5e7530](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/e5e7530d9d64a7c46cf7399a7782bec592938756))
+
 # [1.9.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.8.4...1.9.0) (2022-06-10)
 
 ### Features
