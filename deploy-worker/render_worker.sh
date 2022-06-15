@@ -71,7 +71,7 @@ spec:
        mac-address: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
 EOF
         if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
-                  cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_WORKER_MGMT_INT.102
        type: vlan
        state: up
@@ -86,7 +86,7 @@ EOF
        mtu: 1500
 EOF
         else
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_WORKER_PUB_INT
        type: ethernet
        state: up
@@ -113,11 +113,11 @@ EOF
          next-hop-address: $CHANGE_EDGE_WORKER_PUB_INT_GW
 EOF
         if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_WORKER_MGMT_INT.102
 EOF
         else
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_WORKER_PUB_INT
 EOF
         fi
@@ -127,7 +127,7 @@ EOF
      macAddress: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
 EOF
         if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} != "null" ]]; then
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
    - name: "$CHANGE_EDGE_WORKER_PUB_INT"
      macAddress: '$CHANGE_EDGE_WORKER_PUB_INT_MAC'
 EOF

@@ -9,9 +9,9 @@ include::modules/common-attributes.adoc[]
 [discrete]
 === Base prerequisites
 
-* Deploy the {product-title} cluster with three control plane nodes following the guidance in the section link:https://docs.openshift.com/container-platform/4.10/installing/installing_bare_metal_ipi/ipi-install-prerequisites.html[Deploying installer-provisioned clusters on bare metal]. 
+* Deploy the {product-title} cluster with three control plane nodes following the guidance in the section link:https://docs.openshift.com/container-platform/4.10/installing/installing_bare_metal_ipi/ipi-install-prerequisites.html[Deploying installer-provisioned clusters on bare metal].
 
-** Alternatively you can use the technology preview Assisted Installer from link:https://cloud.redhat.com/[cloud.redhat.com] to create the cluster. 
+** Alternatively you can use the technology preview Assisted Installer from link:https://cloud.redhat.com/[cloud.redhat.com] to create the cluster.
 
 * To install single-node OpenShift follow the guidance in link:https://docs.openshift.com/container-platform/4.10/installing/installing_sno/install-sno-installing-sno.html[Installing on a single node] in the {product-title} documentation.
 
