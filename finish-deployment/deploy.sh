@@ -91,7 +91,7 @@ function save_files() {
         echo
         EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
         master=${EDGE_NODE_NAME##*-}
-        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].${cluster}.master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
+        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
         NODE_IP=${EDGE_NODE_IP_RAW%%/*}
         if [[ -n ${NODE_IP} ]]; then
