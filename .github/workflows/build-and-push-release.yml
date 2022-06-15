@@ -13,6 +13,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Housekeeping clean old podman resources
+        continue-on-error: true
+        id: housekeeping
+        run: |
+          DATE=$(date --date="21 days ago" + "%Y-%m-%d")
+          podman rm --force $(podman ps -a -q --filter until=$DATE)
+          podman rmi --force $(podman images -a -q --filter until=${DATE})
+
       - name: Login to Quay
         env:
           QUAY_USER: ${{ secrets.QUAY_ROBOT_USER }}
