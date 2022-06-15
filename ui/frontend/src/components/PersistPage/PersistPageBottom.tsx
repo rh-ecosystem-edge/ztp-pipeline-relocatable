@@ -8,11 +8,8 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core';
-import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons';
-import {
-  global_primary_color_light_100 as progressColor,
-  global_success_color_100 as successColor,
-} from '@patternfly/react-tokens';
+import { InProgressIcon } from '@patternfly/react-icons';
+import { global_primary_color_light_100 as progressColor } from '@patternfly/react-tokens';
 
 import { navigateToNewDomain, persist } from './persist';
 import { PersistErrorType } from './types';
@@ -88,10 +85,7 @@ export const PersistPageBottom: React.FC = () => {
       ) : (
         <>
           <StackItem>
-            <CheckCircleIcon
-              color={successColor.value}
-              className="persist-page-bottom__success-icon"
-            />
+            <InProgressIcon className="persist-page-bottom__success-icon" />
           </StackItem>
           <StackItem className="wizard-sublabel">
             Settings succesfully saved, it might take several minutes for cluster to reconcile.
