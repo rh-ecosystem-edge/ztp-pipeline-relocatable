@@ -11,7 +11,7 @@ import { initialDataLoad } from './initialDataLoad';
 export const WelcomePage: React.FC = () => {
   const [nextPage, setNextPage] = React.useState<string>();
   const [error, setError] = React.useState<string>();
-  const { handleSetApiaddr, handleSetIngressIp, handleSetDomain } = useK8SStateContext();
+  const { handleSetApiaddr, handleSetIngressIp, handleSetDomain, setClean } = useK8SStateContext();
 
   // Load initial data, switch between Inital vs. Edit flow
   React.useEffect(
@@ -22,6 +22,7 @@ export const WelcomePage: React.FC = () => {
         handleSetApiaddr,
         handleSetIngressIp,
         handleSetDomain,
+        setClean,
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

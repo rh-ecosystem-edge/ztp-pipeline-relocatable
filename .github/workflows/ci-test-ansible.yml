@@ -16,6 +16,10 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   ansible-test-ci:
@@ -99,4 +103,11 @@ jobs:
               MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Ansible CI Test FAILED.")
               /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
             fi
+          fi
+
+      - name: Delete Ansible CI Test Environment
+        continue-on-error: true
+        run: |
+          if [ $(which kcli) ]; then
+            kcli delete vm -y ansible-ci-target
           fi

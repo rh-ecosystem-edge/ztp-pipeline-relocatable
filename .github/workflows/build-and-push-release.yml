@@ -3,6 +3,9 @@ name: Build and Publish
 on:
   push:
     branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-and-push-container-images:
     name: Build Container images and push to repositories
@@ -12,6 +15,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Housekeeping clean old podman resources
+        continue-on-error: true
+        id: housekeeping
+        run: |
+          DATE=$(date --date="21 days ago" + "%Y-%m-%d")
+          podman rm --force $(podman ps -a -q --filter until=$DATE)
+          podman rmi --force $(podman images -a -q --filter until=${DATE})
 
       - name: Login to Quay
         env:
