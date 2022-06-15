@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-window.API_LOGGING = true;
+window.API_LOGGING = false;
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore

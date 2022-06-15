@@ -14,7 +14,7 @@ export const IDENTITY_PROVIDER_NAME = 'ztpfw-htpasswd-idp';
 export const ZTPFW_NAMESPACE = 'ztpfw-ui';
 
 export const DELAY_BEFORE_FINAL_REDIRECT = 10 * 1000;
-export const DELAY_BEFORE_QUERY_RETRY = 5000; /* ms */
+export const DELAY_BEFORE_QUERY_RETRY = 5 * 1000; /* ms */
 export const MAX_LIVENESS_CHECK_COUNT = 20 * ((60 * 1000) / DELAY_BEFORE_QUERY_RETRY); // max 20 minutes
 
 export const SSH_PRIVATE_KEY_SECRET = {

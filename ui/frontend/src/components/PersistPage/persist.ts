@@ -4,6 +4,7 @@ import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { K8SStateContextData } from '../types';
 import { delay } from '../utils';
 import {
+  DELAY_BEFORE_FINAL_REDIRECT,
   DELAY_BEFORE_QUERY_RETRY,
   MAX_LIVENESS_CHECK_COUNT,
   UI_POD_NOT_READY,
@@ -118,6 +119,9 @@ export const persist = async (
   }
 
   if (persistIdpResult === PersistIdentityProviderResult.userCreated) {
+    // Let the operator reconciliation start
+    await delay(DELAY_BEFORE_FINAL_REDIRECT);
+
     if (!(await waitForClusterOperator(setError, 'authentication'))) {
       return false;
     }
@@ -134,7 +138,6 @@ export const persist = async (
 
     setError(null); // show the green circle of success
 
-    // TODO: show progress bar while waiting
     if (!(await waitOnReconciliation(setError, setProgress, state, persistIdpResult))) {
       return;
     }
