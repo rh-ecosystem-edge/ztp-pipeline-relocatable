@@ -33,7 +33,7 @@ export const Settings: React.FC = () => {
   const [error, setError] = React.useState<string>();
   const [isDataLoaded, setDataLoaded] = React.useState<boolean>(false);
   const [isReload, setReload] = React.useState(true);
-  const { handleSetApiaddr, handleSetIngressIp, handleSetDomain } = useK8SStateContext();
+  const { handleSetApiaddr, handleSetIngressIp, handleSetDomain, setClean } = useK8SStateContext();
 
   // Following is needed when navigated directly by setting the URL in the browser
   // It is not needed when navigated from the WelcomePage but let's refresh to show recent data anyway
@@ -46,9 +46,10 @@ export const Settings: React.FC = () => {
         handleSetApiaddr,
         handleSetIngressIp,
         handleSetDomain,
+        setClean,
       });
     }
-  }, [handleSetApiaddr, handleSetIngressIp, handleSetDomain, isReload]);
+  }, [handleSetApiaddr, handleSetIngressIp, handleSetDomain, isReload, setClean]);
 
   return isDataLoaded ? (
     <SettingsContent error={error} forceReload={() => setReload(true)} />

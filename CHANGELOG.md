@@ -1,3 +1,9 @@
+## [1.9.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.1...1.9.2) (2022-06-15)
+
+### Bug Fixes
+
+- **Makefile:** reverse clean order ([2a1deed](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/2a1deeddefe5e851dd179f383766f23651611cbc))
+
 ## [1.9.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.0...1.9.1) (2022-06-15)
 
 ### Bug Fixes

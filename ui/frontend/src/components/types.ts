@@ -19,24 +19,30 @@ export type IpTripletSelectorValidationType = {
   triplets: IpTripletProps['validated'][];
 };
 
-export type K8SStateContextData = {
+export type K8SStateContextDataFields = {
   username: string;
+  password: string;
+  apiaddr: string; // 12 characters
+  ingressIp: string; // 12 characters
+  domain: string;
+};
+
+export type K8SStateContextData = K8SStateContextDataFields & {
+  isDirty: () => boolean;
+  setClean: () => void;
+
   usernameValidation?: string; // just a message or empty
   handleSetUsername: (newVal: string) => void;
 
-  password: string;
   passwordValidation: boolean;
   handleSetPassword: (newVal: string) => void;
 
-  apiaddr: string; // 12 characters
   apiaddrValidation: IpTripletSelectorValidationType;
   handleSetApiaddr: (newApiaddr: string) => void;
 
-  ingressIp: string; // 12 characters
   ingressIpValidation: IpTripletSelectorValidationType;
   handleSetIngressIp: (newIp: string) => void;
 
-  domain: string;
   handleSetDomain: (newDomain: string) => void;
   domainValidation?: string;
 };

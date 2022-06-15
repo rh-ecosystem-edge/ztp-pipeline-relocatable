@@ -296,7 +296,7 @@ EOF
         echo "Edge-cluster: ${cluster}"
         echo "Master: ${master}"
         if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_MASTER_MGMT_INT.102
        type: vlan
        state: up
@@ -311,7 +311,7 @@ EOF
        mtu: 1500
 EOF
         else
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_MASTER_PUB_INT
        type: ethernet
        state: up
@@ -347,11 +347,11 @@ EOF
          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
 EOF
         if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
 EOF
         else
-          cat <<EOF >>${OUTPUT}
+            cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
 EOF
         fi
@@ -367,13 +367,13 @@ EOF
    - name: "$CHANGE_EDGE_MASTER_MGMT_INT"
      macAddress: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
 EOF
-       if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} != "null" ]]; then
-          cat <<EOF >>${OUTPUT}
+        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} != "null" ]]; then
+            cat <<EOF >>${OUTPUT}
    - name: "$CHANGE_EDGE_MASTER_PUB_INT"
      macAddress: '$CHANGE_EDGE_MASTER_PUB_INT_MAC'
 EOF
-       fi
-       cat <<EOF >>${OUTPUT}
+        fi
+        cat <<EOF >>${OUTPUT}
 ---
 apiVersion: v1
 kind: Secret

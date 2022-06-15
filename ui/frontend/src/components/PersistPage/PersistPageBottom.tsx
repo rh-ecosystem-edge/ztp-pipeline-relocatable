@@ -35,9 +35,15 @@ export const PersistPageBottom: React.FC = () => {
     setRetry(false);
     setError(undefined);
 
-    persist(state, setError, progress.setProgress, () =>
-      navigateToNewDomain(state.domain, '/wizard/final'),
-    );
+    if (state.isDirty()) {
+      console.warn('Starting persistence from the PersistPage');
+      persist(state, setError, progress.setProgress, () =>
+        // skip setClean() since it is useless when redirecting
+        navigateToNewDomain(state.domain, '/wizard/final'),
+      );
+    } else {
+      console.warn('No change to persist on the PersistPage');
+    }
   }, [retry, setError, progress.setProgress, state]);
 
   return (
