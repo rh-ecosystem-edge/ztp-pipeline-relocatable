@@ -15,12 +15,14 @@ export const initialDataLoad = async ({
   handleSetApiaddr,
   handleSetIngressIp,
   handleSetDomain,
+  setClean,
 }: {
   setNextPage?: (href: string) => void;
   setError: (message?: string) => void;
   handleSetApiaddr: K8SStateContextData['handleSetApiaddr'];
   handleSetIngressIp: K8SStateContextData['handleSetIngressIp'];
   handleSetDomain: K8SStateContextData['handleSetDomain'];
+  setClean: K8SStateContextData['setClean'];
 }) => {
   let ingressService, apiService, oauth, ingressConfig;
   try {
@@ -68,6 +70,8 @@ export const initialDataLoad = async ({
   if (domain) {
     handleSetDomain(domain);
   }
+
+  setClean();
 
   if (getHtpasswdIdentityProvider(oauth)) {
     // The Edit flow for the 2nd and later run

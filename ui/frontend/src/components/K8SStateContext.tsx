@@ -1,6 +1,11 @@
 import React from 'react';
+import { isEqual } from 'lodash';
 
-import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
+import {
+  IpTripletSelectorValidationType,
+  K8SStateContextData,
+  K8SStateContextDataFields,
+} from './types';
 import {
   domainValidator,
   ipTripletAddressValidator,
@@ -71,44 +76,62 @@ export const K8SStateContextProvider: React.FC<{
     setDomain(newDomain);
   }, []);
 
-  const value = React.useMemo(
+  const fieldValues: K8SStateContextDataFields = React.useMemo(
     () => ({
       username,
+      password,
+      apiaddr,
+      ingressIp,
+      domain,
+    }),
+    [username, password, apiaddr, ingressIp, domain],
+  );
+
+  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>();
+  const setClean = React.useCallback(() => {
+    setSnapshot(fieldValues);
+  }, [fieldValues]);
+  const isDirty = React.useCallback(
+    (): boolean => !isEqual(fieldValues, snapshot),
+    [fieldValues, snapshot],
+  );
+
+  const value = React.useMemo(
+    () => ({
+      ...fieldValues,
+
+      isDirty,
+      setClean,
+
       usernameValidation,
       handleSetUsername,
 
-      password,
       passwordValidation,
       handleSetPassword,
 
-      apiaddr,
       apiaddrValidation,
       handleSetApiaddr,
 
-      ingressIp,
       ingressIpValidation,
       handleSetIngressIp,
 
-      domain,
       domainValidation,
       handleSetDomain,
     }),
     [
-      apiaddr,
-      apiaddrValidation,
-      domain,
-      domainValidation,
-      handleSetApiaddr,
-      handleSetDomain,
-      handleSetIngressIp,
-      handleSetPassword,
-      handleSetUsername,
-      ingressIp,
-      ingressIpValidation,
-      password,
-      passwordValidation,
-      username,
+      fieldValues,
+      isDirty,
+      setClean,
       usernameValidation,
+      handleSetUsername,
+      passwordValidation,
+      handleSetPassword,
+      apiaddrValidation,
+      handleSetApiaddr,
+      ingressIpValidation,
+      handleSetIngressIp,
+      domainValidation,
+      handleSetDomain,
     ],
   );
 
