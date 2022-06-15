@@ -8,9 +8,8 @@ import { deleteCookie } from './cookies';
 import { jsonRequest } from './json-request';
 import { getToken, K8S_ACCESS_TOKEN_COOKIE } from './token';
 import { redirect, respondInternalServerError, unauthorized } from './respond';
-import { OAUTH_ROUTE_PREFIX } from '../constants';
 import { setDead } from '../endpoints';
-import { ZTPFW_UI_ROUTE_PREFIX } from '../common';
+import { OAUTH_ROUTE_PREFIX, ZTPFW_UI_ROUTE_PREFIX } from '../common';
 
 const logger = console;
 

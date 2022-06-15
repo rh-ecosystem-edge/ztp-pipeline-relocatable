@@ -8,6 +8,15 @@ import { ipWithoutDots } from '../utils';
 import { getHtpasswdIdentityProvider, getOAuth } from '../../resources/oauth';
 import { workaroundUnmarshallObject } from '../../test-utils';
 import { getIngressConfig } from '../../resources/ingress';
+import { Ingress, OAUTH_NAMESPACE, OAUTH_ROUTE_PREFIX } from '../../copy-backend-common';
+
+const getDomainFromPrefix = (prefix: string, domain?: string) => {
+  let result = domain?.trim();
+  if (result?.startsWith(prefix)) {
+    result = result.substring(prefix.length);
+  }
+  return result;
+};
 
 export const initialDataLoad = async ({
   setNextPage,
@@ -26,7 +35,9 @@ export const initialDataLoad = async ({
 }) => {
   console.log('Initial data load');
 
-  let ingressService, apiService, oauth, ingressConfig;
+  let ingressService, apiService, oauth;
+  let ingressConfig: Ingress | undefined;
+
   try {
     oauth = await getOAuth().promise;
     ingressService = await getService({
@@ -65,12 +76,16 @@ export const initialDataLoad = async ({
     ),
   );
 
-  let domain = ingressConfig?.spec?.domain?.trim();
-  if (domain?.startsWith('apps.')) {
-    domain = domain.substring('apps.'.length);
-  }
-  if (domain) {
-    handleSetDomain(domain);
+  const domain = getDomainFromPrefix('apps.', ingressConfig?.spec?.domain);
+
+  const currentHostnames = ingressConfig?.status?.componentRoutes?.find(
+    (cr) => cr.name === OAUTH_ROUTE_PREFIX && cr.namespace === OAUTH_NAMESPACE,
+  )?.currentHostnames;
+  const currentHostname =
+    getDomainFromPrefix(`${OAUTH_ROUTE_PREFIX}.apps.`, currentHostnames?.[0]) || domain;
+
+  if (currentHostname) {
+    handleSetDomain(currentHostname);
   }
 
   setClean();

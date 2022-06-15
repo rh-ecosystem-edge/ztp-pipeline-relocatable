@@ -1,4 +1,6 @@
 export const ZTPFW_UI_ROUTE_PREFIX = 'edge-cluster-setup';
+export const OAUTH_ROUTE_PREFIX = 'oauth-openshift';
+export const OAUTH_NAMESPACE = 'openshift-authentication';
 
 export const getApiDomain = (domain: string) => `api.${domain}`;
 export const getIngressDomain = (domain: string) => `apps.${domain}`;

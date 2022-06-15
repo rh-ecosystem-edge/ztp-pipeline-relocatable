@@ -96,6 +96,9 @@ export const PersistPageBottom: React.FC = () => {
           <StackItem className="wizard-sublabel">
             Settings succesfully saved, it might take several minutes for cluster to reconcile.
           </StackItem>
+          <StackItem className="wizard-sublabel">
+            Please keep this window open until the process is finished.
+          </StackItem>
           <StackItem width="100%">
             <PersistProgress
               className="persist-page-bottom__persist-progress"

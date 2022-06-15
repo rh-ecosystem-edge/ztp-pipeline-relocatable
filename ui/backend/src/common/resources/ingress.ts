@@ -26,4 +26,12 @@ export interface Ingress extends IResource {
     domain?: string;
     componentRoutes?: ComponentRoute[];
   };
+  status?: {
+    componentRoutes?: {
+      name: string;
+      namespace: string;
+      defaultHostname?: string;
+      currentHostnames?: string[];
+    }[];
+  };
 }

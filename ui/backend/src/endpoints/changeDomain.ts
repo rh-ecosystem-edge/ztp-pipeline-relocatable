@@ -10,6 +10,7 @@ import {
   getOauthDomain,
   getZtpfwDomain,
   ZTPFW_UI_ROUTE_PREFIX,
+  OAUTH_NAMESPACE,
 } from '../common';
 import {
   ZTPFW_DEPLOYMENT_NAME,
@@ -378,7 +379,7 @@ const changeDomainImpl = async (
     'oauth-openshift',
     oauthDomain,
     'oauth-secret-',
-    'openshift-authentication',
+    OAUTH_NAMESPACE,
   );
   const ztpfwUiTlsSecretName = await updateIngressComponentRoutes(
     res,
