@@ -21,18 +21,17 @@ import { useK8SStateContext } from '../K8SStateContext';
 import { DeleteKubeadminButton } from './DeleteKubeadminButton';
 import { PersistProgress, usePersistProgress } from '../PersistProgress';
 import { SettingsPageDomainCertificates } from './SettingsPageDomainCertificates';
+import { useSettingsPageContext } from './SettingsPageContext';
 
 import './SettingsPageRight.css';
 
 export const SettingsPageRight: React.FC<{
-  isInitialEdit?: boolean;
   initialError?: string;
   forceReload: () => void;
-}> = ({ isInitialEdit, initialError, forceReload }) => {
-  const [isEdit, setEdit] = React.useState(isInitialEdit);
+}> = ({ initialError, forceReload }) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
-  const [activeTabKey, setActiveTabKey] = React.useState(0);
+  const { activeTabKey, setActiveTabKey, isEdit, setEdit } = useSettingsPageContext();
   const state = useK8SStateContext();
   const progress = usePersistProgress();
 

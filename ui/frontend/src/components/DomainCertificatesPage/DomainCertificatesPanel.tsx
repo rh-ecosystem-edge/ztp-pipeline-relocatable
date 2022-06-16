@@ -9,7 +9,6 @@ import {
   FlexItem,
   Flex,
   FlexProps,
-  Form,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
@@ -115,7 +114,7 @@ const Certificate: React.FC<CertificateProps> = ({ name, domain, isSpaceItemsNon
   };
 
   const spaceItems: FlexProps['spaceItems'] = isSpaceItemsNone
-    ? { default: 'spaceItemsNone' }
+    ? { default: 'spaceItemsXs' }
     : undefined;
 
   return (

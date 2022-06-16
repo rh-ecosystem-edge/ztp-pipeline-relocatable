@@ -2,10 +2,10 @@ import { FormGroup, StackItem } from '@patternfly/react-core';
 import React from 'react';
 import { AutomaticManualDecision } from '../DomainCertificatesDecisionPage/DomainCertificatesDecision';
 import { DomainCertificatesPanel } from '../DomainCertificatesPage/DomainCertificatesPanel';
+import { useSettingsPageContext } from './SettingsPageContext';
 
 export const SettingsPageDomainCertificates: React.FC = () => {
-  const [isAutomatic, setAutomatic] = React.useState(true);
-
+  const { isCertificateAutomatic, setCertificateAutomatic } = useSettingsPageContext();
   React.useEffect(
     () => {
       /* TODO: decide about isutomatic */
@@ -25,15 +25,15 @@ export const SettingsPageDomainCertificates: React.FC = () => {
           helperText="Choose whether or not you want to automatically assign PEM certificates for your cluster domain."
         >
           <AutomaticManualDecision
-            isAutomatic={isAutomatic}
-            setAutomatic={setAutomatic}
+            isAutomatic={isCertificateAutomatic}
+            setAutomatic={setCertificateAutomatic}
             id="automatic"
           />
         </FormGroup>
       </StackItem>
-      {!isAutomatic && (
+      {!isCertificateAutomatic && (
         <StackItem className="summary-page-sumamary__item">
-          <DomainCertificatesPanel />
+          <DomainCertificatesPanel isSpaceItemsNone />
         </StackItem>
       )}
     </>
