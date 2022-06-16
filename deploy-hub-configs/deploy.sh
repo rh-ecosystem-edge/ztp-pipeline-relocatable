@@ -164,8 +164,8 @@ EOF
         echo "Waiting for Assisted installer to be ready..."
         sleep 5
     done
-    check_resource "deployment" "assisted-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
-    check_resource "deployment" "assisted-image-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
+    check_resource "deployment" "assisted-service" "Available" "multicluster-engine" "${KUBECONFIG_HUB}"
+    check_resource "deployment" "assisted-image-service" "Available" "multicluster-engine" "${KUBECONFIG_HUB}"
 
 else
 
