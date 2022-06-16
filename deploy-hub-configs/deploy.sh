@@ -165,7 +165,6 @@ EOF
         sleep 5
     done
     check_resource "deployment" "assisted-service" "Available" "multicluster-engine" "${KUBECONFIG_HUB}"
-    check_resource "deployment" "assisted-image-service" "Available" "multicluster-engine" "${KUBECONFIG_HUB}"
 
 else
 
