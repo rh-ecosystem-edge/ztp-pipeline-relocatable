@@ -158,9 +158,9 @@ EOF
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 04-agent-service-config.yml
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 05-pullsecrethub.yml
 
-    echo ">>>> Wait for ACM and Assisted services deployed"
+    echo ">>>> Wait for Assisted services deployed"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
+    while [[ $(oc get pod -n multicluster-engine | grep assisted | wc -l) -eq 0 ]]; do
         echo "Waiting for Assisted installer to be ready..."
         sleep 5
     done
