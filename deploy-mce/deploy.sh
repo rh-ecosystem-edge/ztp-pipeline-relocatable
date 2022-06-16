@@ -31,7 +31,7 @@ if ./verify.sh; then
     echo ">>>> Deploy MCE cr manifest"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 04-mce-cr.yml
-    # We need to give some time to MCE Operator to create the proper helmcharts
+    # We need to give some time to MCE Operator to create the proper resources
     sleep 60
 
     echo ">>>> Wait until MCE ready"
