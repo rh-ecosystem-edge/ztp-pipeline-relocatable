@@ -6,6 +6,7 @@ set -o nounset
 set -m
 
 source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
 function render_file() {
     SOURCE_FILE=${1}
@@ -68,3 +69,6 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     verify_ui ${edgecluster}
     echo ">> UI Deployment done in: ${edgecluster}"
 done
+
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

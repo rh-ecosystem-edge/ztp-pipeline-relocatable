@@ -34,3 +34,5 @@ while [ ${count} -gt 0 ]; do
     sleep 20
 
 done
+
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

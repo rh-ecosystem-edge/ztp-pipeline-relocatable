@@ -13,6 +13,9 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
 
+# debug options
+debug_status starting
+
 if [[ ${1} == 'hub' ]]; then
     TG_KUBECONFIG=${KUBECONFIG_HUB}
 elif [[ ${1} == 'edgecluster' ]]; then
@@ -28,4 +31,7 @@ if [[ $(oc get --kubeconfig=${TG_KUBECONFIG} route -n ${REGISTRY} --no-headers |
     exit 2
 fi
 
+# debug options
+debug_status ended
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
 exit 0

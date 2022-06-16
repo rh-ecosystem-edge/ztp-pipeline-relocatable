@@ -4,6 +4,9 @@ set -o pipefail
 set -o nounset
 set -m
 
+# debug options
+debug_status starting
+
 function create_cs() {
 
     local mode=${1}
@@ -196,3 +199,7 @@ elif [[ ${1} == "edgecluster" ]]; then
         export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
     fi
 fi
+
+# debug options
+debug_status ended
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

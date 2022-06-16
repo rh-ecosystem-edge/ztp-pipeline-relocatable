@@ -5,6 +5,8 @@ set -o pipefail
 set -o nounset
 set -m
 
+debug_status starting
+
 create_kustomization() {
     # Loop for edgeclusters
     # Prepare loop for edgeclusters
@@ -437,3 +439,6 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     create_edgecluster_definitions ${edgecluster} ${index}
     index=$((index + 1))
 done
+
+debug_status ended
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

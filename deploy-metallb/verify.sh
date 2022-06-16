@@ -9,6 +9,8 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+debug_status starting
+
 function extract_kubeconfig() {
     ## Extract the Edge-cluster kubeconfig and put it on the shared folder
     export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
@@ -50,5 +52,5 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
 
 done
 
-echo ">>>>EOF"
-echo ">>>>>>>"
+debug_status ending 
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

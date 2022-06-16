@@ -9,6 +9,9 @@ set -m
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 
+# debug options
+debug_status starting
+
 function extract_kubeconfig() {
     ## Put Hub Kubeconfig in a safe place
     if [[ ! -f "${OUTPUTDIR}/kubeconfig-hub" ]]; then
@@ -126,3 +129,7 @@ elif [[ ${1} == 'edgecluster' ]]; then
         fi
     done
 fi
+
+
+# debug options
+debug_status ended

@@ -7,9 +7,14 @@ set -m
 # variables
 # #########
 
+
+
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 source ./common.sh ${1}
+
+# debug options
+debug_status starting
 
 function render_file() {
     SOURCE_FILE=${1}
@@ -296,3 +301,9 @@ elif [[ ${1} == 'edgecluster' ]]; then
         i=$((i + 1))
     done
 fi
+
+
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
+
+# debug options
+debug_status ended

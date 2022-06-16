@@ -8,10 +8,11 @@ set -m
 # #########
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
 if ./verify.sh; then
-    # Load common vars
-    source ${WORKDIR}/shared-utils/common.sh
 
     echo ">>>> Preparing and replace info in the manifests"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -177,5 +178,5 @@ if [ -f 06-coredns.yml ]; then
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 06-coredns.yml --wait=False
 fi
 
-echo ">>>>EOF"
-echo ">>>>>>>"
+debug_status ended
+echo "INFO: End of $(dirname -- "${BASH_SOURCE[0]}")/$(basename -- "${BASH_SOURCE[0]}")"

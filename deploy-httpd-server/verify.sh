@@ -11,7 +11,10 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 export HTTPD_NS=default
+
+
 
 if [[ $(oc get ns | grep ${HTTPD_NS} | wc -l) -eq 0 ]]; then
     #namespace or deployment/pods don't not exist. Launching the step to create it...
@@ -24,3 +27,6 @@ else
     # everything ok don't need to do anything. Skipping
     exit 1
 fi
+
+debug_status ended
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")" 

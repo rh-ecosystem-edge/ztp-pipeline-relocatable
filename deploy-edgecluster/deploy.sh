@@ -11,6 +11,8 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
+
 
 if ! ./verify.sh 1; then
     echo ">>>> Deploy all the manifests using kustomize"
@@ -26,5 +28,7 @@ if ! ./verify.sh 1; then
     ${WORKDIR}/${DEPLOY_EDGECLUSTERS_DIR}/verify.sh 10000
 else
     echo ">> Cluster deployed, this step is not neccessary"
-    exit 0
 fi
+
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

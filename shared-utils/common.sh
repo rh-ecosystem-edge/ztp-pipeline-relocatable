@@ -4,6 +4,21 @@
 
 #set -x
 
+function debug_status() {
+
+    if [[ "${DEBUG}" != "false" ]]; then
+        if [[ "${DEBUG}" == "verbose" ]]; then
+            # trace option
+            set -x
+        elif [[ "${DEBUG}" == "vv"* ]]; then
+            # trace  with Variable verbose 
+            set -xvu
+        fi
+        echo "=================="
+        echo "DEBUG: script $PWD/$(basename -- "${BASH_SOURCE[0]}") is ${1}"
+    fi
+}
+
 function check_resource() {
     # 1 - Resource type: "deployment"
     # 2 - Resource name: "openshift-pipelines-operator"
@@ -318,3 +333,5 @@ if [[ -n ${PRESERVE_SECRET:-false} ]]; then
 fi
 
 export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
+
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

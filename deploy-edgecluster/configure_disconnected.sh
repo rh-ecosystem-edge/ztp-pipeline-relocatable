@@ -5,6 +5,10 @@ set -o pipefail
 set -o nounset
 set -m
 
+
+debug_status starting
+
+
 function copy_files() {
     src_files=${1}
     dst_node=${2}
@@ -394,3 +398,6 @@ elif [[ ${1} == 'edgecluster' ]]; then
         _index=$((_index + 1))
     done
 fi
+
+
+debug_status ending

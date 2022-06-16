@@ -23,6 +23,9 @@ spec:
     - name: mock
       type: string
       default: "false"
+    - name: debug
+      type: string
+      default: "false"
   stepTemplate:
     env:
       - name: WORKDIR
@@ -37,6 +40,8 @@ spec:
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
+      - name: DEBUG
+        value: $(params.debug)
   steps:
     - name: deploy-disconnected-registry
       image: "$(params.ztp-container-image)"
