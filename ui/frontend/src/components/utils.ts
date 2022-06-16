@@ -1,8 +1,14 @@
 import { FormGroupProps } from '@patternfly/react-core';
+import { Buffer } from 'buffer';
+
 import { DNS_NAME_REGEX, USERNAME_REGEX } from '../backend-shared';
 import { TlsCertificate } from '../copy-backend-common';
 import { isPasswordPolicyMet } from './PasswordPage/utils';
 import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
+
+export const toBase64 = (str: string) => Buffer.from(str).toString('base64');
+export const fromBase64ToUtf8 = (b64Str?: string): string | undefined =>
+  b64Str === undefined ? undefined : Buffer.from(b64Str, 'base64').toString('utf8');
 
 export const addIpDots = (addressWithoutDots: string): string => {
   if (addressWithoutDots?.length === 12) {
@@ -104,12 +110,29 @@ export const customCertsValidator = (
     keyLabelInvalid = 'Both key and certificate must be provided at once.';
   }
 
-  if (certificate?.['tls.crt'] && certificate?.['tls.key']) {
-    // TODO: more in-depth content check??
-    // -----BEGIN CERTIFICATE-----
-    // -----BEGIN PRIVATE KEY-----
-    certValidated = 'success';
-    keyValidated = 'success';
+  const tlsCrt = fromBase64ToUtf8(certificate['tls.crt'])?.trim().split('\n');
+  const tlsKey = fromBase64ToUtf8(certificate['tls.key'])?.trim().split('\n');
+  if (tlsCrt?.length && tlsKey?.length && tlsCrt.length > 2 && tlsKey.length > 2) {
+    // The header/footer are not required but commonly used, so let's try to check the format based on them
+    if (
+      !tlsCrt[0].includes('--BEGIN CERTIFICATE--') ||
+      !tlsCrt?.[tlsCrt.length - 1].includes('--END CERTIFICATE--')
+    ) {
+      certValidated = 'error';
+      certLabelInvalid = 'The provided certificate does not conform PEM format.';
+    } else {
+      certValidated = 'success';
+    }
+
+    if (
+      !tlsKey[0].includes('--BEGIN PRIVATE KEY--') ||
+      !tlsKey?.[tlsKey.length - 1].includes('--END PRIVATE KEY--')
+    ) {
+      keyValidated = 'error';
+      keyLabelInvalid = 'The provided key does not conform PEM format.';
+    } else {
+      keyValidated = 'success';
+    }
   }
 
   validation[domain] = {

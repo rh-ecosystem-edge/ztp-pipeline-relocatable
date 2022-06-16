@@ -12,9 +12,11 @@ export const DomainCertificates: React.FC = () => {
           Upload your certificates
         </Title>
       </StackItem>
-      <StackItem className="wizard-sublabel">
-        Secure your domains with SSL/TLS certificates. If a certificate is not provided, a
-        self-signed one will be automatically generated.
+      <StackItem className="wizard-sublabel wizard-sublabel-dense">
+        Secure your SSL/TLS routes with certificates in the PEM format.
+      </StackItem>
+      <StackItem className="wizard-sublabel wizard-sublabel-dense">
+        If a certificate is not provided, a self-signed one will be automatically generated.
       </StackItem>
       <StackItem className="domain-certificate__item">
         <DomainCertificatesPanel isScrollable />

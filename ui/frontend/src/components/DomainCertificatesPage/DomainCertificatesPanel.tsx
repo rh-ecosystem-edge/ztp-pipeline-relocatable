@@ -1,5 +1,4 @@
 import React from 'react';
-import { Buffer } from 'buffer';
 import {
   ExpandableSection,
   FileUpload,
@@ -36,6 +35,7 @@ import {
   TlsCertificate,
 } from '../../copy-backend-common';
 import { useK8SStateContext } from '../K8SStateContext';
+import { toBase64 } from '../utils';
 
 const getTitle = (
   isExpanded: boolean,
@@ -101,7 +101,7 @@ const Certificate: React.FC<CertificateProps> = ({ name, domain, isSpaceItemsNon
 
     const fr = new FileReader();
     fr.onload = () => {
-      newCert[key] = Buffer.from(fr.result as string).toString('base64');
+      newCert[key] = toBase64(fr.result as string);
       setCustomCertificate(domain, newCert);
     };
     fr.readAsText(file);
@@ -143,54 +143,52 @@ const Certificate: React.FC<CertificateProps> = ({ name, domain, isSpaceItemsNon
         </DescriptionListGroup>
       </DescriptionList>
 
-      <Form>
-        <Flex spaceItems={spaceItems}>
-          <FlexItem>
-            <FormGroup
-              fieldId={idCert}
-              label="Certificate"
-              isRequired={true}
-              validated={certValidated}
-              helperTextInvalid={certLabelInvalid}
-              helperText={certLabelHelperText}
-            >
-              <FileUpload
-                id={idCert}
-                value={domainCert?.['tls.crt']}
-                filename={domainCert?.['tls.crt.filename']}
-                filenamePlaceholder="Drag and drop a file or upload one"
-                browseButtonText="Upload"
-                onFileInputChange={(_: unknown, file: File) => onChange('tls.crt', file)}
-                onClearClick={() => {
-                  onClear('tls.crt');
-                }}
-              />
-            </FormGroup>
-          </FlexItem>
+      <Flex spaceItems={spaceItems}>
+        <FlexItem>
+          <FormGroup
+            fieldId={idCert}
+            label="Certificate"
+            isRequired={true}
+            validated={certValidated}
+            helperTextInvalid={certLabelInvalid}
+            helperText={certLabelHelperText}
+          >
+            <FileUpload
+              id={idCert}
+              value={domainCert?.['tls.crt']}
+              filename={domainCert?.['tls.crt.filename']}
+              filenamePlaceholder="Drag and drop a file or upload one"
+              browseButtonText="Upload"
+              onFileInputChange={(_: unknown, file: File) => onChange('tls.crt', file)}
+              onClearClick={() => {
+                onClear('tls.crt');
+              }}
+            />
+          </FormGroup>
+        </FlexItem>
 
-          <FlexItem>
-            <FormGroup
-              fieldId={idKey}
-              label="Private key"
-              isRequired={true}
-              validated={keyValidated}
-              helperTextInvalid={keyLabelInvalid}
-            >
-              <FileUpload
-                id={idKey}
-                value={domainCert?.['tls.key']}
-                filename={domainCert?.['tls.key.filename']}
-                filenamePlaceholder="Drag and drop a file or upload one"
-                browseButtonText="Upload"
-                onFileInputChange={(_: unknown, file: File) => onChange('tls.key', file)}
-                onClearClick={() => {
-                  onClear('tls.key');
-                }}
-              />
-            </FormGroup>
-          </FlexItem>
-        </Flex>
-      </Form>
+        <FlexItem>
+          <FormGroup
+            fieldId={idKey}
+            label="Private key"
+            isRequired={true}
+            validated={keyValidated}
+            helperTextInvalid={keyLabelInvalid}
+          >
+            <FileUpload
+              id={idKey}
+              value={domainCert?.['tls.key']}
+              filename={domainCert?.['tls.key.filename']}
+              filenamePlaceholder="Drag and drop a file or upload one"
+              browseButtonText="Upload"
+              onFileInputChange={(_: unknown, file: File) => onChange('tls.key', file)}
+              onClearClick={() => {
+                onClear('tls.key');
+              }}
+            />
+          </FormGroup>
+        </FlexItem>
+      </Flex>
     </ExpandableSection>
   );
 };

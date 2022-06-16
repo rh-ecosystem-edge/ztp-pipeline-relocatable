@@ -44,7 +44,7 @@ export const DomainCertificatesDecision: React.FC<AutomaticManualDecisionProps> 
         <Title headingLevel="h1">How do you want to assign certificates to your domain?</Title>
       </StackItem>
       <StackItem className="wizard-sublabel">
-        Choose whether or not you want to automatically assign self-signed certificates for your
+        Choose whether or not you want to automatically assign self-signed PEM certificates for your
         custom domain.
       </StackItem>
       <StackItem>
