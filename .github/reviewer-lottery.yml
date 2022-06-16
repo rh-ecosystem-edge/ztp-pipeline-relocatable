@@ -1,0 +1,18 @@
+groups:
+  - name: devs # name of the group
+    reviewers: 2 # how many reviewers do you want to assign?
+    internal_reviewers: 2 # how many reviewers do you want to assign when the PR author belongs to this group?
+    usernames: # github usernames of the reviewers
+      - achuzhoy
+      - alknopfler
+      - danielchg
+      - eifrach
+      - fbac
+      - flaper87
+      - iranzo
+
+  # - name: qas # you can have multiple groups, it will evaluate them separately
+  #   reviewers: 1
+  #   usernames:
+  #     - some_user
+  #     - someoneelse
