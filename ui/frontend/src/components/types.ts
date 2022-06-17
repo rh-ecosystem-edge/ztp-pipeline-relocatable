@@ -45,6 +45,7 @@ export type K8SStateContextDataFields = {
 export type K8SStateContextData = K8SStateContextDataFields & {
   isDirty: () => boolean;
   setClean: () => void;
+  isAllValid: () => boolean;
 
   usernameValidation?: string; // just a message or empty
   handleSetUsername: (newVal: string) => void;

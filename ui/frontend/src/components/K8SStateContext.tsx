@@ -101,6 +101,28 @@ export const K8SStateContextProvider: React.FC<{
     [customCertsValidation, customCerts, setCustomCerts],
   );
 
+  const isAllValid = React.useCallback(() => {
+    const result =
+      !usernameValidation &&
+      passwordValidation &&
+      apiaddrValidation.valid &&
+      ingressIpValidation.valid &&
+      !domainValidation &&
+      !Object.keys(customCertsValidation).find(
+        (d) =>
+          customCertsValidation[d].certValidated === 'error' ||
+          customCertsValidation[d].keyValidated === 'error',
+      );
+    return result;
+  }, [
+    apiaddrValidation.valid,
+    customCertsValidation,
+    domainValidation,
+    ingressIpValidation.valid,
+    passwordValidation,
+    usernameValidation,
+  ]);
+
   const fieldValues: K8SStateContextDataFields = React.useMemo(
     () => ({
       username,
@@ -128,6 +150,7 @@ export const K8SStateContextProvider: React.FC<{
 
       isDirty,
       setClean,
+      isAllValid,
 
       usernameValidation,
       handleSetUsername,
@@ -151,6 +174,7 @@ export const K8SStateContextProvider: React.FC<{
       fieldValues,
       isDirty,
       setClean,
+      isAllValid,
       usernameValidation,
       handleSetUsername,
       passwordValidation,

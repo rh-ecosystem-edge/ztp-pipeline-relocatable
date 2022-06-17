@@ -45,6 +45,7 @@ export const SettingsPageRight: React.FC<{
   const {
     isDirty,
     setClean,
+    isAllValid,
 
     apiaddr,
     apiaddrValidation,
@@ -77,6 +78,7 @@ export const SettingsPageRight: React.FC<{
 
   const isAfterRedirection = window.location.hash === '#redirected';
   const isDomainChange = originalDomain && originalDomain !== domain;
+  const isSaveDisabled = isSaving || !isAllValid() || !isDirty();
 
   const onCancelEdit = () => {
     setEdit(false);
@@ -87,8 +89,6 @@ export const SettingsPageRight: React.FC<{
     e.preventDefault();
     console.log('onFormSubmit() called, ignoring, click on Save instead');
   };
-
-  const isSaveDisabled = isSaving || !isDirty();
 
   return (
     <Stack className="settings-page-sumamary">
