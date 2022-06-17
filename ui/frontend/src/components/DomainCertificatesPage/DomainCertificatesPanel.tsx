@@ -14,6 +14,7 @@ import {
   DescriptionListTerm,
   DescriptionListDescription,
   ClipboardCopy,
+  FormGroupProps,
 } from '@patternfly/react-core';
 import {
   global_success_color_100 as successColor,
@@ -41,21 +42,29 @@ const getTitle = (
   domainCert: TlsCertificate,
   name: string,
   domain: string,
+  certValidated: FormGroupProps['validated'],
+  keyValidated: FormGroupProps['validated'],
 ): React.ReactElement | string => {
   let title: React.ReactElement | string;
   const forDomain = isExpanded ? undefined : <> for {domain}</>;
 
-  if (domainCert?.['tls.crt'] && domainCert?.['tls.key']) {
-    title = (
-      <>
-        <CheckCircleIcon color={successColor.value} /> {name}: done {forDomain}
-      </>
-    );
-  } else if (!domainCert?.['tls.crt'] && !domainCert?.['tls.key']) {
+  if (!domainCert?.['tls.crt'] && !domainCert?.['tls.key']) {
     title = (
       <>
         <ExclamationTriangleIcon color={warningColor.value} /> {name}: generate self-signed{' '}
         {forDomain}
+      </>
+    );
+  } else if (certValidated === 'error' || keyValidated === 'error') {
+    title = (
+      <>
+        <ExclamationCircleIcon color={dangerColor.value} /> {name}: incorrect {forDomain}
+      </>
+    );
+  } else if (domainCert?.['tls.crt'] && domainCert?.['tls.key']) {
+    title = (
+      <>
+        <CheckCircleIcon color={successColor.value} /> {name}: done {forDomain}
       </>
     );
   } else {
@@ -125,6 +134,8 @@ const Certificate: React.FC<CertificateProps> = ({ name, domain, isSpaceItemsNon
           domainCert,
           name,
           domain,
+          certValidated,
+          keyValidated,
         ) as unknown as string /* TODO: Add support to Patternfly to avoid this ugly re-typying hack. It worsk so far. */
       }
       onToggle={() => setExpanded(!isExpanded)}
