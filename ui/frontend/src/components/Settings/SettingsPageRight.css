@@ -1,15 +1,25 @@
-.settings-page-sumamary__form {
-  height: 100%;
-}
-
 .settings-page-sumamary {
   padding-top: var(--pf-global--spacer--2xl);
   margin-right: var(--pf-global--spacer--xl);
   margin-left: var(--pf-global--spacer--xl);
 }
 
+.settings-page-sumamary__tab {
+  max-height: 20rem;
+  overflow: overlay;
+}
+
 .settings-page-sumamary__item {
   padding-bottom: var(--pf-global--spacer--lg);
+}
+
+.summary-page-sumamary__item .pf-c-panel__main-body {
+  padding-left: 0;
+}
+
+.settings-page-sumamary #automatic {
+  /* TODO: make it responsive*/
+  padding-left: 25%;
 }
 
 .settings-page-sumamary__item__footer {
@@ -17,5 +27,5 @@
 }
 
 .settings-page-sumamary__persist-progress {
-  width: 28rem;
+  width: 26rem;
 }

@@ -5,25 +5,32 @@ import { ContentThreeRows } from '../ContentThreeRows';
 import { WizardProgress, WizardStepType } from '../WizardProgress';
 import { useWizardProgressContext } from '../WizardProgress/WizardProgressContext';
 import { WizardFooter } from '../WizardFooter';
-import { DomainSelector } from './DomainSelector';
+import { DomainCertificatesDecision } from './DomainCertificatesDecision';
 import { useK8SStateContext } from '../K8SStateContext';
 
-export const DomainPage: React.FC = () => {
+export const DomainCertificatesDecisionPage: React.FC = () => {
   const { setActiveStep } = useWizardProgressContext();
+  const { domainValidation: validation, customCerts } = useK8SStateContext();
+  const [isAutomatic, setAutomatic] = React.useState<boolean>(
+    () => Object.keys(customCerts || {}).length === 0,
+  );
+
+  // No special step for that
   React.useEffect(() => setActiveStep('domain'), [setActiveStep]);
-  const { domainValidation: validation, domain, originalDomain } = useK8SStateContext();
 
   let next: WizardStepType = 'sshkey';
-  if (domain !== originalDomain) {
-    next = 'domaincertsdecision';
+  if (!isAutomatic) {
+    next = 'domaincertificates';
   }
 
   return (
     <Page>
       <ContentThreeRows
         top={<WizardProgress />}
-        middle={<DomainSelector />}
-        bottom={<WizardFooter back="ingressip" next={next} isNextEnabled={() => !validation} />}
+        middle={
+          <DomainCertificatesDecision isAutomatic={isAutomatic} setAutomatic={setAutomatic} />
+        }
+        bottom={<WizardFooter back="domain" next={next} isNextEnabled={() => !validation} />}
       />
     </Page>
   );

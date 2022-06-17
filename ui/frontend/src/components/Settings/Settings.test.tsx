@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { SettingsContent, SettingsLoading } from './Settings';
 import { K8SStateContextProvider, useK8SStateContext } from '../K8SStateContext';
 import { ipWithoutDots } from '../utils';
+import { SettingsPageContextProvider } from './SettingsPageContext';
 
 type CTX_TYPE = {
   ctxData?: { apiaddr: string; ingressIp: string; domain: string };
@@ -26,13 +27,15 @@ const TestedComponent: React.FC<CTX_TYPE> = ({ ctxData, error }) => {
 
 const Component: React.FC<CTX_TYPE> = (props) => (
   <K8SStateContextProvider>
-    <MemoryRouter>
-      <TestedComponent {...props} />
-    </MemoryRouter>
+    <SettingsPageContextProvider>
+      <MemoryRouter>
+        <TestedComponent {...props} />
+      </MemoryRouter>
+    </SettingsPageContextProvider>
   </K8SStateContextProvider>
 );
 
-describe('Seetings', () => {
+describe('Settings', () => {
   it('can render loading state', () => {
     const { container } = render(<SettingsLoading />);
     expect(container).toMatchSnapshot();

@@ -1,14 +1,14 @@
-import { getCondition } from '../../copy-backend-common';
+import { getCondition, ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
 import { getClusterOperator } from '../../resources/clusteroperator';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { K8SStateContextData } from '../types';
 import { delay } from '../utils';
 import {
+  DELAY_BEFORE_FINAL_REDIRECT,
   DELAY_BEFORE_QUERY_RETRY,
   MAX_LIVENESS_CHECK_COUNT,
   UI_POD_NOT_READY,
   WAIT_ON_OPERATOR_TITLE,
-  ZTPFW_UI_ROUTE_PREFIX,
 } from './constants';
 import { persistDomain } from './persistDomain';
 import { persistIdentityProvider, PersistIdentityProviderResult } from './persistIdentityProvider';
@@ -36,7 +36,7 @@ const waitForClusterOperator = async (
       }
     } catch (e) {
       console.error('waitForClusterOperator error: ', e);
-      // keep trying
+      // do not report, keep trying
 
       // setError({
       //   title: WAIT_ON_OPERATOR_TITLE,
@@ -55,7 +55,7 @@ const waitForClusterOperator = async (
   return false;
 };
 
-const waitOnreconciliation = async (
+const waitOnReconciliation = async (
   setError: (error: PersistErrorType) => void,
   setProgress: UsePersistProgressType['setProgress'],
   state: K8SStateContextData,
@@ -89,10 +89,14 @@ const waitOnreconciliation = async (
     // TODO: openshift console??
   }
 
+  if (!(await waitForClusterOperator(setError, 'kube-apiserver'))) {
+    return false;
+  }
+
   // Important: keep following aligned with the last reconcile-step
   setProgress(PersistSteps.ReconcileAuthOperator);
 
-  console.info('waitOnreconciliation finished successfully');
+  console.info('waitOnReconciliation finished successfully');
   return true;
 };
 
@@ -108,19 +112,33 @@ export const persist = async (
     state.username,
     state.password,
   );
+
+  if (persistIdpResult === PersistIdentityProviderResult.error) {
+    console.error('Failed to persist IDP, giving up.');
+    return;
+  }
+
+  if (persistIdpResult === PersistIdentityProviderResult.userCreated) {
+    // Let the operator reconciliation start
+    await delay(DELAY_BEFORE_FINAL_REDIRECT);
+
+    if (!(await waitForClusterOperator(setError, 'authentication'))) {
+      return false;
+    }
+  }
+
+  console.log('Saving of IDP is over, about to continue with Domain.');
   if (
-    persistIdpResult !== PersistIdentityProviderResult.error &&
+    (await persistDomain(setError, setProgress, state.domain, state.customCerts)) &&
     (await saveIngress(setError, setProgress, state.ingressIp)) &&
-    (await saveApi(setError, setProgress, state.apiaddr)) &&
-    (await persistDomain(setError, setProgress, state.domain))
+    (await saveApi(setError, setProgress, state.apiaddr))
   ) {
     // finished with success
     console.log('Data persisted, blocking progress till reconciled');
 
     setError(null); // show the green circle of success
 
-    // TODO: show progress bar while waiting
-    if (!(await waitOnreconciliation(setError, setProgress, state, persistIdpResult))) {
+    if (!(await waitOnReconciliation(setError, setProgress, state, persistIdpResult))) {
       return;
     }
 
