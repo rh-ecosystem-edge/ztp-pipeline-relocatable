@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FormEvent } from 'react';
 import {
   Alert,
   AlertVariant,
@@ -83,6 +83,11 @@ export const SettingsPageRight: React.FC<{
     forceReload();
   };
 
+  const onFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    console.log('onFormSubmit() called, ignoring, click on Save instead');
+  };
+
   const isSaveDisabled = isSaving || !isDirty();
 
   return (
@@ -101,7 +106,7 @@ export const SettingsPageRight: React.FC<{
           <Tab id="settings-tab-0" eventKey={0} title={<TabTitleText>TCP/IP</TabTitleText>}>
             <Stack>
               <StackItem className="summary-page-sumamary__item">
-                <Form className="settings-page-sumamary__form">
+                <Form>
                   <FormGroup
                     fieldId="apiaddr"
                     label="API address"
@@ -144,7 +149,7 @@ export const SettingsPageRight: React.FC<{
           </Tab>
 
           <Tab id="settings-tab-1" eventKey={1} title={<TabTitleText>Domain</TabTitleText>}>
-            <Form>
+            <Form onSubmit={onFormSubmit}>
               <Stack className="settings-page-sumamary__tab">
                 <StackItem>
                   <FormGroup

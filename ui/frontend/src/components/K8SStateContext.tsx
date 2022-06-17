@@ -118,10 +118,9 @@ export const K8SStateContextProvider: React.FC<{
   const setClean = React.useCallback(() => {
     setSnapshot(fieldValues);
   }, [fieldValues]);
-  const isDirty = React.useCallback(
-    (): boolean => !isEqual(fieldValues, snapshot),
-    [fieldValues, snapshot],
-  );
+  const isDirty = React.useCallback((): boolean => {
+    return !isEqual(fieldValues, snapshot);
+  }, [fieldValues, snapshot]);
 
   const value = React.useMemo(
     () => ({

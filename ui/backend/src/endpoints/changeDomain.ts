@@ -11,6 +11,7 @@ import {
   getZtpfwDomain,
   ZTPFW_UI_ROUTE_PREFIX,
   OAUTH_NAMESPACE,
+  getClusterDomainFromComponentRoutes,
 } from '../common';
 import {
   ZTPFW_DEPLOYMENT_NAME,
@@ -102,22 +103,20 @@ const updateIngressComponentRoutes = async (
 
 const updateSingleRoute = async (
   token: string,
-  oldIngressDomain: string,
-  ingressDomain: string,
+  ztpfwDomain: string,
   route: Route,
 ): Promise<PostResponse<Route> | void> => {
   if (route.spec?.host) {
-    const newHost = route.spec.host.replace(oldIngressDomain, ingressDomain);
-    if (newHost === route.spec.host) {
+    if (ztpfwDomain === route.spec.host) {
       logger.debug(
-        `No change for the ${route.metadata.namespace}/${route.metadata.name} route, keeping host: "${newHost}".`,
+        `No change for the ${route.metadata.namespace}/${route.metadata.name} route, keeping host: "${route.spec.host}".`,
       );
     } else {
       const patch: PatchType[] = [
         {
           op: 'replace',
           path: '/spec/host',
-          value: newHost,
+          value: ztpfwDomain,
         },
       ];
 
@@ -128,7 +127,7 @@ const updateSingleRoute = async (
           patch,
         ).then((r) => {
           logger.debug(
-            `Route ${route.metadata.namespace}/${route.metadata.name} is patched, new host: ${newHost}`,
+            `Route ${route.metadata.namespace}/${route.metadata.name} is patched, new host: ${ztpfwDomain}`,
           );
           return r;
         });
@@ -233,13 +232,7 @@ const updateZtpfwDeployment = async (
   }
 };
 
-const updateZtpfwUI = async (
-  token: string,
-  // ztpfwUiTlsSecretName: string,
-  ztpfwDomain: string,
-  ingressDomain: string,
-  oldIngressDomain = '',
-) => {
+const updateZtpfwUI = async (token: string, ztpfwDomain: string) => {
   // route
   try {
     const route = await getRoute(token, { name: ZTPFW_ROUTE_NAME, namespace: ZTPFW_NAMESPACE });
@@ -247,7 +240,7 @@ const updateZtpfwUI = async (
     // Make a copy to be able to make livenessProbe requests from browser (new route hots CORS issue)
     await backupRoute(token, route);
 
-    await updateSingleRoute(token, oldIngressDomain, ingressDomain, route);
+    await updateSingleRoute(token, ztpfwDomain, route);
     logger.debug('ZTPFW UI Route patched');
   } catch (e) {
     logger.error('Failed to patch ZTPFW UI Route: ', e);
@@ -323,7 +316,7 @@ const changeDomainImpl = async (
 
   const ingress = await getIngressConfig(token);
 
-  const oldIngressDomain = ingress.spec?.domain;
+  const oldIngressDomain = getIngressDomain(getClusterDomainFromComponentRoutes(ingress) || '');
   const apiDomain = getApiDomain(clusterDomain);
   const ingressDomain = getIngressDomain(clusterDomain);
 
@@ -449,12 +442,7 @@ const changeDomainImpl = async (
   }
 
   // This will terminate our pod
-  await updateZtpfwUI(
-    token,
-    /*ztpfwUiTlsSecretName,*/ ztpfwDomain,
-    ingressDomain,
-    oldIngressDomain,
-  );
+  await updateZtpfwUI(token, ztpfwDomain);
 
   res.writeHead(200).end(); // All good
 };

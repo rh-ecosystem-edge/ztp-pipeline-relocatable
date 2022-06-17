@@ -8,15 +8,7 @@ import { ipWithoutDots } from '../utils';
 import { getHtpasswdIdentityProvider, getOAuth } from '../../resources/oauth';
 import { workaroundUnmarshallObject } from '../../test-utils';
 import { getIngressConfig } from '../../resources/ingress';
-import { Ingress, OAUTH_NAMESPACE, OAUTH_ROUTE_PREFIX } from '../../copy-backend-common';
-
-const getDomainFromPrefix = (prefix: string, domain?: string) => {
-  let result = domain?.trim();
-  if (result?.startsWith(prefix)) {
-    result = result.substring(prefix.length);
-  }
-  return result;
-};
+import { getClusterDomainFromComponentRoutes, Ingress } from '../../copy-backend-common';
 
 export const initialDataLoad = async ({
   setNextPage,
@@ -26,7 +18,7 @@ export const initialDataLoad = async ({
   handleSetDomain,
   setClean,
 }: {
-  setNextPage?: (href: string) => void;
+  setNextPage: (href: string) => void;
   setError: (message?: string) => void;
   handleSetApiaddr: K8SStateContextData['handleSetApiaddr'];
   handleSetIngressIp: K8SStateContextData['handleSetIngressIp'];
@@ -76,14 +68,7 @@ export const initialDataLoad = async ({
     ),
   );
 
-  const domain = getDomainFromPrefix('apps.', ingressConfig?.spec?.domain);
-
-  const currentHostnames = ingressConfig?.status?.componentRoutes?.find(
-    (cr) => cr.name === OAUTH_ROUTE_PREFIX && cr.namespace === OAUTH_NAMESPACE,
-  )?.currentHostnames;
-  const currentHostname =
-    getDomainFromPrefix(`${OAUTH_ROUTE_PREFIX}.apps.`, currentHostnames?.[0]) || domain;
-
+  const currentHostname = getClusterDomainFromComponentRoutes(ingressConfig);
   if (currentHostname) {
     handleSetDomain(currentHostname);
   }
@@ -92,10 +77,9 @@ export const initialDataLoad = async ({
 
   if (getHtpasswdIdentityProvider(oauth)) {
     // The Edit flow for the 2nd and later run
-    setNextPage && setNextPage('/settings');
-    return;
+    setNextPage('/settings');
+  } else {
+    // The Wizard for the very first run
+    setNextPage('/wizard/username');
   }
-
-  // The Wizard for the very first run
-  setNextPage && setNextPage('/wizard/username');
 };

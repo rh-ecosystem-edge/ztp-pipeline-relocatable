@@ -227,7 +227,7 @@ exports[`Settings can render data 1`] = `
                     class="pf-l-stack__item summary-page-sumamary__item"
                   >
                     <form
-                      class="pf-c-form settings-page-sumamary__form"
+                      class="pf-c-form"
                       novalidate=""
                     >
                       <div
@@ -655,7 +655,7 @@ exports[`Settings can render data 2`] = `
                     class="pf-l-stack__item summary-page-sumamary__item"
                   >
                     <form
-                      class="pf-c-form settings-page-sumamary__form"
+                      class="pf-c-form"
                       novalidate=""
                     >
                       <div
@@ -1153,7 +1153,7 @@ exports[`Settings can render data 3`] = `
                     class="pf-l-stack__item summary-page-sumamary__item"
                   >
                     <form
-                      class="pf-c-form settings-page-sumamary__form"
+                      class="pf-c-form"
                       novalidate=""
                     >
                       <div
@@ -1581,7 +1581,7 @@ exports[`Settings can render error 1`] = `
                     class="pf-l-stack__item summary-page-sumamary__item"
                   >
                     <form
-                      class="pf-c-form settings-page-sumamary__form"
+                      class="pf-c-form"
                       novalidate=""
                     >
                       <div
