@@ -75,16 +75,22 @@ function trust_internal_registry() {
         MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry-quay -o jsonpath='{.spec.host}')
     fi
 
+    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
     echo ">>>> Trusting internal registry: ${1}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo ">> Kubeconfig: ${KBKNFG}"
     echo ">> Mode: ${1}"
     echo ">> Cluster: ${clus}"
-    ## Update trusted CA from Helper
-    #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
-    export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
-    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
-    echo ">> Cert: ${PATH_CA_CERT}"
+
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+        ## Update trusted CA from Helper
+        #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
+        export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+        echo ">> Cert: ${PATH_CA_CERT}"
+    else
+        export CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} -showcerts </dev/null  | openssl x509 | base64 |  tr -d '\n' )
+        MYREGISTRY=${LOCAL_REG}
+    fi
 
     ## Update trusted CA from Helper
     echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
@@ -116,7 +122,6 @@ source ${WORKDIR}/shared-utils/common.sh
 
 echo ">>>> Get the pull secret from hub to file pull-secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-export REGISTRY=ztpfw-registry
 export AUTH_SECRET=../${SHARED_DIR}/htpasswd
 export REGISTRY_MANIFESTS=manifests
 export QUAY_MANIFESTS=quay-manifests
@@ -139,7 +144,11 @@ if [[ ${1} == "hub" ]]; then
     export SOURCE_REGISTRY="quay.io"
     export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
     export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
-    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+        export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+    else
+        export DESTINATION_REGISTRY=${LOCAL_REG}
+    fi
     # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm

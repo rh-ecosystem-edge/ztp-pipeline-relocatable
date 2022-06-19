@@ -44,8 +44,16 @@ function mirror_ocp() {
 
     ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
     ####### using the vfs driver, and this causes errors.
-    export STORAGE_DRIVER=vfs
-    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+
+    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+        echo "Checking Private registry creds"
+        if [[ ! $( podman login ${LOCAL_REG} --authfile ${PULL_SECRET}) ]]; then
+            echo "ERROR: Failed to login to ${LOCAL_REG}, please check Pull Secret"
+            exit 1
+        else
+            echo "Login successfully to ${LOCAL_REG}"
+        fi
+    fi
     #######
 
     # Empty log file
@@ -82,10 +90,13 @@ if [[ ${1} == 'hub' ]]; then
     trust_internal_registry 'hub'
 
     if ! ./verify_ocp_sync.sh 'hub'; then
-        oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
-        export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-        ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET} # to create a merge with the registry original adding the registry auth entry
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+            oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
+            # TODO: commented out the next line seems not needed 
+            # export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        fi
+        registry_login ${DESTINATION_REGISTRY}
         mirror_ocp 'hub' 'hub'
     else
         echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"

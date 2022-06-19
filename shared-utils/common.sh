@@ -3,6 +3,14 @@
 # EDGECLUSTERS_FILE variable must be exported in the environment
 
 #set -x
+function registry_login() {
+    # workaround runnning podman commands
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+    
+    ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS}
+}
 
 function check_resource() {
     # 1 - Resource type: "deployment"
@@ -318,3 +326,13 @@ if [[ -n ${PRESERVE_SECRET:-false} ]]; then
 fi
 
 export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
+
+export EDGECLUSTERS_REGISTRY=$(yq eval ".config.REGISTRY" ${EDGECLUSTERS_FILE} || null )
+if [[ ${EDGECLUSTERS_REGISTRY} == "" || ${EDGECLUSTERS_REGISTRY} == null ]]; then
+    export CUSTOM_REGISTRY=false
+    export REGISTRY=ztpfw-registry
+else
+    export CUSTOM_REGISTRY=true
+    REGISTRY=$(echo ${EDGECLUSTERS_REGISTRY} | cut -d"." -f1 )
+    LOCAL_REG=${EDGECLUSTERS_REGISTRY}
+fi
