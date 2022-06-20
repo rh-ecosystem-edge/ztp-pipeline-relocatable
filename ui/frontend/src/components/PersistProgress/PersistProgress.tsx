@@ -12,9 +12,9 @@ let persistStepsCount = 1;
 export const PersistSteps = {
   // Important: keep following steps aligned with actual order in persist()
   PersistIDP: persistStepsCount++,
+  PersistDomain: persistStepsCount++,
   SaveIngress: persistStepsCount++,
   SaveApi: persistStepsCount++,
-  PersistDomain: persistStepsCount++,
 
   ReconcileUIPod: persistStepsCount++,
   ReconcileApiOperator: persistStepsCount++,
