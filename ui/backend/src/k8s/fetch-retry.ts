@@ -1,4 +1,5 @@
 import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
+import { logRequestError /*, logResponse, logRequest */ } from '../logging';
 
 export function fetchRetry(
   url: RequestInfo,
@@ -20,7 +21,9 @@ export function fetchRetry(
   return new Promise(function (resolve, reject) {
     async function fetchAttempt() {
       try {
+        // logRequest(url, init);
         const response = await fetch(url, init);
+        // logResponse(response, url);
         switch (response.status) {
           case 429: // Too Many Requests
             {
@@ -53,6 +56,7 @@ export function fetchRetry(
             resolve(response);
         }
       } catch (err) {
+        logRequestError(err);
         if (err instanceof Error) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
           switch ((err as any).code) {

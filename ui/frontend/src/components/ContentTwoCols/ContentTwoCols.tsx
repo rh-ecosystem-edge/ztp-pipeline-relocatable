@@ -1,14 +1,16 @@
 import React from 'react';
-import { Grid, GridItem } from '@patternfly/react-core';
+import { Grid, GridItem, gridSpans } from '@patternfly/react-core';
 
 import './ContentTwoCols.css';
 
 export const ContentTwoCols: React.FC<{
   left: React.ReactNode;
   right: React.ReactNode;
-}> = ({ left, right }) => (
+  spanLeft?: gridSpans;
+  spanRight?: gridSpans;
+}> = ({ left, right, spanLeft = 6, spanRight = 6 }) => (
   <Grid hasGutter className="content-two-cols">
-    <GridItem span={6}>{left}</GridItem>
-    <GridItem span={6}>{right}</GridItem>
+    <GridItem span={spanLeft}>{left}</GridItem>
+    <GridItem span={spanRight}>{right}</GridItem>
   </Grid>
 );

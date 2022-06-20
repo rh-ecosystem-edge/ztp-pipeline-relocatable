@@ -7,6 +7,8 @@ import {
   ApiAddressPage,
   IngressIpPage,
   DomainPage,
+  DomainCertificatesPage,
+  DomainCertificatesDecisionPage,
   PersistPage,
   FinalPage,
 } from '../../components';
@@ -25,6 +27,8 @@ export const Wizard: React.FC = () => {
         <Route path="/apiaddr" element={<ApiAddressPage />} />
         <Route path="/ingressip" element={<IngressIpPage />} />
         <Route path="/domain" element={<DomainPage />} />
+        <Route path="/domaincertsdecision" element={<DomainCertificatesDecisionPage />} />
+        <Route path="/domaincertificates" element={<DomainCertificatesPage />} />
         <Route path="/sshkey" element={<DownloadSshKeyPage />} />
         <Route path="/persist" element={<PersistPage />} />
         <Route path="/final" element={<FinalPage />} />

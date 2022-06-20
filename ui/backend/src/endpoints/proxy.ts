@@ -6,6 +6,7 @@ import { URL } from 'url';
 
 import { notFound, unauthorized, getToken, respondInternalServerError } from '../k8s';
 import { getClusterApiUrl } from '../k8s/utils';
+import { logRequestProxy, logResponseProxy } from '../logging';
 
 const logger = console;
 
@@ -49,9 +50,11 @@ export function proxy(req: Request, res: Response): void {
     headers,
     rejectUnauthorized: false,
   };
+  logRequestProxy(options);
   pipeline(
     req,
     request(options, (response) => {
+      logResponseProxy(response);
       if (!response) return notFound(req, res);
       const responseHeaders: OutgoingHttpHeaders = {};
       for (const header of proxyResponseHeaders) {

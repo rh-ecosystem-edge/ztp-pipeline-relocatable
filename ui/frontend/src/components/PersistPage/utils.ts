@@ -1,3 +1,4 @@
+import { ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
 import { getRequest } from '../../resources';
 import { getPodsOfNamespace } from '../../resources/pod';
 import { delay, getZtpfwUrl } from '../utils';
@@ -5,7 +6,6 @@ import {
   DELAY_BEFORE_FINAL_REDIRECT,
   MAX_LIVENESS_CHECK_COUNT,
   ZTPFW_NAMESPACE,
-  ZTPFW_UI_ROUTE_PREFIX,
 } from './constants';
 
 export const waitForLivenessProbe = async (

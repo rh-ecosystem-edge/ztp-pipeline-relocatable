@@ -7,5 +7,12 @@
 }
 
 .wizard-sublabel {
+  align-content: center;
   color: var(--pf-global--palette--black-600);
+  margin-left: var(--pf-global--spacer--xl);
+  margin-right: var(--pf-global--spacer--xl);
+}
+
+.wizard-sublabel-dense {
+  margin-bottom: 0 !important;
 }

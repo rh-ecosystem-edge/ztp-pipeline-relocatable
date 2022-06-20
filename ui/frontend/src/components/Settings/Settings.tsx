@@ -8,20 +8,37 @@ import { initialDataLoad } from '../WelcomePage/initialDataLoad';
 import { Spinner } from './Spinner';
 import { SettingsPageLeft } from './SettingsPageLeft';
 import { SettingsPageRight } from './SettingsPageRight';
+import { gridSpans } from '@patternfly/react-core';
+import { SettingsPageContextProvider, useSettingsPageContext } from './SettingsPageContext';
 
 export const SettingsContent: React.FC<{ error?: string; forceReload: () => void }> = ({
   error,
   forceReload,
-}) => (
-  <Page>
-    <ContentTwoCols
-      left={<SettingsPageLeft />}
-      right={
-        <SettingsPageRight isInitialEdit={false} initialError={error} forceReload={forceReload} />
-      }
-    />
-  </Page>
-);
+}) => {
+  const ctx = useSettingsPageContext();
+
+  const getSettingsSpan = (): { spanLeft: gridSpans; spanRight: gridSpans } => {
+    let spanLeft: gridSpans = 6;
+    let spanRight: gridSpans = 6;
+
+    if (ctx.isEdit && ctx.activeTabKey === 1 /* Domain */ && !ctx.isCertificateAutomatic) {
+      spanLeft = 2;
+      spanRight = 10;
+    }
+
+    return { spanLeft, spanRight };
+  };
+
+  return (
+    <Page>
+      <ContentTwoCols
+        left={<SettingsPageLeft />}
+        right={<SettingsPageRight initialError={error} forceReload={forceReload} />}
+        {...getSettingsSpan()}
+      />
+    </Page>
+  );
+};
 
 export const SettingsLoading: React.FC = () => (
   <Page>
@@ -52,7 +69,9 @@ export const Settings: React.FC = () => {
   }, [handleSetApiaddr, handleSetIngressIp, handleSetDomain, isReload, setClean]);
 
   return isDataLoaded ? (
-    <SettingsContent error={error} forceReload={() => setReload(true)} />
+    <SettingsPageContextProvider>
+      <SettingsContent error={error} forceReload={() => setReload(true)} />
+    </SettingsPageContextProvider>
   ) : (
     <SettingsLoading />
   );

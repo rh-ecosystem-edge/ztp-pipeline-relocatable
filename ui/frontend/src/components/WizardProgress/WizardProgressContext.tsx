@@ -11,7 +11,11 @@ export type WizardProgressStepType =
   | 'ingressip'
   | 'domain'
   | 'sshkey';
-export type WizardStepType = WizardProgressStepType | 'persist';
+export type WizardStepType =
+  | WizardProgressStepType
+  | 'persist'
+  | 'domaincertsdecision'
+  | 'domaincertificates';
 
 export type WizardProgressSteps = {
   username: WizardProgressStep;
