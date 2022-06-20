@@ -5,7 +5,10 @@ set -o pipefail
 set -o nounset
 set -m
 
-usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> <hub_architecture(installer|sno)>" 1>&2; exit 1; }
+usage() {
+    echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> <hub_architecture(installer|sno)>" 1>&2
+    exit 1
+}
 
 if [ $# -lt 4 ]; then
     usage
@@ -27,7 +30,6 @@ else
     echo "ocp_version is not valid"
     usage
 fi
-
 
 # variables
 # #########
@@ -56,27 +58,30 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     if [ "${OC_NET_CLASS}" = "ipv4" ]; then
         if [ "${OC_TYPE_ENV}" = "connected" ]; then
             if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
-
-                echo "SNO + Metal3 + Ipv4 + connected"
-                t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-                kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
-                kcli create network --nodhcp -c 192.168.7.0/24 ztpfw -i
-                kcli create network -c 192.168.150.0/24 bare-net
-                echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
-                kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
-                export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-                oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
+                echo "SNO + Metal³ + IPv4 + connected"
+                export NUMMASTERS=1
+                export MEMORY=40000
+                export EXTRAARGS=""
             else
-                echo "Multinode + Metal3 + Ipv4 + connected"
-             	t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-             	kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
-             	kcli create network --nodhcp --domain ztpfw -c 192.168.7.0/24 ztpfw
-             	kcli create network  -c 192.168.150.0/24 bare-net
-             	echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P disconnected="false" -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-             	kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=3 -P memory=32000 -P version="${VERSION}" -P tag="${t}" -P cluster="${OC_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
-             	export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-             	oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
+                echo "Multinode + Metal³ + IPv4 + connected"
+                export NUMMASTERS=3
+                export MEMORY=32000
+                export EXTRAARGS="-P disconnected='false' -P cluster=${OC_CLUSTER_NAME}"
             fi
+
+            t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
+            kcli delete vm test-ci-sno -y || true
+            kcli delete plan -y test-ci || true
+            kcli delete network bare-net -y || true
+            kcli delete network ztpfw -y || true
+            kcli create network --nodhcp -c 192.168.7.0/24 ztpfw -i
+            kcli create network -c 192.168.150.0/24 bare-net
+            echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=${NUMMASTERS} -P memory=${MEMORY} -P version="${VERSION}" -P tag="${t}" ${EXTRAARGS} "${OC_CLUSTER_NAME}"
+            kcli kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=${NUMMASTERS} -P memory=${MEMORY} -P version="${VERSION}" -P tag="${t}" ${EXTRAARGS} "${OC_CLUSTER_NAME}"
+
+            export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+            oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
+
         fi
     fi
 fi
