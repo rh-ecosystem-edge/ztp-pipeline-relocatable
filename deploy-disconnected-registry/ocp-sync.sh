@@ -42,9 +42,6 @@ function mirror_ocp() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo
 
-    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
-    ####### using the vfs driver, and this causes errors.
-
     if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
         echo "Checking Private registry creds"
         if [[ ! $( podman login ${LOCAL_REG} --authfile ${PULL_SECRET}) ]]; then

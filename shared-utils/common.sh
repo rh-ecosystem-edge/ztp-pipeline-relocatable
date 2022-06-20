@@ -4,12 +4,17 @@
 
 #set -x
 function registry_login() {
-    # workaround runnning podman commands
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
     export STORAGE_DRIVER=vfs
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
-    
-    ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-    ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS}
+
+    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+        ${PODMAN_LOGIN_CMD} ${1} --authfile=${PULL_SECRET}
+    else
+        ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+        ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS}
+    fi
 }
 
 function check_resource() {
