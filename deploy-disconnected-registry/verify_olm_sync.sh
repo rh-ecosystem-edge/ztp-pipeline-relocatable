@@ -44,7 +44,7 @@ elif [[ ${1} == 'edgecluster' ]]; then
 fi
 
 echo ">>>> Verifying OLM Sync: ${1}"
-${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+registry_login ${DESTINATION_REGISTRY}
 for packagemanifest in $(oc --kubeconfig=${TGT_KUBECONFIG} get packagemanifest -n openshift-marketplace -o name ${PACKAGES_FORMATED}); do
     for package in $(oc --kubeconfig=${TGT_KUBECONFIG} get ${packagemanifest} -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
         echo "Verify Package: ${package}"
@@ -54,7 +54,7 @@ for packagemanifest in $(oc --kubeconfig=${TGT_KUBECONFIG} get packagemanifest -
 done
 
 echo ">>>> Verifying Certified OLM Sync: ${1}"
-${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+registry_login ${DESTINATION_REGISTRY}
 for packagemanifest in $(oc --kubeconfig=${TGT_KUBECONFIG} get packagemanifest -n openshift-marketplace -o name ${CERTIFIED_PACKAGES_FORMATED}); do
     for package in $(oc --kubeconfig=${TGT_KUBECONFIG} get ${packagemanifest} -o jsonpath='{.status.channels[*].currentCSVDesc.relatedImages}' | sed "s/ /\n/g" | tr -d '[],' | sed 's/"/ /g'); do
         echo "Verify Package: ${package}"

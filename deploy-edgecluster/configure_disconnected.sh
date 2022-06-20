@@ -174,7 +174,7 @@ function icsp_maker() {
         RAW_SRC=${entry%%=*}
         RAW_DST=${entry##*=}
         SRC_IMG="${RAW_SRC%%@*}"
-        DST_IMG="${RAW_DST%%:*}"
+        DST_IMG="${RAW_DST}"
         add_icsp_entry ${SRC_IMG} ${DST_IMG}
     done <${MAP_FILE}
 }

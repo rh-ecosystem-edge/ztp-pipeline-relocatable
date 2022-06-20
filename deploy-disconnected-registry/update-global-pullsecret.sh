@@ -44,7 +44,7 @@ function prepare_env() {
 if [[ ${1} == 'hub' ]]; then
 
     prepare_env 'hub'
-    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+    registry_login ${DESTINATION_REGISTRY}
     oc --kubeconfig=${KUBECONFIG_HUB} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${PULL_SECRET}
 
 elif [[ ${1} == "edgecluster" ]]; then

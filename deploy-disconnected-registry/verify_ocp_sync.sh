@@ -21,8 +21,7 @@ elif [[ ${1} == 'edgecluster' ]]; then
     TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
 fi
 
-echo "Logging into ${DESTINATION_REGISTRY}"
-${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}                                                                                                         # to create a merge with the registry original adding the registry auth entry
+registry_login ${DESTINATION_REGISTRY}
 if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} adm release info "${DESTINATION_REGISTRY}"/"${OCP_DESTINATION_REGISTRY_IMAGE_NS}":"${OC_OCP_TAG}" --registry-config="${PULL_SECRET}" | wc -l) -gt 1 ]]; then ## line 1 == error line. If found image should show more information (>1 line)
     #Everyting is ready
     echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
