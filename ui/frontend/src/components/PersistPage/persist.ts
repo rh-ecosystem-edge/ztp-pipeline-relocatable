@@ -128,8 +128,18 @@ export const persist = async (
   }
 
   console.log('Saving of IDP is over, about to continue with Domain.');
+  if (!(await persistDomain(setError, setProgress, state.domain, state.customCerts))) {
+    return;
+  }
+
+  console.log('Domain persisted, blocking progress till reconciled.');
+  // Let the operator reconciliation start
+  await delay(DELAY_BEFORE_FINAL_REDIRECT);
+  if (!(await waitForClusterOperator(setError, 'authentication'))) {
+    return false;
+  }
+
   if (
-    (await persistDomain(setError, setProgress, state.domain, state.customCerts)) &&
     (await saveIngress(setError, setProgress, state.ingressIp)) &&
     (await saveApi(setError, setProgress, state.apiaddr))
   ) {
