@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -121,6 +121,7 @@ jobs:
           echo "Git hash: ${{ github.sha }}"
           echo ">>>>"
 
+          BRANCH=${{ github.event.pull_request.head.ref }} make bootstrap
           RELEASE=${RELEASE} make build-edgecluster-compact
           RELEASE=${RELEASE} make deploy-pipe-edgecluster-compact-ci
 

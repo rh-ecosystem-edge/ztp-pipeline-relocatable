@@ -8,6 +8,7 @@ import { ipWithoutDots } from '../utils';
 import { getHtpasswdIdentityProvider, getOAuth } from '../../resources/oauth';
 import { workaroundUnmarshallObject } from '../../test-utils';
 import { getIngressConfig } from '../../resources/ingress';
+import { getClusterDomainFromComponentRoutes, Ingress } from '../../copy-backend-common';
 
 export const initialDataLoad = async ({
   setNextPage,
@@ -17,14 +18,18 @@ export const initialDataLoad = async ({
   handleSetDomain,
   setClean,
 }: {
-  setNextPage?: (href: string) => void;
+  setNextPage: (href: string) => void;
   setError: (message?: string) => void;
   handleSetApiaddr: K8SStateContextData['handleSetApiaddr'];
   handleSetIngressIp: K8SStateContextData['handleSetIngressIp'];
   handleSetDomain: K8SStateContextData['handleSetDomain'];
   setClean: K8SStateContextData['setClean'];
 }) => {
-  let ingressService, apiService, oauth, ingressConfig;
+  console.log('Initial data load');
+
+  let ingressService, apiService, oauth;
+  let ingressConfig: Ingress | undefined;
+
   try {
     oauth = await getOAuth().promise;
     ingressService = await getService({
@@ -63,22 +68,18 @@ export const initialDataLoad = async ({
     ),
   );
 
-  let domain = ingressConfig?.spec?.domain?.trim();
-  if (domain?.startsWith('apps.')) {
-    domain = domain.substring('apps.'.length);
-  }
-  if (domain) {
-    handleSetDomain(domain);
+  const currentHostname = getClusterDomainFromComponentRoutes(ingressConfig);
+  if (currentHostname) {
+    handleSetDomain(currentHostname);
   }
 
   setClean();
 
   if (getHtpasswdIdentityProvider(oauth)) {
     // The Edit flow for the 2nd and later run
-    setNextPage && setNextPage('/settings');
-    return;
+    setNextPage('/settings');
+  } else {
+    // The Wizard for the very first run
+    setNextPage('/wizard/username');
   }
-
-  // The Wizard for the very first run
-  setNextPage && setNextPage('/wizard/username');
 };

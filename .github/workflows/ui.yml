@@ -5,16 +5,15 @@ on:
     paths:
       - 'ui/**'
     types: [labeled,synchronize]
-  pull_request_review:
-    types: [submitted, edited]
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    if: (!contains(github.event.label.name, 'skip-ci-ui') || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci-ui')
+    if: (!contains(github.event.label.name, 'skip-ci-ui') && !contains(github.event.pull_request.labels.*.name, 'skip-ci-ui')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci-ui')
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: '--max-old-space-size=8192'

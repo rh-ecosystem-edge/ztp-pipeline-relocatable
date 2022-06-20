@@ -162,13 +162,13 @@ exports[`PersistPage can render 1`] = `
                   aria-labelledby="persist-progress-description"
                   aria-valuemax="100"
                   aria-valuemin="0"
-                  aria-valuenow="14.285714285714285"
+                  aria-valuenow="28.57142857142857"
                   class="pf-c-progress__bar"
                   role="progressbar"
                 >
                   <div
                     class="pf-c-progress__indicator"
-                    style="width: 14%;"
+                    style="width: 28%;"
                   >
                     <span
                       class="pf-c-progress__measure"

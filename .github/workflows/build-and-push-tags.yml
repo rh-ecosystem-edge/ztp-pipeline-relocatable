@@ -10,7 +10,7 @@ on:
        - published
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -27,6 +27,14 @@ jobs:
         run: |
           sudo apt-get -y install podman
           mkdir -p ~/.docker
+
+      - name: Housekeeping clean old podman resources
+        continue-on-error: true
+        id: housekeeping
+        run: |
+          DATE=$(date --date="21 days ago" + "%Y-%m-%d")
+          podman rm --force $(podman ps -a -q --filter until=$DATE)
+          podman rmi --force $(podman images -a -q --filter until=${DATE})
 
       - name: Login to Quay
         env:
