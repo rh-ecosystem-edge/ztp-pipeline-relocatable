@@ -3,6 +3,19 @@
 # EDGECLUSTERS_FILE variable must be exported in the environment
 
 #set -x
+function registry_login() {
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+
+    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+        ${PODMAN_LOGIN_CMD} ${1} --authfile=${PULL_SECRET}
+    else
+        ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+        ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS}
+    fi
+}
 
 function check_resource() {
     # 1 - Resource type: "deployment"
@@ -318,3 +331,13 @@ if [[ -n ${PRESERVE_SECRET:-false} ]]; then
 fi
 
 export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
+
+export EDGECLUSTERS_REGISTRY=$(yq eval ".config.REGISTRY" ${EDGECLUSTERS_FILE} || null )
+if [[ ${EDGECLUSTERS_REGISTRY} == "" || ${EDGECLUSTERS_REGISTRY} == null ]]; then
+    export CUSTOM_REGISTRY=false
+    export REGISTRY=ztpfw-registry
+else
+    export CUSTOM_REGISTRY=true
+    REGISTRY=$(echo ${EDGECLUSTERS_REGISTRY} | cut -d"." -f1 )
+    LOCAL_REG=${EDGECLUSTERS_REGISTRY}
+fi
