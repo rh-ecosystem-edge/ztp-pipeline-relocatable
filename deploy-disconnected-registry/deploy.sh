@@ -38,48 +38,6 @@ function extract_kubeconfig() {
     oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${EDGE_KUBECONFIG}
 }
 
-function side_evict_error() {
-
-    KUBEC=${1}
-    echo ">> Looking for eviction errors"
-    status='SchedulingDisabled'
-
-    conflicting_node="$(oc --kubeconfig=${KUBEC} get node --no-headers | grep ${status} | cut -f1 -d\ )"
-
-    if [[ -z ${conflicting_node} ]]; then
-        echo "No masters on ${status}"
-    else
-        conflicting_daemon_pod=$(oc --kubeconfig=${KUBEC} get pod -n openshift-machine-config-operator -o wide --no-headers | grep daemon | grep ${conflicting_node} | cut -f1 -d\ )
-
-        # Check if conflicting_daemon_pod is not empty
-        if [[ -z ${conflicting_daemon_pod} ]]; then
-            echo "No conflicting daemon pod exists in ${conflicting_node}"
-        else
-            pattern_1="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep evicting | tail -1 | grep pods)"
-            pattern_2="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep "Draining failed" | tail -1 | grep pod)"
-
-            for log_entry in "${pattern_1}" "${pattern_2}"; do
-                if [[ -z ${log_entry} ]]; then
-                    echo "No Conflicting LogEntry on ${conflicting_daemon_pod}"
-                else
-                    echo ">> Conflicting LogEntry Found!!"
-                    pod=$(echo ${log_entry##*pods/} | cut -d\" -f2)
-                    conflicting_ns=$(oc --kubeconfig=${KUBEC} get pod -A | grep ${pod} | cut -f1 -d\ )
-
-                    echo ">> Clean Eviction triggered info: "
-                    echo NODE: ${conflicting_node}
-                    echo DAEMON: ${conflicting_daemon_pod}
-                    echo NS: ${conflicting_ns}
-                    echo LOG: ${log_entry}
-                    echo POD: ${pod}
-
-                    oc --kubeconfig=${KUBEC} delete pod -n ${conflicting_ns} ${pod} --force --grace-period=0
-                fi
-            done
-        fi
-    fi
-}
-
 function check_mcp() {
 
     echo Mode: ${1}
