@@ -3,7 +3,7 @@ kind: MachineConfig
 metadata:
   labels:
     machineconfiguration.openshift.io/role: master
-  name: update-localregistry-ca-certs
+  name: update-localregistry-ca-certs-master
 spec:
   config:
     ignition:
