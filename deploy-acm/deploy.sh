@@ -36,7 +36,7 @@ if ./verify.sh; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 04-acm-cr.yml
     # We need to give some time to ACM Operator to create the proper helmcharts
-    sleep 60
+    sleep 240
 
     echo ">>>> Wait until RHACM ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
