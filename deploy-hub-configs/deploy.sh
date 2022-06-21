@@ -18,6 +18,7 @@ if ./verify.sh; then
 
     until oc --kubeconfig=${KUBECONFIG_HUB} get crd/agentserviceconfigs.agent-install.openshift.io >/dev/null 2>&1 ; do sleep 1 ; done
     until oc --kubeconfig=${KUBECONFIG_HUB} get crd/clusterimagesets.hive.openshift.io >/dev/null 2>&1 ; do sleep 1 ; done
+    sleep 60
 
     echo ">>>> Preparing and replace info in the manifests"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
