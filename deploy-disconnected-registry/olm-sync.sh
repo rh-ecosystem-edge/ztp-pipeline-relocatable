@@ -263,7 +263,7 @@ function mirror_certified() {
     echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
     registry_login ${SOURCE_REGISTRY}
     echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
-    registry_login ${DESTINATION_REGISTRY} 
+    registry_login ${DESTINATION_REGISTRY}
 
     if [ ! -f ~/.docker/config.json ]; then
         echo "INFO: missing ~/.docker/config.json config"

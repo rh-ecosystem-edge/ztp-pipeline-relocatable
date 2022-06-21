@@ -32,7 +32,7 @@ if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
         exit 2
     fi
 else
-    # Running with  Custom registry 
+    # Running with  Custom registry
     exit 10
 fi
 
