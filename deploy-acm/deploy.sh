@@ -35,8 +35,8 @@ if ./verify.sh; then
     echo ">>>> Deploy RHACM cr manifest"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 04-acm-cr.yml
-    # We need to give some time to ACM Operator to create the proper helmcharts
-    sleep 240
+    # We need to give some time to ACM Operator to create the proper resources
+    sleep 60
 
     echo ">>>> Wait until RHACM ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
