@@ -24,9 +24,9 @@ export const generateCertificate = async (
     const delimiter = '-----generateCertificateDelimiter-----';
 
     try {
-      const { stdout: _stdout } = await exec(
-        `/usr/bin/openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ${keyFile} -out ${certFile} -subj "/CN=${domain}" -addext "subjectAltName = DNS:${domain}" && cat ${keyFile} && echo ${delimiter} && cat ${certFile}`,
-      );
+      const command = `/usr/bin/openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ${keyFile} -out ${certFile} -subj "/CN=${domain}" -addext "subjectAltName = DNS:${domain}" && cat ${keyFile} && echo ${delimiter} && cat ${certFile}`;
+      logger.debug('Executing: ', command);
+      const { stdout: _stdout } = await exec(command);
       rmdirSync(tmpdir, { recursive: true, maxRetries: 5 });
 
       const stdout = _stdout?.toString();
@@ -66,6 +66,22 @@ export const createCertSecret = async (
     const object = cloneDeep(TLS_SECRET);
     object.metadata.generateName = namePrefix;
     object.data = certificate;
+    object.data = {
+      'tls.crt': certificate['tls.crt'],
+      'tls.key': certificate['tls.key'],
+    };
+
+    if (!object.data['tls.crt'] || !object.data['tls.key']) {
+      res
+        .writeHead(
+          400,
+          `Can not create ${namePrefix} TLS secret in the ${
+            TLS_SECRET.metadata.namespace || ''
+          } namespace, missing either tls.crt or tls.key.`,
+        )
+        .end();
+      return;
+    }
 
     // TODO: what about clean-up?
     const response = await createSecret(token, object);
@@ -74,6 +90,13 @@ export const createCertSecret = async (
       return response.body;
     }
 
+    logger.error(
+      `Can not create ${namePrefix} TLS secret in the ${
+        TLS_SECRET.metadata.namespace || ''
+      } namespace.`,
+      ' Response: ',
+      response,
+    );
     res
       .writeHead(
         response.statusCode,
@@ -83,6 +106,13 @@ export const createCertSecret = async (
       )
       .end();
   } catch (e) {
+    logger.error(
+      `Can not create ${namePrefix} TLS secret in the ${
+        TLS_SECRET.metadata.namespace || ''
+      } namespace. Internal error.`,
+      ' Error: ',
+      e,
+    );
     res
       .writeHead(
         500,

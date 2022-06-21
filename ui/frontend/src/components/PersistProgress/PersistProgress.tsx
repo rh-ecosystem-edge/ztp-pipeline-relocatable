@@ -12,9 +12,9 @@ let persistStepsCount = 1;
 export const PersistSteps = {
   // Important: keep following steps aligned with actual order in persist()
   PersistIDP: persistStepsCount++,
+  PersistDomain: persistStepsCount++,
   SaveIngress: persistStepsCount++,
   SaveApi: persistStepsCount++,
-  PersistDomain: persistStepsCount++,
 
   ReconcileUIPod: persistStepsCount++,
   ReconcileApiOperator: persistStepsCount++,
@@ -29,7 +29,7 @@ PersistStepLabels[PersistSteps.SaveApi] = 'Saving API IP';
 PersistStepLabels[PersistSteps.PersistDomain] = 'Saving domain change';
 PersistStepLabels[PersistSteps.ReconcileUIPod] = 'Waiting for the configuration pod';
 PersistStepLabels[PersistSteps.ReconcileApiOperator] = 'Waiting for the API operator';
-PersistStepLabels[PersistSteps.ReconcileAuthOperator] = 'Waiting for the outhentication operator';
+PersistStepLabels[PersistSteps.ReconcileAuthOperator] = 'Waiting for the authentication operator';
 
 export type UsePersistProgressType = {
   progress: number;

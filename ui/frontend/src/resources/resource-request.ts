@@ -8,6 +8,7 @@ import {
   StatusKind,
 } from '../backend-shared';
 import { getZtpfwUrl } from '../components/utils';
+import { logFrontendRequest, logFrontendResponse } from './frontendLogging';
 
 export interface IRequestResult<ResultType = unknown> {
   promise: Promise<ResultType>;
@@ -349,7 +350,7 @@ export async function fetchRetry<T>(options: {
   while (true) {
     let response: Response | undefined;
     try {
-      response = await fetch(options.url, {
+      const reqInit: RequestInit = {
         method: options.method ?? 'GET',
         credentials: 'include',
         headers,
@@ -357,7 +358,9 @@ export async function fetchRetry<T>(options: {
         signal: options.signal,
         redirect: 'manual',
         // mode: "cors",
-      });
+      };
+      logFrontendRequest(options.url, reqInit);
+      response = await fetch(options.url, reqInit);
     } catch (err) {
       if (options.signal.aborted) {
         throw new ResourceError(`Request aborted`, ResourceErrorCode.RequestAborted);
@@ -431,11 +434,13 @@ export async function fetchRetry<T>(options: {
       }
 
       if (response.status < 300) {
-        return {
+        const result = {
           headers: response.headers,
           status: response.status,
           data: responseData as T,
         };
+        logFrontendResponse(options.url, result);
+        return result;
       }
 
       switch (response.status) {

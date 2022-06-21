@@ -215,10 +215,10 @@ clean-ci:
 	kcli delete vm -y $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0; \
 	list=$$(tkn pr ls -n edgecluster-deployer |grep -i running | cut -d' ' -f1); \
 	for i in ${list}; do tkn pr cancel $${i} -n edgecluster-deployer; done; \
-	oc delete --ignore-not-found=true managedcluster $(EDGE_NAME); \
 	list=$$($ oc get bmh -n $(EDGE_NAME) --no-headers|awk '{print $$1}'); \
 	for i in $${list}; do oc patch -n $(EDGE_NAME) bmh $${i} --type json -p '[ { "op": "remove", "path": "/metadata/finalizers" } ]'; done; \
 	list=$$(oc get secret -n $(EDGE_NAME) --no-headers |grep bmc|awk '{print $$1}'); \
 	for i in $${list}; do oc patch -n $(EDGE_NAME) secret $${i} --type json -p '[ { "op": "remove", "path": "/metadata/finalizers" } ]'; done; \
+	oc delete --ignore-not-found=true managedcluster $(EDGE_NAME); \
 	oc delete --ignore-not-found=true ns $(EDGE_NAME); \
 	oc rollout restart -n openshift-machine-api deployment/metal3;

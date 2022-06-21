@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 
 import App from './App';
 import { getBackendUrl } from './resources';
+import { GIT_BUILD_SHA } from './sha';
 
 import './index.css';
 
@@ -21,5 +22,6 @@ ReactDOM.render(
 // reportWebVitals();
 
 // For debugging - especially after domain change
+console.info('***** The Edgecluster UI version: ', GIT_BUILD_SHA);
 console.log('UI Backend URL: ', getBackendUrl());
 console.log('Frontend accessed at: ', window.location.href);
