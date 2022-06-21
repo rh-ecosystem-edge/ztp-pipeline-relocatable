@@ -51,7 +51,6 @@ jobs:
           RELEASE=${RELEASE} make pipe-image-ci
 
       - name: Build and Push UI Image
-        continue-on-error: true  # Workaround until the generation is fixed
         id: build-ui
         run: |
           cd ${{ github.workspace }}
