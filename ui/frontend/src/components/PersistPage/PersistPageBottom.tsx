@@ -39,7 +39,11 @@ export const PersistPageBottom: React.FC = () => {
         navigateToNewDomain(state.domain, '/wizard/final'),
       );
     } else {
-      console.warn('No change to persist on the PersistPage');
+      console.warn(
+        'No change to persist on the PersistPage. The reconcilliation might be still running if the user got here after page refresh.',
+      );
+      // TODO: Find out what's going on and resume the progress bar for the user
+      navigateToNewDomain(state.domain, '/wizard/welcome');
     }
   }, [retry, setError, progress.setProgress, state]);
 

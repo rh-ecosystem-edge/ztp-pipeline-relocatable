@@ -136,7 +136,7 @@ export const K8SStateContextProvider: React.FC<{
   const fieldValues = React.useRef<K8SStateContextDataFields>(_fv);
   fieldValues.current = _fv;
 
-  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>();
+  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>(_fv);
   const setClean = React.useCallback(() => {
     setSnapshot(fieldValues.current);
   }, [fieldValues]);

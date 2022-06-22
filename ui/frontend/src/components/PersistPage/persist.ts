@@ -163,7 +163,14 @@ export const navigateToNewDomain = async (domain: string, contextPath: string) =
   // We can not check livenessProbe on the new domain due to CORS
   // We can not use pod serving old domain either since it will be terminated and the route changed
   // So just wait...
-  const ztpfwUrl = `https://${ZTPFW_UI_ROUTE_PREFIX}.apps.${domain}${contextPath}`;
+  let ztpfwUrl: string;
+  if (!domain) {
+    // fallback
+    ztpfwUrl = `${window.location.origin}${contextPath}`;
+  } else {
+    ztpfwUrl = `https://${ZTPFW_UI_ROUTE_PREFIX}.apps.${domain}${contextPath}`;
+  }
+
   console.info('Changes are persisted, about to navigate to the new domain: ', ztpfwUrl);
   // We should go with following:
   window.location.replace(ztpfwUrl);
