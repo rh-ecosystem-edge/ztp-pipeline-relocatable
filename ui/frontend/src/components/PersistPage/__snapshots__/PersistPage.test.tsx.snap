@@ -131,7 +131,12 @@ exports[`PersistPage can render 1`] = `
             <div
               class="pf-l-stack__item wizard-sublabel"
             >
-              Saving settings for your edge cluster...
+              Saving settings for your edge cluster, it might take several minutes for cluster to reconcile.
+            </div>
+            <div
+              class="pf-l-stack__item wizard-sublabel"
+            >
+              Please keep this window open until the process is finished.
             </div>
             <div
               class="pf-l-stack__item pf-m-fill"
