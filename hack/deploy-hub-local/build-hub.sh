@@ -60,7 +60,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
                 echo "SNO + Metal3 + Ipv4 + connected"
                 t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
                 kcli delete vm test-ci-sno -y || true; kcli delete network bare-net -y || true
-                kcli create network --nodhcp -c 192.168.7.0/24 ztpfw -i
+                kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
                 kcli create network -c 192.168.150.0/24 bare-net
                 echo kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
                 kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=1 -P memory=40000 -P version="${VERSION}" -P tag="${t}"  "${OC_CLUSTER_NAME}"
