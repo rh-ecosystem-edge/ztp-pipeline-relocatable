@@ -63,7 +63,7 @@ export const PersistPageBottom: React.FC = () => {
             </div>
           </StackItem>
         </>
-      ) : error === undefined ? (
+      ) : (
         <>
           <StackItem>
             <InProgressIcon
@@ -72,28 +72,13 @@ export const PersistPageBottom: React.FC = () => {
             />
           </StackItem>
           <StackItem className="wizard-sublabel">
-            Saving settings for your edge cluster...
-          </StackItem>
-          <StackItem isFilled width="100%">
-            <PersistProgress
-              className="persist-page-bottom__persist-progress"
-              {...progress}
-              progressError={!!error}
-            />
-          </StackItem>
-        </>
-      ) : (
-        <>
-          <StackItem>
-            <InProgressIcon className="persist-page-bottom__success-icon" />
-          </StackItem>
-          <StackItem className="wizard-sublabel">
-            Settings succesfully saved, it might take several minutes for cluster to reconcile.
+            Saving settings for your edge cluster, it might take several minutes for cluster to
+            reconcile.
           </StackItem>
           <StackItem className="wizard-sublabel">
             Please keep this window open until the process is finished.
           </StackItem>
-          <StackItem width="100%">
+          <StackItem isFilled width="100%">
             <PersistProgress
               className="persist-page-bottom__persist-progress"
               {...progress}
