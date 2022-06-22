@@ -30,6 +30,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest-fetch-mock": "^3.0.3",
+    "jest-location-mock": "^1.0.9",
     "prettier": "^2.5.1",
     "string.prototype.replaceall": "^1.0.6"
   },
