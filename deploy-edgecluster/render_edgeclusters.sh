@@ -59,7 +59,8 @@ create_edgecluster_definitions() {
     export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_EDGE_API} ${EDGE_API_NAME}" | base64 -w0)
     export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
-    export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
+    # TODO: Override for BZ 2073197 to override permissions https://bugzilla.redhat.com/show_bug.cgi?id=2073197#c19
+    export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition":{"version":"3.1.0"},"storage":{"files":[{"path":"/etc/hosts","append":[{"source":"data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]},{"overwrite":true,"path":"/etc/containers/policy.json","contents":{"source":"data:text/plain;base64,ewogICAgImRlZmF1bHQiOiBbCiAgICAgICAgewogICAgICAgICAgICAidHlwZSI6ICJpbnNlY3VyZUFjY2VwdEFueXRoaW5nIgogICAgICAgIH0KICAgIF0sCiAgICAidHJhbnNwb3J0cyI6CiAgICAgICAgewogICAgICAgICAgICAiZG9ja2VyLWRhZW1vbiI6CiAgICAgICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAgICAgIiI6IFt7InR5cGUiOiJpbnNlY3VyZUFjY2VwdEFueXRoaW5nIn1dCiAgICAgICAgICAgICAgICB9CiAgICAgICAgfQp9Cgo="}}]}}'
     export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
     # Generate the edgecluster definition yaml
     cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
