@@ -355,6 +355,7 @@ EOF
          next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
 EOF
         fi
+        export NUM_M=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
         if [ "${NUM_M}" -eq "1" ]; then
             cat <<EOF >>${OUTPUT}
       - destination: 0.0.0.0/0
