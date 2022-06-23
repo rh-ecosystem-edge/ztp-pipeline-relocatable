@@ -359,18 +359,18 @@ EOF
         echo "NUM_M: $NUM_M"
         if [[ "${NUM_M}" -eq "1" ]]; then
             cat <<EOF >>${OUTPUT}
-      - destination: 0.0.0.0/0
-          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
-          metric: 99
-          table-id: 254
+       - destination: 0.0.0.0/0
+         next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
+         metric: 99
+         table-id: 254
 EOF
           if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
             cat <<EOF >>${OUTPUT}
-          next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
+         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
 EOF
           else
             cat <<EOF >>${OUTPUT}
-          next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
+         next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
 EOF
           fi
         fi
