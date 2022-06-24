@@ -183,14 +183,13 @@ bootstrap-ci:
 	./bootstrap.sh $(RELEASE)
 
 clean:
-	kcli delete vm -y $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0; \
 	oc delete managedcluster $(EDGE_NAME); \
 	oc delete ns $(EDGE_NAME); \
-	oc rollout restart -n openshift-machine-api deployment/metal3;
+	oc rollout restart -n openshift-machine-api deployment/metal3; \
+	kcli delete vm -y $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0
 
 clean-ci:
 	# From: https://github.com/stolostron/deploy/blob/master/hack/cleanup-managed-cluster.sh
-	kcli delete vm -y $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0; \
 	list=$$(tkn pr ls -n edgecluster-deployer |grep -i running | cut -d' ' -f1); \
 	for i in ${list}; do tkn pr cancel $${i} -n edgecluster-deployer; done; \
 	list=$$($ oc get bmh -n $(EDGE_NAME) --no-headers|awk '{print $$1}'); \
@@ -199,4 +198,5 @@ clean-ci:
 	for i in $${list}; do oc patch -n $(EDGE_NAME) secret $${i} --type json -p '[ { "op": "remove", "path": "/metadata/finalizers" } ]'; done; \
 	oc delete --ignore-not-found=true managedcluster $(EDGE_NAME); \
 	oc delete --ignore-not-found=true ns $(EDGE_NAME); \
-	oc rollout restart -n openshift-machine-api deployment/metal3;
+	oc rollout restart -n openshift-machine-api deployment/metal3; \
+	kcli delete vm -y $(EDGE_NAME)-m0 $(EDGE_NAME)-m1 $(EDGE_NAME)-m2 $(EDGE_NAME)-w0
