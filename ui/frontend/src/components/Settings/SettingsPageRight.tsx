@@ -244,6 +244,7 @@ export const SettingsPageRight: React.FC<{
               data-testid="settings-page-button-cancel"
               variant={ButtonVariant.link}
               onClick={onCancelEdit}
+              isDisabled={isSaving}
             >
               Cancel
             </Button>
