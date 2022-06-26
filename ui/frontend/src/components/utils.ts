@@ -169,3 +169,15 @@ export const delay = (ms: number) =>
   });
 
 export const getZtpfwUrl = () => `https://${window.location.hostname}:${window.location.port}`;
+
+export const bindOnBeforeUnloadPage = (message: string) => {
+  if (window.onbeforeunload) {
+    console.error('There is already window.onbeforeunload registered!! Rewriting it.');
+  }
+
+  window.onbeforeunload = () => message;
+};
+
+export const unbindOnBeforeUnloadPage = () => {
+  window.onbeforeunload = null;
+};

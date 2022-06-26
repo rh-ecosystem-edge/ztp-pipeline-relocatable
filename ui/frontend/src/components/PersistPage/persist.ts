@@ -2,7 +2,7 @@ import { getCondition, ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
 import { getClusterOperator } from '../../resources/clusteroperator';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { K8SStateContextData } from '../types';
-import { delay } from '../utils';
+import { bindOnBeforeUnloadPage, delay, unbindOnBeforeUnloadPage } from '../utils';
 import {
   DELAY_BEFORE_FINAL_REDIRECT,
   DELAY_BEFORE_QUERY_RETRY,
@@ -106,56 +106,64 @@ export const persist = async (
   setProgress: UsePersistProgressType['setProgress'],
   onSuccess: () => void,
 ) => {
-  const persistIdpResult = await persistIdentityProvider(
-    setError,
-    setProgress,
-    state.username,
-    state.password,
-  );
+  try {
+    bindOnBeforeUnloadPage(
+      'Data are being persisted. By leaving or refreshing the page, you will loose monitoring of the progress. Do you want to leave the page?',
+    );
 
-  if (persistIdpResult === PersistIdentityProviderResult.error) {
-    console.error('Failed to persist IDP, giving up.');
-    return;
-  }
+    const persistIdpResult = await persistIdentityProvider(
+      setError,
+      setProgress,
+      state.username,
+      state.password,
+    );
 
-  if (persistIdpResult === PersistIdentityProviderResult.userCreated) {
-    // Let the operator reconciliation start
-    await delay(DELAY_BEFORE_FINAL_REDIRECT);
-
-    if (!(await waitForClusterOperator(setError, 'authentication'))) {
-      return false;
-    }
-  }
-
-  console.log('Saving of IDP is over, about to continue with Domain.');
-  if (!(await persistDomain(setError, setProgress, state.domain, state.customCerts))) {
-    return;
-  }
-
-  console.log('Domain persisted, blocking progress till reconciled.');
-  // Let the operator reconciliation start
-  await delay(DELAY_BEFORE_FINAL_REDIRECT);
-  if (!(await waitForClusterOperator(setError, 'authentication'))) {
-    return false;
-  }
-
-  if (
-    (await saveIngress(setError, setProgress, state.ingressIp)) &&
-    (await saveApi(setError, setProgress, state.apiaddr))
-  ) {
-    // finished with success
-    console.log('Data persisted, blocking progress till reconciled');
-
-    setError(null); // show the green circle of success
-
-    if (!(await waitOnReconciliation(setError, setProgress, state, persistIdpResult))) {
+    if (persistIdpResult === PersistIdentityProviderResult.error) {
+      console.error('Failed to persist IDP, giving up.');
       return;
     }
 
-    // delete route backup
-    // TODO
+    if (persistIdpResult === PersistIdentityProviderResult.userCreated) {
+      // Let the operator reconciliation start
+      await delay(DELAY_BEFORE_FINAL_REDIRECT);
 
-    onSuccess();
+      if (!(await waitForClusterOperator(setError, 'authentication'))) {
+        return false;
+      }
+    }
+
+    console.log('Saving of IDP is over, about to continue with Domain.');
+    if (!(await persistDomain(setError, setProgress, state.domain, state.customCerts))) {
+      return;
+    }
+
+    console.log('Domain persisted, blocking progress till reconciled.');
+    // Let the operator reconciliation start
+    await delay(DELAY_BEFORE_FINAL_REDIRECT);
+    if (!(await waitForClusterOperator(setError, 'authentication'))) {
+      return false;
+    }
+
+    if (
+      (await saveIngress(setError, setProgress, state.ingressIp)) &&
+      (await saveApi(setError, setProgress, state.apiaddr))
+    ) {
+      // finished with success
+      console.log('Data persisted, blocking progress till reconciled');
+
+      setError(null); // show the green circle of success
+
+      if (!(await waitOnReconciliation(setError, setProgress, state, persistIdpResult))) {
+        return;
+      }
+
+      // delete route backup
+      // TODO
+
+      onSuccess();
+    }
+  } finally {
+    unbindOnBeforeUnloadPage();
   }
 };
 
@@ -163,7 +171,14 @@ export const navigateToNewDomain = async (domain: string, contextPath: string) =
   // We can not check livenessProbe on the new domain due to CORS
   // We can not use pod serving old domain either since it will be terminated and the route changed
   // So just wait...
-  const ztpfwUrl = `https://${ZTPFW_UI_ROUTE_PREFIX}.apps.${domain}${contextPath}`;
+  let ztpfwUrl: string;
+  if (!domain) {
+    // fallback
+    ztpfwUrl = `${window.location.origin}${contextPath}`;
+  } else {
+    ztpfwUrl = `https://${ZTPFW_UI_ROUTE_PREFIX}.apps.${domain}${contextPath}`;
+  }
+
   console.info('Changes are persisted, about to navigate to the new domain: ', ztpfwUrl);
   // We should go with following:
   window.location.replace(ztpfwUrl);

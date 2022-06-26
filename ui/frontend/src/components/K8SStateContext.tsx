@@ -123,72 +123,52 @@ export const K8SStateContextProvider: React.FC<{
     usernameValidation,
   ]);
 
-  const fieldValues: K8SStateContextDataFields = React.useMemo(
-    () => ({
-      username,
-      password,
-      apiaddr,
-      ingressIp,
-      domain,
-      originalDomain,
-      customCerts,
-    }),
-    [username, password, apiaddr, ingressIp, domain, originalDomain, customCerts],
-  );
+  const _fv: K8SStateContextDataFields = {
+    username,
+    password,
+    apiaddr,
+    ingressIp,
+    domain,
+    originalDomain,
+    customCerts,
+  };
 
-  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>();
+  const fieldValues = React.useRef<K8SStateContextDataFields>(_fv);
+  fieldValues.current = _fv;
+
+  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>(_fv);
   const setClean = React.useCallback(() => {
-    setSnapshot(fieldValues);
+    setSnapshot(fieldValues.current);
   }, [fieldValues]);
   const isDirty = React.useCallback((): boolean => {
-    return !isEqual(fieldValues, snapshot);
+    return !isEqual(fieldValues.current, snapshot);
   }, [fieldValues, snapshot]);
 
-  const value = React.useMemo(
-    () => ({
-      ...fieldValues,
+  const value = {
+    ...fieldValues.current,
 
-      isDirty,
-      setClean,
-      isAllValid,
+    isDirty,
+    setClean,
+    isAllValid,
 
-      usernameValidation,
-      handleSetUsername,
+    usernameValidation,
+    handleSetUsername,
 
-      passwordValidation,
-      handleSetPassword,
+    passwordValidation,
+    handleSetPassword,
 
-      apiaddrValidation,
-      handleSetApiaddr,
+    apiaddrValidation,
+    handleSetApiaddr,
 
-      ingressIpValidation,
-      handleSetIngressIp,
+    ingressIpValidation,
+    handleSetIngressIp,
 
-      domainValidation,
-      handleSetDomain,
+    domainValidation,
+    handleSetDomain,
 
-      customCertsValidation,
-      setCustomCertificate,
-    }),
-    [
-      fieldValues,
-      isDirty,
-      setClean,
-      isAllValid,
-      usernameValidation,
-      handleSetUsername,
-      passwordValidation,
-      handleSetPassword,
-      apiaddrValidation,
-      handleSetApiaddr,
-      ingressIpValidation,
-      handleSetIngressIp,
-      domainValidation,
-      handleSetDomain,
-      customCertsValidation,
-      setCustomCertificate,
-    ],
-  );
+    customCertsValidation,
+    setCustomCertificate,
+  };
 
   return <K8SStateContext.Provider value={value}>{children}</K8SStateContext.Provider>;
 };

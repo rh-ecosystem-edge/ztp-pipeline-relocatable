@@ -5,6 +5,7 @@
 import '@testing-library/jest-dom';
 import replaceAllInserter from 'string.prototype.replaceall';
 import fetchMock from 'jest-fetch-mock';
+import 'jest-location-mock';
 
 replaceAllInserter.shim();
 fetchMock.enableMocks();
