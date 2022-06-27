@@ -3,7 +3,15 @@ set -euo pipefail
 
 #clean before
 > /etc/exports
-rm -fr /pv0*
+
+# Generate list of PV's
+PVS=$(seq 1 10)
+
+# Remove always inside 'pv' folder to avoid root disk nuking
+for i in ${PVS}; do
+	export PV=$(printf "%03d" ${i})
+	rm -fr /pv$PV/*
+done
 
 # install the nfs
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
@@ -11,7 +19,7 @@ export PRIMARY_IP=192.168.150.1
 dnf -y install nfs-utils
 systemctl enable --now nfs-server
 export MODE="ReadWriteOnce"
-for i in $(seq 1 10); do
+for i in ${PVS}; do
 	export PV=pv$(printf "%03d" ${i})
 	mkdir /${PV} ||true
 	echo "/${PV} *(rw,no_root_squash)" >>/etc/exports
