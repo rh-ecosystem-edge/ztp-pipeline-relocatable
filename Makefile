@@ -32,7 +32,7 @@ pipe-image-ci: build-pipe-image-ci push-pipe-image-ci
 ui-image-ci: build-ui-image-ci push-ui-image-ci
 
 all-hub-sno: build-hub-sno bootstrap wait-for-hub-sno deploy-pipe-hub-sno
-all-hub-compact: build-hub-compact bootstrap deploy-pipe-hub-compact
+all-hub-compact: build-hub-compact bootstrap wait-for-mco-compact deploy-pipe-hub-compact
 all-edgecluster-sno: build-edgecluster-sno bootstrap deploy-pipe-edgecluster-sno
 all-edgecluster-compact: build-edgecluster-compact bootstrap deploy-pipe-edgecluster-compact
 
@@ -93,6 +93,9 @@ build-edgecluster-sno-2nics:
 build-edgecluster-compact-2nics:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact false
+
+wait-for-mco-compact:
+	${PWD}/shared-utils/wait_for_mco_compact.sh &
 
 wait-for-hub-sno:
 	${PWD}/shared-utils/wait_for_sno_mco.sh &
