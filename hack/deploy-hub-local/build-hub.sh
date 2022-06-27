@@ -84,7 +84,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             		-P tag="${t}" ${EXTRAARGS} 
             		"${OC_CLUSTER_NAME}"
             """
-            kcli kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=${NUMMASTERS} -P memory=${MEMORY} -P version="${VERSION}" -P tag="${t}" ${EXTRAARGS} "${OC_CLUSTER_NAME}"
+            kcli create cluster openshift --force --paramfile=hub-install.yml -P masters=${NUMMASTERS} -P memory=${MEMORY} -P version="${VERSION}" -P tag="${t}" ${EXTRAARGS} "${OC_CLUSTER_NAME}"
 
             export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
             oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
