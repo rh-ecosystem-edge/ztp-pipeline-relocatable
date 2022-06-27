@@ -143,7 +143,7 @@ EOF
   apiVIP: "$CHANGE_EDGE_API"
   ingressVIP: "$CHANGE_EDGE_INGRESS"
   networking:
-    NetworkType: OVNKubernetes
+    networkType: OVNKubernetes
     clusterNetwork:
       - cidr: "$CHANGE_EDGE_CLUSTER_NET_CIDR"
         hostPrefix: $CHANGE_EDGE_CLUSTER_NET_PREFIX
@@ -155,7 +155,7 @@ EOF
     else # SNO
         cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   networking:
-    NetworkType: OVNKubernetes
+    networkType: OVNKubernetes
     clusterNetwork:
       - cidr: "$CHANGE_EDGE_CLUSTER_NET_CIDR"
         hostPrefix: $CHANGE_EDGE_CLUSTER_NET_PREFIX
