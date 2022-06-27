@@ -359,7 +359,7 @@ EOF
         fi
         export NUM_M=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
         echo "NUM_M: $NUM_M"
-        if [[ "${NUM_M}" -eq "1" || "${NUM_M}" -eq "3" ]]; then
+        if [[ "${NUM_M}" -eq "1" ]]; then
             cat <<EOF >>${OUTPUT}
        - destination: 0.0.0.0/0
          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
