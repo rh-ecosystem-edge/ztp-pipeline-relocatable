@@ -1,11 +1,13 @@
 FROM registry.access.redhat.com/ubi8/nodejs-16:latest as builder
 USER root
 
-RUN dnf install -y jq
+RUN dnf update -y && dnf install -y jq
+RUN node --version
 RUN curl --silent "https://api.github.com/repos/yarnpkg/yarn/releases/latest" | jq -r .tag_name | sed -e 's/^v//'> /yarn.version
+RUN echo Latest yarn: `cat /yarn.version`
 # Fix me: Make yarn's version detection dynamic. Unfortunately, the yarn project does not keep list of Assets consistent accross versions (sometimes without a published RPM or of non-deterministric name)
 #RUN echo https://github.com/yarnpkg/yarn/releases/download/v$(cat /yarn.version)/yarn-$(cat /yarn.version)-1.noarch.rpm > /yarn.url
-RUN echo https://github.com/yarnpkg/yarn/releases/download/v1.22.17/yarn-1.22.17-1.noarch.rpm > /yarn.url # Let's hardcode to be safe for now
+RUN echo https://github.com/yarnpkg/yarn/releases/download/v1.22.19/yarn-1.22.19-1.noarch.rpm > /yarn.url # Let's hardcode to be safe for now
 RUN echo Latest yarn version: $(cat /yarn.version). Actually using: $(cat /yarn.url)
 RUN curl -L --output /yarn.rpm $(cat /yarn.url)
 RUN dnf install -y /yarn.rpm
@@ -21,7 +23,7 @@ COPY ./.git ./.git
 RUN cd ./frontend ; yarn get-sha ; cd ../ ; rm -rf ./git
 
 RUN yarn clean
-# Reduce flakiness. The NPM registry network operations can fail sometime ...
+# Reduce flakiness. The NPM registry network operations can fail sometimes ...
 RUN yarn install || (sleep 5 ; yarn install) || (sleep 5 ; yarn install)
 RUN yarn build
 
