@@ -9,7 +9,7 @@ function registry_login() {
     export STORAGE_DRIVER=vfs
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
 
-    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+    if [[ ${CUSTOM_REGISTRY} == "true" ]] || [[ ${1} == "quay.io" ]]; then
         ${PODMAN_LOGIN_CMD} ${1} --authfile=${PULL_SECRET}
     else
         ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
