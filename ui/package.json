@@ -11,7 +11,7 @@
     "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
     "deployprod": "./deployProd.sh",
     "prebuild": "yarn test",
-    "build": "concurrently 'cd frontend && yarn build' 'cd backend && yarn build' -n frontend,backend -c green,blue",
+    "build": "cd frontend && yarn build && cd ../backend && yarn build",
     "backend": "cd backend && source ./envs && yarn start",
     "frontend": "cd frontend && yarn start",
     "lint": "cd frontend && yarn lint && cd ../backend && yarn lint",
