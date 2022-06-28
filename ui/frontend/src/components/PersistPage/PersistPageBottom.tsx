@@ -8,11 +8,8 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core';
-import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons';
-import {
-  global_primary_color_light_100 as progressColor,
-  global_success_color_100 as successColor,
-} from '@patternfly/react-tokens';
+import { InProgressIcon } from '@patternfly/react-icons';
+import { global_primary_color_light_100 as progressColor } from '@patternfly/react-tokens';
 
 import { navigateToNewDomain, persist } from './persist';
 import { PersistErrorType } from './types';
@@ -42,7 +39,11 @@ export const PersistPageBottom: React.FC = () => {
         navigateToNewDomain(state.domain, '/wizard/final'),
       );
     } else {
-      console.warn('No change to persist on the PersistPage');
+      console.warn(
+        'No change to persist on the PersistPage. The reconcilliation might be still running if the user got here after page refresh.',
+      );
+      // TODO: Find out what's going on and resume the progress bar for the user
+      navigateToNewDomain(state.domain, '/wizard/welcome');
     }
   }, [retry, setError, progress.setProgress, state]);
 
@@ -66,7 +67,7 @@ export const PersistPageBottom: React.FC = () => {
             </div>
           </StackItem>
         </>
-      ) : error === undefined ? (
+      ) : (
         <>
           <StackItem>
             <InProgressIcon
@@ -75,28 +76,13 @@ export const PersistPageBottom: React.FC = () => {
             />
           </StackItem>
           <StackItem className="wizard-sublabel">
-            Saving settings for your edge cluster...
-          </StackItem>
-          <StackItem isFilled width="100%">
-            <PersistProgress
-              className="persist-page-bottom__persist-progress"
-              {...progress}
-              progressError={!!error}
-            />
-          </StackItem>
-        </>
-      ) : (
-        <>
-          <StackItem>
-            <CheckCircleIcon
-              color={successColor.value}
-              className="persist-page-bottom__success-icon"
-            />
+            Saving settings for your edge cluster, it might take several minutes for cluster to
+            reconcile.
           </StackItem>
           <StackItem className="wizard-sublabel">
-            Settings succesfully saved, it might take several minutes for cluster to reconcile.
+            Please keep this window open until the process is finished.
           </StackItem>
-          <StackItem width="100%">
+          <StackItem isFilled width="100%">
             <PersistProgress
               className="persist-page-bottom__persist-progress"
               {...progress}

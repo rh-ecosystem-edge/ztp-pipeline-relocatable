@@ -35,15 +35,14 @@ spec:
             value: "3000"
           - name: FRONTEND_URL
             value: "$UI_APP_URL"
-          # Let's compose it via env variables
-          #- name: CLUSTER_API_URL
-          #  value: https://kubernetes.default.svc:443
           - name: OAUTH2_CLIENT_ID
             value: "ztpfwoauth"
           - name: OAUTH2_REDIRECT_URL
             value: "$UI_APP_URL/login/callback"
           - name: OAUTH2_CLIENT_SECRET
             value: "ztpfwoauthsecret"
+          - name: API_LOGGING_ENABLED
+            value: "false" # or "true"
         livenessProbe:
           failureThreshold: 1
           httpGet:

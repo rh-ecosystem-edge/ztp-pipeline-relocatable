@@ -7,3 +7,5 @@ export * from './DomainPage';
 export * from './PersistPage';
 export * from './FinalPage';
 export * from './DownloadSshKeyPage';
+export * from './DomainCertificatesDecisionPage';
+export * from './DomainCertificatesPage';
