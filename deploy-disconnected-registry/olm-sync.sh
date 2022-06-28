@@ -41,10 +41,14 @@ function prepare_env() {
 
 function check_registry() {
     REG=${1}
+    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+        COMMAND=""
+    else
+        COMMAND="--username ${REG_US} --password ${REG_PASS}"
+    fi
 
     for a in {1..30}; do
-        skopeo login ${REG} --authfile=${PULL_SECRET} --username ${REG_US} --password ${REG_PASS}
-        if [[ $? -eq 0 ]]; then
+        if [[ $(skopeo login ${REG} --authfile=${PULL_SECRET} ${COMMAND}) ]]; then
             echo "Registry: ${REG} available"
             break
         fi
@@ -67,11 +71,9 @@ function mirror() {
     fi
 
     echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
-    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+    registry_login ${SOURCE_REGISTRY}
     echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
-    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+    registry_login ${DESTINATION_REGISTRY}
 
     if [ ! -f ~/.docker/config.json ]; then
         echo "INFO: missing ~/.docker/config.json config"
@@ -256,11 +258,9 @@ function mirror_certified() {
     fi
 
     echo ">>>> Podman Login into Source Registry: ${SOURCE_REGISTRY}"
-    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-    ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+    registry_login ${SOURCE_REGISTRY}
     echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
-    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-    ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+    registry_login ${DESTINATION_REGISTRY}
 
     if [ ! -f ~/.docker/config.json ]; then
         echo "INFO: missing ~/.docker/config.json config"

@@ -5,8 +5,11 @@ import {
   IpTripletSelectorValidationType,
   K8SStateContextData,
   K8SStateContextDataFields,
+  CustomCertsValidationType,
 } from './types';
+import { ChangeDomainInputType, TlsCertificate } from '../copy-backend-common';
 import {
+  customCertsValidator,
   domainValidator,
   ipTripletAddressValidator,
   ipWithoutDots,
@@ -69,71 +72,103 @@ export const K8SStateContextProvider: React.FC<{
   );
 
   const [domain, setDomain] = React.useState<string>('');
+  const [originalDomain, setOriginalDomain] = React.useState<string>();
   const [domainValidation, setDomainValidation] =
     React.useState<K8SStateContextData['domainValidation']>();
-  const handleSetDomain = React.useCallback((newDomain: string) => {
-    setDomainValidation(domainValidator(newDomain));
-    setDomain(newDomain);
-  }, []);
-
-  const fieldValues: K8SStateContextDataFields = React.useMemo(
-    () => ({
-      username,
-      password,
-      apiaddr,
-      ingressIp,
-      domain,
-    }),
-    [username, password, apiaddr, ingressIp, domain],
+  const handleSetDomain = React.useCallback(
+    (newDomain: string) => {
+      setDomainValidation(domainValidator(newDomain));
+      setDomain(newDomain);
+      if (!originalDomain) {
+        // Hint: This is expected to be called within initialDataLoad() only
+        setOriginalDomain(newDomain);
+      }
+    },
+    [originalDomain],
   );
 
-  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>();
+  const [customCerts, setCustomCerts] = React.useState<ChangeDomainInputType['customCerts']>({});
+  const [customCertsValidation, setCustomCertsValidation] =
+    React.useState<CustomCertsValidationType>({});
+
+  const setCustomCertificate = React.useCallback(
+    (domain: string, certificate: TlsCertificate) => {
+      const newCustomCerts = { ...customCerts };
+      newCustomCerts[domain] = certificate;
+      setCustomCerts(newCustomCerts);
+      setCustomCertsValidation(customCertsValidator(customCertsValidation, domain, certificate));
+    },
+    [customCertsValidation, customCerts, setCustomCerts],
+  );
+
+  const isAllValid = React.useCallback(() => {
+    const result =
+      !usernameValidation &&
+      passwordValidation &&
+      apiaddrValidation.valid &&
+      ingressIpValidation.valid &&
+      !domainValidation &&
+      !Object.keys(customCertsValidation).find(
+        (d) =>
+          customCertsValidation[d].certValidated === 'error' ||
+          customCertsValidation[d].keyValidated === 'error',
+      );
+    return result;
+  }, [
+    apiaddrValidation.valid,
+    customCertsValidation,
+    domainValidation,
+    ingressIpValidation.valid,
+    passwordValidation,
+    usernameValidation,
+  ]);
+
+  const _fv: K8SStateContextDataFields = {
+    username,
+    password,
+    apiaddr,
+    ingressIp,
+    domain,
+    originalDomain,
+    customCerts,
+  };
+
+  const fieldValues = React.useRef<K8SStateContextDataFields>(_fv);
+  fieldValues.current = _fv;
+
+  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>(_fv);
   const setClean = React.useCallback(() => {
-    setSnapshot(fieldValues);
+    setSnapshot(fieldValues.current);
   }, [fieldValues]);
-  const isDirty = React.useCallback(
-    (): boolean => !isEqual(fieldValues, snapshot),
-    [fieldValues, snapshot],
-  );
+  const isDirty = React.useCallback((): boolean => {
+    return !isEqual(fieldValues.current, snapshot);
+  }, [fieldValues, snapshot]);
 
-  const value = React.useMemo(
-    () => ({
-      ...fieldValues,
+  const value = {
+    ...fieldValues.current,
 
-      isDirty,
-      setClean,
+    isDirty,
+    setClean,
+    isAllValid,
 
-      usernameValidation,
-      handleSetUsername,
+    usernameValidation,
+    handleSetUsername,
 
-      passwordValidation,
-      handleSetPassword,
+    passwordValidation,
+    handleSetPassword,
 
-      apiaddrValidation,
-      handleSetApiaddr,
+    apiaddrValidation,
+    handleSetApiaddr,
 
-      ingressIpValidation,
-      handleSetIngressIp,
+    ingressIpValidation,
+    handleSetIngressIp,
 
-      domainValidation,
-      handleSetDomain,
-    }),
-    [
-      fieldValues,
-      isDirty,
-      setClean,
-      usernameValidation,
-      handleSetUsername,
-      passwordValidation,
-      handleSetPassword,
-      apiaddrValidation,
-      handleSetApiaddr,
-      ingressIpValidation,
-      handleSetIngressIp,
-      domainValidation,
-      handleSetDomain,
-    ],
-  );
+    domainValidation,
+    handleSetDomain,
+
+    customCertsValidation,
+    setCustomCertificate,
+  };
 
   return <K8SStateContext.Provider value={value}>{children}</K8SStateContext.Provider>;
 };

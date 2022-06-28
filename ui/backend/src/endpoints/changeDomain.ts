@@ -1,12 +1,23 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { Request, Response } from 'express';
-import { Route } from '../common';
+import {
+  Route,
+  ChangeDomainInputType,
+  getApiDomain,
+  getIngressDomain,
+  TlsCertificate,
+  getConsoleDomain,
+  getOauthDomain,
+  getZtpfwDomain,
+  ZTPFW_UI_ROUTE_PREFIX,
+  OAUTH_NAMESPACE,
+  getClusterDomainFromComponentRoutes,
+} from '../common';
 import {
   ZTPFW_DEPLOYMENT_NAME,
   ZTPFW_NAMESPACE,
   ZTPFW_OAUTHCLIENT_NAME,
   ZTPFW_ROUTE_NAME,
-  ZTPFW_UI_ROUTE_PREFIX,
 } from '../constants';
 import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
 import { getToken, PostResponse, unauthorized } from '../k8s';
@@ -21,15 +32,24 @@ import { validateInput } from './utils';
 
 const logger = console;
 
-const createSelfSignedTlsSecret = async (
+const createTlsSecret = async (
   res: Response,
   token: string,
   domain: string,
   namePrefix: string,
+  customCerts: ChangeDomainInputType['customCerts'] = {},
 ): Promise<string | undefined> => {
-  const certificate = await generateCertificate(res, domain);
-  if (!certificate) {
-    return undefined;
+  let certificate: TlsCertificate | undefined = customCerts[domain];
+
+  // if not provided, so generate self-signed one
+  if (certificate) {
+    logger.debug('Custom certificate provided for domain: ', domain);
+  } else {
+    certificate = await generateCertificate(res, domain);
+
+    if (!certificate) {
+      return undefined;
+    }
   }
 
   const certSecret = await createCertSecret(res, token, namePrefix, certificate);
@@ -43,6 +63,7 @@ const createSelfSignedTlsSecret = async (
 const updateIngressComponentRoutes = async (
   res: Response,
   token: string,
+  customCerts: ChangeDomainInputType['customCerts'],
   componentRoutes: ComponentRoute[],
   // Following type will not be hardcoded forever, the ZTPFW hostname might varry over different deployments
   routeName: 'console' | 'oauth-openshift' | 'edge-cluster-setup',
@@ -50,7 +71,8 @@ const updateIngressComponentRoutes = async (
   namePrefix: string,
   routeNamespace: string,
 ): Promise<string | undefined /* secretName */> => {
-  const secretName = await createSelfSignedTlsSecret(res, token, domain, namePrefix);
+  logger.debug(`updateIngressComponentRoutes called for ${routeName} and domain ${domain}`);
+  const secretName = await createTlsSecret(res, token, domain, namePrefix, customCerts);
   if (secretName) {
     const route = componentRoutes.find((r) => r.name === routeName);
     if (route) {
@@ -81,22 +103,20 @@ const updateIngressComponentRoutes = async (
 
 const updateSingleRoute = async (
   token: string,
-  oldIngressDomain: string,
-  ingressDomain: string,
+  ztpfwDomain: string,
   route: Route,
 ): Promise<PostResponse<Route> | void> => {
   if (route.spec?.host) {
-    const newHost = route.spec.host.replace(oldIngressDomain, ingressDomain);
-    if (newHost === route.spec.host) {
+    if (ztpfwDomain === route.spec.host) {
       logger.debug(
-        `No change for the ${route.metadata.namespace}/${route.metadata.name} route, keeping host: "${newHost}".`,
+        `No change for the ${route.metadata.namespace}/${route.metadata.name} route, keeping host: "${route.spec.host}".`,
       );
     } else {
       const patch: PatchType[] = [
         {
           op: 'replace',
           path: '/spec/host',
-          value: newHost,
+          value: ztpfwDomain,
         },
       ];
 
@@ -107,7 +127,7 @@ const updateSingleRoute = async (
           patch,
         ).then((r) => {
           logger.debug(
-            `Route ${route.metadata.namespace}/${route.metadata.name} is patched, new host: ${newHost}`,
+            `Route ${route.metadata.namespace}/${route.metadata.name} is patched, new host: ${ztpfwDomain}`,
           );
           return r;
         });
@@ -212,13 +232,7 @@ const updateZtpfwDeployment = async (
   }
 };
 
-const updateZtpfwUI = async (
-  token: string,
-  // ztpfwUiTlsSecretName: string,
-  ztpfwDomain: string,
-  ingressDomain: string,
-  oldIngressDomain = '',
-) => {
+const updateZtpfwUI = async (token: string, ztpfwDomain: string) => {
   // route
   try {
     const route = await getRoute(token, { name: ZTPFW_ROUTE_NAME, namespace: ZTPFW_NAMESPACE });
@@ -226,7 +240,7 @@ const updateZtpfwUI = async (
     // Make a copy to be able to make livenessProbe requests from browser (new route hots CORS issue)
     await backupRoute(token, route);
 
-    await updateSingleRoute(token, oldIngressDomain, ingressDomain, route);
+    await updateSingleRoute(token, ztpfwDomain, route);
     logger.debug('ZTPFW UI Route patched');
   } catch (e) {
     logger.error('Failed to patch ZTPFW UI Route: ', e);
@@ -237,6 +251,26 @@ const updateZtpfwUI = async (
 
   // Deployment
   await updateZtpfwDeployment(token, ztpfwDomain, newOauthRedirectUri);
+};
+
+const isDomainChanged = (
+  res: Response,
+  apiDomain: string,
+  newDomain: string,
+  oldDomain?: string,
+) => {
+  if (oldDomain === newDomain) {
+    logger.info(
+      'Domain stays unchanged (based on the Ingress config), skipping persistence of it.',
+    );
+    res.writeHead(200).end(); // All good
+    return false;
+  }
+  logger.debug(
+    `About to change domain from "${oldDomain}" to "${newDomain}" (api: "${apiDomain}")`,
+  );
+
+  return true;
 };
 
 /**
@@ -267,36 +301,37 @@ const updateZtpfwUI = async (
  *   - side-effect: our pod is terminated (consequence of the Deployment resource change)
  *
  */
-const changeDomainImpl = async (res: Response, token: string, _domain?: string): Promise<void> => {
-  const domain = validateInput(DNS_NAME_REGEX, _domain);
-  logger.debug('ChangeDomain endpoint called, domain:', domain);
+const changeDomainImpl = async (
+  res: Response,
+  token: string,
+  input: ChangeDomainInputType,
+): Promise<void> => {
+  const clusterDomain = validateInput(DNS_NAME_REGEX, input.clusterDomain);
+  logger.debug('ChangeDomain endpoint called, domain:', clusterDomain);
 
-  if (!domain) {
+  if (!clusterDomain) {
     res.writeHead(422).end();
     return;
   }
 
-  /* TODO: avoid auto-generating of self-signed certificates if the user has provided them */
-
   const ingress = await getIngressConfig(token);
 
-  const oldIngressDomain = ingress.spec?.domain;
-  const apiDomain = `api.${domain}`;
-  const ingressDomain = `apps.${domain}`;
+  const oldIngressDomain = getIngressDomain(getClusterDomainFromComponentRoutes(ingress) || '');
+  const apiDomain = getApiDomain(clusterDomain);
+  const ingressDomain = getIngressDomain(clusterDomain);
 
-  if (ingressDomain === ingress?.spec?.domain) {
-    logger.info(
-      'Domain stays unchanged (based on the Ingress config), skipping persistence of it.',
-    );
-    res.writeHead(200).end(); // All good
+  if (!isDomainChanged(res, apiDomain, ingressDomain, oldIngressDomain)) {
     return;
   }
-  logger.debug(
-    `About to change domain from "${oldIngressDomain}" to "${ingressDomain}" (api: "${apiDomain}")`,
-  );
 
   // Prepare patch to change API certificate (apiserver/cluster resource) - will be executed at the end of the flow
-  const apiCertSecretName = await createSelfSignedTlsSecret(res, token, apiDomain, 'api-secret-');
+  const apiCertSecretName = await createTlsSecret(
+    res,
+    token,
+    apiDomain,
+    'api-secret-',
+    input.customCerts,
+  );
   if (!apiCertSecretName) {
     return;
   }
@@ -314,14 +349,15 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   };
 
   // Prepare ingress /cluster resource patch - will be executed at the end of the flow
-  const consoleDomain = `console-openshift-console.${ingressDomain}`;
-  const oauthDomain = `oauth-openshift.${ingressDomain}`;
-  const ztpfwDomain = `${ZTPFW_UI_ROUTE_PREFIX}.${ingressDomain}`;
+  const consoleDomain = getConsoleDomain(clusterDomain);
+  const oauthDomain = getOauthDomain(clusterDomain);
+  const ztpfwDomain = getZtpfwDomain(clusterDomain);
 
   const componentRoutes = ingress?.spec?.componentRoutes || [];
   const consoleTlsSecretName = await updateIngressComponentRoutes(
     res,
     token,
+    input.customCerts,
     componentRoutes,
     'console',
     consoleDomain,
@@ -331,15 +367,17 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   const oauthTlsSecretName = await updateIngressComponentRoutes(
     res,
     token,
+    input.customCerts,
     componentRoutes,
     'oauth-openshift',
     oauthDomain,
     'oauth-secret-',
-    'openshift-authentication',
+    OAUTH_NAMESPACE,
   );
   const ztpfwUiTlsSecretName = await updateIngressComponentRoutes(
     res,
     token,
+    input.customCerts,
     componentRoutes,
     ZTPFW_UI_ROUTE_PREFIX,
     ztpfwDomain,
@@ -353,11 +391,11 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   }
 
   const ingressPatches: PatchType[] = [
-    {
-      op: ingress?.spec?.domain ? 'replace' : 'add',
-      path: '/spec/domain',
-      value: ingressDomain,
-    },
+    // { Do not change domain but add a new one
+    //   op: ingress?.spec?.domain ? 'replace' : 'add',
+    //   path: '/spec/domain',
+    //   value: ingressDomain,
+    // },
     {
       op: ingress?.spec?.componentRoutes ? 'replace' : 'add',
       path: '/spec/componentRoutes',
@@ -404,12 +442,7 @@ const changeDomainImpl = async (res: Response, token: string, _domain?: string):
   }
 
   // This will terminate our pod
-  await updateZtpfwUI(
-    token,
-    /*ztpfwUiTlsSecretName,*/ ztpfwDomain,
-    ingressDomain,
-    oldIngressDomain,
-  );
+  await updateZtpfwUI(token, ztpfwDomain);
 
   res.writeHead(200).end(); // All good
 };
@@ -428,8 +461,8 @@ export function changeDomain(req: Request, res: Response): void {
     .on('end', async () => {
       try {
         const data: string = Buffer.concat(body).toString();
-        const encoded = JSON.parse(data) as { domain?: string };
-        await changeDomainImpl(res, token, encoded?.domain);
+        const encoded = JSON.parse(data) as ChangeDomainInputType;
+        await changeDomainImpl(res, token, encoded);
       } catch (e) {
         logger.error('Failed to parse input for changeDomain');
         res.writeHead(422).end();

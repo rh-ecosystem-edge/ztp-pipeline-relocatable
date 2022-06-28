@@ -3,6 +3,19 @@
 # EDGECLUSTERS_FILE variable must be exported in the environment
 
 #set -x
+function registry_login() {
+    ####### WORKAROUND: Newer versions of podman/buildah try to set overlayfs mount options when
+    ####### using the vfs driver, and this causes errors.
+    export STORAGE_DRIVER=vfs
+    sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
+
+    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+        ${PODMAN_LOGIN_CMD} ${1} --authfile=${PULL_SECRET}
+    else
+        ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
+        ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS}
+    fi
+}
 
 function check_resource() {
     # 1 - Resource type: "deployment"
@@ -251,6 +264,48 @@ function grab_api_ingress() {
     export EDGE_INGRESS_IP="$(dig @${HUB_NODE_IP} +short ${REGISTRY_URL}.${EDGE_INGRESS_NAME})"
 }
 
+function side_evict_error() {
+
+    KUBEC=${1}
+    echo ">> Looking for eviction errors"
+    status='SchedulingDisabled'
+
+    conflicting_node="$(oc --kubeconfig=${KUBEC} get node --no-headers | grep ${status} | cut -f1 -d\ )"
+
+    if [[ -z ${conflicting_node} ]]; then
+        echo "No masters on ${status}"
+    else
+        conflicting_daemon_pod=$(oc --kubeconfig=${KUBEC} get pod -n openshift-machine-config-operator -o wide --no-headers | grep daemon | grep ${conflicting_node} | cut -f1 -d\ )
+
+        # Check if conflicting_daemon_pod is not empty
+        if [[ -z ${conflicting_daemon_pod} ]]; then
+            echo "No conflicting daemon pod exists in ${conflicting_node}"
+        else
+            pattern_1="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep evicting | tail -1 | grep pods)"
+            pattern_2="$(oc --kubeconfig=${KUBEC} logs -n openshift-machine-config-operator ${conflicting_daemon_pod} -c machine-config-daemon | grep drain.go | grep "Draining failed" | tail -1 | grep pod)"
+
+            for log_entry in "${pattern_1}" "${pattern_2}"; do
+                if [[ -z ${log_entry} ]]; then
+                    echo "No Conflicting LogEntry on ${conflicting_daemon_pod}"
+                else
+                    echo ">> Conflicting LogEntry Found!!"
+                    pod=$(echo ${log_entry##*pods/} | cut -d\" -f2)
+                    conflicting_ns=$(oc --kubeconfig=${KUBEC} get pod -A | grep ${pod} | cut -f1 -d\ )
+
+                    echo ">> Clean Eviction triggered info: "
+                    echo NODE: ${conflicting_node}
+                    echo DAEMON: ${conflicting_daemon_pod}
+                    echo NS: ${conflicting_ns}
+                    echo LOG: ${log_entry}
+                    echo POD: ${pod}
+
+                    oc --kubeconfig=${KUBEC} delete pod -n ${conflicting_ns} ${pod} --force --grace-period=0
+                fi
+            done
+        fi
+    fi
+}
+
 # EDGECLUSTERS_FILE variable must be exported in the environment
 export KUBECONFIG_HUB=${KUBECONFIG}
 
@@ -318,3 +373,13 @@ if [[ -n ${PRESERVE_SECRET:-false} ]]; then
 fi
 
 export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
+
+export EDGECLUSTERS_REGISTRY=$(yq eval ".config.REGISTRY" ${EDGECLUSTERS_FILE} || null)
+if [[ ${EDGECLUSTERS_REGISTRY} == "" || ${EDGECLUSTERS_REGISTRY} == null ]]; then
+    export CUSTOM_REGISTRY=false
+    export REGISTRY=ztpfw-registry
+else
+    export CUSTOM_REGISTRY=true
+    REGISTRY=$(echo ${EDGECLUSTERS_REGISTRY} | cut -d"." -f1)
+    LOCAL_REG=${EDGECLUSTERS_REGISTRY}
+fi

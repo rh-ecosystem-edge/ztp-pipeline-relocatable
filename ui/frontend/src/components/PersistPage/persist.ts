@@ -1,61 +1,15 @@
-import { getCondition } from '../../copy-backend-common';
-import { getClusterOperator } from '../../resources/clusteroperator';
+import { ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { K8SStateContextData } from '../types';
-import { delay } from '../utils';
-import {
-  DELAY_BEFORE_QUERY_RETRY,
-  MAX_LIVENESS_CHECK_COUNT,
-  UI_POD_NOT_READY,
-  WAIT_ON_OPERATOR_TITLE,
-  ZTPFW_UI_ROUTE_PREFIX,
-} from './constants';
+import { bindOnBeforeUnloadPage, unbindOnBeforeUnloadPage } from '../utils';
+import { MAX_LIVENESS_CHECK_COUNT, UI_POD_NOT_READY } from './constants';
 import { persistDomain } from './persistDomain';
 import { persistIdentityProvider, PersistIdentityProviderResult } from './persistIdentityProvider';
 import { saveApi, saveIngress } from './persistServices';
 import { PersistErrorType } from './types';
-import { waitForZtpfwPodToBeRecreated } from './utils';
+import { waitForClusterOperator, waitForZtpfwPodToBeRecreated } from './utils';
 
-const waitForClusterOperator = async (
-  setError: (error: PersistErrorType) => void,
-  name: string,
-): Promise<boolean> => {
-  console.info('waitForClusterOperator started for: ', name);
-  for (let counter = 0; counter < MAX_LIVENESS_CHECK_COUNT; counter++) {
-    try {
-      console.log('Querying co: ', name);
-      const operator = await getClusterOperator(name).promise;
-      if (
-        getCondition(operator, 'Progressing')?.status === 'False' &&
-        getCondition(operator, 'Degraded')?.status === 'False' &&
-        getCondition(operator, 'Available')?.status === 'True'
-      ) {
-        // all good
-        setError(null);
-        return true;
-      }
-    } catch (e) {
-      console.error('waitForClusterOperator error: ', e);
-      // keep trying
-
-      // setError({
-      //   title: WAIT_ON_OPERATOR_TITLE,
-      //   message: `Failed to query status of ${name} cluster operator`,
-      // });
-    }
-
-    await delay(DELAY_BEFORE_QUERY_RETRY);
-  }
-
-  setError({
-    title: WAIT_ON_OPERATOR_TITLE,
-    message: `Failed to query status of ${name} cluster operator on time.`,
-  });
-
-  return false;
-};
-
-const waitOnreconciliation = async (
+const waitOnReconciliation = async (
   setError: (error: PersistErrorType) => void,
   setProgress: UsePersistProgressType['setProgress'],
   state: K8SStateContextData,
@@ -89,10 +43,14 @@ const waitOnreconciliation = async (
     // TODO: openshift console??
   }
 
+  if (!(await waitForClusterOperator(setError, 'kube-apiserver'))) {
+    return false;
+  }
+
   // Important: keep following aligned with the last reconcile-step
   setProgress(PersistSteps.ReconcileAuthOperator);
 
-  console.info('waitOnreconciliation finished successfully');
+  console.info('waitOnReconciliation finished successfully');
   return true;
 };
 
@@ -102,32 +60,55 @@ export const persist = async (
   setProgress: UsePersistProgressType['setProgress'],
   onSuccess: () => void,
 ) => {
-  const persistIdpResult = await persistIdentityProvider(
-    setError,
-    setProgress,
-    state.username,
-    state.password,
-  );
-  if (
-    persistIdpResult !== PersistIdentityProviderResult.error &&
-    (await saveIngress(setError, setProgress, state.ingressIp)) &&
-    (await saveApi(setError, setProgress, state.apiaddr)) &&
-    (await persistDomain(setError, setProgress, state.domain))
-  ) {
+  try {
+    bindOnBeforeUnloadPage(
+      'Data are being persisted. By leaving or refreshing the page, you will loose monitoring of the progress. Do you want to leave the page?',
+    );
+
+    const persistIdpResult = await persistIdentityProvider(
+      setError,
+      setProgress,
+      state.username,
+      state.password,
+    );
+    if (persistIdpResult === PersistIdentityProviderResult.error) {
+      console.error('Failed to persist IDP, giving up.');
+      return;
+    }
+
+    if (!(await saveIngress(setError, setProgress, state.ingressIp))) {
+      console.error('Failed to persist Ingress IP, giving up.');
+      return false;
+    }
+
+    if (!(await saveApi(setError, setProgress, state.apiaddr))) {
+      console.error('Failed to persist API IP, giving up.');
+      return false;
+    }
+
+    if (!(await persistDomain(setError, setProgress, state.domain, state.customCerts))) {
+      return false;
+    }
+
     // finished with success
     console.log('Data persisted, blocking progress till reconciled');
 
     setError(null); // show the green circle of success
 
-    // TODO: show progress bar while waiting
-    if (!(await waitOnreconciliation(setError, setProgress, state, persistIdpResult))) {
+    // Final check
+    if (!(await waitOnReconciliation(setError, setProgress, state, persistIdpResult))) {
       return;
     }
 
     // delete route backup
     // TODO
 
+    // Do it before onSuccess()
+    unbindOnBeforeUnloadPage();
+
     onSuccess();
+  } finally {
+    unbindOnBeforeUnloadPage();
   }
 };
 
@@ -135,7 +116,14 @@ export const navigateToNewDomain = async (domain: string, contextPath: string) =
   // We can not check livenessProbe on the new domain due to CORS
   // We can not use pod serving old domain either since it will be terminated and the route changed
   // So just wait...
-  const ztpfwUrl = `https://${ZTPFW_UI_ROUTE_PREFIX}.apps.${domain}${contextPath}`;
+  let ztpfwUrl: string;
+  if (!domain) {
+    // fallback
+    ztpfwUrl = `${window.location.origin}${contextPath}`;
+  } else {
+    ztpfwUrl = `https://${ZTPFW_UI_ROUTE_PREFIX}.apps.${domain}${contextPath}`;
+  }
+
   console.info('Changes are persisted, about to navigate to the new domain: ', ztpfwUrl);
   // We should go with following:
   window.location.replace(ztpfwUrl);

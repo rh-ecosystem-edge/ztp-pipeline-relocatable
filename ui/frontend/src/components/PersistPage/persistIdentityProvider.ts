@@ -9,6 +9,7 @@ import {
 import { deleteSecret, getSecret } from '../../resources/secret';
 import { IResource, Secret, PatchType } from '../../backend-shared';
 import {
+  DELAY_BEFORE_FINAL_REDIRECT,
   IDENTITY_PROVIDER_NAME,
   kubeadminSecret,
   KUBEADMIN_REMOVE,
@@ -20,6 +21,8 @@ import {
 import { CLUSTER_ADMIN_ROLE_BINDING, HTPASSWD_SECRET } from './resourceTemplates';
 import { PersistErrorType } from './types';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
+import { delay } from '../utils';
+import { waitForClusterOperator } from './utils';
 
 const getHtpasswdData = async (
   setError: (error: PersistErrorType) => void,
@@ -192,6 +195,16 @@ export const persistIdentityProvider = async (
   }
 
   setProgress(PersistSteps.PersistIDP);
+
+  // Block progress on having reconciliation done
+  // Let the operator reconciliation start
+  await delay(DELAY_BEFORE_FINAL_REDIRECT);
+
+  if (!(await waitForClusterOperator(setError, 'authentication'))) {
+    return PersistIdentityProviderResult.error;
+  }
+
+  setProgress(PersistSteps.ReconcilePersistIDP);
   return PersistIdentityProviderResult.userCreated;
 };
 

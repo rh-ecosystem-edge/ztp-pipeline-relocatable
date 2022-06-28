@@ -37,7 +37,10 @@ ui:
   - .github/workflows/ui.yml
 
 test-ci-ui:
+  - deploy-ui/**/*
+  - ui/**/*
   - images/Containerfile.UI
+  - .github/workflows/ui.yml
 
 # ztpfw-core components
 acm:

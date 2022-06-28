@@ -1,3 +1,20 @@
+## [1.9.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.3...1.9.4) (2022-06-27)
+
+### Bug Fixes
+
+- **build-hub.sh:** Ensure networks are recreated and unify code for the changes ([1d5433c](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/1d5433c3fa07a12ffee1f2bd09362bdf9af2a665))
+
+### Reverts
+
+- Revert signatures workaround ([da3d900](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/da3d9006c2bc3caa98d9029c7baebfa1e5292b8c))
+
+## [1.9.3](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.2...1.9.3) (2022-06-23)
+
+### Bug Fixes
+
+- **edgeclusters.sh:** Workaround BZ 2073197 issue with signatures on containers ([2888047](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/288804719fd70c25ede81fdf1a2be90cf8fb818f))
+- **edgeclusters.sh:** Workaround BZ 2073197 issue with signatures on containers ([8987e83](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/8987e83713f21475595551e345b7d53fa62f10ff))
+
 ## [1.9.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.1...1.9.2) (2022-06-15)
 
 ### Bug Fixes

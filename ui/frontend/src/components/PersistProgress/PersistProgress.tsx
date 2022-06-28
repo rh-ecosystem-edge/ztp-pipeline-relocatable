@@ -12,9 +12,16 @@ let persistStepsCount = 1;
 export const PersistSteps = {
   // Important: keep following steps aligned with actual order in persist()
   PersistIDP: persistStepsCount++,
+  ReconcilePersistIDP: persistStepsCount++,
+
   SaveIngress: persistStepsCount++,
+  ReconcileSaveIngress: persistStepsCount++,
+
   SaveApi: persistStepsCount++,
+  ReconcileSaveApi: persistStepsCount++,
+
   PersistDomain: persistStepsCount++,
+  ReconcilePersistDomain: persistStepsCount++,
 
   ReconcileUIPod: persistStepsCount++,
   ReconcileApiOperator: persistStepsCount++,
@@ -24,12 +31,18 @@ persistStepsCount--;
 
 const PersistStepLabels: string[] = [];
 PersistStepLabels[PersistSteps.PersistIDP] = 'Saving identity provider';
+PersistStepLabels[PersistSteps.ReconcilePersistIDP] =
+  'Waiting for the identity provider to be added';
 PersistStepLabels[PersistSteps.SaveIngress] = 'Saving Ingress IP';
+PersistStepLabels[PersistSteps.ReconcileSaveIngress] = 'Waiting for the Ingress IP reconciliation';
 PersistStepLabels[PersistSteps.SaveApi] = 'Saving API IP';
+PersistStepLabels[PersistSteps.ReconcileSaveApi] = 'Waiting for the API IP to reconcile';
 PersistStepLabels[PersistSteps.PersistDomain] = 'Saving domain change';
-PersistStepLabels[PersistSteps.ReconcileUIPod] = 'Waiting for the configuration pod';
-PersistStepLabels[PersistSteps.ReconcileApiOperator] = 'Waiting for the API operator';
-PersistStepLabels[PersistSteps.ReconcileAuthOperator] = 'Waiting for the outhentication operator';
+PersistStepLabels[PersistSteps.ReconcilePersistDomain] = 'Waiting for the domain to reconcile';
+PersistStepLabels[PersistSteps.ReconcileUIPod] = 'Final waiting for the configuration pod';
+PersistStepLabels[PersistSteps.ReconcileApiOperator] = 'Final waiting for the API operator';
+PersistStepLabels[PersistSteps.ReconcileAuthOperator] =
+  'Final waiting for the authentication operator';
 
 export type UsePersistProgressType = {
   progress: number;
