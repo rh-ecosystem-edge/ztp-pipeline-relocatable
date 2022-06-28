@@ -10,8 +10,10 @@ export PRIMARY_IP=192.168.150.1
 dnf -y install nfs-utils
 systemctl enable --now nfs-server
 export MODE="ReadWriteOnce"
+PVS=$(seq 1 10)
 for i in ${PVS}; do
 	export PV=pv$(printf "%03d" ${i})
+	rm -fr /pv$PV/*
 	mkdir /${PV} ||true
 	echo "/${PV} *(rw,no_root_squash)" >>/etc/exports
 	chcon -t svirt_sandbox_file_t /${PV}
