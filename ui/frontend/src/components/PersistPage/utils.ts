@@ -1,12 +1,16 @@
-import { ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
+import { getCondition, ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
 import { getRequest } from '../../resources';
+import { getClusterOperator } from '../../resources/clusteroperator';
 import { getPodsOfNamespace } from '../../resources/pod';
 import { delay, getZtpfwUrl } from '../utils';
 import {
   DELAY_BEFORE_FINAL_REDIRECT,
+  DELAY_BEFORE_QUERY_RETRY,
   MAX_LIVENESS_CHECK_COUNT,
+  WAIT_ON_OPERATOR_TITLE,
   ZTPFW_NAMESPACE,
 } from './constants';
+import { PersistErrorType } from './types';
 
 export const waitForLivenessProbe = async (
   counter = MAX_LIVENESS_CHECK_COUNT,
@@ -69,5 +73,39 @@ export const waitForZtpfwPodToBeRecreated = async (
   } catch (e) {
     console.error('Failed to query ZTPFW pods: ', e);
   }
+  return false;
+};
+
+export const waitForClusterOperator = async (
+  setError: (error: PersistErrorType) => void,
+  name: string,
+): Promise<boolean> => {
+  console.info('waitForClusterOperator started for: ', name);
+  for (let counter = 0; counter < MAX_LIVENESS_CHECK_COUNT; counter++) {
+    try {
+      console.log('Querying co: ', name);
+      const operator = await getClusterOperator(name).promise;
+      if (
+        getCondition(operator, 'Progressing')?.status === 'False' &&
+        getCondition(operator, 'Degraded')?.status === 'False' &&
+        getCondition(operator, 'Available')?.status === 'True'
+      ) {
+        // all good
+        setError(null);
+        return true;
+      }
+    } catch (e) {
+      console.error('waitForClusterOperator error: ', e);
+      // do not report, keep trying
+    }
+
+    await delay(DELAY_BEFORE_QUERY_RETRY);
+  }
+
+  setError({
+    title: WAIT_ON_OPERATOR_TITLE,
+    message: `Failed to query status of ${name} cluster operator on time.`,
+  });
+
   return false;
 };

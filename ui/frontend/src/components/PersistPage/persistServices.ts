@@ -3,11 +3,12 @@ import { cloneDeep } from 'lodash';
 import { createResource, patchResource } from '../../resources';
 import { PatchType, Service } from '../../backend-shared';
 import { getService } from '../../resources/service';
-import { addIpDots } from '../utils';
+import { addIpDots, delay } from '../utils';
 import {
   ADDRESS_POOL_ANNOTATION_KEY,
   ADDRESS_POOL_NAMESPACE,
   API_LIVENESS_FAILED_TITLE,
+  DELAY_BEFORE_FINAL_REDIRECT,
   MISSING_VALUE,
   RESOURCE_CREATE_TITLE,
   RESOURCE_PATCH_TITLE,
@@ -18,7 +19,7 @@ import {
   SERVICE_TEMPLATE_METALLB_INGRESS,
 } from './resourceTemplates';
 import { PersistErrorType } from './types';
-import { waitForLivenessProbe } from './utils';
+import { waitForClusterOperator, waitForLivenessProbe } from './utils';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 
 const createAddressPool = async (
@@ -198,8 +199,8 @@ export const saveIngress = async (
   setError: (error: PersistErrorType) => void,
   setProgress: UsePersistProgressType['setProgress'],
   ingressIp: string,
-): Promise<boolean> =>
-  saveService(
+): Promise<boolean> => {
+  const result = saveService(
     setError,
     setProgress,
     ingressIp,
@@ -207,6 +208,12 @@ export const saveIngress = async (
     'ingress IP',
     'ingress',
   );
+
+  // TODO: Block progress
+  setProgress(PersistSteps.ReconcileSaveIngress);
+
+  return result;
+};
 
 export const saveApi = async (
   setError: (error: PersistErrorType) => void,
@@ -217,13 +224,46 @@ export const saveApi = async (
     return false;
   }
 
+  // Let the reconciliation start
+  await delay(DELAY_BEFORE_FINAL_REDIRECT);
+
   if (!(await waitForLivenessProbe())) {
     setError({
       title: API_LIVENESS_FAILED_TITLE,
-      message: 'Can not reach API on time.',
+      message: 'Can not reach API on time after API IP change .',
     });
     return false;
   }
+
+  if (!(await waitForClusterOperator(setError, 'kube-apiserver'))) {
+    setError({
+      title: API_LIVENESS_FAILED_TITLE,
+      message:
+        'Reconciliation of the kube-apiserver operator did not finish on time after API IP change .',
+    });
+    return false;
+  }
+
+  if (!(await waitForClusterOperator(setError, 'openshift-apiserver'))) {
+    setError({
+      title: API_LIVENESS_FAILED_TITLE,
+      message:
+        'Reconciliation of the openshift-apiserver operator did not finish on time after API IP change.',
+    });
+    return false;
+  }
+
+  if (!(await waitForClusterOperator(setError, 'authentication'))) {
+    // troublemaker
+    setError({
+      title: API_LIVENESS_FAILED_TITLE,
+      message:
+        'Reconciliation of the authentication operator did not finish on time after API IP change .',
+    });
+    return false;
+  }
+
+  setProgress(PersistSteps.ReconcileSaveApi);
 
   return true;
 };
