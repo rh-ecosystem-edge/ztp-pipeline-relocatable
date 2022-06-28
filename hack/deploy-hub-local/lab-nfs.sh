@@ -3,7 +3,7 @@ set -euo pipefail
 
 #clean before
 > /etc/exports
-rm -fr /pv*
+rm -fr /pv0*
 
 # install the nfs
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig

@@ -1,8 +1,10 @@
 import { postRequest } from '../../resources';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
-import { PERSIST_DOMAIN } from './constants';
+import { DELAY_BEFORE_FINAL_REDIRECT, PERSIST_DOMAIN } from './constants';
 import { PersistErrorType } from './types';
 import { ChangeDomainInputType } from '../../backend-shared';
+import { delay } from '../utils';
+import { waitForClusterOperator } from './utils';
 
 export const persistDomain = async (
   setError: (error: PersistErrorType) => void,
@@ -34,5 +36,15 @@ export const persistDomain = async (
   }
 
   setProgress(PersistSteps.PersistDomain);
+
+  console.log('Domain persisted, blocking progress till reconciled.');
+  // Let the operator reconciliation start
+  await delay(DELAY_BEFORE_FINAL_REDIRECT);
+  if (!(await waitForClusterOperator(setError, 'authentication'))) {
+    return false;
+  }
+
+  setProgress(PersistSteps.ReconcilePersistDomain);
+
   return true;
 };
