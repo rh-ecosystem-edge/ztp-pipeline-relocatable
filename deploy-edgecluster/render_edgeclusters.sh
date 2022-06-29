@@ -57,7 +57,7 @@ create_edgecluster_definitions() {
     export CHANGE_EDGE_NAME=${cluster}
     grab_api_ingress ${cluster}
     export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
-    export DATA_PUB_INT_M0=$(echo -n "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64)
+    export DATA_PUB_INT_M0=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
     export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_EDGE_API} ${EDGE_API_NAME}" | base64 -w0)
     export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
