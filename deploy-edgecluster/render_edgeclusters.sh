@@ -371,7 +371,7 @@ EOF
             cat <<EOF >>${OUTPUT}
        - destination: 0.0.0.0/0
          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
-         metric: 99
+         metric: 101
          table-id: 254
 EOF
           if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
