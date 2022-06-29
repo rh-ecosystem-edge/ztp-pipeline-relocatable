@@ -8,7 +8,7 @@ FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
 EDGECLUSTERS_FILE ?= ${PWD}/hack/deploy-hub-local/edgeclusters.yaml
 PULL_SECRET ?= ${HOME}/openshift_pull.json
-OCP_VERSION ?= 4.10.13
+OCP_VERSION ?= 4.10.20
 ACM_VERSION ?= 2.5
 ODF_VERSION ?= 4.9
 
