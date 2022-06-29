@@ -122,7 +122,7 @@ data:
               verification: {}
             filesystem: root
             mode: 420
-            path: /etc/default/nodeip-configuration
+            path: /var/lib/ovnk/iface_default_hint
 EOF
     fi
     cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
