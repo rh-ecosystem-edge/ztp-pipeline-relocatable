@@ -3,7 +3,7 @@ FROM centos:stream8
 ENV JQ_VERSION=1.6
 ADD https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/jq-linux64  /usr/bin/jq
 
-ENV YQ_VERSION=v4.14.2
+ENV YQ_VERSION=v4.25.3
 ADD https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64  /usr/bin/yq
 
 RUN curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz | tar xvz -C /usr/bin && \
