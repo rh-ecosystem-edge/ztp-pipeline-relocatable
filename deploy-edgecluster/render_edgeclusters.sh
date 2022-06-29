@@ -56,13 +56,14 @@ create_edgecluster_definitions() {
     # Set vars
     export CHANGE_EDGE_NAME=${cluster}
     grab_api_ingress ${cluster}
+    export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
+    export DATA_PUB_INT_M0=$(echo -n "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
     export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_EDGE_API} ${EDGE_API_NAME}" | base64 -w0)
     export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
-    export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition": {"version": "3.1.0"}, "storage": {"files": [{"path": "/etc/hosts", "append": [{"source": "data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
+    export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition":{"version":"3.1.0"},"storage":{"files":[{"path":"/etc/hosts","append":[{"source":"data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]},{"path":"/var/lib/ovnk/iface_default_hint","append":[{"source":"data:text/plain;base64,'${DATA_PUB_INT_M0}'"}]}]}}'
     export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]}]}}'
-    export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
-    export DATA_PUB_INT_M0=$(echo -n "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
+
     # Generate the edgecluster definition yaml
     cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
@@ -116,12 +117,6 @@ data:
             filesystem: root
             mode: 420
             path: /etc/default/nodeip-configuration
-          - contents:
-              source: data:text/plain;charset=utf-8;base64,$DATA_PUB_INT_M0
-              verification: {}
-            filesystem: root
-            mode: 420
-            path: /var/lib/ovnk/iface_default_hint
 EOF
     fi
     cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
