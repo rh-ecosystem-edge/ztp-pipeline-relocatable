@@ -31,7 +31,8 @@ function get_tkn() {
 }
 
 function get_yq() {
-    URL="https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_amd64"
+    YQ_VERSION=4.25.3
+    URL="https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64"
     BIN_FOLDER="${HOME}/bin"
 
     if [ ! $(command -v yq) ]; then
