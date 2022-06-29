@@ -46,7 +46,7 @@
     "test:circular": "dpdm --warning false --tree false --exit-code circular:1 src/index.tsx",
     "eject": "react-scripts eject",
     "clean": "rm -rf node_modules build src/copy-backend-common",
-    "lint": "eslint -c .eslintrc --ext .js,.jsx,.ts,.tsx ./src",
+    "lint": "CI=true eslint -c .eslintrc --ext .js,.jsx,.ts,.tsx --debug --env-info ./src",
     "lint:fix": "yarn lint --fix",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,md,scss,yaml,yml}'"
   },

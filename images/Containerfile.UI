@@ -25,7 +25,11 @@ RUN cd ./frontend ; yarn get-sha ; cd ../ ; rm -rf ./git
 RUN yarn clean
 # Reduce flakiness. The NPM registry network operations can fail sometimes ...
 RUN yarn install || (sleep 5 ; yarn install) || (sleep 5 ; yarn install)
-RUN yarn build
+
+RUN yarn test-backend
+RUN yarn test-frontend
+RUN yarn build-backend
+RUN yarn build-frontend
 
 #############
 FROM registry.access.redhat.com/ubi8/nodejs-16-minimal:latest
