@@ -73,7 +73,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             kcli delete plan -y test-ci || true
             kcli delete network bare-net -y || true
             kcli delete network ztpfw -y || true
-            kcli create network --nodhcp -c 192.168.7.0/24 ztpfw
+            kcli create network --nodhcp -c 192.168.7.0/24 ztpfw -i
             kcli create network -c 192.168.150.0/24 bare-net
             echo """
             	kcli create cluster openshift --force 
