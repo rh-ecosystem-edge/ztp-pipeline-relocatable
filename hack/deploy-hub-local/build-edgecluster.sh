@@ -136,9 +136,6 @@ EOF
         root_disk: /dev/vda
         storage_disk:
           - /dev/vdb
-          - /dev/vdc
-          - /dev/vdd
-          - /dev/vde
 EOF
     done
 
@@ -165,9 +162,6 @@ EOF
         root_disk: /dev/vda
         storage_disk:
           - /dev/vdb
-          - /dev/vdc
-          - /dev/vdd
-          - /dev/vde
 EOF
   fi
 
