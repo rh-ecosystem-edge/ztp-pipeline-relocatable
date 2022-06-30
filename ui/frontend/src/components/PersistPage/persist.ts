@@ -103,6 +103,9 @@ export const persist = async (
     // delete route backup
     // TODO
 
+    // Do it before onSuccess()
+    unbindOnBeforeUnloadPage();
+
     onSuccess();
   } finally {
     unbindOnBeforeUnloadPage();
