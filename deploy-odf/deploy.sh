@@ -5,6 +5,8 @@ set -o pipefail
 set -o nounset
 set -m
 
+debug_status starting
+
 function render_file() {
     SOURCE_FILE=${1}
     if [[ ${#} -lt 1 ]]; then
@@ -164,5 +166,6 @@ if ! ./verify.sh; then
     done
     oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 fi
-echo ">>>>EOF"
-echo ">>>>>>>"
+
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

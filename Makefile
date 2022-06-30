@@ -11,6 +11,7 @@ PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.13
 ACM_VERSION ?= 2.4
 ODF_VERSION ?= 4.9
+DEBUG ?= "false"
 
 
 
@@ -102,6 +103,7 @@ deploy-pipe-hub-sno:
 			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
+			-p debug=$(DEBUG) \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
@@ -113,6 +115,7 @@ deploy-pipe-hub-compact:
 			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
+			-p debug=$(DEBUG) \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
@@ -124,6 +127,7 @@ deploy-pipe-edgecluster-sno:
     			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
+				-p debug=$(DEBUG) \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
@@ -135,6 +139,7 @@ deploy-pipe-edgecluster-compact:
     			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
+				-p debug=$(DEBUG) \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
@@ -146,6 +151,7 @@ deploy-pipe-hub-ci:
 			-p ztp-container-image="$(PIPE_IMAGE):$(RELEASE)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
+			-p debug=$(DEBUG) \
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
@@ -157,6 +163,7 @@ deploy-pipe-edgecluster-sno-ci:
     			-p ztp-container-image="$(PIPE_IMAGE):$(RELEASE)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
+				-p debug=$(DEBUG) \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
@@ -168,6 +175,7 @@ deploy-pipe-edgecluster-compact-ci:
     			-p ztp-container-image="$(PIPE_IMAGE):$(RELEASE)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
+				-p debug=$(DEBUG) \
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \

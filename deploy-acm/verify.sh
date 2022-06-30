@@ -11,10 +11,13 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
 if [[ $(oc get ns | grep open-cluster-management | wc -l) -eq 0 || $(oc get multiclusterhub -n open-cluster-management --no-headers | wc -l) -eq 0 ]]; then
     #Open-Cluster-Management namespace does not exist. Launching the step to create it...
     exit 0
+    debug_status ending
+    echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
 elif [[ $(oc get pod -n open-cluster-management | grep -i running | wc -l) -eq $(oc get pod -n open-cluster-management | grep -v NAME | wc -l) ]]; then
     #All pods for ACM running...Skipping the step to create it
     exit 1
@@ -23,5 +26,4 @@ else
     exit 50
 fi
 
-echo ">>>>EOF"
-echo ">>>>>>>"
+

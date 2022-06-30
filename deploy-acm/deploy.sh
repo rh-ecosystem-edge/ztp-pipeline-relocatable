@@ -10,10 +10,11 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
-if ./verify.sh; then
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
-    # Load common vars
-    source ${WORKDIR}/shared-utils/common.sh
+if ./verify.sh; then
 
     echo ">>>> Modify files to replace with pipeline info gathered"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -48,5 +49,7 @@ if ./verify.sh; then
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
-echo ">>>>EOF"
-echo ">>>>>>>"
+
+
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

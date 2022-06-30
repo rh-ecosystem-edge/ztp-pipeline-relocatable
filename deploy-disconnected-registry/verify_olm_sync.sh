@@ -9,6 +9,9 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
+# debug options
+debug_status starting
+
 function generate_mapping() {
     echo ">>>> Creating OLM Manifests"
     echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${TGT_KUBECONFIG} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
@@ -62,5 +65,7 @@ done
 #In this case, we don't need to mirror catalogs, everything is already there
 
 recover_mapping
-
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
+# debug options
+debug_status ended
 exit 0

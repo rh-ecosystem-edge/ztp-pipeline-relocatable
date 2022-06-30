@@ -4,6 +4,7 @@
 set -o pipefail
 set -o nounset
 set -m
+debug_status starting
 
 create_worker_definitions() {
     local cluster=${1}
@@ -203,3 +204,7 @@ for EDGE in ${ALLEDGECLUSTERS}; do
     check_resource "agent" "${WORKER_AGENT}" "Installed" "${EDGE}" "${KUBECONFIG_HUB}"
     index=$((index + 1))
 done
+
+
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

@@ -12,6 +12,7 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
 echo ">>>> Verify jq"
 echo ">>>>>>>>>>>>>>"
@@ -126,6 +127,6 @@ if [[ $(oc get pv | wc -l) -lt 3 ]]; then
     exit 1
 fi
 
-echo ">>>> EOF"
-echo ">>>>>>>>"
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
 exit 0

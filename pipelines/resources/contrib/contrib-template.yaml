@@ -21,6 +21,9 @@ spec:
     - name: mock
       type: string
       default: "false"
+    - name: debug
+      type: string
+      default: "false"
   stepTemplate:
     env:
       - name: WORKDIR

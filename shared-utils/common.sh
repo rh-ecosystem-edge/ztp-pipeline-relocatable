@@ -17,6 +17,21 @@ function registry_login() {
     fi
 }
 
+function debug_status() {
+
+    if [[ "${DEBUG}" != "false" ]]; then
+        if [[ "${DEBUG}" == "verbose" ]]; then
+            # trace option
+            set -x
+        elif [[ "${DEBUG}" == "vv"* ]]; then
+            # trace  with Variable verbose 
+            set -xvu
+        fi
+        echo "=================="
+        echo "DEBUG: script $PWD/$(basename -- "${BASH_SOURCE[0]}") is ${1}"
+    fi
+}
+
 function check_resource() {
     # 1 - Resource type: "deployment"
     # 2 - Resource name: "openshift-pipelines-operator"
@@ -383,3 +398,5 @@ else
     REGISTRY=$(echo ${EDGECLUSTERS_REGISTRY} | cut -d"." -f1)
     LOCAL_REG=${EDGECLUSTERS_REGISTRY}
 fi
+
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

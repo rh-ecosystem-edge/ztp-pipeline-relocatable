@@ -15,6 +15,9 @@ spec:
     - name: mock
       type: string
       default: "false"
+    - name: debug
+      type: string
+      default: "false"
   workspaces:
     - name: ztp
   tasks:
@@ -32,6 +35,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: debug
+        value: $(params.debug)
     workspaces:
       - name: ztp
         workspace: ztp
@@ -49,6 +54,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: debug
+        value: $(params.debug)
     runAfter:
       - pre-flight
     workspaces:
@@ -68,6 +75,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: debug
+        value: $(params.debug)
     runAfter:
       - deploy-edgeclusters
     workspaces:
@@ -88,6 +97,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: debug
+        value: $(params.debug)
     runAfter:
       - deploy-metallb
     workspaces:
@@ -107,6 +118,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: debug
+        value: $(params.debug)
     runAfter:
       - deploy-ui
     workspaces:

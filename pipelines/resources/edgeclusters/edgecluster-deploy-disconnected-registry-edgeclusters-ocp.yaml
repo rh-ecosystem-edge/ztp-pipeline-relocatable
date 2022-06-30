@@ -20,6 +20,8 @@ spec:
       default: ""
     - name: mock
       type: string
+    - name: debug
+      type: string
       default: "false"
   stepTemplate:
     env:
@@ -35,6 +37,8 @@ spec:
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
+      - name: DEBUG
+        value: $(params.debug)
   steps:
 
     - name: mirror-ocp

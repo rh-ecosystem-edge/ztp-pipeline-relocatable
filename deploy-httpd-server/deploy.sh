@@ -8,10 +8,11 @@ set -m
 # #########
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
+source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
 if ./verify.sh; then
     # Load common vars
-    source ${WORKDIR}/shared-utils/common.sh
     export HTTPD_NS=default
 
     echo ">>>> Create httpd server manifest"
@@ -40,5 +41,5 @@ else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
 
-echo ">>>>EOF"
-echo ">>>>>>>"
+debug_status ended
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

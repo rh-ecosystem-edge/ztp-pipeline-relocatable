@@ -3,6 +3,7 @@
 set -o pipefail
 set -o nounset
 set -m
+debug_status starting
 
 function detach_cluster() {
     # Function to clean cluster from hub
@@ -156,3 +157,7 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     detach_cluster ${edgecluster}
     i=$((i + 1))
 done
+
+
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"

@@ -12,6 +12,7 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
 echo ">>>> Verify the DNS requirements"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -48,6 +49,6 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     index=$((index + 1))
 done
 
-echo ">>>> EOF"
-echo ">>>>>>>>"
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
 exit 0

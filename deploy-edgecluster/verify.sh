@@ -6,6 +6,7 @@ set -m
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
+debug_status starting
 
 function check_aci() {
     cluster=${1}
@@ -92,4 +93,7 @@ for EDGE in ${ALLEDGECLUSTERS}; do
     echo ">>>>EOF"
     echo ">>>>>>>"
 done
+
+debug_status ending
+echo "INFO: End of $PWD/$(basename -- "${BASH_SOURCE[0]}")"
 exit 0
