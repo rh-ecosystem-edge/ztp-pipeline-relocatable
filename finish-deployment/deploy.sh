@@ -149,7 +149,7 @@ fi
 i=0
 for edgecluster in ${ALLEDGECLUSTERS}; do
     echo ">> Cluster: ${edgecluster}"
-    check_cluster ${edgecluster}
+    #check_cluster ${edgecluster}   commented due to MCE feature because is not present
     recover_edgecluster_rsa ${edgecluster}
     recover_edgecluster_files ${edgecluster} ${i}
     store_rsa_secrets ${edgecluster}
