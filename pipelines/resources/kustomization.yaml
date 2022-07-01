@@ -5,6 +5,7 @@ bases:
   - contrib
 resources:
   - deploy-ztp-hub.yaml
+  - deploy-ztp-hub-mce.yaml
   - deploy-ztp-edgeclusters.yaml
   - deploy-ztp-edgeclusters-sno.yaml
 

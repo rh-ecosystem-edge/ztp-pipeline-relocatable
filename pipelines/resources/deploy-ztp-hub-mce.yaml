@@ -1,9 +1,9 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: deploy-ztp-hub
+  name: deploy-ztp-hub-mce
 spec:
-  description: Tekton Pipeline to deploy ZTPFW Hub Cluster with ACM
+  description: Tekton Pipeline to deploy ZTPFW Hub Cluster with MCE
   params:
     - name: ztp-container-image
       type: string
@@ -75,9 +75,9 @@ spec:
         workspace: ztp
 
   # Deploy RHACM
-  - name: deploy-acm
+  - name: deploy-mce
     taskRef:
-      name: hub-deploy-acm
+      name: hub-deploy-mce
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
@@ -107,7 +107,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-acm
+      - deploy-mce
     workspaces:
       - name: ztp
         workspace: ztp

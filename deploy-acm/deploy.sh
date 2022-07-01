@@ -35,16 +35,16 @@ if ./verify.sh; then
     echo ">>>> Deploy RHACM cr manifest"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     oc apply -f 04-acm-cr.yml
-    # We need to give some time to ACM Operator to create the proper helmcharts
+    # We need to give some time to ACM Operator to create the proper resources
     sleep 60
 
     echo ">>>> Wait until RHACM ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    for helmchart in $(oc --kubeconfig=${KUBECONFIG_HUB} get helmreleases -o name); do
-        RESOURCE_KIND=${helmchart%%/*}
-        RESOURCE_NAME=${helmchart##*/}
-        check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Deployed" "open-cluster-management" "${KUBECONFIG_HUB}"
-    done
+    for dep in $(oc --kubeconfig=${KUBECONFIG_HUB} get deployment -n open-cluster-management -o name); do
+            RESOURCE_KIND=${dep%%/*}
+            RESOURCE_NAME=${dep##*/}
+            check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
+        done
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi

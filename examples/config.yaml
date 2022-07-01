@@ -1,6 +1,6 @@
 config:
   OC_OCP_VERSION: "4.10.6"
-  OC_ACM_VERSION: "2.4"
+  OC_ACM_VERSION: "2.5"
   OC_ODF_VERSION: "4.9"
   # optional use your own registry
   REGISTRY: "myregistry.domain.local:5000"
