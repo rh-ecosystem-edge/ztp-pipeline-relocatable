@@ -1,3 +1,13 @@
+# [1.10.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.4...1.10.0) (2022-07-01)
+
+### Features
+
+- Upgrade to ODF 4.10 ([bf5bdd8](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/bf5bdd8b5e6cb880897e08b8b39de4bb16ec0e94))
+
+### Reverts
+
+- Revert "feature: testing the oc patch catalogsource" ([0380955](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/0380955651faf529f8e3a8d99510e16d39101e25))
+
 ## [1.9.4](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.3...1.9.4) (2022-06-27)
 
 ### Bug Fixes

@@ -2,6 +2,6 @@ apiVersion: hive.openshift.io/v1
 kind: ClusterImageSet
 metadata:
   name: CHANGE_EDGE_CLUSTERIMAGESET
-  namespace: open-cluster-management
+  namespace: multicluster-engine
 spec:
   releaseImage: TAG_OCP_IMAGE_RELEASE

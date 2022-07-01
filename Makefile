@@ -8,9 +8,9 @@ FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
 EDGECLUSTERS_FILE ?= ${PWD}/hack/deploy-hub-local/edgeclusters.yaml
 PULL_SECRET ?= ${HOME}/openshift_pull.json
-OCP_VERSION ?= 4.10.13
-ACM_VERSION ?= 2.4
-ODF_VERSION ?= 4.9
+OCP_VERSION ?= 4.10.20
+ACM_VERSION ?= 2.5
+ODF_VERSION ?= 4.10
 
 
 
@@ -19,7 +19,7 @@ ifeq ($(BRANCH),)
 BRANCH := $(RELEASE)
 endif
 
-.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact build-edgecluster-sno-2nics build-edgecluster-compact-2nics deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci
+.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact build-edgecluster-sno-2nics build-edgecluster-compact-2nics deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-mce-sno deploy-pipe-hub-mce-compact deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci
 .EXPORT_ALL_VARIABLES:
 
 all-images: pipe-image ui-image
@@ -96,6 +96,28 @@ build-edgecluster-compact-2nics:
 
 wait-for-hub-sno:
 	${PWD}/shared-utils/wait_for_sno_mco.sh &
+
+deploy-pipe-hub-mce-sno:
+	tkn pipeline start -n edgecluster-deployer \
+			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
+			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
+			-p kubeconfig=${KUBECONFIG} \
+			-w name=ztp,claimName=ztp-pvc \
+			--timeout 5h \
+			--pod-template ./pipelines/resources/common/pod-template.yaml \
+			--use-param-defaults deploy-ztp-hub-mce  && \
+	tkn pr logs -L -n edgecluster-deployer -f
+
+deploy-pipe-hub-mce-compact:
+	tkn pipeline start -n edgecluster-deployer \
+			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
+			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
+			-p kubeconfig=${KUBECONFIG} \
+			-w name=ztp,claimName=ztp-pvc \
+			--timeout 5h \
+			--pod-template ./pipelines/resources/common/pod-template.yaml \
+			--use-param-defaults deploy-ztp-hub-mce  && \
+	tkn pr logs -L -n edgecluster-deployer -f
 
 deploy-pipe-hub-sno:
 	tkn pipeline start -n edgecluster-deployer \
