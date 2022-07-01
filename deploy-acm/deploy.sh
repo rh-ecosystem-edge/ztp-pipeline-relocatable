@@ -41,10 +41,10 @@ if ./verify.sh; then
     echo ">>>> Wait until RHACM ready"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
     for dep in $(oc --kubeconfig=${KUBECONFIG_HUB} get deployment -n open-cluster-management -o name); do
-            RESOURCE_KIND=${dep%%/*}
-            RESOURCE_NAME=${dep##*/}
-            check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
-        done
+        RESOURCE_KIND=${dep%%/*}
+        RESOURCE_NAME=${dep##*/}
+        check_resource "${RESOURCE_KIND}" "${RESOURCE_NAME}" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
+    done
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
