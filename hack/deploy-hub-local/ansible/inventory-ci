@@ -37,7 +37,7 @@ all:
 
     # Tuned configuration
     tuned_configure: True
-    tuned_profile: latency-performance
+    tuned_profile: virtual-host
 
     # Chronyd configuration
     chronyd_configure: True
