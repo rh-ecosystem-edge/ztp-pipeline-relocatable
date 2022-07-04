@@ -1,3 +1,9 @@
+## [1.10.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.10.0...1.10.1) (2022-07-04)
+
+### Bug Fixes
+
+- remove unneeded cluster index ([1feff8d](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/1feff8d48778415f7fbafbd4db91e237743a4647))
+
 # [1.10.0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.9.4...1.10.0) (2022-07-01)
 
 ### Features
