@@ -20,7 +20,6 @@ edgecluster{{ i }}-cluster-m{{ j }}:
   disks:
   - size: 120
   - size: 200
-    thin: False
 {% endfor %}
 {% endfor %}
 
@@ -41,5 +40,4 @@ edgecluster{{ i }}-cluster-w0:
   disks:
   - size: 120
   - size: 200
-    thin: False
 {% endfor %}
