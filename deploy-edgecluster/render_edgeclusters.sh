@@ -59,7 +59,7 @@ create_edgecluster_definitions() {
     export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
     export CHANGE_EDGE_MASTER_MGMT_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
     if [[ ${CHANGE_EDGE_MASTER_PUB_INT_M0} == "null" ]]; then
-        export CHANGE_EDGE_MASTER_PUB_INT_M0=${CHANGE_EDGE_MASTER_MGMT_INT_M0}.102@${CHANGE_EDGE_MASTER_MGMT_INT_M0}
+        export CHANGE_EDGE_MASTER_PUB_INT_M0=${CHANGE_EDGE_MASTER_MGMT_INT_M0}.102
         echo "New interface for ovn is: ${CHANGE_EDGE_MASTER_PUB_INT_M0}"
     fi
     export DATA_PUB_INT_M0=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
