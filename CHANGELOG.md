@@ -1,3 +1,9 @@
+## [1.10.2](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.10.1...1.10.2) (2022-07-05)
+
+### Bug Fixes
+
+- Make quay.io use pull secret only ([d3bb1f0](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/commit/d3bb1f00e407c0a82cf7c64ecb6b4baff44b2d97))
+
 ## [1.10.1](https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/compare/1.10.0...1.10.1) (2022-07-04)
 
 ### Bug Fixes
