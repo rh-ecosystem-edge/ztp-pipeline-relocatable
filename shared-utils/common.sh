@@ -374,12 +374,11 @@ fi
 
 export ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
 
+export REGISTRY=ztpfw-registry
 export EDGECLUSTERS_REGISTRY=$(yq eval ".config.REGISTRY" ${EDGECLUSTERS_FILE} || null)
 if [[ ${EDGECLUSTERS_REGISTRY} == "" || ${EDGECLUSTERS_REGISTRY} == null ]]; then
     export CUSTOM_REGISTRY=false
-    export REGISTRY=ztpfw-registry
 else
     export CUSTOM_REGISTRY=true
-    REGISTRY=$(echo ${EDGECLUSTERS_REGISTRY} | cut -d"." -f1)
-    LOCAL_REG=${EDGECLUSTERS_REGISTRY}
+    export CUSTOM_REGISTRY_URL=${EDGECLUSTERS_REGISTRY}
 fi

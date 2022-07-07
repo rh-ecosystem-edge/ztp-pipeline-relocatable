@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-registry
+  namespace: ztpfw-registry
+  labels:
+    registryUri: TMP_REGISTRY_DOMAIN
+spec:
+  ports:
+    - protocol: TCP
+      port: 8989
+      targetPort: TMP_REGISTRY_PORT
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-registry
+  namespace: ztpfw-registry
+  labels:
+    registryUri: TMP_REGISTRY_DOMAIN 
+subsets:
+  - addresses:
+      - ip: TMP_REGISTRY_IP
+    ports:
+      - port: TMP_REGISTRY_PORT

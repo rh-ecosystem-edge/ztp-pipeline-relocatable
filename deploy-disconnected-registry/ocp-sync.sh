@@ -42,17 +42,6 @@ function mirror_ocp() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo
 
-    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
-        echo "Checking Private registry creds"
-        if [[ ! $(podman login ${LOCAL_REG} --authfile ${PULL_SECRET}) ]]; then
-            echo "ERROR: Failed to login to ${LOCAL_REG}, please check Pull Secret"
-            exit 1
-        else
-            echo "Login successfully to ${LOCAL_REG}"
-        fi
-    fi
-    #######
-
     # Empty log file
     >${OUTPUTDIR}/mirror-ocp.log
     SALIDA=1
@@ -87,12 +76,6 @@ if [[ ${1} == 'hub' ]]; then
     trust_internal_registry 'hub'
 
     if ! ./verify_ocp_sync.sh 'hub'; then
-
-        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
-            oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
-            # TODO: commented out the next line seems not needed
-            # export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-        fi
         registry_login ${DESTINATION_REGISTRY}
         mirror_ocp 'hub' 'hub'
     else
