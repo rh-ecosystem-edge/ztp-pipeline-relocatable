@@ -59,8 +59,8 @@ create_edgecluster_definitions() {
     export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
     export CHANGE_EDGE_MASTER_MGMT_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
     if [[ ${CHANGE_EDGE_MASTER_PUB_INT_M0} == "null" ]]; then
-        export CHANGE_EDGE_MASTER_PUB_INT_M0=${CHANGE_EDGE_MASTER_MGMT_INT_M0}.102
-        echo "New interface for ovn is: ${CHANGE_EDGE_MASTER_PUB_INT_M0}"
+        export CHANGE_EDGE_MASTER_PUB_INT_M0=veth2
+        echo "New interface for ovn is: veth2"
     fi
     export DATA_PUB_INT_M0=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
     export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
@@ -286,6 +286,55 @@ metadata:
 spec:
  config:
    interfaces:
+EOF
+        echo ">> Checking Number of Interfaces"
+        echo "Edge-cluster: ${cluster}"
+        echo "Master: ${master}"
+        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
+            cat <<EOF >>${OUTPUT}
+     - name: veth1
+       type: veth
+       state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 10000
+       ipv4:
+         enabled: true
+         dhcp: true
+         auto-dns: true
+         auto-gateway: true
+         auto-routes: true
+       mtu: 1500
+       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
+       veth:
+         peer: veth2
+     - name: veth2
+       type: veth
+       state: up
+       ethernet:
+         auto-negotiation: true
+         duplex: full
+         speed: 10000
+       ipv4:
+         enabled: true
+         address:
+           - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
+             prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
+       mtu: 1500
+       veth:
+         peer: veth1
+
+     - name: br-ztp
+       type: linux-bridge
+       state: up
+       bridge:
+         port:
+           - name: veth2
+           - name: veth1
+EOF
+        else
+            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_MASTER_MGMT_INT
        type: ethernet
        state: up
@@ -301,27 +350,7 @@ spec:
          auto-routes: true
        mtu: 1500
        mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
-EOF
-        echo ">> Checking Number of Interfaces"
-        echo "Edge-cluster: ${cluster}"
-        echo "Master: ${master}"
-        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
-            cat <<EOF >>${OUTPUT}
-     - name: $CHANGE_EDGE_MASTER_MGMT_INT.102
-       type: vlan
-       state: up
-       vlan:
-         base-iface: $CHANGE_EDGE_MASTER_MGMT_INT
-         id: 102
-       ipv4:
-         enabled: true
-         address:
-           - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
-             prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
-       mtu: 1500
-EOF
-        else
-            cat <<EOF >>${OUTPUT}
+
      - name: $CHANGE_EDGE_MASTER_PUB_INT
        type: ethernet
        state: up
@@ -358,7 +387,7 @@ EOF
 EOF
         if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
             cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
+         next-hop-interface: veth2
 EOF
         else
             cat <<EOF >>${OUTPUT}
@@ -376,7 +405,7 @@ EOF
 EOF
             if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
                 cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
+         next-hop-interface: veth2
 EOF
             else
                 cat <<EOF >>${OUTPUT}
