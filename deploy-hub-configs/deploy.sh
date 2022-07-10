@@ -30,7 +30,7 @@ if ./verify.sh; then
     pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d | jq -c)
     echo -n "  .dockerconfigjson: "\'$pull\' >>05-pullsecrethub.yml
     REGISTRY=ztpfw-registry
-    LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }')" #TODO change it to use the global common variable importing here the source commons
+    LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }' | base64 -d)" #TODO change it to use the global common variable importing here the source commons
     sed -i "s/CHANGEDOMAIN/${LOCAL_REG}/g" registryconf.txt
     if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
        export CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} -showcerts </dev/null | openssl x509)

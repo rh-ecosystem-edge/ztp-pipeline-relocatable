@@ -3,8 +3,6 @@ kind: Service
 metadata:
   name: external-registry
   namespace: ztpfw-registry
-  labels:
-    registryUri: TMP_REGISTRY_DOMAIN
 spec:
   ports:
     - protocol: TCP
@@ -17,8 +15,6 @@ kind: Endpoints
 metadata:
   name: external-registry
   namespace: ztpfw-registry
-  labels:
-    registryUri: TMP_REGISTRY_DOMAIN 
 subsets:
   - addresses:
       - ip: TMP_REGISTRY_IP

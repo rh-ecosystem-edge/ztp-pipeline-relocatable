@@ -134,7 +134,7 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
         REGISTRY_URI="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} label route ${REGISTRY} uri=${REGISTRY_URI}
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} label route ${REGISTRY} uri=$(echo ${REGISTRY_URI} | base64 ) 
     elif [[ ${1} == 'edgecluster' ]]; then
         TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         source ./common.sh ${1}
@@ -227,7 +227,7 @@ function deploy_custom_registry() {
             --dry-run=client --hostname "${TMP_REGISTRY_DOMAIN}" \
             --output=yaml | oc apply -f -
 
-        oc --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} label route ${REGISTRY} uri=${CUSTOM_REGISTRY_URL}
+        oc --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} label route ${REGISTRY} uri=$(echo ${CUSTOM_REGISTRY_URL} | base64 )
 
     fi
 }

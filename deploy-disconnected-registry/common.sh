@@ -103,7 +103,7 @@ function trust_internal_registry() {
 
     oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry -n openshift-config --from-file=${MYREGISTRY}=${PATH_CA_CERT}
     oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry"}}}' --type=merge
-    
+
 }
 
 if [[ $# -lt 1 ]]; then
@@ -144,7 +144,7 @@ if [[ ${1} == "hub" ]]; then
     export SOURCE_REGISTRY="quay.io"
     export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
     export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
-    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }')"
+    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }' | base64 -d)"
     # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
@@ -183,7 +183,7 @@ elif [[ ${1} == "edgecluster" ]]; then
         export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
         ## OLM Sync vars
-        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }')"
+        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }' | base64 -d)"
         ## NS where the OLM images will be mirrored
         export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
         ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
