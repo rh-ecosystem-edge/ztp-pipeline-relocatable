@@ -133,6 +133,8 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
+        REGISTRY_URI="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} label route ${REGISTRY} uri=${REGISTRY_URI}
     elif [[ ${1} == 'edgecluster' ]]; then
         TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         source ./common.sh ${1}
@@ -197,24 +199,6 @@ function deploy_registry() {
 
 }
 
-function modify_pull_secret() {
-    ORIGIN_SECRET_PATH=${WORKDIR}/build/origin_pull_secret.json
-    MODIFY_SECRET_PATH=${WORKDIR}/build/modify_pull_secret.json
-
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d > ${ORIGIN_SECRET_PATH}
-
-    auth=$(cat ${ORIGIN_SECRET_PATH} | jq .auths.\"${CUSTOM_REGISTRY_URL}\")
-    DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-
-    AUTHSTRING="{\"${DESTINATION_REGISTRY}\": $auth}"
-
-    jq ".auths += $AUTHSTRING" < ${ORIGIN_SECRET_PATH} > ${MODIFY_SECRET_PATH}
-
-    echo "INFO: Patching modify pull secret"
-    oc  --kubeconfig=${KUBECONFIG_HUB} set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=${MODIFY_SECRET_PATH}
-
-
-}
 function deploy_custom_registry() {
     if [[ ${1} == 'hub' ]]; then
         TMP_REGISTRY_DOMAIN=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
@@ -222,7 +206,7 @@ function deploy_custom_registry() {
         TMP_REGISTRY_IP=$( dig  A +short ${TMP_REGISTRY_DOMAIN} | head -1)
 
         echo "Create Endpoint"
-        TPL_MANIFEST="manifests/custom-registry-endpoint.yaml"
+        TPL_MANIFEST="${WORKDIR}/deploy-disconnected-registry/manifests/custom-registry-endpoint.yaml"
         MANIFESTCLONE="${WORKDIR}/build/custom-registry-endpoint.yaml"
 
         cp -f ${TPL_MANIFEST} ${MANIFESTCLONE}
@@ -232,17 +216,20 @@ function deploy_custom_registry() {
 
         echo "INFO: applying  Endpoint config"
         cat ${MANIFESTCLONE} | yq e -
+        oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${REGISTRY} 
         oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${MANIFESTCLONE} 
 
         echo "INFO: Creating Route"
-        oc create route passthrough ztpfw-registry \
-            --kubeconfig=${KUBECONFIG_HUB} --namespace ${REGISTRY} \
-            --port=https \
-            --dry-run=client --hostname ${REGISTRY} \
+        oc create route edge ztpfw-registry \
+            --kubeconfig=${KUBECONFIG_HUB} --namespace  ${REGISTRY}  \
+            --service=external-registry --port=${TMP_REGISTRY_PORT} \
+            --insecure-policy=Redirect \
+            --dry-run=client --hostname "${TMP_REGISTRY_DOMAIN}" \
             --output=yaml | oc apply -f -
 
-    fi
+        oc --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} label route ${REGISTRY} uri=${CUSTOM_REGISTRY_URL}
 
+    fi
 }
 
 if [[ ${1} == 'hub' ]]; then
@@ -252,17 +239,16 @@ if [[ ${1} == 'hub' ]]; then
             deploy_registry 'hub'
         elif [[ ${CUSTOM_REGISTRY} == "true" ]]; then
             deploy_custom_registry 'hub'
-            modify_pull_secret
         fi
 
         trust_internal_registry 'hub'
-        check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+            check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
+        fi
         check_mcp 'hub'
         render_file manifests/machine-config-certs-worker.yaml 'hub'
         render_file manifests/machine-config-certs-master.yaml 'hub'
         check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
-        check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
-
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
     fi

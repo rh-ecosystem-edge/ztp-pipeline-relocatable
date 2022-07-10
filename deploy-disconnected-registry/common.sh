@@ -87,11 +87,10 @@ function trust_internal_registry() {
     #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
     if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
         export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
-    elif  if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+    else
         export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts </dev/null | openssl x509 | base64 | tr -d '\n')
     fi
     echo ">> Cert: ${PATH_CA_CERT}"
-
 
     ## Update trusted CA from Helper
     echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
@@ -104,7 +103,7 @@ function trust_internal_registry() {
 
     oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry -n openshift-config --from-file=${MYREGISTRY}=${PATH_CA_CERT}
     oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry"}}}' --type=merge
-
+    
 }
 
 if [[ $# -lt 1 ]]; then
@@ -145,8 +144,7 @@ if [[ ${1} == "hub" ]]; then
     export SOURCE_REGISTRY="quay.io"
     export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
     export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
-    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-
+    export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }')"
     # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
@@ -185,7 +183,7 @@ elif [[ ${1} == "edgecluster" ]]; then
         export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
         ## OLM Sync vars
-        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath='{ .metadata.labels.uri }')"
         ## NS where the OLM images will be mirrored
         export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
         ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored

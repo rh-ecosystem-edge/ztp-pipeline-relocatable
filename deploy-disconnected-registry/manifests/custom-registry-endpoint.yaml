@@ -8,6 +8,7 @@ metadata:
 spec:
   ports:
     - protocol: TCP
+      name: external-registry-port
       port: 8989
       targetPort: TMP_REGISTRY_PORT
 ---
@@ -23,3 +24,4 @@ subsets:
       - ip: TMP_REGISTRY_IP
     ports:
       - port: TMP_REGISTRY_PORT
+        name: external-registry-port
