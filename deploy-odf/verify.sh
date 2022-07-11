@@ -56,7 +56,7 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     fi
 
     echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc ocs-storagecluster-cephfs --no-headers | wc -l) -ne 1 ]]; then
+    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc ocs-storagecluster-ceph-rbd --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 done
