@@ -295,10 +295,33 @@ EOF
      - name: veth1
        type: veth
        state: up
-       ethernet:
-         auto-negotiation: true
-         duplex: full
-         speed: 10000
+       mtu: 1500
+       veth:
+         peer: veth2
+     - name: veth2
+       type: veth
+       state: up
+       mtu: 1500
+       veth:
+         peer: veth1
+       ipv4:
+         enabled: true
+         address:
+          - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
+            prefix-length: 24
+
+     - name: $CHANGE_EDGE_MASTER_MGMT_INT
+       type: ethernet
+       state: up
+       mtu: 1500
+       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
+     - name: br-ztp
+       type: linux-bridge
+       state: up
+       bridge:
+         port:
+           - name: veth1
+           - name: $CHANGE_EDGE_MASTER_MGMT_INT
        ipv4:
          enabled: true
          dhcp: true
@@ -306,32 +329,6 @@ EOF
          auto-gateway: true
          auto-routes: true
        mtu: 1500
-       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
-       veth:
-         peer: veth2
-     - name: veth2
-       type: veth
-       state: up
-       ethernet:
-         auto-negotiation: true
-         duplex: full
-         speed: 10000
-       ipv4:
-         enabled: true
-         address:
-           - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
-             prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
-       mtu: 1500
-       veth:
-         peer: veth1
-
-     - name: br-ztp
-       type: linux-bridge
-       state: up
-       bridge:
-         port:
-           - name: veth2
-           - name: veth1
 EOF
         else
             cat <<EOF >>${OUTPUT}
@@ -400,7 +397,7 @@ EOF
             cat <<EOF >>${OUTPUT}
        - destination: 0.0.0.0/0
          next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
-         metric: 101
+         metric: 501
          table-id: 254
 EOF
             if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
