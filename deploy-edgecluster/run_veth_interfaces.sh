@@ -2,6 +2,6 @@
 # Set path during systemd execution
 export PATH=/root/.local/bin:/root/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-nmcli con up veth2 1>/dev/null 2>&1
+ip link set dev veth2 1>/dev/null 2>&1
 sleep 5
-nmcli con up veth1 1>/dev/null 2>&1
+ip link set dev veth1>/dev/null 2>&1
