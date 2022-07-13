@@ -16,6 +16,7 @@ import {
   changeDomain,
   user,
   configure,
+  changeStaticIps,
 } from './endpoints';
 
 const PORT = process.env.BACKEND_PORT || 3001;

@@ -60,12 +60,7 @@ const changeStaticIpsImpl = async (
       const routes = {
         config: host.interfaces
           .map((i): NNRouteConfig | undefined => {
-            // const subnet = getSubnetMask(i.ipv4.address?.ip, i.ipv4.address?.prefixLength);
-            const gateway = i.ipv4.address?.gateway;
-
-            if (!subnet) {
-              return undefined;
-            }
+            const gateway = i.ipv4.address?.gateway || '';
 
             return {
               destination: '0.0.0.0/0', // TODO: Can we use this as default??
@@ -108,13 +103,14 @@ const changeStaticIpsImpl = async (
 
       const patches: PatchType[] = [
         {
-          op: 'replace', // let's risk here, maybe we should query the NNCP first and than decide about replace vs. add
+          op: 'replace', // let's risk here, to be safe we should query the NNCP first and then decide about replace vs. add
           path: '/spec/desiredState',
           value: desiredState,
         },
       ];
 
       try {
+        logger.debug(`-- Patching NNCP ${host.nncpName}: `, patches);
         await patchNodeNetworkConfigurationPolicy(token, { name: host.nncpName }, patches);
       } catch (e) {
         logger.error(
