@@ -297,6 +297,7 @@ if ! ./verify.sh; then
         # "Patch bz https://bugzilla.redhat.com/show_bug.cgi?id=2106840"
         echo ">> Patching the MetalLB operator"
         oc --kubeconfig=${EDGE_KUBECONFIG} adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:openshift-nmstate:nmstate-operator
+        oc --kubeconfig=${EDGE_KUBECONFIG} adm policy add-cluster-role-to-user cluster-admin nmstate-operator
 
         echo ">>>> Deploying NMState Operand for ${edgecluster}"
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
