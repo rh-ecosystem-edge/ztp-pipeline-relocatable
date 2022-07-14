@@ -13,6 +13,13 @@ if ./verify.sh; then
     # Load common vars
     source ${WORKDIR}/shared-utils/common.sh
 
+    echo ">>>> Wait until resources crd agentserviceconfig and clusterimageset ready"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+    until oc --kubeconfig=${KUBECONFIG_HUB} get crd/agentserviceconfigs.agent-install.openshift.io >/dev/null 2>&1; do sleep 1; done
+    until oc --kubeconfig=${KUBECONFIG_HUB} get crd/clusterimagesets.hive.openshift.io >/dev/null 2>&1; do sleep 1; done
+    sleep 60
+
     echo ">>>> Preparing and replace info in the manifests"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
@@ -167,14 +174,13 @@ EOF
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 04-agent-service-config.yml
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 05-pullsecrethub.yml
 
-    echo ">>>> Wait for ACM and Assisted services deployed"
+    echo ">>>> Wait for Assisted services deployed"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    while [[ $(oc get pod -n open-cluster-management | grep assisted | wc -l) -eq 0 ]]; do
+    while [[ $(oc get pod -n multicluster-engine | grep assisted | wc -l) -eq 0 ]]; do
         echo "Waiting for Assisted installer to be ready..."
         sleep 5
     done
-    check_resource "deployment" "assisted-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
-    check_resource "deployment" "assisted-image-service" "Available" "open-cluster-management" "${KUBECONFIG_HUB}"
+    check_resource "deployment" "assisted-service" "Available" "multicluster-engine" "${KUBECONFIG_HUB}"
 
 else
 

@@ -279,6 +279,10 @@ if ! ./verify.sh; then
         copy_files "${EDGE_KUBECONFIG}" "${EDGE_NODE_IP}" "./.kube/config"
         echo
 
+        # "Patch bz https://bugzilla.redhat.com/show_bug.cgi?id=2106840"
+        echo ">> Patching the MetalLB operator"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP}  "oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:openshift-nmstate:nmstate-operator"
+
         echo ">> Deploying NMState and MetalLB for ${edgecluster}"
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/01-NMS-Namespace.yaml -f manifests/02-NMS-OperatorGroup.yaml -f manifests/01-MLB-Namespace.yaml -f manifests/02-MLB-OperatorGroup.yaml"
         sleep 2

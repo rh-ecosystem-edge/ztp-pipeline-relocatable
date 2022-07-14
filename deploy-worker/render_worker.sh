@@ -27,16 +27,16 @@ create_worker_definitions() {
     NUM_W=$((NUM_W - 1))
 
     for worker in $(seq 0 ${NUM_W}); do
-        export CHANGE_EDGE_WORKER_PUB_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.nic_int_static" ${EDGECLUSTERS_FILE})
-        export CHANGE_EDGE_WORKER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
+        export CHANGE_EDGE_WORKER_PUB_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_int_static" ${EDGECLUSTERS_FILE})
+        export CHANGE_EDGE_WORKER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_PUB_INT_IP=192.168.7.13
         export EDGE_MASTER_0_INT_IP=192.168.7.10
-        export CHANGE_EDGE_WORKER_PUB_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.mac_int_static" ${EDGECLUSTERS_FILE})
-        export CHANGE_EDGE_WORKER_BMC_USERNAME=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.bmc_user" ${EDGECLUSTERS_FILE} | base64)
-        export CHANGE_EDGE_WORKER_BMC_PASSWORD=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.bmc_pass" ${EDGECLUSTERS_FILE} | base64)
-        export CHANGE_EDGE_WORKER_BMC_URL=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.bmc_url" ${EDGECLUSTERS_FILE})
-        export CHANGE_EDGE_WORKER_MGMT_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
-        export CHANGE_EDGE_WORKER_ROOT_DISK=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.worker${worker}.root_disk" ${EDGECLUSTERS_FILE})
+        export CHANGE_EDGE_WORKER_PUB_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.mac_int_static" ${EDGECLUSTERS_FILE})
+        export CHANGE_EDGE_WORKER_BMC_USERNAME=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.bmc_user" ${EDGECLUSTERS_FILE} | base64)
+        export CHANGE_EDGE_WORKER_BMC_PASSWORD=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.bmc_pass" ${EDGECLUSTERS_FILE} | base64)
+        export CHANGE_EDGE_WORKER_BMC_URL=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.bmc_url" ${EDGECLUSTERS_FILE})
+        export CHANGE_EDGE_WORKER_MGMT_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
+        export CHANGE_EDGE_WORKER_ROOT_DISK=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.root_disk" ${EDGECLUSTERS_FILE})
 
         # Now, write the template to disk
         OUTPUT="${OUTPUTDIR}/${cluster}-worker${worker}.yaml"
