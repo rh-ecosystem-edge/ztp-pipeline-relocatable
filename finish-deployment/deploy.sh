@@ -91,7 +91,7 @@ function save_files() {
         echo
         EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
         master=${EDGE_NODE_NAME##*-}
-        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].${cluster}.master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
+        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
         NODE_IP=${EDGE_NODE_IP_RAW%%/*}
         if [[ -n ${NODE_IP} ]]; then
@@ -149,7 +149,7 @@ fi
 i=0
 for edgecluster in ${ALLEDGECLUSTERS}; do
     echo ">> Cluster: ${edgecluster}"
-    check_cluster ${edgecluster}
+    #check_cluster ${edgecluster}   commented due to MCE feature because is not present
     recover_edgecluster_rsa ${edgecluster}
     recover_edgecluster_files ${edgecluster} ${i}
     store_rsa_secrets ${edgecluster}

@@ -3,6 +3,8 @@ kind: MultiClusterHub
 metadata:
   name: multiclusterhub
   namespace: open-cluster-management
+  annotations:
+    installer.open-cluster-management.io/mce-subscription-spec: '{"source": "ztpfw-catalog"}'
 spec:
   imagePullSecret: ""
   disableHubSelfManagement: False
