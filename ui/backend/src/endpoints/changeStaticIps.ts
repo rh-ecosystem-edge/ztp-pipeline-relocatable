@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash';
 import { Request, Response } from 'express';
 
 import {
@@ -9,7 +10,12 @@ import {
   NNRouteConfig,
 } from '../frontend-shared';
 import { getToken, unauthorized } from '../k8s';
-import { patchNodeNetworkConfigurationPolicy } from '../resources/nodenetworkconfigurationpolicy';
+import {
+  createNodeNetworkConfigurationPolicy,
+  patchNodeNetworkConfigurationPolicy,
+} from '../resources/nodenetworkconfigurationpolicy';
+import { NNCP_TEMPLATE } from '../resources/resourceTemplates';
+import { patchApiServerConfig } from '../resources/apiserver';
 
 const logger = console;
 
@@ -37,7 +43,7 @@ const changeStaticIpsImpl = async (
   }
 
   // Store the data
-  // Optimization: instead of sequential processing wait on all promises (not implemented atm due to debugging)
+  // Optimization: instead of sequential processing wait on all promises at once (not implemented atm due to debugging)
   for (let index = 0; index < hosts.length; index++) {
     const host = hosts[index];
 
@@ -48,7 +54,19 @@ const changeStaticIpsImpl = async (
     }
 
     if (host.nncpName) {
-      // assumption: the spec.nodeSelector is already properly set (otherwise host.nncpName is not provided) - so we can PATCH right away
+      // assumption: the spec.nodeSelector is already properly set (otherwise host.nncpName would not be provided) - so we can PATCH right away
+
+      const patches: PatchType[] = [];
+
+      patches.push({
+        // TODO: remove following, it is used for debugging only:
+        op: 'replace',
+        path: '/spec/nodeSelector',
+        value: {
+          'ui-debug-not-mataching-key': 'not-matching-label',
+        },
+      });
+
       const dns = host.dns?.length
         ? {
             config: {
@@ -101,13 +119,11 @@ const changeStaticIpsImpl = async (
         routes,
       };
 
-      const patches: PatchType[] = [
-        {
-          op: 'replace', // let's risk here, to be safe we should query the NNCP first and then decide about replace vs. add
-          path: '/spec/desiredState',
-          value: desiredState,
-        },
-      ];
+      patches.push({
+        op: 'replace', // let's risk here, to be safe we should query the NNCP first and then decide about replace vs. add
+        path: '/spec/desiredState',
+        value: desiredState,
+      });
 
       try {
         logger.debug(`-- Patching NNCP ${host.nncpName}: `, patches);
@@ -124,8 +140,42 @@ const changeStaticIpsImpl = async (
         return;
       }
     } else {
-      // build one from a template
-      // TODO
+      // create one from a template
+      const nncp = cloneDeep(NNCP_TEMPLATE);
+      const namePrefix = `${host.nodeName}-`;
+      nncp.metadata.generateName = namePrefix;
+
+      // TODO: other changes
+
+      try {
+        const response = await createNodeNetworkConfigurationPolicy(token, nncp);
+
+        if (response.statusCode === 201) {
+          logger.info('Created a NNCP resource: ', response.body?.metadata?.name);
+        } else {
+          logger.error(
+            `Can not create ${namePrefix} NodeNetworkConfigurationPolicy resource. Response: `,
+            response,
+          );
+          res
+            .writeHead(
+              response.statusCode,
+              `Can not create ${namePrefix} NodeNetworkConfigurationPolicy resource.`,
+            )
+            .end();
+        }
+      } catch (e) {
+        logger.error(
+          `Can not create ${namePrefix} NodeNetworkConfigurationPolicy resource.  Internal error: `,
+          e,
+        );
+        res
+          .writeHead(
+            500,
+            `Can not create ${namePrefix} NodeNetworkConfigurationPolicy resource.  Internal error.`,
+          )
+          .end();
+      }
     }
   }
 

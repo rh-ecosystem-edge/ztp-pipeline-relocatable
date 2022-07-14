@@ -1,5 +1,10 @@
 import { TLS_SECRET_NAMESPACE } from '../constants';
-import { Secret, SecretApiVersion, SecretKind } from '../frontend-shared';
+import {
+  Secret,
+  SecretApiVersion,
+  SecretKind,
+  NodeNetworkConfigurationPolicy,
+} from '../frontend-shared';
 
 export const TLS_SECRET: Secret = {
   apiVersion: SecretApiVersion,
@@ -13,4 +18,8 @@ export const TLS_SECRET: Secret = {
     namespace: TLS_SECRET_NAMESPACE,
   },
   type: 'kubernetes.io/tls',
+};
+
+export const NNCP_TEMPLATE: NodeNetworkConfigurationPolicy = {
+  // TODO
 };

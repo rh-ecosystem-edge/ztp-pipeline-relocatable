@@ -3,17 +3,18 @@ import {
   PatchType,
   NodeNetworkConfigurationPolicyApiVersion,
 } from '../frontend-shared';
-import { getClusterApiUrl, jsonPatch } from '../k8s';
+import { getClusterApiUrl, jsonPatch, jsonPost } from '../k8s';
+
+const getNNCPUrl = () =>
+  `${getClusterApiUrl()}/apis/${NodeNetworkConfigurationPolicyApiVersion}/nodenetworkConfigurationPolicies`;
+
+export const createNodeNetworkConfigurationPolicy = (
+  token: string,
+  nncp: NodeNetworkConfigurationPolicy,
+) => jsonPost<NodeNetworkConfigurationPolicy>(getNNCPUrl(), nncp, token);
 
 export const patchNodeNetworkConfigurationPolicy = (
   token: string,
   metadata: { name: string },
   patches: PatchType[],
-) =>
-  jsonPatch<NodeNetworkConfigurationPolicy>(
-    `${getClusterApiUrl()}/apis/${NodeNetworkConfigurationPolicyApiVersion}/nodenetworkConfigurationPolicies/${
-      metadata.name
-    }`,
-    patches,
-    token,
-  );
+) => jsonPatch<NodeNetworkConfigurationPolicy>(`${getNNCPUrl()}/${metadata.name}`, patches, token);
