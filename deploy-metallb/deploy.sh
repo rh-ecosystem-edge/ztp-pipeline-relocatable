@@ -298,8 +298,6 @@ if ! ./verify.sh; then
         verify_remote_resource ${edgecluster} "default" "crd" "metallbs.metallb.io" "."
         echo
 
-
-
         echo ">>>> Deploying NMState Operand for ${edgecluster}"
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
         sleep 2
