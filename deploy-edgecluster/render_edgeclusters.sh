@@ -127,6 +127,8 @@ kind: AgentClusterInstall
 metadata:
   name: $CHANGE_EDGE_NAME
   namespace: $CHANGE_EDGE_NAME
+  annotations:
+      agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType": "OpenshiftSDN"}}'
 spec:
   clusterDeploymentRef:
     name: $CHANGE_EDGE_NAME
@@ -159,7 +161,6 @@ EOF
     else # SNO
         cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   networking:
-    networkType: OVNKubernetes
     clusterNetwork:
       - cidr: "$CHANGE_EDGE_CLUSTER_NET_CIDR"
         hostPrefix: $CHANGE_EDGE_CLUSTER_NET_PREFIX
@@ -360,25 +361,6 @@ EOF
             cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
 EOF
-        fi
-        export NUM_M=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
-        echo "NUM_M: $NUM_M"
-        if [[ ${NUM_M} -eq "1" || ${NUM_M} -eq "3" ]]; then
-            cat <<EOF >>${OUTPUT}
-       - destination: 0.0.0.0/0
-         next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
-         metric: 101
-         table-id: 254
-EOF
-            if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
-                cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
-EOF
-            else
-                cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
-EOF
-            fi
         fi
         if [[ ${IGN_IFACES} != "null" ]]; then
             for IFACE in $(echo ${IGN_IFACES}); do
