@@ -298,6 +298,10 @@ if ! ./verify.sh; then
         verify_remote_resource ${edgecluster} "default" "crd" "metallbs.metallb.io" "."
         echo
 
+        # "Patch bz https://bugzilla.redhat.com/show_bug.cgi?id=2106840"
+        echo ">> Patching the MetalLB operator"
+        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP}  "oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:openshift-nmstate:nmstate-operator"
+
         echo ">>>> Deploying NMState Operand for ${edgecluster}"
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/04-NMS-Operand.yaml"
         sleep 2
