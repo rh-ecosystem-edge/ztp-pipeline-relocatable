@@ -9,7 +9,7 @@ function registry_login() {
     export STORAGE_DRIVER=vfs
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
 
-    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+    if [[ ${CUSTOM_REGISTRY} == "true" ]] || [[ ${1} == "quay.io" ]]; then
         ${PODMAN_LOGIN_CMD} ${1} --authfile=${PULL_SECRET}
     else
         ${PODMAN_LOGIN_CMD} ${1} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
@@ -89,7 +89,7 @@ function trust_node_certificates() {
         echo
         EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
         master=${EDGE_NODE_NAME##*-}
-        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].${cluster}.master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
+        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
         NODE_IP=${EDGE_NODE_IP_RAW%%/*}
         if [[ -n ${NODE_IP} ]]; then
@@ -111,7 +111,7 @@ function trust_node_certificates() {
         echo
         EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${cluster} ${agent} -o jsonpath={.spec.hostname})
         worker=${EDGE_NODE_NAME##*-}
-        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].${cluster}.worker${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
+        MAC_EXT_DHCP=$(yq e ".edgeclusters[${i}].[].worker${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${cluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
         NODE_IP=${EDGE_NODE_IP_RAW%%/*}
         if [[ -n ${NODE_IP} ]]; then

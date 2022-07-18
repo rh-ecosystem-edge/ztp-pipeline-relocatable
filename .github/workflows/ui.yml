@@ -38,6 +38,15 @@ jobs:
       - name: Install dependencies
         run: yarn install
         working-directory: ./ui
-      - name: Build code (includes tests)
-        run: yarn build
+      - name: Test frontend
+        run: yarn test-frontend
+        working-directory: ./ui
+      - name: Test backend
+        run: yarn test-backend
+        working-directory: ./ui
+      - name: Build frontend
+        run: yarn build-frontend
+        working-directory: ./ui
+      - name: Build frontend
+        run: yarn build-backend
         working-directory: ./ui
