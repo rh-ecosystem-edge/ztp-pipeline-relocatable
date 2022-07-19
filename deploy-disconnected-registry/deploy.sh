@@ -228,7 +228,7 @@ function deploy_custom_registry() {
             --dry-run=client --hostname "${TMP_REGISTRY_DOMAIN}" \
             --output=yaml | oc apply -f -
 
-        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} create configmap ztpfw-config -o yaml --from-literal=uri=$(echo ${CUSTOM_REGISTRY_URL} | base64 ) 
+        oc --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} create configmap ztpfw-config -o yaml --from-literal=uri=$(echo ${CUSTOM_REGISTRY_URL} | base64 ) 
 
     fi
 }

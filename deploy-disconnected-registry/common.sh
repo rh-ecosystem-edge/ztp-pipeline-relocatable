@@ -88,7 +88,7 @@ function trust_internal_registry() {
     if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
         export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
     else
-        export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts </dev/null | openssl x509 | base64 | tr -d '\n')
+        export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')
     fi
     echo ">> Cert: ${PATH_CA_CERT}"
 
