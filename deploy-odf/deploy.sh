@@ -162,7 +162,7 @@ if ! ./verify.sh; then
             exit 1
         fi
     done
-    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 fi
 echo ">>>>EOF"
 echo ">>>>>>>"
