@@ -35,7 +35,7 @@ function checks() {
 
     echo
     echo ">>>> Checking Hub Routes Internal resolution"
-    for dns_name in "test.apps.test-ci.alklabs.local" "api.test-ci.alklabs.local" "api-int.test-ci.alklabs.local"
+    for dns_name in "test.apps.test-ci.factory.local" "api.test-ci.factory.local" "api-int.test-ci.factory.local"
     do
         echo -n "${dns_name}: "
         dig +short @192.168.150.1 ${dns_name} | grep -v -e '^$'
@@ -57,18 +57,18 @@ function checks() {
 function set_dnsmasq(){
     output=${1}
     echo ">> Configuring dnsmasq"
-    echo "domain=test-ci.alklabs.local,192.168.150.0/24,local
+    echo "domain=test-ci.factory.local,192.168.150.0/24,local
 resolv-file=/etc/resolv.upstream.conf
 
 # Hub Cluster
-address=/.apps.test-ci.alklabs.local/192.168.150.252
-address=/api.test-ci.alklabs.local/192.168.150.253
-address=/api-int.test-ci.alklabs.local/192.168.150.253
+address=/.apps.test-ci.factory.local/192.168.150.252
+address=/api.test-ci.factory.local/192.168.150.253
+address=/api-int.test-ci.factory.local/192.168.150.253
 
 # Edge-cluster Cluster
-address=/.apps.edgecluster0-cluster.alklabs.local/192.168.150.200
-address=/api.edgecluster0-cluster.alklabs.local/192.168.150.201
-address=/api-int.edgecluster0-cluster.alklabs.local/192.168.150.201" > ${output}
+address=/.apps.edgecluster0-cluster.factory.local/192.168.150.200
+address=/api.edgecluster0-cluster.factory.local/192.168.150.201
+address=/api-int.edgecluster0-cluster.factory.local/192.168.150.201" > ${output}
 
     touch /etc/resolv.upstream.conf
     cat /etc/resolv.conf /etc/resolv.upstream.conf | grep nameserver |grep -v 127.0.0.1  |sort -u > /etc/resolv.upstream.conf
