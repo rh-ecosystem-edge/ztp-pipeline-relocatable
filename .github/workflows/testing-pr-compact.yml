@@ -1,4 +1,4 @@
-name: Tests before Merging PR
+name: Tests before Merging PR compact
 on:
   #label:
   #  types: [created, deleted]
@@ -73,7 +73,7 @@ jobs:
           RELEASE=${RELEASE} make ui-image-ci
 
 
-  full-stack-testing:
+  full-stack-testing-compact:
     if: !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-compact')
     runs-on: CI-pool
     needs: build-and-push-docker-image
