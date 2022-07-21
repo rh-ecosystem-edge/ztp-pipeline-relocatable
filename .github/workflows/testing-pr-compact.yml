@@ -1,0 +1,166 @@
+name: Tests before Merging PR
+on:
+  #label:
+  #  types: [created, deleted]
+  pull_request_review:
+    types: [submitted, edited]
+  pull_request:
+    types: [labeled, synchronize]
+  #pull_request_target:
+  #  types: [labeled]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push-docker-image:
+    if: (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-compact')
+    name: Build Container images and push to repositories
+    runs-on: kni4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Build and Push Pipeline Image
+        id: build-pipe
+        run: |
+          cd ${{ github.workspace }}
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            # this is a PR from the repo with main branch
+            RELEASE=latest
+          else
+            # this is a PR from the repo with a branch
+            RELEASE=$( echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
+          fi
+
+          echo ">>>> Building Pipe Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make pipe-image-ci
+
+      - name: Build and Push UI Image
+        ## continue-on-error: true  # Workaround until the generation is fixed
+        id: build-ui
+        run: |
+          cd ${{ github.workspace }}
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            RELEASE=latest
+          else
+            RELEASE=$(echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
+          fi
+
+          echo ">>>> Building UI Release"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          RELEASE=${RELEASE} make ui-image-ci
+
+
+  full-stack-testing:
+    if: !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-compact')
+    runs-on: CI-pool
+    needs: build-and-push-docker-image
+    steps:
+
+      - name: Set MOTD
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+            MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Progressing.")
+            /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: remove all old deployments and vms
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          EDGE_NAME=edgecluster0-cluster make clean-ci || true
+
+      - name: Launching pipeline execution
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+          export HOME=/root
+          cd ${{ github.workspace }}
+          if [[  "${{github.event.pull_request.head.repo.full_name}}" != "rh-ecosystem-edge/ztp-pipeline-relocatable" ]]; then
+            # this is a fork, so the image release should be the sha commit
+            RELEASE=${{ github.sha }}
+          elif [[ "${{ github.event.pull_request.head.ref }}" == 'main' ]];then
+            # this is a PR from the repo with main branch
+            RELEASE=latest
+          else
+            # this is a PR from the repo with a branch
+            RELEASE=$( echo "${{ github.event.pull_request.head.ref }}" | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
+          fi
+
+          echo ">>>> Launching Pipeline edgecluster"
+          echo "Release: ${RELEASE}"
+          echo "Image Branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Git hash: ${{ github.sha }}"
+          echo ">>>>"
+
+          BRANCH=${{ github.event.pull_request.head.ref }} make bootstrap
+          RELEASE=${RELEASE} make build-edgecluster-compact-2nics
+          RELEASE=${RELEASE} make deploy-pipe-edgecluster-compact-ci
+
+      - name: verify if the pipe has been successful
+        run: |
+          export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
+
+          if [ $(tkn pr ls -n edgecluster-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
+            echo "The pipeline has failed"
+            if [ -f /root/bin/set-motd ]; then
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Pipeline Test FAILURE! Check the logs!")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+            fi
+            exit 1
+          elif [ $(tkn pr ls -n edgecluster-deployer | head -2 | grep -i succeeded | wc -l) -gt 0 ]; then
+            echo "The pipeline has succeeded"
+            exit 0
+          else
+            echo "The pipeline has not finished"
+            if [ -f /root/bin/set-motd ]; then
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Pipeline Test FAILURE! Check the logs!")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+            fi
+            exit 1
+          fi
+
+      - name: Unset MOTD if workflow succeeded
+        if: ${{ success() }}
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+            /root/bin/set-motd unset
+          fi
+
+      - name: Unset MOTD if workflow failed
+        if: ${{ failure() }}
+        continue-on-error: true
+        run: |
+          if [ -f /root/bin/set-motd ]; then
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Pipeline Test FAILURE! Check the logs!")
+              /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
+          fi
