@@ -1,4 +1,4 @@
-name: Tests before Merging PR
+name: Tests before Merging PR sno
 on:
   #label:
   #  types: [created, deleted]
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build-and-push-docker-image:
-    if: (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci')
+    if: (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-sno')
     name: Build Container images and push to repositories
     runs-on: kni4
     steps:
@@ -73,8 +73,8 @@ jobs:
           RELEASE=${RELEASE} make ui-image-ci
 
 
-  full-stack-testing:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci')
+  full-stack-testing-sno:
+    if: (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-sno')) && (!contains(github.event.label.name, 'skip-ci'))
     runs-on: CI-pool
     needs: build-and-push-docker-image
     steps:
@@ -122,8 +122,8 @@ jobs:
           echo ">>>>"
 
           BRANCH=${{ github.event.pull_request.head.ref }} make bootstrap
-          RELEASE=${RELEASE} make build-edgecluster-compact-2nics
-          RELEASE=${RELEASE} make deploy-pipe-edgecluster-compact-ci
+          RELEASE=${RELEASE} make build-edgecluster-sno
+          RELEASE=${RELEASE} make deploy-pipe-edgecluster-sno-ci
 
       - name: verify if the pipe has been successful
         run: |
@@ -132,7 +132,7 @@ jobs:
           if [ $(tkn pr ls -n edgecluster-deployer | head -2 | grep -i failed | wc -l) -gt 0 ]; then
             echo "The pipeline has failed"
             if [ -f /root/bin/set-motd ]; then
-              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: FAILURE! Check the logs!")
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Pipeline Test FAILURE! Check the logs!")
               /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
             fi
             exit 1
@@ -142,7 +142,7 @@ jobs:
           else
             echo "The pipeline has not finished"
             if [ -f /root/bin/set-motd ]; then
-              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: FAILURE! Check the logs!")
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Pipeline Test FAILURE! Check the logs!")
               /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
             fi
             exit 1
@@ -161,6 +161,6 @@ jobs:
         continue-on-error: true
         run: |
           if [ -f /root/bin/set-motd ]; then
-              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: FAILURE! Check the logs!")
+              MOTD=$(printf "Title: ${{ github.event.pull_request.title }}\nAuthor: ${{ github.event.pull_request.user.login }}\nStatus: Pipeline Test FAILURE! Check the logs!")
               /root/bin/set-motd set -user "ZTPFW Github Actions" -pr "${{ github.event.pull_request.html_url }}" -motd "$MOTD"
           fi
