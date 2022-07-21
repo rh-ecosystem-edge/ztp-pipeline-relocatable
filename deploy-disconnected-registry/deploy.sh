@@ -278,6 +278,8 @@ elif [[ ${1} == 'edgecluster' ]]; then
             echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
             for dep in $LIST_DEP; do
                 echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
+                echo "REGISTRY: ${REGISTRY}"
+                echo "dep: ${dep}"
                 check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${EDGE_KUBECONFIG}"
             done
 
