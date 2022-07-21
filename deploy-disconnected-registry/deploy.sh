@@ -133,6 +133,9 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
+        REGISTRY_URI="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} create configmap ztpfw-config -o yaml --from-literal=uri=$(echo ${REGISTRY_URI} | base64 ) 
+
     elif [[ ${1} == 'edgecluster' ]]; then
         TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         source ./common.sh ${1}
@@ -197,13 +200,37 @@ function deploy_registry() {
 
 }
 
-function custom_registry() {
-    trust_internal_registry 'hub'
-    check_mcp 'hub'
-    render_file manifests/machine-config-certs-worker.yaml 'hub'
-    render_file manifests/machine-config-certs-master.yaml 'hub'
-    check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
+function deploy_custom_registry() {
+    if [[ ${1} == 'hub' ]]; then
+        TMP_REGISTRY_DOMAIN=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
+        TMP_REGISTRY_PORT=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f2 )
+        TMP_REGISTRY_IP=$( dig  A +short ${TMP_REGISTRY_DOMAIN} | head -1)
 
+        echo "Create Endpoint"
+        TPL_MANIFEST="${WORKDIR}/deploy-disconnected-registry/manifests/custom-registry-endpoint.yaml"
+        MANIFESTCLONE="${WORKDIR}/build/custom-registry-endpoint.yaml"
+
+        cp -f ${TPL_MANIFEST} ${MANIFESTCLONE}
+        sed -i "s/TMP_REGISTRY_DOMAIN/${TMP_REGISTRY_DOMAIN}/g" ${MANIFESTCLONE}
+        sed -i "s/TMP_REGISTRY_IP/${TMP_REGISTRY_IP}/g" ${MANIFESTCLONE}
+        sed -i "s/TMP_REGISTRY_PORT/${TMP_REGISTRY_PORT}/g" ${MANIFESTCLONE}
+
+        echo "INFO: applying  Endpoint config"
+        cat ${MANIFESTCLONE} | yq e -
+        oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${REGISTRY} 
+        oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${MANIFESTCLONE} 
+
+        echo "INFO: Creating Route"
+        oc create route edge ztpfw-registry \
+            --kubeconfig=${KUBECONFIG_HUB} --namespace  ${REGISTRY}  \
+            --service=external-registry --port=${TMP_REGISTRY_PORT} \
+            --insecure-policy=Redirect \
+            --dry-run=client --hostname "${TMP_REGISTRY_DOMAIN}" \
+            --output=yaml | oc apply -f -
+
+        oc --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} create configmap ztpfw-config -o yaml --from-literal=uri=$(echo ${CUSTOM_REGISTRY_URL} | base64 ) 
+
+    fi
 }
 
 if [[ ${1} == 'hub' ]]; then
@@ -211,16 +238,18 @@ if [[ ${1} == 'hub' ]]; then
     if ! ./verify.sh 'hub'; then
         if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
             deploy_registry 'hub'
-            trust_internal_registry 'hub'
-            check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
-            check_mcp 'hub'
-            render_file manifests/machine-config-certs-worker.yaml 'hub'
-            render_file manifests/machine-config-certs-master.yaml 'hub'
-            check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
-            check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
-        else
-            custom_registry 'hub'
+        elif [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+            deploy_custom_registry 'hub'
         fi
+
+        trust_internal_registry 'hub'
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+            check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
+        fi
+        check_mcp 'hub'
+        render_file manifests/machine-config-certs-worker.yaml 'hub'
+        render_file manifests/machine-config-certs-master.yaml 'hub'
+        check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
     fi
@@ -249,6 +278,8 @@ elif [[ ${1} == 'edgecluster' ]]; then
             echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
             for dep in $LIST_DEP; do
                 echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
+                echo "REGISTRY: ${REGISTRY}"
+                echo "dep: ${dep}"
                 check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${EDGE_KUBECONFIG}"
             done
 
