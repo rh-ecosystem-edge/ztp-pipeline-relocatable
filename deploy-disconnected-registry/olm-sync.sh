@@ -183,17 +183,18 @@ function mirror() {
                 if [ ${MATCH} == 0 ]; then
                     echo
                     echo "Package: ${package}"
-                    echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
-                    skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                    echo "DEBUG: skopeo copy --retry-times 5 --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
+                    skopeo copy --retry-times 5 --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     if [[ ${?} != 0 ]]; then
                         retry=1
                         while [ ${retry} != 0 ]; do
-                            echo "INFO: Failed Image Copy, retrying after 5 seconds..."
-                            skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                            echo "INFO: Failed Image Copy using --retry-times 5, Try to retry waiting 240 seconds"
+                            skopeo copy --retry-times 5 --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                             if [[ ${?} == 0 ]]; then
                                 retry=0
                             else
-                                sleep 10
+                                echo "INFO: Failed Image Copy, Try to retry it waiting 240 seconds. Retry: ${retry}/12"
+                                sleep 240
                                 retry=$((retry + 1))
                             fi
                             if [ ${retry} == 12 ]; then
