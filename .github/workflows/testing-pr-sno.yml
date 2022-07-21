@@ -74,7 +74,7 @@ jobs:
 
 
   full-stack-testing:
-    if: !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-sno')
+    if: github.event_name == 'workflow_dispatch' || (!contains(github.event.label.name, 'skip-ci')) || contains(github.event.pull_request.labels.*.name, 'test-sno')
     runs-on: CI-pool
     needs: build-and-push-docker-image
     steps:
