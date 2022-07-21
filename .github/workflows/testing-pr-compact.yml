@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build-and-push-docker-image:
-    if: (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-compact')
+    if: (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-compact')) && (!contains(github.event.label.name, 'skip-ci'))
     name: Build Container images and push to repositories
     runs-on: kni4
     steps:
