@@ -73,8 +73,8 @@ jobs:
           RELEASE=${RELEASE} make ui-image-ci
 
 
-  full-stack-testing:
-    if: github.event_name == 'workflow_dispatch' || (!contains(github.event.label.name, 'skip-ci')) || contains(github.event.pull_request.labels.*.name, 'test-sno')
+  full-stack-testing-sno:
+    if: (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-sno')) && (!contains(github.event.label.name, 'skip-ci'))
     runs-on: CI-pool
     needs: build-and-push-docker-image
     steps:
