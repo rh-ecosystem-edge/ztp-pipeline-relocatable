@@ -1,0 +1,32 @@
+# TODO: This should be added to the main pipeline launch to validate the final deployment and upload the report
+
+# name: Run Risu analysis
+
+# on:
+#   push:
+#   #   branches:
+#   #     - main
+#   # schedule:
+#   #   - cron:  '0 0 * * *'
+
+# jobs:
+#   risu:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v2.3.4
+
+#     # Use GitHub Actions' cache to shorten build times and decrease load on servers
+#     - uses: actions/cache@v2.1.6
+#       with:
+#         path: ~/.cache/pip
+#         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements/*') }}
+#         restore-keys: |
+#           ${{ runner.os }}-pip-
+
+#     - uses: risuorg/gh-action-risu@1.2.0
+#       env:
+#         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+#         SOSREPORT: ./validations/test
+#         CONFIGPATH: "./"
+#         RUNFILE: "./validations/build.sh"
+#         GH_PAGES_BRANCH: validation-results
