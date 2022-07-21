@@ -36,7 +36,7 @@ function hub {
 
 function edge {
     hub
-    oc extract secret/edgecluster0-cluster-admin-kubeconfig -n edgecluster0-cluster --keys=kubeconfig --to=/root &>/dev/null
+    oc extract secret/edgecluster0-cluster-admin-kubeconfig -n edgecluster0-cluster --keys=kubeconfig --confirm --to=/root &>/dev/null
     if [ $? -ne 0 ]; then
       echo "> Error extracting Edge Cluster Kubeconfig!"
       echo "> Check if the edge cluster is deployed."
