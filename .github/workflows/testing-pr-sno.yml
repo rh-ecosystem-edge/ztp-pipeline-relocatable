@@ -122,7 +122,7 @@ jobs:
           echo ">>>>"
 
           BRANCH=${{ github.event.pull_request.head.ref }} make bootstrap
-          RELEASE=${RELEASE} make build-edgecluster-sno-2nics
+          RELEASE=${RELEASE} make build-edgecluster-sno
           RELEASE=${RELEASE} make deploy-pipe-edgecluster-sno-ci
 
       - name: verify if the pipe has been successful
