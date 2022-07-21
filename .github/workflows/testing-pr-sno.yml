@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build-and-push-docker-image:
-    if: (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci')
+    if: (!contains(github.event.label.name, 'skip-ci') && !contains(github.event.pull_request.labels.*.name, 'skip-ci')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-sno')
     name: Build Container images and push to repositories
     runs-on: kni4
     steps:
@@ -74,7 +74,7 @@ jobs:
 
 
   full-stack-testing:
-    if: github.event.review.state == 'approved'  && !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci')
+    if: !contains(github.event.label.name, 'skip-ci') || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-sno')
     runs-on: CI-pool
     needs: build-and-push-docker-image
     steps:
@@ -122,8 +122,8 @@ jobs:
           echo ">>>>"
 
           BRANCH=${{ github.event.pull_request.head.ref }} make bootstrap
-          RELEASE=${RELEASE} make build-edgecluster-compact-2nics
-          RELEASE=${RELEASE} make deploy-pipe-edgecluster-compact-ci
+          RELEASE=${RELEASE} make build-edgecluster-sno-2nics
+          RELEASE=${RELEASE} make deploy-pipe-edgecluster-sno-ci
 
       - name: verify if the pipe has been successful
         run: |
