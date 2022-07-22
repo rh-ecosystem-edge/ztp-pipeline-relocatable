@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: deploy-ztp-edgeclusters-sno
+  name: deploy-ztp-edgeclusters-sno-lvmo
 spec:
   description: Tekton Pipeline to deploy ZTPFW Edge-clusters clusters
   params:
@@ -55,10 +55,10 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy MetalLB
-  - name: deploy-metallb
+  # Deploy ICSP Edge-clusters Pre
+  - name: deploy-icsp-edgeclusters-pre
     taskRef:
-      name: edgecluster-deploy-metallb
+      name: edgecluster-deploy-icsp-edgeclusters-pre
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
@@ -74,6 +74,44 @@ spec:
       - name: ztp
         workspace: ztp
 
+  # Deploy MetalLB
+  - name: deploy-metallb
+    taskRef:
+      name: edgecluster-deploy-metallb
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-icsp-edgeclusters-pre
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+
+  # Deploy LVMO
+  - name: deploy-lvmo
+    taskRef:
+      name: edgecluster-deploy-lvmo
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-metallb
+    workspaces:
+      - name: ztp
+        workspace: ztp
 
   # Deploy ZTPFWUI
   - name: deploy-ui
@@ -89,7 +127,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-metallb
+      - deploy-lvmo
     workspaces:
       - name: ztp
         workspace: ztp
