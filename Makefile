@@ -96,6 +96,18 @@ build-edgecluster-compact-2nics:
 wait-for-hub-sno:
 	${PWD}/shared-utils/wait_for_sno_mco.sh &
 
+
+run-pipeline-task:
+	tkn task start -n edgecluster-deployer \
+    			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
+    			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
+    			-p kubeconfig=${KUBECONFIG} \
+    			-w name=ztp,claimName=ztp-pvc \
+    			--timeout 5h \
+    			--pod-template ./pipelines/resources/common/pod-template.yaml \
+    			--use-param-defaults $(TASK) && \
+	tkn tr logs -L -n edgecluster-deployer -f
+
 deploy-pipe-hub-mce-sno:
 	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
