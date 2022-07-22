@@ -1,0 +1,15 @@
+---
+apiVersion: lvm.topolvm.io/v1alpha1
+kind: LVMCluster
+metadata:
+  name: odf-lvmcluster
+  namespace: openshift-storage
+spec:
+  storage:
+    deviceClasses:
+    - name: vg1
+      thinPoolConfig:
+        name: ztpfw-thin-pool
+        sizePercent: 90
+        overprovisionRatio: 10
+
