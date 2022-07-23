@@ -1,0 +1,1 @@
+Sitemap: https://rh-ecosystem-edge.github.io/ztp-pipeline-relocatable/sitemap.xml
