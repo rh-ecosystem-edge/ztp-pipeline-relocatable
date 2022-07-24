@@ -7,7 +7,7 @@ set -m
 function detach_cluster() {
     # Function to clean cluster from hub
     cluster=${1}
-    echo ">> Dettaching Edge-cluster ${cluster} cluster from Hub"
+    echo ">> Detaching Edge-cluster ${cluster} cluster from Hub"
     oc --kubeconfig=${KUBECONFIG_HUB} delete managedcluster ${cluster}
 }
 
@@ -140,7 +140,7 @@ function store_rsa_secrets() {
 
 source ${WORKDIR}/shared-utils/common.sh
 
-echo ">>>> Dettaching clusters"
+echo ">>>> Detaching clusters"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
 
 if [[ -z ${ALLEDGECLUSTERS} ]]; then
