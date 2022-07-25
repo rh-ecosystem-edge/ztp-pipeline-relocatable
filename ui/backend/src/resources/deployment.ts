@@ -1,5 +1,4 @@
-import { Deployment, DeploymentApiVersion } from '../common';
-import { PatchType } from '../frontend-shared';
+import { PatchType, Deployment, DeploymentApiVersion } from '../frontend-shared';
 import { getClusterApiUrl, jsonPatch, jsonRequest } from '../k8s';
 
 // /apis/apps/v1/namespaces/ztpfw-ui/deployments/ztpfw-ui'

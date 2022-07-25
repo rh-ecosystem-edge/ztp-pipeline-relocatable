@@ -11,7 +11,6 @@ export const API_LIVENESS_FAILED_TITLE = 'API can not be reached';
 export const WAIT_ON_OPERATOR_TITLE = 'Reading operator status failed';
 
 export const IDENTITY_PROVIDER_NAME = 'ztpfw-htpasswd-idp';
-export const ZTPFW_NAMESPACE = 'ztpfw-ui';
 
 export const DELAY_BEFORE_FINAL_REDIRECT = 10 * 1000;
 export const DELAY_BEFORE_QUERY_RETRY = 5 * 1000; /* ms */

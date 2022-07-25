@@ -11,3 +11,4 @@ export * from './oauthclient';
 export * from './deployment';
 export * from './pod';
 export * from './clusteroperator';
+export * from './utils';

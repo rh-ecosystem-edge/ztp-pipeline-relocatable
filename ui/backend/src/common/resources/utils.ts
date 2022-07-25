@@ -10,3 +10,5 @@ export const pathJoin = (...args: string[]) => {
     .filter((x) => x.length)
     .join('/');
 };
+
+export const getBackupRouteName = (name: string) => `${name}-copy`;

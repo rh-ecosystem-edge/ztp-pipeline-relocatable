@@ -1,4 +1,4 @@
-import { getCondition, ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
+import { getCondition, ZTPFW_UI_ROUTE_PREFIX, ZTPFW_NAMESPACE } from '../../copy-backend-common';
 import { getRequest } from '../../resources';
 import { getClusterOperator } from '../../resources/clusteroperator';
 import { getPodsOfNamespace } from '../../resources/pod';
@@ -8,7 +8,6 @@ import {
   DELAY_BEFORE_QUERY_RETRY,
   MAX_LIVENESS_CHECK_COUNT,
   WAIT_ON_OPERATOR_TITLE,
-  ZTPFW_NAMESPACE,
 } from './constants';
 import { PersistErrorType } from './types';
 
