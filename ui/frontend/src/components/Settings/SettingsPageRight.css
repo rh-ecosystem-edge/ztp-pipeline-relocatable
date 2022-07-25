@@ -9,6 +9,11 @@
   overflow: overlay;
 }
 
+.settings-page-sumamary__tab-short {
+  max-height: 16rem;
+  overflow: overlay;
+}
+
 .settings-page-sumamary__item {
   padding-bottom: var(--pf-global--spacer--lg);
 }
