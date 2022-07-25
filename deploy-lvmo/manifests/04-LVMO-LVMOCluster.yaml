@@ -12,4 +12,3 @@ spec:
         name: ztpfw-thin-pool
         sizePercent: 90
         overprovisionRatio: 10
-

@@ -59,7 +59,7 @@ if ! ./verify.sh; then
 
     index=0
     for edgecluster in ${ALLEDGECLUSTERS}; do
-	NUM_M=$(yq e ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
+        NUM_M=$(yq e ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
 
         echo ">>>> Deploy manifests to install LSO and LocalVolume: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
