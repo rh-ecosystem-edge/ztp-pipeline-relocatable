@@ -65,4 +65,5 @@ export type K8SStateContextData = K8SStateContextDataFields & {
 
   setCustomCertificate: (domain: string, certificate: TlsCertificate) => void;
   customCertsValidation: CustomCertsValidationType;
+  clearCustomCertificates: () => void;
 };
