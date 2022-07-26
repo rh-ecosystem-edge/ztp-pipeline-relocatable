@@ -43,7 +43,7 @@ const DeleteKubeadminModal: React.FC<DeleteKubeadminModalProps> = ({
     if (await deleteKubeAdmin(setError)) {
       setMessage({
         title: KUBEADMIN_REMOVE_OK,
-        message: 'The kubeadmin user account is removed now.',
+        message: 'The kubeadmin user account was removed. You can close this dialog.',
       });
     }
 
