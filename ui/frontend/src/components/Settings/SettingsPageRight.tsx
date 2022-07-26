@@ -150,7 +150,11 @@ export const SettingsPageRight: React.FC<{
 
           <Tab id="settings-tab-1" eventKey={1} title={<TabTitleText>Domain</TabTitleText>}>
             <Form onSubmit={onFormSubmit}>
-              <Stack className="settings-page-sumamary__tab">
+              <Stack
+                className={
+                  isSaving ? 'settings-page-sumamary__tab-short' : 'settings-page-sumamary__tab'
+                }
+              >
                 <StackItem>
                   <FormGroup
                     fieldId="domain"
