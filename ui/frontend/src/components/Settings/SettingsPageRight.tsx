@@ -24,6 +24,8 @@ import { SettingsPageDomainCertificates } from './SettingsPageDomainCertificates
 import { useSettingsPageContext } from './SettingsPageContext';
 
 import './SettingsPageRight.css';
+import { validateDomainBackend } from '../DomainPage/validateDomain';
+import { PERSIST_DOMAIN } from '../PersistPage/constants';
 
 export const SettingsPageRight: React.FC<{
   initialError?: string;
@@ -61,6 +63,10 @@ export const SettingsPageRight: React.FC<{
     handleSetDomain,
   } = state;
 
+  const isAfterRedirection = window.location.hash === '#redirected';
+  const isDomainChange = originalDomain && originalDomain !== domain;
+  const isSaveDisabled = isSaving || !isAllValid() || !isDirty();
+
   const onSuccess = () => {
     setError(null);
     setEdit(false);
@@ -72,13 +78,22 @@ export const SettingsPageRight: React.FC<{
   const onSave = async () => {
     setIsSaving(true);
     setError(undefined);
-    await persist(state, setError, progress.setProgress, onSuccess);
+
+    if (
+      !isDomainChange ||
+      (await validateDomainBackend((message) => {
+        // Backend failed to pre-validate the domain (most probably the domain can not be resolved, the "dig" command failed)
+        setError({
+          title: PERSIST_DOMAIN,
+          message,
+        });
+      }, domain))
+    ) {
+      await persist(state, setError, progress.setProgress, onSuccess);
+    }
+
     setIsSaving(false);
   };
-
-  const isAfterRedirection = window.location.hash === '#redirected';
-  const isDomainChange = originalDomain && originalDomain !== domain;
-  const isSaveDisabled = isSaving || !isAllValid() || !isDirty();
 
   const onCancelEdit = () => {
     setEdit(false);

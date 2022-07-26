@@ -60,6 +60,7 @@ export type K8SStateContextData = K8SStateContextDataFields & {
   handleSetIngressIp: (newIp: string) => void;
 
   handleSetDomain: (newDomain: string) => void;
+  forceDomainValidation: (message: string) => void;
   domainValidation?: string;
 
   setCustomCertificate: (domain: string, certificate: TlsCertificate) => void;
