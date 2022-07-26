@@ -49,10 +49,6 @@ function extract_kubeconfig() {
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 if ! ./verify.sh; then
-    echo ">>>> Modify files to replace with pipeline info gathered"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    sed -i "s/CHANGEME/$OC_ODF_VERSION/g" manifests/03-ODF-Subscription.yaml
-
     if [[ -z ${ALLEDGECLUSTERS} ]]; then
         ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
