@@ -10,7 +10,7 @@ export PRIMARY_IP=192.168.150.1
 dnf -y install nfs-utils
 systemctl enable --now nfs-server
 export MODE="ReadWriteOnce"
-MAXACTIVE=5
+MAXACTIVEPV=5
 
 PVS=$(seq 1 10)
 for i in ${PVS}; do
