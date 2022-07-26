@@ -18,7 +18,7 @@ for i in ${PVS}; do
 	export PV=pv$(printf "%03d" ${i})
 	rm -fr /pv$PV/*
 done
-for i in $(seq 1 ${MAXACTIVE}); do
+for i in $(seq 1 ${MAXACTIVEPV}); do
 	# Create the new max active PV's
 	export PV=pv$(printf "%03d" ${i})
 	mkdir /${PV} ||true
