@@ -60,9 +60,9 @@ if ! ./verify.sh; then
     for edgecluster in ${ALLEDGECLUSTERS}; do
   	echo "Extract Kubeconfig for ${edgecluster}"
 	extract_kubeconfig ${edgecluster}
-	
+
 	export NUM_M=$(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes --no-headers | wc -l)
-	
+
 	echo "Filling vars for ${edgecluster}"
 	extract_vars ".edgeclusters[].${edgecluster}.master0.storage_disk"
 
@@ -91,30 +91,31 @@ if ! ./verify.sh; then
 		echo ">>>> Render and apply manifest to deploy ODF StorageCluster"
 		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		render_file manifests/04-ODF-StorageCluster.yaml
-		sleep 60
-
-		echo ">>>> Waiting for: ODF Cluster"
-		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-		timeout=0
-		ready=false
-		while [ "$timeout" -lt "1000" ]; do
-		    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
-			ready=true
-			break
-		    fi
-		    sleep 5
-		    timeout=$((timeout + 1))
-		done
-
-	    sleep 30
-	    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 	else
 		echo ">>>> Render and apply manifest to deploy ODF StorageSystem"
 		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		render_file manifests/04-MCG-StorageCluster.yaml
-		sleep 60
-		ready=true
 	fi
+
+        sleep 60
+        echo ">>>> Waiting for: ODF Cluster"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        timeout=0
+        ready=false
+        while [ "$timeout" -lt "1000" ]; do
+            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
+            ready=true
+            break
+            fi
+            sleep 5
+            timeout=$((timeout + 1))
+        done
+
+	if [ "${NUM_M}" -eq "3" ];
+	then
+        sleep 30
+        oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    fi
 
         if [ "$ready" == "false" ]; then
             echo "timeout waiting for ODF deployment..."
