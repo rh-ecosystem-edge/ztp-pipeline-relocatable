@@ -128,7 +128,7 @@ export QUAY_MANIFESTS=quay-manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,local-storage-operator,advanced-cluster-management,multicluster-engine,mcg-operator,nfd'
+export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,odf-operator,odf-csi-addons-operator,local-storage-operator,advanced-cluster-management,multicluster-engine,mcg-operator,nfd,odf-lvm-operator'
 export CERTIFIED_SOURCE_PACKAGES='gpu-operator-certified'
 export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
 export CERTIFIED_PACKAGES_FORMATED=$(echo ${CERTIFIED_SOURCE_PACKAGES} | tr "," " ")

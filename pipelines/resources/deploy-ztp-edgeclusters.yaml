@@ -131,6 +131,24 @@ spec:
       - name: ztp
         workspace: ztp
 
+  - name: deploy-lso
+    taskRef:
+      name: edgecluster-deploy-lso
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-workers
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
   # Deploy ODF
   - name: deploy-odf
     taskRef:
@@ -145,8 +163,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-workers
-      - deploy-ui
+      - deploy-lso
     workspaces:
       - name: ztp
         workspace: ztp

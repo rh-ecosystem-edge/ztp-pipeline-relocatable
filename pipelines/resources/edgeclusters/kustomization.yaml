@@ -6,6 +6,8 @@ resources:
   - edgecluster-deploy-icsp-edgeclusters-post.yaml
   - edgecluster-deploy-icsp-edgeclusters-pre.yaml
   - edgecluster-deploy-metallb.yaml
+  - edgecluster-deploy-lvmo.yaml
+  - edgecluster-deploy-lso.yaml
   - edgecluster-deploy-odf.yaml
   - edgecluster-deploy-edgecluster.yaml
   - edgecluster-deploy-workers.yaml

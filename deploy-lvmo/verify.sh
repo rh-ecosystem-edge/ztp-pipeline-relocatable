@@ -24,22 +24,21 @@ fi
 for edgecluster in ${ALLEDGECLUSTERS}; do
     echo "Extract Kubeconfig for ${edgecluster}"
     extract_kubeconfig ${edgecluster}
-
-    echo ">>>> Verifying ODF and StorageCluster: ${edgecluster}"
+    echo ">>>> Verifying LVMCluster and StorageCluster: ${edgecluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Check Pods..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} pod -n openshift-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${EDGE_KUBECONFIG} get pod -n openshift-storage --no-headers | grep -v Completed | wc -l) ]]; then
+    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} pod -n openshift-storage --no-headers | grep topolvm | grep -i running | wc -l) -eq 0 ]]; then
         #odf in the edgecluster not exists so we need to create it
         exit 1
     fi
 
-    echo "Check StorageCluster..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} StorageCluster -n openshift-storage ocs-storagecluster --no-headers | wc -l) -ne 1 ]]; then
+    echo "Check StorageClass..."
+    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc odf-lvm-vg1 --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 
-    echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc ocs-storagecluster-ceph-rbd --no-headers | wc -l) -ne 1 ]]; then
+    echo "Check LVMCluster..."
+    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage lvmcluster odf-lvmcluster --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 done
