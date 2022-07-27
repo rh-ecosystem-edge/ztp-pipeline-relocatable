@@ -8,5 +8,6 @@ resources:
   - deploy-ztp-hub-mce.yaml
   - deploy-ztp-edgeclusters.yaml
   - deploy-ztp-edgeclusters-sno.yaml
+  - deploy-ztp-vsphere.yaml
 
 namespace: edgecluster-deployer
