@@ -91,6 +91,10 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]]; then
     echo "Error: Nodes are not ready"
     exit 1
+elif [[ $(oc get nodes -o wide -l "node-role.kubernetes.io/worker"| grep Ready | wc -l) -ge 3 ]] && [[ ${VSHPERE} == true ]]; then
+    echo "INFO: Nodes are ready"
+else
+    exit 1
 fi
 
 echo ">>>> Verify the cluster operator ready"
