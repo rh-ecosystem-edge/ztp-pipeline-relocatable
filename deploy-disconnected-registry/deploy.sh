@@ -146,7 +146,7 @@ function deploy_registry() {
         # Create the registry deployment and wait for it
         echo ">> Creating the registry deployment"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
-        QUAY_STATUS=false
+		QUAY_STATUS=false
 		echo "INFO: waiting for Quay Operator to be ready ( 1 min )" 
 		for i in {1..6}
 		do
