@@ -1,5 +1,5 @@
 CI_FOLDER = images
-PIPELINE_ACCOUNT = takinosh #Default: ztpfw
+PIPELINE_ACCOUNT = 'takinosh' #Default: ztpfw
 PIPE_IMAGE ?= quay.io/${PIPELINE_ACCOUNT}/pipeline
 UI_IMAGE = quay.io/${PIPELINE_ACCOUNT}/ui
 BRANCH ?= $(shell git branch --show-current | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
