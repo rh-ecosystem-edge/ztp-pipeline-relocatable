@@ -56,6 +56,60 @@ function check_registry() {
     done
 }
 
+function prune_and_push_index(){
+  # Red Hat Operators
+      SALIDA=1
+
+      retry=1
+      while [ ${retry} != 0 ]; do
+          # Mirror redhat-operator index image
+          echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
+
+          echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+          opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} >>${OUTPUTDIR}/mirror.log 2>&1
+          SALIDA=$?
+
+          if [ ${SALIDA} -eq 0 ]; then
+              echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
+              retry=0
+          else
+              echo ">>>> INFO: Failed pruning index image: ${OLM_DESTINATION_INDEX}"
+              echo ">>>> INFO: Retrying in 10 seconds"
+              sleep 10
+              retry=$((retry + 1))
+          fi
+          if [ ${retry} == 12 ]; then
+              echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
+              echo ">>>> ERROR: Retry limit reached"
+              exit 1
+          fi
+      done
+
+      retry=1
+      while [ ${retry} != 0 ]; do
+          echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
+
+          echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
+          GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} >>${OUTPUTDIR}/mirror.log 2>&1
+          SALIDA=$?
+
+          if [ ${SALIDA} -eq 0 ]; then
+              echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
+              retry=0
+          else
+              echo ">>>> INFO: Failed Pushing index image: ${OLM_DESTINATION_INDEX}"
+              echo ">>>> INFO: Retrying in 10 seconds"
+              sleep 10
+              retry=$((retry + 1))
+          fi
+          if [ ${retry} == 12 ]; then
+              echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
+              echo ">>>> ERROR: Retry limit reached"
+              exit 1
+          fi
+      done
+}
+
 function mirror() {
     # Check for credentials for OPM
     if [[ ${1} == 'hub' ]]; then
@@ -107,57 +161,8 @@ function mirror() {
     # Empty log file
     >${OUTPUTDIR}/mirror.log
 
-    # Red Hat Operators
-    SALIDA=1
-
-    retry=1
-    while [ ${retry} != 0 ]; do
-        # Mirror redhat-operator index image
-        echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
-
-        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} >>${OUTPUTDIR}/mirror.log 2>&1
-        SALIDA=$?
-
-        if [ ${SALIDA} -eq 0 ]; then
-            echo ">>>> Pruning index image finished: ${OLM_DESTINATION_INDEX}"
-            retry=0
-        else
-            echo ">>>> INFO: Failed pruning index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> INFO: Retrying in 10 seconds"
-            sleep 10
-            retry=$((retry + 1))
-        fi
-        if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Pruning index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retry limit reached"
-            exit 1
-        fi
-    done
-
-    retry=1
-    while [ ${retry} != 0 ]; do
-        echo "DEBUG: GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET}"
-
-        echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-        GODEBUG=x509ignoreCN=0 podman push --tls-verify=false ${OLM_DESTINATION_INDEX} --authfile ${PULL_SECRET} >>${OUTPUTDIR}/mirror.log 2>&1
-        SALIDA=$?
-
-        if [ ${SALIDA} -eq 0 ]; then
-            echo ">>>> Push index image finished: ${OLM_DESTINATION_INDEX}"
-            retry=0
-        else
-            echo ">>>> INFO: Failed Pushing index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> INFO: Retrying in 10 seconds"
-            sleep 10
-            retry=$((retry + 1))
-        fi
-        if [ ${retry} == 12 ]; then
-            echo ">>>> ERROR: Pushing index image: ${OLM_DESTINATION_INDEX}"
-            echo ">>>> ERROR: Retry limit reached"
-            exit 1
-        fi
-    done
+    # Mirror redhat-operator index prune and push
+    prune_and_push_index
 
     # Mirror redhat-operator packages
     echo ">>>> Trying to push OLM images to Internal Registry"
@@ -188,13 +193,16 @@ function mirror() {
                     if [[ ${?} != 0 ]]; then
                         retry=1
                         while [ ${retry} != 0 ]; do
-                            echo "INFO: Failed Image Copy using --retry-times 5, Try to retry waiting 240 seconds"
+                            echo "INFO: Failed Image Copy using --retry-times 5, Try to retry waiting 30 seconds"
+                            echo "INFO: Prune and push again the index"
+                            prune_and_push_index
+                            echo "INFO: Copy Image with skopeo using --retry-times 5"
                             skopeo copy --retry-times 5 --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                             if [[ ${?} == 0 ]]; then
                                 retry=0
                             else
-                                echo "INFO: Failed Image Copy, Try to retry it waiting 240 seconds. Retry: ${retry}/12"
-                                sleep 240
+                                echo "INFO: Failed Image Copy, Try to retry it waiting 30 seconds. Retry: ${retry}/12"
+                                sleep 30
                                 retry=$((retry + 1))
                             fi
                             if [ ${retry} == 12 ]; then
