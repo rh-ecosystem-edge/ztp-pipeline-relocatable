@@ -132,6 +132,7 @@ spec:
       - name: ztp
         workspace: ztp
 
+  # Deploy ODF
   - name: deploy-odf
     taskRef:
       name: edgecluster-deploy-odf
