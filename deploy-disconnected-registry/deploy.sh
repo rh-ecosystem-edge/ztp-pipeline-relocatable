@@ -147,8 +147,8 @@ function deploy_registry() {
         echo ">> Creating the registry deployment"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
 		QUAY_STATUS=false
-		echo "INFO: waiting for Quay Operator to be ready ( 1 min )" 
-		for i in {1..6}
+		echo "INFO: waiting for Quay Operator to be ready ( 3 min )" 
+		for i in {1..18}
 		do
 			if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get csv -n ${REGISTRY} -o jsonpath='{.items[*].status.phase}' 2>/dev/null ) == "Succeeded" ]]; then
 				QUAY_STATUS=True
