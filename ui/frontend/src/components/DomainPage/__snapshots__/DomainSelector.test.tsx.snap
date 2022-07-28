@@ -25,7 +25,7 @@ exports[`DomainSelector can can handle invalid domain 1`] = `
       >
         Optional
       </span>
-       Create unique URLs for your edge cluster, such as device setup and console.
+       Enter the name of base domain for your edge cluster (e.g. yourdomain.com)
     </div>
     <div
       class="pf-l-stack__item domain-item"
@@ -110,7 +110,7 @@ exports[`DomainSelector can can handle valid domain 1`] = `
       >
         Optional
       </span>
-       Create unique URLs for your edge cluster, such as device setup and console.
+       Enter the name of base domain for your edge cluster (e.g. yourdomain.com)
     </div>
     <div
       class="pf-l-stack__item domain-item"
@@ -190,7 +190,7 @@ exports[`DomainSelector can render 1`] = `
       >
         Optional
       </span>
-       Create unique URLs for your edge cluster, such as device setup and console.
+       Enter the name of base domain for your edge cluster (e.g. yourdomain.com)
     </div>
     <div
       class="pf-l-stack__item domain-item"
