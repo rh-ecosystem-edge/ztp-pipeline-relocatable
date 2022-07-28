@@ -88,10 +88,12 @@ fi
 
 echo ">>>> Verify oc get nodes"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
-if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]] && [[ -z ${VSHPERE} ]]; then
+# TO-DO: Installed Vshpere with assisted installer and enable vshpere during deployment
+# Get the deployment provider type from the API if the provider type is vshpere and 3 workers are ready then then contiune with script
+if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]] then
     echo "Error: Nodes are not ready"
     exit 1
-elif [[ $(oc get nodes -o wide -l "node-role.kubernetes.io/worker"| grep Ready | wc -l) -ge 3 ]] && [[ ${VSHPERE} == true ]]; then
+elif [[ $(oc get nodes -o wide -l "node-role.kubernetes.io/worker"| grep Ready | wc -l) -ge 3 ]] then
     echo "INFO: Nodes are ready"
 else
     exit 1
