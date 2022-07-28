@@ -7,3 +7,4 @@ export * from './htpasswd';
 export * from './changeDomain';
 export * from './user';
 export * from './configure';
+export * from './validateDomain';
