@@ -132,6 +132,43 @@ spec:
       - name: ztp
         workspace: ztp
 
+  - name: deploy-odf
+    taskRef:
+      name: edgecluster-deploy-odf
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-lvmo
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Disconnected Registry
+  - name: deploy-disconnected-registry
+    taskRef:
+      name: edgecluster-deploy-disconnected-registry-edgeclusters
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-odf
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
   # Detach Edge-cluster Cluster
   - name: detach-cluster
     taskRef:
@@ -146,7 +183,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - deploy-ui
+      - deploy-disconnected-registry
     workspaces:
       - name: ztp
         workspace: ztp
