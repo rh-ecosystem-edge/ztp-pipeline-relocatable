@@ -257,7 +257,7 @@ export const SettingsPageRight: React.FC<{
               onClick={onSave}
               isDisabled={isSaveDisabled}
             >
-              Save
+              {error ? 'Retry' : 'Save'}
             </Button>
             <Button
               data-testid="settings-page-button-cancel"
