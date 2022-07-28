@@ -1,6 +1,7 @@
 CI_FOLDER = images
-PIPE_IMAGE ?= quay.io/ztpfw/pipeline
-UI_IMAGE = quay.io/ztpfw/ui
+PIPELINE_ACCOUNT = takinosh #Default: ztpfw
+PIPE_IMAGE ?= quay.io/${PIPELINE_ACCOUNT}/pipeline
+UI_IMAGE = quay.io/${PIPELINE_ACCOUNT}/ui
 BRANCH ?= $(shell git branch --show-current | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
