@@ -2,7 +2,7 @@
 name: Build and Publish
 on:
   push:
-    branches: [main, vsphere]
+    branches: [main]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
