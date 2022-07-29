@@ -61,7 +61,7 @@ if ! ./verify.sh; then
   	echo "Extract Kubeconfig for ${edgecluster}"
 	extract_kubeconfig ${edgecluster}
 
-	export NUM_M=$(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes --no-headers | wc -l)
+	export NUM_M=$(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes --no-headers | grep master | wc -l)
 
 	echo "Filling vars for ${edgecluster}"
 	extract_vars ".edgeclusters[].${edgecluster}.master0.storage_disk"
