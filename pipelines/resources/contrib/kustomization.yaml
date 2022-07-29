@@ -1,4 +1,4 @@
 resources:
   - contrib-template.yaml
   - contrib-gpu-operator.yaml
-  - deploy-openshift-ztp-vshpere.yaml
+  - deploy-openshift-ztp-aap.yaml
