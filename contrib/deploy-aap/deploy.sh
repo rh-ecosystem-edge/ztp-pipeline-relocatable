@@ -37,7 +37,7 @@ if ! ./verify.sh; then
         sleep 2
         oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-subscription.yml
         sleep 2
-        check_resource "crd" "nodefeaturediscoveries.nfd.openshift.io" "Established" "ansible-automation-platform" "${EDGE_KUBECONFIG}"
+        check_resource "crd" "automationhubs.automationhub.ansible.com" "Established" "ansible-automation-platform" "${EDGE_KUBECONFIG}"
         oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/04-instance.yml
 
         ##############################################################################
