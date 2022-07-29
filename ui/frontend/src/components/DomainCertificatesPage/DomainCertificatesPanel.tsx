@@ -46,7 +46,7 @@ const getTitle = (
   keyValidated: FormGroupProps['validated'],
 ): React.ReactElement | string => {
   let title: React.ReactElement | string;
-  const forDomain = isExpanded ? undefined : <> for {domain}</>;
+  const forDomain = isExpanded ? undefined : <> certificate for {domain}</>;
 
   if (!domainCert?.['tls.crt'] && !domainCert?.['tls.key']) {
     title = (
@@ -64,7 +64,7 @@ const getTitle = (
   } else if (domainCert?.['tls.crt'] && domainCert?.['tls.key']) {
     title = (
       <>
-        <CheckCircleIcon color={successColor.value} /> {name}: done {forDomain}
+        <CheckCircleIcon color={successColor.value} /> {name}: uploaded {forDomain}
       </>
     );
   } else {
