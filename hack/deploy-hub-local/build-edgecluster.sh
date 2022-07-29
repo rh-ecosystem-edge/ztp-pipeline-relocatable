@@ -132,7 +132,7 @@ EOF
         MASTERUID=$(kcli info vm ${CLUSTER_NAME}${edgecluster}-cluster-m${master} -f id -v)
 	MASTER_NETS=$(kcli info vm -oyaml -fnets ${CLUSTER_NAME}${edgecluster}-cluster-m${master})
 	BARE_NET_MAC=$(echo "${MASTER_NETS}" | yq e -j | jq -r ".nets[0].mac")
-	ZTPFW_MAC=$(echo "${MASTER_NETS}" | yq e -j | jq -r ".nets[0].mac")
+	ZTPFW_MAC=$(echo "${MASTER_NETS}" | yq e -j | jq -r ".nets[1].mac")
 
         cat <<EOF >>${CLUSTER_NAME}.yaml
       master${master}:
@@ -159,9 +159,9 @@ EOF
     # Add the single worker
     worker=0
     WORKERUID=$(kcli info vm ${CLUSTER_NAME}${edgecluster}-cluster-w${worker} -f id -v)
-    WORKER_NETS=$(kcli info vm -oyaml -fnets ${CLUSTER_NAME}${edgecluster}-cluster-w0)
+    WORKER_NETS=$(kcli info vm -oyaml -fnets ${CLUSTER_NAME}${edgecluster}-cluster-w${worker})
     BARE_NET_MAC=$(echo "${WORKER_NETS}" | yq e -j | jq -r ".nets[0].mac")
-    ZTPFW_MAC=$(echo "${WORKER_NETS}" | yq e -j | jq -r ".nets[0].mac")
+    ZTPFW_MAC=$(echo "${WORKER_NETS}" | yq e -j | jq -r ".nets[1].mac")
 
     cat <<EOF >>${CLUSTER_NAME}.yaml
       worker${worker}:
