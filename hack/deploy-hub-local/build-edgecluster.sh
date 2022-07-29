@@ -53,7 +53,7 @@ for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
 
   if [[ "$ip" == "" ]];
   then
-	  echo "missing dns config for ${CLUSTER_NAME}${edgecluster}"
+	  echo "ERROR: missing dns config for ${CLUSTER_NAME}${edgecluster}"
 	  exit 1
   fi
 
