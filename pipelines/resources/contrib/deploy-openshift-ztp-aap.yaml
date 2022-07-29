@@ -33,6 +33,8 @@ spec:
         value: "contrib/template"
       - name: SHARED_DIR
         value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
   steps:
     - name: deploy-aap
       image: "$(params.ztp-container-image)"
