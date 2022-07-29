@@ -28,7 +28,7 @@ RUN yarn build-frontend
 #############
 FROM registry.access.redhat.com/ubi8/nodejs-16-minimal:latest
 USER root
-RUN microdnf install -y httpd-tools openssl ; microdnf clean all
+RUN microdnf install -y httpd-tools openssl bind-utils ; microdnf clean all
 
 WORKDIR /app
 ENV NODE_ENV production
