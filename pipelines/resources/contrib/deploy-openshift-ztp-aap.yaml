@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: deploy-openshift-ztp-vshpere
+  name: deploy-openshift-ztp-aap
   annotations:
     description: |
       This task will configure the server to deploy OpenShift via ZTP (Zero-Touch Provisioning) to vSphere. See https://github.com/Red-Hat-SE-RTO/openshift-ztp for more info.
