@@ -97,6 +97,8 @@ export const SettingsPageRight: React.FC<{
 
   const onCancelEdit = () => {
     setEdit(false);
+    setError(undefined);
+
     forceReload();
   };
 
