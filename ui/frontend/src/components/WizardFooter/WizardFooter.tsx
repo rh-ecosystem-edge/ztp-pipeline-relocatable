@@ -6,14 +6,26 @@ import { WizardStepType } from '../WizardProgress';
 
 import './WizardFooter.css';
 
-type WizardFooterProps = {
+export type WizardFooterProps = {
   back?: WizardStepType;
   next: WizardStepType;
   isNextEnabled?: () => boolean;
+  onBeforeNext?: () => Promise<boolean>;
 };
 
-export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next, isNextEnabled }) => {
+export const WizardFooter: React.FC<WizardFooterProps> = ({
+  back,
+  next,
+  isNextEnabled,
+  onBeforeNext,
+}) => {
   const navigate = useNavigate();
+
+  const onNext = async () => {
+    if (!onBeforeNext || (await onBeforeNext())) {
+      navigate(`/wizard/${next}`);
+    }
+  };
 
   return (
     <div className="wizard-footer">
@@ -27,7 +39,7 @@ export const WizardFooter: React.FC<WizardFooterProps> = ({ back, next, isNextEn
       <Button
         data-testid="wizard-footer-button-next"
         variant={ButtonVariant.primary}
-        onClick={() => navigate(`/wizard/${next}`)}
+        onClick={onNext}
         isDisabled={isNextEnabled && !isNextEnabled()}
       >
         {next === 'persist' ? 'Finish setup' : 'Continue'}
