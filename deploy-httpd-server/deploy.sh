@@ -40,8 +40,8 @@ if ./verify.sh; then
     oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ROOTFS} -o /var/www/html/"${OC_OCP_VERSION_MIN}"/"${BASE_ROOTFS}"
 
     echo "INFO: verifying Downloaded files"
-    oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk  ${RHCOS_SHA} -o /var/www/html/"${OC_OCP_VERSION_MIN}"/"${BASE_SHA"§
-    oc exec -n ${HTTPD_NS} ${podname} -- sha256sum --check sha256sum.txt  --ignore-missing  
+    oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk  ${RHCOS_SHA} -o /var/www/html/"${OC_OCP_VERSION_MIN}"/"${BASE_SHA}"§
+    oc exec -n ${HTTPD_NS} ${podname} -- sha256sum --check "${BASE_SHA}" --ignore-missing  
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
