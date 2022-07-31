@@ -29,13 +29,19 @@ if ./verify.sh; then
 
     RHCOS_ISO="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/latest-${OC_OCP_VERSION_MIN}/rhcos-live.x86_64.iso"
     RHCOS_ROOTFS="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/latest-${OC_OCP_VERSION_MIN}/rhcos-live-rootfs.x86_64.img"
+    RHCOS_SHA="https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/latest-${OC_OCP_VERSION_MIN}/sha256sum.txt"
     BASE_ISO=$(basename $RHCOS_ISO)
     BASE_ROOTFS=$(basename $RHCOS_ROOTFS)
+    BASE_SHA=$(basename $RHCOS_SHA)
     podname=$(oc get pod -n ${HTTPD_NS} | grep httpd | awk '{print $1}')
 
     oc exec -n ${HTTPD_NS} ${podname} -- mkdir -p /var/www/html/"${OC_OCP_VERSION_MIN}"
     oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ISO} -o /var/www/html/"${OC_OCP_VERSION_MIN}"/"${BASE_ISO}"
     oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk ${RHCOS_ROOTFS} -o /var/www/html/"${OC_OCP_VERSION_MIN}"/"${BASE_ROOTFS}"
+
+    echo "INFO: verifing Downloaded files"
+    oc exec -n ${HTTPD_NS} ${podname} -- curl -Lk  ${RHCOS_SHA} -o /var/www/html/"${OC_OCP_VERSION_MIN}"/"${BASE_SHA"§
+    oc exec -n ${HTTPD_NS} ${podname} -- sha256sum --check sha256sum.txt  --ignore-missing  
 else
     echo ">>>> This step is not neccesary, everything looks ready"
 fi
