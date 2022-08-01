@@ -4,36 +4,24 @@ set -o pipefail
 set -o nounset
 set -m
 
-function extract_kubeconfig() {
-    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
-    export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${edgecluster} secret/${edgecluster}-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
-}
+# variables
+# #########
+# uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
+# export KUBECONFIG=/root/admin.kubeconfig
 
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
-if [[ -z ${ALLEDGECLUSTERS} ]]; then
-    ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
+
+if [[ $(oc get ns | grep ansible-automation-platform | wc -l) -eq 0 || $(oc get AutomationController -n ansible-automation-platform --no-headers | wc -l) -eq 0 ]]; then
+    #ansible-automation-platform namespace does not exist. Launching the step to create it...
+    exit 0
+elif [[ $(oc get pod -n ansible-automation-platform | grep -i running | wc -l) -eq $(oc get pod -n ansible-automation-platform | grep -v NAME | wc -l) ]]; then
+    #All pods for AAP running...Skipping the step to create it
+    exit 1
+else
+    #Some pods are failing...Stop pipe to solve it  #TODO this scenario we should remove the subscription and destroy everything and relaunch again
+    exit 50
 fi
-
-for edgecluster in ${ALLEDGECLUSTERS}; do
-    echo "Extract Kubeconfig for ${edgecluster}"
-    extract_kubeconfig ${edgecluster}
-
-    #############################################################################################
-    ##### Here should be added the validation if the desired resources are already deployed #####
-    #############################################################################################
-    echo ">>>> Verifying Namespace template for: ${edgecluster}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "Check Namespace..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} ns contrib-template | grep -i running | wc -l) -ne $(oc --kubeconfig=${EDGE_KUBECONFIG} get pod -n openshift-local-storage --no-headers | grep -v Completed | wc -l) ]]; then
-        # contrib-template namespace does not exists so we need to create it
-        exit 1
-    fi
-    #############################################################################################
-    ### End of validation if the desired resources are already deployed #########################
-    #############################################################################################
-done
 
 echo ">>>>EOF"
 echo ">>>>>>>"

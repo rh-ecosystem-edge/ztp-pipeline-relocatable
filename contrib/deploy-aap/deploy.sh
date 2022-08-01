@@ -5,45 +5,29 @@ set -o pipefail
 set -o nounset
 set -m
 
-function extract_kubeconfig() {
-    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
-    export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} extract -n $edgecluster secret/$edgecluster-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
-}
-
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 if ! ./verify.sh; then
 
-    if [[ -z ${ALLEDGECLUSTERS} ]]; then
-        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
-    fi
+    echo ">>>> Deploy manifests to create template namespace "
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-    index=0
-    for edgecluster in ${ALLEDGECLUSTERS}; do
+    ##############################################################################
+    # Here can be added other manifests to create the required resources
+    ##############################################################################
 
-        index=$((index + 1))
-        echo ">>>> Deploy manifests to create template namespace in: ${edgecluster}"
-        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        echo "Extract Kubeconfig for ${edgecluster}"
-        extract_kubeconfig ${edgecluster}
-        ##############################################################################
-        # Here can be added other manifests to create the required resources
-        ##############################################################################
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/01-namespace.yml
+    sleep 2
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/02-operatorgroup.yml
+    sleep 2
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/03-subscription.yml
+    sleep 2
+    check_resource "crd" "automationhubs.automationhub.ansible.com" "Established" "ansible-automation-platform" "${KUBECONFIG_HUB}"
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/04-instance.yml
 
-        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-namespace.yml
-        sleep 2
-        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-operatorgroup.yml
-        sleep 2
-        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-subscription.yml
-        sleep 2
-        check_resource "crd" "automationhubs.automationhub.ansible.com" "Established" "ansible-automation-platform" "${EDGE_KUBECONFIG}"
-        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/04-instance.yml
-
-        ##############################################################################
-        # End of customization
-        ##############################################################################
-    done
+    ##############################################################################
+    # End of customization
+    ##############################################################################
 
 fi
 
