@@ -9,7 +9,7 @@ set -m
 source ${WORKDIR}/shared-utils/common.sh
 if ! ./verify.sh; then
 
-    echo ">>>> Deploy manifests to create template namespace "
+    echo ">>>> Deploy manifests to create template namespace on HUB Cluster"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
     ##############################################################################
