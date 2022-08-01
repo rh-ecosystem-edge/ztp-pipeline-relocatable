@@ -22,10 +22,10 @@ import { DeleteKubeadminButton } from './DeleteKubeadminButton';
 import { PersistProgress, usePersistProgress } from '../PersistProgress';
 import { SettingsPageDomainCertificates } from './SettingsPageDomainCertificates';
 import { useSettingsPageContext } from './SettingsPageContext';
-
-import './SettingsPageRight.css';
 import { validateDomainBackend } from '../DomainPage/validateDomain';
 import { PERSIST_DOMAIN } from '../PersistPage/constants';
+
+import './SettingsPageRight.css';
 
 export const SettingsPageRight: React.FC<{
   initialError?: string;
@@ -33,7 +33,8 @@ export const SettingsPageRight: React.FC<{
 }> = ({ initialError, forceReload }) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
-  const { activeTabKey, setActiveTabKey, isEdit, setEdit } = useSettingsPageContext();
+  const { activeTabKey, setActiveTabKey, isEdit, setEdit, isCertificateAutomatic } =
+    useSettingsPageContext();
   const state = useK8SStateContext();
   const progress = usePersistProgress();
 
@@ -61,11 +62,16 @@ export const SettingsPageRight: React.FC<{
     originalDomain,
     domainValidation,
     handleSetDomain,
+
+    customCerts,
   } = state;
 
   const isAfterRedirection = window.location.hash === '#redirected';
   const isDomainChange = originalDomain && originalDomain !== domain;
-  const isSaveDisabled = isSaving || !isAllValid() || !isDirty();
+  const isCustomCertButNoneProvided =
+    !isCertificateAutomatic &&
+    !Object.keys(customCerts || {}).find((domain) => !!customCerts?.[domain]['tls.crt']);
+  const isSaveDisabled = isSaving || !isAllValid() || !isDirty() || isCustomCertButNoneProvided;
 
   const onSuccess = () => {
     setError(null);
@@ -97,6 +103,8 @@ export const SettingsPageRight: React.FC<{
 
   const onCancelEdit = () => {
     setEdit(false);
+    setError(undefined);
+
     forceReload();
   };
 

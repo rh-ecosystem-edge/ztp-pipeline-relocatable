@@ -213,6 +213,10 @@ export const DomainCertificatesPanel: React.FC<{
     <Panel isScrollable={isScrollable} className="domain-certificates">
       <PanelMain tabIndex={0}>
         <PanelMainBody>
+          <span>
+            Provide PEM custom certificates for following subdomains, missing certificates will be
+            automatically generated as self-signed.
+          </span>
           <Certificate
             name="API"
             domain={getApiDomain(domain)}
