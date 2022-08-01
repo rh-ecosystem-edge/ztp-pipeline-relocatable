@@ -30,7 +30,7 @@ spec:
       - name: KUBECONFIG
         value: "$(workspaces.ztp.path)/kubeconfig"
       - name: DEPLOY_AAP_DIR
-        value: "contrib/template"
+        value: "contrib/deploy-aap"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
