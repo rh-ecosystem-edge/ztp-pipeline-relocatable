@@ -1,5 +1,4 @@
-import { OAuthClient, OAuthClientApiVersion } from '../common';
-import { PatchType } from '../frontend-shared';
+import { OAuthClient, OAuthClientApiVersion, PatchType } from '../frontend-shared';
 import { getClusterApiUrl, jsonPatch, jsonRequest } from '../k8s';
 
 // apis/oauth.openshift.io/v1/oauthclients/ztpfwoauth
