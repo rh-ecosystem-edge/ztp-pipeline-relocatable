@@ -4,6 +4,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 set -m
+set -x 
 
 function extract_kubeconfig() {
     ## Extract the Edge-cluster kubeconfig and put it on the shared folder
