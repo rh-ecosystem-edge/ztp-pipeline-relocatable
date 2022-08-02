@@ -338,7 +338,7 @@ exports[`DomainPage can render 1`] = `
               >
                 Optional
               </span>
-               Create unique URLs for your edge cluster, such as device setup and console.
+               Enter the name of base domain for your edge cluster (e.g. yourdomain.com)
             </div>
             <div
               class="pf-l-stack__item domain-item"

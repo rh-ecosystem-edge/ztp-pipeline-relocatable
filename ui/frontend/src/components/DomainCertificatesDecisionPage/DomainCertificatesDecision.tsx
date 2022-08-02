@@ -1,5 +1,6 @@
 import React from 'react';
 import { Radio, Split, SplitItem, Stack, StackItem, Title } from '@patternfly/react-core';
+import { useK8SStateContext } from '../K8SStateContext';
 
 type AutomaticManualDecisionProps = {
   id?: string;
@@ -11,31 +12,38 @@ export const AutomaticManualDecision: React.FC<AutomaticManualDecisionProps> = (
   id,
   isAutomatic,
   setAutomatic,
-}) => (
-  <Split hasGutter id={id}>
-    {/* TODO: Improve positioning on the Wizard's page */}
-    <SplitItem>
-      <Radio
-        data-testid="domain-cert-decision__automatic"
-        id="domain-cert-decision__automatic"
-        label="Automatic"
-        name="automatic"
-        isChecked={isAutomatic}
-        onChange={() => setAutomatic(true)}
-      />
-    </SplitItem>
-    <SplitItem>
-      <Radio
-        data-testid="domain-cert-decision__manual"
-        id="domain-cert-decision__manual"
-        label="Manual"
-        name="manual"
-        isChecked={!isAutomatic}
-        onChange={() => setAutomatic(false)}
-      />
-    </SplitItem>
-  </Split>
-);
+}) => {
+  const { clearCustomCertificates } = useK8SStateContext();
+
+  return (
+    <Split hasGutter id={id}>
+      {/* TODO: Improve positioning on the Wizard's page */}
+      <SplitItem>
+        <Radio
+          data-testid="domain-cert-decision__automatic"
+          id="domain-cert-decision__automatic"
+          label="Automatic"
+          name="automatic"
+          isChecked={isAutomatic}
+          onChange={() => {
+            setAutomatic(true);
+            clearCustomCertificates();
+          }}
+        />
+      </SplitItem>
+      <SplitItem>
+        <Radio
+          data-testid="domain-cert-decision__manual"
+          id="domain-cert-decision__manual"
+          label="Manual"
+          name="manual"
+          isChecked={!isAutomatic}
+          onChange={() => setAutomatic(false)}
+        />
+      </SplitItem>
+    </Split>
+  );
+};
 
 export const DomainCertificatesDecision: React.FC<AutomaticManualDecisionProps> = (props) => {
   return (

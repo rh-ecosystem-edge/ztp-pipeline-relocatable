@@ -22,6 +22,8 @@ import { DeleteKubeadminButton } from './DeleteKubeadminButton';
 import { PersistProgress, usePersistProgress } from '../PersistProgress';
 import { SettingsPageDomainCertificates } from './SettingsPageDomainCertificates';
 import { useSettingsPageContext } from './SettingsPageContext';
+import { validateDomainBackend } from '../DomainPage/validateDomain';
+import { PERSIST_DOMAIN } from '../PersistPage/constants';
 
 import './SettingsPageRight.css';
 
@@ -31,7 +33,8 @@ export const SettingsPageRight: React.FC<{
 }> = ({ initialError, forceReload }) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
-  const { activeTabKey, setActiveTabKey, isEdit, setEdit } = useSettingsPageContext();
+  const { activeTabKey, setActiveTabKey, isEdit, setEdit, isCertificateAutomatic } =
+    useSettingsPageContext();
   const state = useK8SStateContext();
   const progress = usePersistProgress();
 
@@ -59,7 +62,16 @@ export const SettingsPageRight: React.FC<{
     originalDomain,
     domainValidation,
     handleSetDomain,
+
+    customCerts,
   } = state;
+
+  const isAfterRedirection = window.location.hash === '#redirected';
+  const isDomainChange = originalDomain && originalDomain !== domain;
+  const isCustomCertButNoneProvided =
+    !isCertificateAutomatic &&
+    !Object.keys(customCerts || {}).find((domain) => !!customCerts?.[domain]['tls.crt']);
+  const isSaveDisabled = isSaving || !isAllValid() || !isDirty() || isCustomCertButNoneProvided;
 
   const onSuccess = () => {
     setError(null);
@@ -72,16 +84,27 @@ export const SettingsPageRight: React.FC<{
   const onSave = async () => {
     setIsSaving(true);
     setError(undefined);
-    await persist(state, setError, progress.setProgress, onSuccess);
+
+    if (
+      !isDomainChange ||
+      (await validateDomainBackend((message) => {
+        // Backend failed to pre-validate the domain (most probably the domain can not be resolved, the "dig" command failed)
+        setError({
+          title: PERSIST_DOMAIN,
+          message,
+        });
+      }, domain))
+    ) {
+      await persist(state, setError, progress.setProgress, onSuccess);
+    }
+
     setIsSaving(false);
   };
 
-  const isAfterRedirection = window.location.hash === '#redirected';
-  const isDomainChange = originalDomain && originalDomain !== domain;
-  const isSaveDisabled = isSaving || !isAllValid() || !isDirty();
-
   const onCancelEdit = () => {
     setEdit(false);
+    setError(undefined);
+
     forceReload();
   };
 
@@ -150,7 +173,11 @@ export const SettingsPageRight: React.FC<{
 
           <Tab id="settings-tab-1" eventKey={1} title={<TabTitleText>Domain</TabTitleText>}>
             <Form onSubmit={onFormSubmit}>
-              <Stack className="settings-page-sumamary__tab">
+              <Stack
+                className={
+                  isSaving ? 'settings-page-sumamary__tab-short' : 'settings-page-sumamary__tab'
+                }
+              >
                 <StackItem>
                   <FormGroup
                     fieldId="domain"
@@ -238,7 +265,7 @@ export const SettingsPageRight: React.FC<{
               onClick={onSave}
               isDisabled={isSaveDisabled}
             >
-              Save
+              {error ? 'Retry' : 'Save'}
             </Button>
             <Button
               data-testid="settings-page-button-cancel"

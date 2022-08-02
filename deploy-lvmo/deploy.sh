@@ -51,77 +51,60 @@ source ${WORKDIR}/shared-utils/common.sh
 if ! ./verify.sh; then
     echo ">>>> Modify files to replace with pipeline info gathered"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    sed -i "s/CHANGEME/$OC_ODF_VERSION/g" manifests/03-ODF-Subscription.yaml
+    sed -i "s/CHANGEME/$OC_ODF_VERSION/g" manifests/03-LVMO-Subscription.yaml
 
     if [[ -z ${ALLEDGECLUSTERS} ]]; then
         ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
     fi
 
+    index=0
     for edgecluster in ${ALLEDGECLUSTERS}; do
-  	echo "Extract Kubeconfig for ${edgecluster}"
-	extract_kubeconfig ${edgecluster}
+        NUM_M=$(yq e ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
 
-	export NUM_M=$(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes --no-headers | grep master | wc -l)
-
-	echo "Filling vars for ${edgecluster}"
-	extract_vars ".edgeclusters[].${edgecluster}.master0.storage_disk"
-
-        echo ">>>> Deploy manifests to install ODF $OC_ODF_VERSION"
-        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-ODF-Namespace.yaml
+        echo ">>>> Deploy manifests to install LSO and LocalVolume: ${edgecluster}"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        echo "Extract Kubeconfig for ${edgecluster}"
+        extract_kubeconfig ${edgecluster}
+        echo "Filling vars for ${edgecluster}"
+        extract_vars ".edgeclusters[].${edgecluster}.master0.storage_disk"
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-Namespace.yaml
         sleep 2
-        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-ODF-OperatorGroup.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-LVMO-OperatorGroup.yaml
         sleep 2
-        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-ODF-Subscription.yaml
+        oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-LVMO-Subscription.yaml
+        sleep 5
 
-        sleep 60
-
-        echo ">>>> Labeling nodes for ODF"
-        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        counter=0
-        for node in $(oc --kubeconfig=${EDGE_KUBECONFIG} get node -o name -l node-role.kubernetes.io/master); do
-            oc --kubeconfig=${EDGE_KUBECONFIG} label $node cluster.ocs.openshift.io/openshift-storage='' --overwrite=true
-            oc --kubeconfig=${EDGE_KUBECONFIG} label $node topology.rook.io/rack=rack${counter} --overwrite=true
-            let "counter+=1"
+        echo ">>>> Waiting for subscription and crd on: ${edgecluster}"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        declare -a LVMOCRDS=("lvmclusters.lvm.topolvm.io" "lvmvolumegroupnodestatuses.lvm.topolvm.io" "lvmvolumegroups.lvm.topolvm.io")
+        for crd in ${LVMOCRDS[@]}; do
+            check_resource "crd" "${crd}" "Established" "openshift-local-storage" "${EDGE_KUBECONFIG}"
         done
+
+        echo ">>>> Render and apply manifest to deploy LVMCluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
-	if [ "${NUM_M}" -eq "3" ];
-	then
-		echo ">>>> Render and apply manifest to deploy ODF StorageCluster"
-		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-		render_file manifests/04-ODF-StorageCluster.yaml
-	else
-		echo ">>>> Render and apply manifest to deploy ODF StorageSystem"
-		echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
-		render_file manifests/04-MCG-StorageCluster.yaml
-	fi
-
+        render_file manifests/04-LVMO-LVMOCluster.yaml
         sleep 60
-        echo ">>>> Waiting for: ODF Cluster"
+
+        echo ">>>> Waiting for: LVMCluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
         while [ "$timeout" -lt "1000" ]; do
-            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage storagecluster -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
-            ready=true
-            break
+            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage lvmcluster -ojsonpath='{.items[*].status.ready}') == "true" ]]; then
+                ready=true
+                break
             fi
             sleep 5
             timeout=$((timeout + 1))
         done
-
-	if [ "${NUM_M}" -eq "3" ];
-	then
-        sleep 30
-        oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-    fi
-
         if [ "$ready" == "false" ]; then
-            echo "timeout waiting for ODF deployment..."
+            echo "timeout waiting for LVMCluster deployment..."
             exit 1
         fi
     done
+    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    index=$((index + 1))
 fi
 echo ">>>>EOF"
 echo ">>>>>>>"
