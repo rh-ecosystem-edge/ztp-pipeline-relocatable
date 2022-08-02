@@ -45,15 +45,15 @@ export OC_ACM_VERSION="${acm_version}"
 export OC_ODF_VERSION="${odf_version}"
 export HUB_ARCHITECTURE="${5:-compact}"
 export SINGLE_NIC="${6:-true}"
-export CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
+export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
 export CLUSTER_IPS=""
 
 for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
-  ip=$(dig +short api.${CLUSTER_NAME}${edgecluster}-cluster.alklabs.local)
+  ip=$(dig +short api.${_CLUSTER_NAME}${edgecluster}-cluster.alklabs.local)
 
   if [[ "$ip" == "" ]];
   then
-	  echo "ERROR: missing dns config for ${CLUSTER_NAME}${edgecluster}"
+	  echo "ERROR: missing dns config for ${_CLUSTER_NAME}${edgecluster}"
 	  exit 1
   fi
 
@@ -73,11 +73,11 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
           if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan -k -f create-vm-sno.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_ips="${CLUSTER_IPS}" -P cluster_name="${CLUSTER_NAME}" "${OC_CLUSTER_NAME}" 
+            kcli create plan -k -f create-vm-sno.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_ips="${CLUSTER_IPS}" -P cluster_name="${_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
           else
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan -k -f create-vm.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_name="${CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            kcli create plan -k -f create-vm.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_name="${_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
           fi
         else
             echo "Metal3 + ipv4 + disconnected"
@@ -98,7 +98,7 @@ fi
 
 #Empty file before we start
 
->${CLUSTER_NAME}.yaml
+>${_CLUSTER_NAME}.yaml
 CHANGE_IP=192.168.150.1  # hypervisor ip for this network
 if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
   MASTERS=3
@@ -106,7 +106,7 @@ else
   MASTERS=1
 fi
 # Default configuration
-cat <<EOF >>${CLUSTER_NAME}.yaml
+cat <<EOF >>${_CLUSTER_NAME}.yaml
 config:
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
@@ -114,38 +114,38 @@ config:
 
 EOF
 
-# Create header for ${CLUSTER_NAME}.yaml
-cat <<EOF >>${CLUSTER_NAME}.yaml
+# Create header for ${_CLUSTER_NAME}.yaml
+cat <<EOF >>${_CLUSTER_NAME}.yaml
 edgeclusters:
 EOF
-# Create header for ${CLUSTER_NAME}.yaml
+# Create header for ${_CLUSTER_NAME}.yaml
 
 for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
-    cat <<EOF >>${CLUSTER_NAME}.yaml
-  - ${CLUSTER_NAME}${edgecluster}-cluster:
+    cat <<EOF >>${_CLUSTER_NAME}.yaml
+  - ${_CLUSTER_NAME}${edgecluster}-cluster:
       contrib:
         gpu-operator:
           version: "v1.10.1"
 EOF
     for master in $(seq 0 $((MASTERS - 1))); do
         # Stanza generation for each master
-        MASTERUID=$(kcli info vm ${CLUSTER_NAME}${edgecluster}-cluster-m${master} -f id -v)
-	MASTER_NETS=$(kcli info vm -oyaml -fnets ${CLUSTER_NAME}${edgecluster}-cluster-m${master})
+        MASTERUID=$(kcli info vm ${_CLUSTER_NAME}${edgecluster}-cluster-m${master} -f id -v)
+	MASTER_NETS=$(kcli info vm -oyaml -fnets ${_CLUSTER_NAME}${edgecluster}-cluster-m${master})
 	BARE_NET_MAC=$(echo "${MASTER_NETS}" | yq e -j | jq -r ".nets[0].mac")
 	ZTPFW_MAC=$(echo "${MASTER_NETS}" | yq e -j | jq -r ".nets[1].mac")
 
-        cat <<EOF >>${CLUSTER_NAME}.yaml
+        cat <<EOF >>${_CLUSTER_NAME}.yaml
       master${master}:
         nic_ext_dhcp: enp1s0
         mac_ext_dhcp: "${BARE_NET_MAC}"
 EOF
         if [ "${SINGLE_NIC}" = "false" ]; then
-          cat <<EOF >>${CLUSTER_NAME}.yaml
+          cat <<EOF >>${_CLUSTER_NAME}.yaml
         nic_int_static: enp2s0
         mac_int_static: "${ZTPFW_MAC}"
 EOF
         fi
-        cat <<EOF >>${CLUSTER_NAME}.yaml
+        cat <<EOF >>${_CLUSTER_NAME}.yaml
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${MASTERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
@@ -158,23 +158,23 @@ EOF
   if [ "${HUB_ARCHITECTURE}" = "compact" ]; then
     # Add the single worker
     worker=0
-    WORKERUID=$(kcli info vm ${CLUSTER_NAME}${edgecluster}-cluster-w${worker} -f id -v)
-    WORKER_NETS=$(kcli info vm -oyaml -fnets ${CLUSTER_NAME}${edgecluster}-cluster-w${worker})
+    WORKERUID=$(kcli info vm ${_CLUSTER_NAME}${edgecluster}-cluster-w${worker} -f id -v)
+    WORKER_NETS=$(kcli info vm -oyaml -fnets ${_CLUSTER_NAME}${edgecluster}-cluster-w${worker})
     BARE_NET_MAC=$(echo "${WORKER_NETS}" | yq e -j | jq -r ".nets[0].mac")
     ZTPFW_MAC=$(echo "${WORKER_NETS}" | yq e -j | jq -r ".nets[1].mac")
 
-    cat <<EOF >>${CLUSTER_NAME}.yaml
+    cat <<EOF >>${_CLUSTER_NAME}.yaml
       worker${worker}:
         nic_ext_dhcp: enp1s0
         mac_ext_dhcp: "${BARE_NET_MAC}"
 EOF
         if [ "${SINGLE_NIC}" = "false" ]; then
-          cat <<EOF >>${CLUSTER_NAME}.yaml
+          cat <<EOF >>${_CLUSTER_NAME}.yaml
         nic_int_static: enp2s0
         mac_int_static: "${ZTPFW_MAC}"
 EOF
         fi
-        cat <<EOF >>${CLUSTER_NAME}.yaml
+        cat <<EOF >>${_CLUSTER_NAME}.yaml
         bmc_url: "redfish-virtualmedia+http://${CHANGE_IP}:8000/redfish/v1/Systems/${WORKERUID}"
         bmc_user: "amorgant"
         bmc_pass: "alknopfler"
