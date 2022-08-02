@@ -23,7 +23,7 @@ metadata:
   name: quay-operator
   namespace: ztpfw-registry
 spec:
-  channel: "stable-3.7"
+  channel: "stable-3.6"
   name: quay-operator
   source: ztpfw-catalog
   sourceNamespace: openshift-marketplace
