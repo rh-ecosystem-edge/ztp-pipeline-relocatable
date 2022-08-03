@@ -10,7 +10,7 @@
 export DISCONNECT_INSTALL=false
 
 if [ "$DISCONNECT_INSTALL" = true ]; then
-    echo "Desconnected pipelines for  vSphere"
+    echo "Disconnected tasks for  vSphere"
     tkn task start -n edgecluster-deployer -p ztp-container-image="quay.io/takinosh/pipeline:vsphere" -p edgeclusters-config="$(cat  edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults common-pre-flight
     tkn task start -n edgecluster-deployer -p ztp-container-image="quay.io/takinosh/pipeline:vsphere" -p edgeclusters-config="$(cat  edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults hub-deploy-httpd-server
     tkn task start -n edgecluster-deployer -p ztp-container-image="quay.io/takinosh/pipeline:vsphere" -p edgeclusters-config="$(cat  edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults hub-deploy-disconnected-registry
