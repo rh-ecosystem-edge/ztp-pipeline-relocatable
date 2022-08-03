@@ -1,9 +1,9 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: deploy-ztp-hub
+  name: deploy-openshift-ztp
 spec:
-  description: Tekton Pipeline to deploy ZTPFW Hub Cluster with ACM
+  description: Tekton Pipeline to deploy deploy-openshift-ztp Hub Cluster with ACM
   params:
     - name: ztp-container-image
       type: string
@@ -54,7 +54,7 @@ spec:
         workspace: ztp
 
   # Deploy  AAP for openshift-ztp
-  - name: Deploy-openshift-ztp-aap
+  - name: deploy-openshift-ztp-aap
     taskRef:
       name: contrib-openshift-ztp-aap
 
