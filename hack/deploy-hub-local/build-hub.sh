@@ -46,6 +46,9 @@ export OC_OCP_VERSION="${ocp_version}"
 export OC_ACM_VERSION="${acm_version}"
 export OC_ODF_VERSION="${odf_version}"
 export HUB_ARCHITECTURE="${5:-compact}"
+export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
+export _REGISTRY=${REGISTRY:-}
+
 
 echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
@@ -93,22 +96,29 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
     fi
 fi
 
-echo ">>>> Edge-clusters.yaml file generation"
+echo ">>>> ${CLUSTER_NAME}.yaml file generation"
 
 #Empty file before we start
->edgeclusters.yaml
+>"${CLUSTER_NAME}.yaml"
 
-cat <<EOF >>edgeclusters.yaml
+cat <<EOF >>"${CLUSTER_NAME}.yaml"
 config:
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
   OC_ODF_VERSION: '${OC_ODF_VERSION}'
 EOF
 
-# Create header for edgeclusters.yaml
-cat <<EOF >>edgeclusters.yaml
+# add registry from env REGISTRY
+if [[ ! -z "${_REGISTRY}" ]]; then
+    yq e '.config.REGISTRY = strenv(REGISTRY)' -i "${CLUSTER_NAME}.yaml"
+fi
+
+# Create header for edgecluster.yaml
+cat <<EOF >>"${CLUSTER_NAME}.yaml"
 edgeclusters:
 EOF
+
+cat "${CLUSTER_NAME}.yaml"
 
 echo ">>>> Create the PV and sushy and dns"
 ./lab-nfs.sh

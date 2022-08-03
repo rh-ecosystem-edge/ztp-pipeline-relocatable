@@ -33,3 +33,4 @@ build/*
 **/openshift-install
 pipelines/ztp-pipeline-relocatable/
 hack/deploy-hub-local/edgeclusters.yaml
+hack/deploy-hub-local/edgecluster.yaml
