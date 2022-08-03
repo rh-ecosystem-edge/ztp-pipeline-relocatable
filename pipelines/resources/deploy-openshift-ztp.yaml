@@ -49,6 +49,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+    runAfter:
+      - pre-flight
     workspaces:
       - name: ztp
         workspace: ztp
