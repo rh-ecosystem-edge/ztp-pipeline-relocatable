@@ -47,6 +47,7 @@ export HUB_ARCHITECTURE="${5:-compact}"
 export SINGLE_NIC="${6:-true}"
 export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
 export CLUSTER_IPS=""
+export _REGISTRY=${REGISTRY:-}
 
 for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
   ip=$(dig +short api.${_CLUSTER_NAME}${edgecluster}-cluster.alklabs.local)
@@ -111,8 +112,12 @@ config:
   OC_OCP_VERSION: '${OC_OCP_VERSION}'
   OC_ACM_VERSION: '${OC_ACM_VERSION}'
   OC_ODF_VERSION: '${OC_ODF_VERSION}'
-
 EOF
+
+# add registry from env REGISTRY
+if [[ ! -z "${_REGISTRY}" ]]; then
+    yq e '.config.REGISTRY = strenv(REGISTRY)' -i "${CLUSTER_NAME}.yaml"
+fi
 
 # Create header for ${_CLUSTER_NAME}.yaml
 cat <<EOF >>${_CLUSTER_NAME}.yaml
