@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { Request, Response } from 'express';
 import {
+  DNS_NAME_REGEX,
+  PatchType,
+  ComponentRoute,
   Route,
   ChangeDomainInputType,
   getApiDomain,
@@ -11,15 +14,12 @@ import {
   getZtpfwDomain,
   ZTPFW_UI_ROUTE_PREFIX,
   OAUTH_NAMESPACE,
-  getClusterDomainFromComponentRoutes,
-} from '../common';
-import {
   ZTPFW_DEPLOYMENT_NAME,
   ZTPFW_NAMESPACE,
   ZTPFW_OAUTHCLIENT_NAME,
   ZTPFW_ROUTE_NAME,
-} from '../constants';
-import { DNS_NAME_REGEX, PatchType, ComponentRoute } from '../frontend-shared';
+  getClusterDomainFromComponentRoutes,
+} from '../frontend-shared';
 import { getToken, PostResponse, unauthorized } from '../k8s';
 import { ApiServerSpec, patchApiServerConfig } from '../resources/apiserver';
 import { getDeployment, patchDeployment } from '../resources/deployment';
