@@ -12,6 +12,9 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
+    - name: pipeline-name
+      type: string
+      default: $(context.taskRun.name)
     - name: kubeconfig
       type: string
       default: ""
@@ -24,7 +27,9 @@ spec:
   stepTemplate:
     env:
       - name: WORKDIR
-        value: "/workspace/ztp"
+        value: "/workspace/ztp/$(params.pipeline-name)"
+      - name: OUTPUTDIR
+        value: "/workspace/ztp/$(params.pipeline-name)/build/$(context.taskRun.name)"
       - name: EDGECLUSTERS_CONFIG
         value: $(params.edgeclusters-config)
       - name: KUBECONFIG
