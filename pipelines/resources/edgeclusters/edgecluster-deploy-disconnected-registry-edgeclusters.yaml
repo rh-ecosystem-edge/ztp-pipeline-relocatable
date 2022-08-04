@@ -17,6 +17,9 @@ spec:
     - name: kubeconfig
       type: string
       default: ""
+    - name: pipeline-name
+      type: string
+      default: "all"
     - name: edgeclusters-config
       type: string
       default: ""
@@ -27,6 +30,8 @@ spec:
     env:
       - name: WORKDIR
         value: "/workspace/ztp"
+      - name: OUTPUTDIR
+        value: "/workspace/ztp/$(params.pipeline-name)/$(context.taskRun.name)"
       - name: EDGECLUSTERS_CONFIG
         value: $(params.edgeclusters-config)
       - name: KUBECONFIG
