@@ -149,7 +149,20 @@ function deploy_registry() {
         # Create the registry deployment and wait for it
         echo ">> Creating the registry deployment"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
-        sleep 30
+		QUAY_STATUS=false
+		echo "INFO: waiting for Quay Operator to be ready ( 3 min )" 
+		for i in {1..18}
+		do
+			if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get csv -n ${REGISTRY} -o jsonpath='{.items[*].status.phase}' 2>/dev/null ) == "Succeeded" ]]; then
+				QUAY_STATUS=True
+				break
+			fi
+			sleep 10
+		done
+		if [[ "${QUAY_STATUS}" == "false" ]]; then
+			echo "Error: Quay operator failed to start"
+			exit 1
+		fi
         QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n "${REGISTRY}" get deployment -o name | grep quay-operator | cut -d '/' -f 2)
         echo ">> Waiting for the registry deployment to be ready"
         check_resource "deployment" "${QUAY_OPERATOR}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
