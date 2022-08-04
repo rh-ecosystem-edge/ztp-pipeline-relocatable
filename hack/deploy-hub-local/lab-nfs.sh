@@ -16,7 +16,7 @@ PVS=$(seq 1 10)
 for i in ${PVS}; do
 	# Cleanup of old PV's
 	export PV=pv$(printf "%03d" ${i})
-	rm -fr /pv$PV/*
+	rm -fr /$PV
 done
 for i in $(seq 1 ${MAXACTIVEPV}); do
 	# Create the new max active PV's
