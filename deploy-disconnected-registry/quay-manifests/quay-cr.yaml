@@ -20,9 +20,3 @@ spec:
       kind: redis
     - managed: true
       kind: horizontalpodautoscaler
-    - managed: true
-      kind: quay
-      overrides:
-        env:
-        - name: DEBUGLOG
-          value: "true"
