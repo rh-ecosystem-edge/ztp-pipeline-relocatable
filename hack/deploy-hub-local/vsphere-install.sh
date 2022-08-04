@@ -9,7 +9,4 @@
 ####
 export DISCONNECT_INSTALL=false
 
-
-tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster-yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
-
-
+tkn pipeline start -n edgecluster-deployer  -p ztp-container-image="quay.io/takinosh/pipeline:vsphere"  -p edgeclusters-config="$(cat edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-openshift-ztp
