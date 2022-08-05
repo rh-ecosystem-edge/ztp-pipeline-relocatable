@@ -6,11 +6,11 @@
 = The edge factory pipeline
 include::modules/common-attributes.adoc[]
 
-This stage deploys and configures the edge clusters. When this pipeline is completed, the edge clusters are ready for use when the enclosure gets relocated to the end customer's remote site.
+This stage deploys and configures the edge clusters. When this pipeline is completed successfully, the edge clusters are ready to be shipped to end customer's site.
 
-The flow associated with deploying the edge cluster is:
+The flow associated with deploying the edge cluster is (`oc get -n edgecluster-deployer pipeline deploy-ztp-edgeclusters -o json|jq ".spec.tasks[].name"`):
 
-Check hub::
+Check hub(pre-flight)::
 
 This step installs the various tools on the edge cluster that are needed. It downloads `jq`, `oc`, `opm` and `kubectl`. It proceeds to verify that various hub install prerequisites exist before proceeding, for example it checks the:
 
@@ -25,25 +25,48 @@ Deploy edge::
 
 This step starts with the edge cluster provisioning. This process ends with pushing a notification from the edge cluster to the hub and answering with an ACK.
 
+Deploy ICSP::
+
+This step adds the Image Content Source Policy to the Edge Cluster
+
 Deploy NMState and MetalLB::
 
 This step deploys the NMState and the MetalLB Operators. NMState creates one profile per node to obtain an IP from the external network's DHCP. Then the MetalLB creates a resource called an AddressPool to build the relationship between the internal and external interface using a LoadBalancer interface. Finally it creates a service for the API and the ingress. Without this step you will not be able to access the API or ingress by using the external address.
+
+Deploy worker::
+
+This step deploys the worker node, and adds it to the edge cluster.
+
+
+
+Deploy UI::
+
+The deploy UI stage helps to simplify the configuration of the edge cluster after it is relocated to the customer's site.
 
 Deploy OpenShift Data Foundation::
 
 This step deploys the Local Storage Operator and also OpenShift Data Foundation (ODF). ODF and the Local Storage Operator uses disks defined in the `storage_disk` section of the `edgeclusters.yaml` configuration file to create persistent volumes. ODF generates the storage classes and dynamically provisions the persistent volumes. This provides the storage necessary to host the disconnected registry images (Quay).
 
-Deploy Quay::
+Deploy Quay (disconnected-registry)::
 
 This step deploys the Quay Operator and components of Quay, because the end customer needs a fully supported solution in the edge and the factory is expected to have their own internal registry. This Quay deployment has a small footprint enabling only the features needed to host an internal registry with basic functions.
 
-Deploy workers::
 
-This step deploys the worker nodes, and adds these to the edge cluster.
 
-Deploy UI::
+Mirror of images(OCP and OLM)::
 
-The deploy UI stage helps to simplify the configuration of the edge cluster after it is relocated to the customer's site.
+This step mirrors the images into the disconnected-registry that has been configured
+
+Deploy Quay Pull Secret (disconnected-registry-ps)::
+This step configures the pull secret for the registry.
+
+Deploy ICSP post (ICSP post)::
+This step configures the ICSP to connect to internal registry (Quay), not the one in the hub anymore.
+
+GPU Operator::
+
+In case it has been enabled, this step deploys the GPU Operator in the cluster.
+
 
 Detach cluster::
 

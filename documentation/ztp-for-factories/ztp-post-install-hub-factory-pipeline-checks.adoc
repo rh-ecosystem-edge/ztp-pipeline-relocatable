@@ -15,7 +15,7 @@ Perform the following steps after completion of the hub factory pipeline run.
 
 .Procedure
 
-. Verify RHACM is successfully installed:
+. Verify RHACM is successfully installed (when using ACM):
 +
 [source,terminal]
 ----
@@ -32,6 +32,48 @@ application-chart-ee7d2-applicastionui-7d99756554-jrs24     1/1     RUNNING     
 application-chart-ee7d2-applicastionui-7d99756554-jrs24     1/1     RUNNING     0               6m31s
 assisted-image-service-67489b657b-68qtg                     1/1     RUNNING     0               2m30s
 assisted-service-5b8874ffd9-rjrg                            2/2     RUNNING     1 (2m19s ago)   2m30s
+----
+
+. Verify MCE is successfully installed (when using MCE):
++
+[source,terminal]
+----
+$ oc get pod -n multicluster-engine
+----
++
+.Example output
+[source,terminal]
+----
+
+NAME                                                   READY   STATUS    RESTARTS        AGE
+agentinstalladmission-787b6fc98d-9mk4n                 1/1     Running   0               4m46s
+agentinstalladmission-787b6fc98d-fn5k7                 1/1     Running   0               4m46s
+assisted-image-service-0                               1/1     Running   0               4m46s
+assisted-service-7857f984d6-mtzf8                      2/2     Running   0               4m46s
+cluster-curator-controller-864c5fcd47-8fvks            1/1     Running   0               7m43s
+cluster-curator-controller-864c5fcd47-kw69f            1/1     Running   1 (6m46s ago)   7m43s
+cluster-manager-7b5df6b8cb-brhlc                       1/1     Running   0               7m42s
+cluster-manager-7b5df6b8cb-g8xn5                       1/1     Running   0               7m42s
+cluster-manager-7b5df6b8cb-khz6g                       1/1     Running   0               7m42s
+clusterclaims-controller-5f8c678f9f-7xk24              2/2     Running   0               7m43s
+clusterclaims-controller-5f8c678f9f-s6lc6              2/2     Running   0               7m43s
+clusterlifecycle-state-metrics-v2-587c5978b9-hdlcg     1/1     Running   0               7m43s
+console-mce-console-7b46d86995-dczmw                   1/1     Running   0               7m44s
+console-mce-console-7b46d86995-gcwhk                   1/1     Running   0               7m44s
+discovery-operator-7d7677c5b9-q8vnw                    1/1     Running   0               7m43s
+hive-operator-6cf774979-qfxxw                          1/1     Running   0               7m43s
+infrastructure-operator-f5b48bcf8-wtn8c                1/1     Running   0               7m43s
+managedcluster-import-controller-v2-6695c74d89-5tgnr   1/1     Running   0               7m42s
+managedcluster-import-controller-v2-6695c74d89-vthp8   1/1     Running   0               7m42s
+multicluster-engine-operator-d94ff5478-2bbsc           1/1     Running   0               8m7s
+multicluster-engine-operator-d94ff5478-tcjqp           1/1     Running   0               8m7s
+ocm-controller-66544d4758-6fmn7                        1/1     Running   0               7m42s
+ocm-controller-66544d4758-n254h                        1/1     Running   0               7m42s
+ocm-proxyserver-57dcd75578-fsts4                       1/1     Running   0               7m42s
+ocm-proxyserver-57dcd75578-xxcqn                       1/1     Running   0               7m42s
+ocm-webhook-77bc99cb75-kvlr2                           1/1     Running   0               7m42s
+ocm-webhook-77bc99cb75-w9rzh                           1/1     Running   0               7m42s
+provider-credential-controller-56966d95cb-5vw5l        2/2     Running   0               7m43s
 ----
 
 . Verify the HTTPD server is successfully running:
@@ -99,9 +141,9 @@ STARTED      DURATION     STATUS
  NAME              VALUE
  ∙ kubeconfig      /root/.kcli/clusters/test-ci/auth/kubeconfig
  ∙ edgeclusters-config   config:
-  OC_OCP_VERSION: '4.10.9'
-  OC_ACM_VERSION: '2.4'
-  OC_OCS_VERSION: '4.9'
+  OC_OCP_VERSION: "4.10.24"
+  OC_ACM_VERSION: '2.5'
+  OC_OCS_VERSION: '4.10'
 edgeclusters:
  ∙ ztp-container-image   quay.io/ztpfw/pipeline:latest
 

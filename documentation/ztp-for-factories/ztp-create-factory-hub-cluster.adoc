@@ -19,7 +19,7 @@ include::modules/common-attributes.adoc[]
 
 * Cluster is reachable using a `KUBECONFIG` file.
 
-* The dns names for `api.<hub-clustername>.<baseDomain>`, `api-int.<hub-clustername>.<baseDomain>` and `*.apps.<hub-clustername>.<baseDomain>` should be deployed on edge cluster on the DHCP external network.
+* The dns entries for `api.<hub-clustername>.<baseDomain>`, `api-int.<hub-clustername>.<baseDomain>` and `*.apps.<hub-clustername>.<baseDomain>` should be resolvable and reachable from the edge cluster via the DHCP external network.
 
 * link:https://metal3.io/[Metal³] has to be available in the hub cluster.
 
@@ -33,18 +33,17 @@ include::modules/common-attributes.adoc[]
 If the cluster is greater than 3 nodes, the recommendation is to use OpenShift Data Foundation. If it is a single-node OpenShift cluster, use the Local Storage Operator.
 ====
 
-* Create the following persistent volumes with at least 200GB of storage (NVMe or SSD) for:
+* Create the following persistent volumes (NVMe or SSD) for:
 
     ** 2 for Assisted Installer.
     ** 1 for the hub internal registry that is for the mirror of the images. At least 200GB is required on the hub, more may be required if ODF is installed.
     ** 1 for HTTPD that hosts the Red Hat Enterprise Linux CoreOS (RHCOS) images.
-    ** 1 for zero touch provisioning factory workflows (ZTPFW).
-    ** 1 for Red Hat Advanced Cluster Manager (RHACM)
+    ** 1 for Zero Touch Provisioning Factory Workflows (ZTPFW).
 
 [discrete]
 === Networking prerequisites
 
-The hub cluster requires internet connectivity and should be installed on a private network with customer configured DNS and DHCP services. Configure DNS for the API on the ingress of the hub to reach some routes on the hub cluster. Configure enough DNS entries for the number of edge clusters you intend to deploy in parallel.
+The hub cluster requires internet connectivity and should be installed on a private network with customer configured DNS and DHCP services. Configure DNS for the API and the ingress of the hub to be able to reach routes on the hub cluster. Configure enough DNS entries for the number of edge clusters you intend to deploy in parallel.
 
 You need enough DHCP addresses to host the number of edge clusters you intend to deploy. Each {product-title} node in the cluster must have access to an NTP server. {product-title} nodes use NTP to synchronize their clocks. For example, cluster nodes use SSL certificates that require validation, which might fail if the date and time between the nodes are not in sync.
 
@@ -52,11 +51,11 @@ Specific requirements are:
 
 * DNS entries need to be configured and resolvable from the external network, with DNS on the DHCP external network.
 * Hub
-** `api.<hub-clustername>.<baseDomain>` and `api-int.<hub-clustername>.<baseDomain>` entries to the same IP address.
+** `api.<hub-clustername>.<baseDomain>` and `api-int.<hub-clustername>.<baseDomain>` should resolve entries to the same IP address.
 ** ingress (`*.apps.<hub-clustername>.<baseDomain>`).
 
 * Edge
-** `api.<edge-cluster-name>.<baseDomain>` and `api-int.<edge-cluster-name>.<baseDomain>` entries to the same IP address.
+** `api.<edge-cluster-name>.<baseDomain>` and `api-int.<edge-cluster-name>.<baseDomain>` should resolve entries to the same IP address.
 ** ingress (`*.apps.<edge-cluster-name>.<baseDomain>`).
 
 [NOTE]
@@ -66,8 +65,12 @@ When deploying a single-node OpenShift cluster, the `api.<edge-cluster-name>.<ba
 
 * External DHCP with enough free IPs on the factory network to provide access to the edge cluster by using the external network interface.
 
-* Every edge cluster needs at least 6 IPs from this external network (without the broadcast and network IP).
-** 1 per node.
+* Every edge compact cluster needs at least 6 IPs from this external network (without the broadcast and network IP).
+** 1 per node (3 masters + 1 worker).
 ** 1 for API.
-** 1 for API-INT.
+** 1 for the Ingress entry (`*.apps.<edge-cluster-name>.<baseDomain>`).
+
+* Every edge SNO cluster needs at least 3 IPs from this external network (without the broadcast and network IP).
+** 1 per node (SNO node).
+** 1 for API.
 ** 1 for the Ingress entry (`*.apps.<edge-cluster-name>.<baseDomain>`).

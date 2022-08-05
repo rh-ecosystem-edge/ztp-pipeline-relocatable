@@ -6,7 +6,7 @@
 = Installing the OpenShift Pipelines Operator
 include::modules/common-attributes.adoc[]
 
-Follow this guidance to install the OpenShift Pipelines Operator that is used to run the pipeline.
+Follow this guide to install the OpenShift Pipelines Operator that is used to run the pipeline.
 
 .Prerequisites
 
@@ -28,7 +28,7 @@ $ export KUBECONFIG=<path_to_kubeconfig>/kubeconfig
 +
 [source,terminal]
 ----
-$ curl -sLK https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
+$ curl -sL https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
 ----
 +
 This script:
@@ -37,7 +37,7 @@ This script:
 * Clones the link:https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable[ztp-pipeline-relocatable] pipeline repository.
 * Checks that the correct permissions are set on the hub cluster.
 * Deploys the OpenShift Pipelines Operator from the Operator Lifecycle Manager (OLM) catalog.
-* Deploys the ZTP pipeline and associated tasks.
+* Deploys the ZTP pipelines and associated tasks.
 
 . Monitor the progress in the terminal window and in the web console.
 
@@ -88,7 +88,7 @@ task.tekton.dev/edgecluster-detach-cluster configured
 task.tekton.dev/edgecluster-restore-hub-config configured
 ----
 
-.. Log in to the {product-title} web console.
+.. Log in to the {product-title} web console (OPTIONAL).
 
 ... Navigate to *Pipelines* -> *Pipelines*.
 

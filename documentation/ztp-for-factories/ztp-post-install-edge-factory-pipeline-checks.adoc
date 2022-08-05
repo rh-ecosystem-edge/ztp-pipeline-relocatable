@@ -10,7 +10,7 @@ Perform the following steps after completion of the edge cluster factory pipelin
 
 .Prerequisites
 
-* An {product-title} hub cluster.
+* An {product-title} Edge cluster.
 * Log in as a user with `cluster-admin` privileges.
 
 .Procedure
@@ -60,7 +60,22 @@ $ oc get pod -n ztpfw-registry
 [source,terminal]
 ----
 NAME                          READY   STATUS      RESTART         AGE
-ztpfw-registry-77ff664d47     1/1     RUNNING     0               151m
+$ oc get pod -n ztpfw-registry
+NAME                                                READY   STATUS                 RESTARTS           AGE
+quay-operator.v3.6.7-5977667fb6-95mjc               1/1     Running                0                  4d18h
+ztpfw-registry-clair-app-5dd87ff665-jd4t9           1/1     Running                0                  4d7h
+ztpfw-registry-clair-app-5dd87ff665-smzxn           1/1     Running                15 (4d7h ago)      4d12h
+ztpfw-registry-clair-postgres-69f89b7cbb-5l9h7      0/1     CreateContainerError   6 (4d7h ago)       4d18h
+ztpfw-registry-quay-app-59c677cbfd-7tkpx            0/1     CrashLoopBackOff       1470 (2m4s ago)    4d18h
+ztpfw-registry-quay-app-59c677cbfd-d7n54            0/1     Running                1466 (5m19s ago)   4d17h
+ztpfw-registry-quay-app-upgrade-lt2l4               0/1     Completed              1                  4d18h
+ztpfw-registry-quay-config-editor-b67b7f55c-s9pjm   1/1     Running                0                  4d18h
+ztpfw-registry-quay-database-7484b5fbc5-9l2rm       0/1     CreateContainerError   0 (4d7h ago)       4d18h
+ztpfw-registry-quay-mirror-7bf4bc569d-wkfbz         1/1     Running                4 (4d17h ago)      4d17h
+ztpfw-registry-quay-mirror-7bf4bc569d-x82nk         1/1     Running                4 (4d17h ago)      4d17h
+ztpfw-registry-quay-postgres-init-kxv9r             0/1     Completed              0                  4d18h
+ztpfw-registry-quay-redis-777f475b8b-z52vd          1/1     Running                0                  4d18h
+
 ----
 
 . Run the following command to review the pipeline run and verify the steps that were executed:

@@ -1,10 +1,7 @@
 xref:config[config]:
-  xref:clusterimageset[clusterimageset]: openshift-v4.9.0
-  xref:OC_OCP_VERSION[OC_OCP_VERSION]: "4.9.13"
-  xref:OC_OCP_TAG[OC_OCP_TAG]: "4.9.0-x86_64"
-  xref:OC_RHCOS_RELEASE[OC_RHCOS_RELEASE]: "49.84.202110081407-0"
-  xref:OC_ACM_VERSION[OC_ACM_VERSION]: "2.4"
-  xref:OC_ODF_VERSION[OC_ODF_VERSION]: "4.8"
+  xref:OC_OCP_VERSION[OC_OCP_VERSION]: "4.10.24"
+  xref:OC_ACM_VERSION[OC_ACM_VERSION]: "2.5"
+  xref:OC_ODF_VERSION[OC_ODF_VERSION]: "4.10"
 
 xref:edgeclusters[edgeclusters]:
   - xref:edgeclustername[edgecluster1-name]:
@@ -15,12 +12,12 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
-        xref:root_disk[root_disk]: sda
+        xref:root_disk[root_disk]: /dev/sda
         xref:storage_disk[storage_disk]:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       xref:mastername[master1]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
@@ -28,12 +25,12 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
-        xref:root_disk[root_disk]: sda
+        xref:root_disk[root_disk]: /dev/sda
         xref:storage_disk[storage_disk]:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       xref:mastername[master2]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
@@ -41,12 +38,12 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
-        xref:root_disk[root_disk]: sda
+        xref:root_disk[root_disk]: /dev/sda
         xref:storage_disk[storage_disk]:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
     xref:workername[worker0]:
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:19"
@@ -63,12 +60,12 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
-        xref:root_disk[root_disk]: sda
+        xref:root_disk[root_disk]: /dev/sda
         xref:storage_disk[storage_disk]:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       xref:mastername[master1]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
@@ -78,12 +75,12 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
-        xref:root_disk[root_disk]: sda
+        xref:root_disk[root_disk]: /dev/sda
         xref:storage_disk[storage_disk]:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       xref:mastername[master2]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
@@ -93,12 +90,12 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
-        xref:root_disk[root_disk]: sda
+        xref:root_disk[root_disk]: /dev/sda
         xref:storage_disk[storage_disk]:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       xref:workername[worker0]:
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
         xref:nic_int_static[nic_int_static]:  eno5

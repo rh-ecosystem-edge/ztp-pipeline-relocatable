@@ -70,9 +70,9 @@ Tasks Completed: 3 (Failed: 1, Cancelled 0), Skipped: 3 ("step-mirror-olm" exite
  NAME              VALUE
  ∙ kubeconfig      /root/.kcli/clusters/test-ci/auth/kubeconfig
  ∙ edgeclusters-config   config:
-  OC_OCP_VERSION: '4.10.9'
-  OC_ACM_VERSION: '2.4'
-  OC_OCS_VERSION: '4.9'
+  OC_OCP_VERSION: "4.10.24"
+  OC_ACM_VERSION: '2.5'
+  OC_OCS_VERSION: '4.10'
 edgeclusters:
  ∙ ztp-container-image   quay.io/ztpfw/pipeline:latest
 
@@ -145,9 +145,9 @@ Message
 
  NAME              VALUE
  ∙ edgeclusters-config   config:
-  OC_OCP_VERSION: '4.10.9'
-  OC_ACM_VERSION: '2.4'
-  OC_OCS_VERSION: '4.9'
+  OC_OCP_VERSION: "4.10.24"
+  OC_ACM_VERSION: '2.5'
+  OC_OCS_VERSION: '4.10'
 edgeclusters:
  ∙ kubeconfig            /root/.kcli/clusters/test-ci/auth/kubeconfig
  ∙ ztp-container-image   quay.io/ztpfw/pipeline:latest

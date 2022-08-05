@@ -1,0 +1,42 @@
+[id="ztp-for-factory-makeconnected"]
+= Make the cluster connected
+include::common-attributes.adoc[]
+:context: ztp-for-factory
+
+After the Edge Cluster installation and detach from ACM operation, the cluster has an internal Quay registry that holds all the pieces and it's the source for all the images that the cluster might require to work as a disconnected cluster.
+
+In order to revert it to become an online cluster again, there are several steps required:
+
+
+
+Steps to make the cluster connected:
+
+- Remove ICSP's
+[source,terminal]
+----
+
+$ oc get  ImageContentSourcePolicy
+NAME                         AGE
+image-policy-0               20h
+image-policy-1               20h
+image-policy-2               20h
+image-policy-3               20h
+ztpfw-edgecluster0-cluster   18h
+----
+
+From the above command output you'll get a list of defined mirrors to find the relevant catalogs and mirrors used. The mirrors are used when the referenced repositories can't be accessed.
+
+
+- Change catalog source for operators
+
+[source,terminal]
+----
+$ oc get catalogsource -A
+NAMESPACE               NAME                     DISPLAY                      TYPE   PUBLISHER                    AGE
+openshift-marketplace   ztpfw-catalog            Disconnected Lab             grpc   disconnected-lab             18h
+openshift-marketplace   ztpfw-catalog-certfied   Disconnected Lab Certified   grpc   disconnected-lab-certified   18h
+----
+
+Red Hat provided catalogs are defined in the documentation at https://docs.openshift.com/container-platform/4.10/operators/understanding/olm-rh-catalogs.html#olm-rh-catalogs
+
+Ensure that the required catalogs are defined in order to reach upstream data.

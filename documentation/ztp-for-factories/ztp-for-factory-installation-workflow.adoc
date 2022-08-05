@@ -22,7 +22,7 @@ export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
 curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s
 ```
 
-- An  output similar to this one, will be shown:
+- An output similar to this one, will be shown:
 
 ```console
 >>>> Creating NS edgecluster-deployer and giving permissions to SA edgecluster-deployer
@@ -133,5 +133,5 @@ tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw
 
 The above command will trigger the Pipeline. It's asynchronous and its output can be examined with `tkn pr logs <pipelinerun name>`.
 
-include::ztp-for-factory-pipeline-hub.adoc[leveloffset=+1]
-include::ztp-for-factory-pipeline-edge.adoc[leveloffset=+1]
+include::modules/ztp-for-factory-pipeline-hub.adoc[leveloffset=+1]
+include::modules/ztp-for-factory-pipeline-edge.adoc[leveloffset=+1]
