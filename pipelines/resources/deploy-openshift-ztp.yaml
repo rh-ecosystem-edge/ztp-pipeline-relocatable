@@ -73,3 +73,41 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
+
+  # Deploy  ArgoCD for openshift-ztp
+  - name: deploy-openshift-ztp-argocd
+    taskRef:
+      name: contrib-openshift-ztp-argocd
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - deploy-openshift-ztp-aap
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy  AAP for openshift-ztp
+  - name: deploy-openshift-ztp-gitea
+    taskRef:
+      name: contrib-openshift-ztp-gitea
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - contrib-openshift-ztp-argocd
+    workspaces:
+      - name: ztp
+        workspace: ztp
