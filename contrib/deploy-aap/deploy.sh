@@ -5,10 +5,11 @@ set -o pipefail
 set -o nounset
 set -m
 
-# Load common vars
-source ${WORKDIR}/shared-utils/common.sh
-if ! ./verify.sh; then
 
+
+if ./verify.sh; then
+    # Load common vars
+    source ${WORKDIR}/shared-utils/common.sh
     echo ">>>> Deploy manifests to create template namespace on HUB Cluster"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
