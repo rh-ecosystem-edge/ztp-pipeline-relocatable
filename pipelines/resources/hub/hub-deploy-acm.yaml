@@ -24,7 +24,7 @@ spec:
   stepTemplate:
     env:
       - name: WORKDIR
-        value: "/workspace/ztp"
+        value: "/workspace/ztp/ztp/"
       - name: EDGECLUSTERS_CONFIG
         value: $(params.edgeclusters-config)
       - name: KUBECONFIG
