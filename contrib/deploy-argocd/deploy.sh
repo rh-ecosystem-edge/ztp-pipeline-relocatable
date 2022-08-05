@@ -17,12 +17,12 @@ if ./verify.sh; then
     # Here can be added other manifests to create the required resources
     ##############################################################################
 
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-namespace.yml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/01-namespace.yml
     sleep 2
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-subscription.yml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/02-subscription.yml
     sleep 2
-    check_resource "crd" "gitopsservices.pipelines.openshift.io" "Established" "argocd" "${EDGE_KUBECONFIG}"
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-instance.yml
+    check_resource "crd" "gitopsservices.pipelines.openshift.io" "Established" "argocd" "${KUBECONFIG_HUB}"
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/03-instance.yml
     sleep 2
 
     ##############################################################################

@@ -9,22 +9,21 @@ if ./verify.sh; then
     # Load common vars
     source ${WORKDIR}/shared-utils/common.sh
 
-    echo ">>>> Deploy manifests to create template namespace in: ${edgecluster}"
+    echo ">>>> Deploy manifests to create template namespace in: HUB Cluster"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "Extract Kubeconfig for ${edgecluster}"
-    extract_kubeconfig ${edgecluster}
+    echo "Extract Kubeconfig for HUB Cluster}"
     ##############################################################################
     # Here can be added other manifests to create the required resources
     ##############################################################################
 
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-namespace.yml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/01-namespace.yml
     sleep 2
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/02-operatorgroup.yml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/02-operatorgroup.yml
     sleep 2
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-subscription.yml
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/03-subscription.yml
     sleep 2
-    check_resource "crd" "giteas.gpte.opentlc.com" "Established" "gitea" "${EDGE_KUBECONFIG}"
-    oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/04-instance.yml
+    check_resource "crd" "giteas.gpte.opentlc.com" "Established" "gitea" "${KUBECONFIG_HUB}"
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/04-instance.yml
 
     ##############################################################################
     # End of customization
