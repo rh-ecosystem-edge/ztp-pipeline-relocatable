@@ -107,7 +107,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - contrib-openshift-ztp-argocd
+      - deploy-openshift-ztp-argocd
     workspaces:
       - name: ztp
         workspace: ztp
