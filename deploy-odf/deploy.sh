@@ -111,16 +111,21 @@ if ! ./verify.sh; then
             timeout=$((timeout + 1))
         done
 
+        if [ "$ready" == "false" ]; then
+            echo "timeout waiting for ODF deployment..."
+            exit 1
+        fi
 	if [ "${NUM_M}" -eq "3" ];
 	then
         sleep 30
         oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
     fi
-
-        if [ "$ready" == "false" ]; then
-            echo "timeout waiting for ODF deployment..."
-            exit 1
-        fi
+	if [ "${NUM_M}" -eq "1" ];
+	then
+		# By default the StorageCluster creates a Noobaa instances with a single volume of 50Gi for the
+		# pvPool. This is not enough for the mirror so we are increasing this number to 5
+		oc patch --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage BackingStore noobaa-default-backing-store --type json -p '[{"op": "add", "path": "/spec/pvPool/numVolumes", "value": 5}]'
+   	fi
     done
 fi
 echo ">>>>EOF"

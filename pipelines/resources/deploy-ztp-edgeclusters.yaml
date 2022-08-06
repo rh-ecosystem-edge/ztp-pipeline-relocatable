@@ -32,6 +32,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     workspaces:
       - name: ztp
         workspace: ztp
@@ -49,6 +51,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - pre-flight
     workspaces:
@@ -68,6 +72,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-edgeclusters
     workspaces:
@@ -87,6 +93,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-icsp-edgeclusters-pre
     workspaces:
@@ -106,6 +114,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-metallb
     workspaces:
@@ -125,6 +135,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-metallb
     workspaces:
@@ -143,6 +155,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-workers
     workspaces:
@@ -162,6 +176,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-lso
     workspaces:
@@ -181,6 +197,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-odf
     workspaces:
@@ -200,6 +218,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-disconnected-registry
     workspaces:
@@ -219,6 +239,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-disconnected-registry
     workspaces:
@@ -238,6 +260,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - mirror-ocp-images
       - mirror-olm-images
@@ -258,6 +282,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-disconnected-registry-ps
     workspaces:
@@ -278,6 +304,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-icsp-edgeclusters-post
     workspaces:
@@ -297,6 +325,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - gpu-operator
     workspaces:

@@ -32,6 +32,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     workspaces:
       - name: ztp
         workspace: ztp
@@ -49,6 +51,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - pre-flight
     workspaces:
@@ -68,6 +72,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-edgeclusters
     workspaces:
@@ -87,6 +93,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-icsp-edgeclusters-pre
     workspaces:
@@ -107,6 +115,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-metallb
     workspaces:
@@ -126,6 +136,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-lvmo
     workspaces:
@@ -145,6 +157,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-lvmo
     workspaces:
@@ -164,8 +178,95 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-odf
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+    # Mirror ocp step in disconnected registry
+  - name: mirror-ocp-images
+    taskRef:
+      name: edgecluster-deploy-disconnected-registry-edgeclusters-ocp
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-disconnected-registry
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+    # Mirror olm in disconnected registry
+  - name: mirror-olm-images
+    taskRef:
+      name: edgecluster-deploy-disconnected-registry-edgeclusters-olm
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-disconnected-registry
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+    # Deploy Disconnected Registry Pull secret
+  - name: deploy-disconnected-registry-ps
+    taskRef:
+      name: edgecluster-deploy-disconnected-registry-edgeclusters-ps
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - mirror-ocp-images
+      - mirror-olm-images
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy ICSP Edge-clusters Post
+  - name: deploy-icsp-edgeclusters-post
+    taskRef:
+      name: edgecluster-deploy-icsp-edgeclusters-post
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-disconnected-registry-ps
     workspaces:
       - name: ztp
         workspace: ztp
@@ -183,8 +284,10 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
-      - deploy-disconnected-registry
+      - deploy-icsp-edgeclusters-post
     workspaces:
       - name: ztp
         workspace: ztp
