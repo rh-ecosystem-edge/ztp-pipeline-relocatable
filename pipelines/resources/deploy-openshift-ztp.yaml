@@ -111,3 +111,22 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
+
+  # Deploy  AAP for openshift-reflector
+  - name: deploy-openshift-ztp-reflector
+    taskRef:
+      name: contrib-openshift-ztp-reflector
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+    runAfter:
+      - contrib-openshift-ztp-gitea
+    workspaces:
+      - name: ztp
+        workspace: ztp
