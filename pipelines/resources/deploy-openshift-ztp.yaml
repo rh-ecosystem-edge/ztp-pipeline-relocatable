@@ -126,7 +126,7 @@ spec:
       - name: mock
         value: $(params.mock)
     runAfter:
-      - contrib-openshift-ztp-gitea
+      - deploy-openshift-ztp-gitea
     workspaces:
       - name: ztp
         workspace: ztp
