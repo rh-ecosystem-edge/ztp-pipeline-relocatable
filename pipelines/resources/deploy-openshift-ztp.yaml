@@ -49,8 +49,6 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
     runAfter:
       - pre-flight
     workspaces:
@@ -70,8 +68,6 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-acm
     workspaces:
@@ -91,8 +87,6 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-openshift-ztp-aap
     workspaces:
@@ -112,8 +106,6 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-openshift-ztp-argocd
     workspaces:
@@ -133,8 +125,6 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-openshift-ztp-gitea
     workspaces:
