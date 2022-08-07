@@ -12,14 +12,14 @@ if ./verify.sh; then
     echo ">>>> Deploy manifests to create template namespace in: HUB Cluster"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Extract Kubeconfig for HUB Cluster"
-     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-     helm 
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    helm 
     ##############################################################################
     # Here can be added other manifests to create the required resources
     ##############################################################################
 
-    #oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/01-namespace.yml
-    #sleep 2
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/01-namespace.yml
+    sleep 2
     #oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/02-catalogsource.yml
     #sleep 2
     #oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/03-subscription.yml
