@@ -23,7 +23,7 @@ if ./verify.sh; then
     sleep 2
     helm repo update
     sleep 2
-    helm upgrade --install reflector emberstack/reflector
+    helm upgrade --install reflector emberstack/reflector --namespace reflector
 
     ##############################################################################
     # End of customization
