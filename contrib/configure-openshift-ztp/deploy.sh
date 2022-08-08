@@ -19,7 +19,7 @@ if ./verify.sh; then
     ### TEMPORARY FIX: 
     yum install epel-next-release -y
     yum install ansible git python3-pip -y
-    ansible -v
+    ##ansible -v
     git clone https://github.com/Red-Hat-SE-RTO/openshift-ztp.git
     cd openshift-ztp
     pip3 install -r ./requirements.txt
