@@ -18,7 +18,7 @@ if [[ $(oc get ns | grep argocd | wc -l) -eq 0 || $(oc get ArgoCD -n argocd --no
 elif [[ $(oc get pod -n argocd | grep -i running | wc -l) -eq $(oc get pod -n argocd | grep -v NAME | wc -l) ]]; then
     #All pods for ArgoCD running...Skipping the step to create it
     exit 1
-elif [[ $(oc get multiclusterhub multiclusterhub -n open-cluster-management | grep Running | wc -l) -eq 0]]; then
+elif [[ $(oc get multiclusterhub multiclusterhub -n open-cluster-management | grep Running | wc -l) -eq 0 ]]; then
     #All pods for DUMMY running...Skipping the step to create it
     echo "A multiclusterhub is not running"
     exit 1
