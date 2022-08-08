@@ -117,7 +117,12 @@ This new user account is granted `cluster-admin` privileges and should be used r
 
 .. In the **Ingress** screen assign the IP address that will be used for new routes and traffic managed by the ingress controller. A default value is assigned but you are free to update this.
 
-.. Optional: Under Domain create unique URLs for the setup and console URLs for your edge cluster.
+.. Optional: Change the domain name. This will create unique setup and console URLs for your edge cluster.
++
+[NOTE]
+====
+The new and the old domain names should be both properly configured in DNS.
+====
 
 .. Click **Download** in the **SSH** screen and download the edge cluster private SSH key.
 +
