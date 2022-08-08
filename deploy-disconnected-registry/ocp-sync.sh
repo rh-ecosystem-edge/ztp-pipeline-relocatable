@@ -18,7 +18,7 @@ function extract_kubeconfig() {
     ## Extract the Edge-cluster kubeconfig and put it on the shared folder
     export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
     echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${EDGE_KUBECONFIG}
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n $edgecluster secret/$edgecluster-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
 }
 
 function mirror_ocp() {

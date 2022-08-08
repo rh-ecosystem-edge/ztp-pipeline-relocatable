@@ -353,9 +353,7 @@ if [ -z ${KUBECONFIG+x} ]; then
 fi
 
 if [[ ! -f ${KUBECONFIG} && -f "/run/secrets/kubernetes.io/serviceaccount/token" ]]; then
-    if [ -z "${KUBECONFIG+x}" ]; then
-        export KUBECONFIG="${OUTPUTDIR}/kubeconfig"
-    fi
+    export KUBECONFIG="${OUTPUTDIR}/kubeconfig-hub"
     echo "Kubeconfig file doesn't exist: creating one from token"
     oc config set-credentials edgeclusters-deployer --token=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
 elif [[ ! -f ${KUBECONFIG} ]]; then
