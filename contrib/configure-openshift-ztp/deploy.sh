@@ -16,8 +16,9 @@ if ./verify.sh; then
     ##############################################################################
     # Here can be added other manifests to create the required resources
     ##############################################################################
-
-    pip install ansible 
+    ### TEMPORARY FIX: 
+    dnf install -y python3-pip 
+    pip3 install ansible 
     ansible -v
 
     ##############################################################################
