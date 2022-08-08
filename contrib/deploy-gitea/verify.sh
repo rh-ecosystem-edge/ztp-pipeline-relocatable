@@ -18,6 +18,10 @@ if [[ $(oc get ns | grep gitea | wc -l) -eq 0 || $(oc get Gitea -n gitea --no-he
 elif [[ $(oc get pod -n gitea | grep -i running | wc -l) -eq $(oc get pod -n gitea | grep -v NAME | wc -l) ]]; then
     #All pods for Gitea running...Skipping the step to create it
     exit 1
+elif [[ $(oc get multiclusterhub multiclusterhub -n open-cluster-management | grep Running | wc -l) -eq 0]]; then
+    #All pods for DUMMY running...Skipping the step to create it
+    echo "A multiclusterhub is not running"
+    exit 1
 else
     #Some pods are failing...Stop pipe to solve it  #TODO this scenario we should remove the subscription and destroy everything and relaunch again
     exit 50
