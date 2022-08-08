@@ -33,12 +33,12 @@ if ./verify.sh; then
     ## Install needed Ansible Collections
     ansible-galaxy collection install -r ./collections/requirements.yml
 
-    ## Configure the Hub cluster Operators and Workloads, namely RHACM, AAP2, and RH GitOps (ArgoCD)
-    ansible-playbook ansible/2_configure.yaml \
-    -e configure_rhacm=true \
-    -e configure_aap2_controller=true \
-    -e configure_rh_gitops=true \
-    -e pull_secret_path="${PULL_SECRET}" -e 'ansible_python_interpreter=/usr/bin/python3'  -vv
+    ## Create credentials for vSphere Infrastructure, Pull Secret, Git credentials, etc
+    ansible-playbook \
+    -e vcenter_username="administrator@vsphere.local" \
+    -e vcenter_password='somePass!' \
+    -e vcenter_fqdn="vcenter.example.com" \
+    ansible/3_create_credentials.yaml -e 'ansible_python_interpreter=/usr/bin/python3'  -vv
 
 
     ##############################################################################
