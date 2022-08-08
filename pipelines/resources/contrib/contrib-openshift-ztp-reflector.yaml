@@ -12,6 +12,9 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
+    - name: pipeline-name
+      type: string
+      default: $(context.taskRun.name)
     - name: kubeconfig
       type: string
       default: ""
