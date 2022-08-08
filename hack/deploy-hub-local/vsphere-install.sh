@@ -10,3 +10,10 @@
 export DISCONNECT_INSTALL=false
 
 tkn pipeline start -n edgecluster-deployer  -p ztp-container-image="quay.io/takinosh/pipeline:vsphere"  -p edgeclusters-config="$(cat edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w name=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-openshift-ztp
+
+
+# TESTING
+# make all-images
+# podman 
+
+# podman rmi $(podman images | grep none | awk '{print $3}')
