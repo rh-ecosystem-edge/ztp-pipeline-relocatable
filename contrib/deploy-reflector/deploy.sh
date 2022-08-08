@@ -25,6 +25,9 @@ if ./verify.sh; then
     helm repo update --namespace reflector
     sleep 2
     helm upgrade --install reflector emberstack/reflector --namespace reflector
+    sleep 2
+    oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/02-rolebinding.yml
+
 
     ##############################################################################
     # End of customization
