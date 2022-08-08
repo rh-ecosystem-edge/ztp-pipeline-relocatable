@@ -28,6 +28,7 @@ if ./verify.sh; then
     cd openshift-ztp
     ## Install needed pip modules
     pip3 install -r ./requirements.txt
+    pip3 install kubernetes openshift
 
     ## Install needed Ansible Collections
     ansible-galaxy collection install -r ./collections/requirements.yml
