@@ -17,9 +17,14 @@ if ./verify.sh; then
     # Here can be added other manifests to create the required resources
     ##############################################################################
     ### TEMPORARY FIX: 
-    dnf install -y python3-pip 
-    pip3 install ansible 
+    sudo yum install epel-next-release
+    sudo yum install ansible git python3-pip
     ansible -v
+    git clone https://github.com/Red-Hat-SE-RTO/openshift-ztp.git
+    cd openshift-ztp
+    pip3 install -r ./requirements.txt
+
+
 
     ##############################################################################
     # End of customization
