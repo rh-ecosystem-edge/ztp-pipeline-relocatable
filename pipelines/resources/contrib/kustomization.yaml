@@ -5,3 +5,4 @@ resources:
   - contrib-openshift-ztp-argocd.yaml
   - contrib-openshift-ztp-gitea.yaml
   - contrib-openshift-ztp-reflector.yaml
+  - contrib-configure-openshift-ztp.yaml

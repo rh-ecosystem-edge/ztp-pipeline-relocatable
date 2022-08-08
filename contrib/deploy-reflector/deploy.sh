@@ -13,19 +13,17 @@ if ./verify.sh; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Extract Kubeconfig for HUB Cluster"
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-    helm 
     ##############################################################################
     # Here can be added other manifests to create the required resources
     ##############################################################################
 
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/01-namespace.yml
     sleep 2
-    #oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/02-catalogsource.yml
-    #sleep 2
-    #oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/03-subscription.yml
-    #sleep 2
-    #check_resource "crd" "giteas.gpte.opentlc.com" "Established" "gitea" "${KUBECONFIG_HUB}"
-    #oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/04-instance.yml
+    helm repo add emberstack https://emberstack.github.io/helm-charts
+    sleep 2
+    helm repo update
+    sleep 2
+    helm upgrade --install reflector emberstack/reflector
 
     ##############################################################################
     # End of customization

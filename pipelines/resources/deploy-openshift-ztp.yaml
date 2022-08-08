@@ -101,7 +101,7 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy  AAP for openshift-ztp
+  # Deploy  Gitea for openshift-ztp
   - name: deploy-openshift-ztp-gitea
     taskRef:
       name: contrib-openshift-ztp-gitea
@@ -122,7 +122,7 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy  AAP for openshift-reflector
+  # Deploy  Reflector for openshift-reflector
   - name: deploy-openshift-ztp-reflector
     taskRef:
       name: contrib-openshift-ztp-reflector
@@ -139,6 +139,27 @@ spec:
         value: $(context.pipelineRun.name)
     runAfter:
       - deploy-openshift-ztp-gitea
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Configure openshift-ztp via ansible
+  - name: deploy-configure-openshift-ztp
+    taskRef:
+      name: contrib-configure-openshift-ztp
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-openshift-ztp-reflector
     workspaces:
       - name: ztp
         workspace: ztp
