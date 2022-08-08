@@ -38,7 +38,7 @@ if ./verify.sh; then
     -e configure_rhacm=true \
     -e configure_aap2_controller=true \
     -e configure_rh_gitops=true \
-    -e pull_secret_path="${PULL_SECRET}" 
+    -e pull_secret_path="${PULL_SECRET}" -e 'ansible_python_interpreter=/usr/bin/python3'
 
 
     ##############################################################################
