@@ -68,8 +68,8 @@ function trust_internal_registry() {
     if [[ ${1} == 'hub' ]]; then
         KBKNFG=${KUBECONFIG_HUB}
         clus="hub"
-        MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry -o jsonpath='{.spec.host}')
-    elif [[ ${1} == 'edgecluster' ]]; then
+		MYREGISTRY="$(oc get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
+	elif [[ ${1} == 'edgecluster' ]]; then
         KBKNFG=${EDGE_KUBECONFIG}
         clus=${2}
         MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry-quay -o jsonpath='{.spec.host}')
@@ -85,10 +85,11 @@ function trust_internal_registry() {
 
     ## Update trusted CA from Helper
     #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
-    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
-        export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
-    else
+    if [[ ${CUSTOM_REGISTRY} == "true" ]] $$ [[ "${1}" == "hub"  ]]; then
         export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')
+    else
+		export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+
     fi
     echo ">> Cert: ${PATH_CA_CERT}"
 
@@ -103,6 +104,25 @@ function trust_internal_registry() {
 
     oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry -n openshift-config --from-file=${MYREGISTRY}=${PATH_CA_CERT}
     oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry"}}}' --type=merge
+
+}
+
+function get_external_registry_cert() { 
+    KBKNFG=${EDGE_KUBECONFIG}
+    echo "INFO: Getting external registry cert"
+    export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')
+
+    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/external-registry-edge.crt"
+    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
+    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/external-registry-edge.crt"
+
+    update-ca-trust extract
+
+    echo "INFO: updating openthift config with new certifecate"
+
+    MYREGISTRY=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
+    oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry-external -n openshift-config --from-file=${MYREGISTRY}=${PATH_CA_CERT}
+    oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry-external"}}}' --type=merge
 
 }
 

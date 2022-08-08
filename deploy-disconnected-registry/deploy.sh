@@ -284,6 +284,9 @@ elif [[ ${1} == 'edgecluster' ]]; then
 
         # Verify step
         if ! ./verify.sh 'edgecluster'; then
+            if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+                get_external_registry_cert
+            fi
             deploy_registry 'edgecluster' ${edgecluster}
             trust_internal_registry 'edgecluster' ${edgecluster}
 

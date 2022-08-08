@@ -116,7 +116,7 @@ EOF
 
 # add registry from env REGISTRY
 if [[ ! -z "${_REGISTRY}" ]]; then
-    yq e '.config.REGISTRY = strenv(REGISTRY)' -i "${CLUSTER_NAME}.yaml"
+    yq e ".config.REGISTRY = strenv(REGISTRY)" -i "${CLUSTER_NAME}.yaml"
 fi
 
 # Create header for ${_CLUSTER_NAME}.yaml
