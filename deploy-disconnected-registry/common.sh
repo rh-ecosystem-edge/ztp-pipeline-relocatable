@@ -85,7 +85,7 @@ function trust_internal_registry() {
 
     ## Update trusted CA from Helper
     #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
-    if [[ ${CUSTOM_REGISTRY} == "true" ]] $$ [[ "${1}" == "hub"  ]]; then
+    if [[ ${CUSTOM_REGISTRY} == "true" ]] && [[ "${1}" == "hub"  ]]; then
         export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')
     else
 		export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
