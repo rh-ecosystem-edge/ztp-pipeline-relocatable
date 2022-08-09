@@ -190,11 +190,28 @@ function deploy_registry() {
         echo ">>>>>>>>>>> https://${ROUTE}/api/v1/user/initialize "
         APIURL="https://${ROUTE}/api/v1/user/initialize"
 
-        # Call quay API to enable the dummy user
-        echo ">> Calling quay API to enable the user"
-        RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}')
+       #  # Call quay API to enable the dummy user
+       #  echo ">> Calling quay API to enable the user"
+       #  RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}')
 
-        # Show result on screen
+		echo ">> INFO: Creating Quay Creds"
+		QUAY_USER="dummy"
+		QUAY_PASS="dummy123"
+		QUAY_EMAIL="quayadmin@example.com"
+
+		DATA_JSON_PATH="${OUTPUTDIR}/quay-user-update.json"
+		cp "${WORKDIR}/deploy-disconnected-registry/quay-manifests/quay-user-update.json" "${DATA_JSON_PATH}"
+
+		sed -i "s/QUAY_USER/${QUAY_USER}/g" "${DATA_JSON_PATH}"
+		sed -i "s/QUAY_PASS/${QUAY_PASS}/g" "${DATA_JSON_PATH}"
+		sed -i "s/QUAY_EMAIL/${QUAY_EMAIL}/g" "${DATA_JSON_PATH}"
+
+		
+        # Call quay API to enable the dummy user
+        echo ">> INFO: Calling quay API to enable the user"
+        RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data "@${DATA_JSON_PATH}")
+        
+		# Show result on screen
         echo ${RESULT}
 
         # example
@@ -209,6 +226,19 @@ function deploy_registry() {
             echo ">> Creating organization ${organization}"
             curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"${organization}@redhat.com\"}"
         done
+
+		echo ">> INFO: updating pull secret" 
+		b64auth=$( echo "$QUAY_USER:$QUAY_PASS" | base64 )
+		AUTHSTRING="{\"$ROUTE\": {\"auth\": \"$b64auth\"}}"
+
+		echo ">> INFO: getting pull secret"
+		oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d > "${OUTPUTDIR}/origin-pullsecret.json"
+
+		echo ">> INFO: Creating updated pull secret"
+		jq ".auths += $AUTHSTRING" < "${OUTPUTDIR}/origin-pullsecret.json" > "${OUTPUTDIR}/updated-pull-secret.json"
+
+		echo ">> INFO: pushing openshift config" 
+		oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson="${OUTPUTDIR}/updated-pull-secret.json"
     fi
 
 }
