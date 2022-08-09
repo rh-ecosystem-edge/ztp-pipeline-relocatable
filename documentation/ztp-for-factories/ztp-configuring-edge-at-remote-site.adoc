@@ -133,7 +133,7 @@ You need this to access the nodes of the edge cluster.
 
 .. Click **Finish setup**.
 
-.. Selecting **OpenShift console** brings you direct to the web console.
+.. Clicking on **OpenShift console** button will take you the OpenShift web console of the edge cluster.
 
 .. Under **Settings** you have the option to change the values of the **API address**, **Ingress address** and the previously configured **Domain**.
 +
