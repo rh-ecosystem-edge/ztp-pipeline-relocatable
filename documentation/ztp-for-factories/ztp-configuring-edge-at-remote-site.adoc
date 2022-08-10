@@ -124,7 +124,7 @@ This new user account is granted `cluster-admin` privileges and should be used r
 The new and the old domain names should be both properly configured in DNS.
 ====
 
-.. Click **Download** in the **SSH** screen and download the edge cluster private SSH key.
+.. Click **Download** in the **Download your private SSH key** screen and download the edge cluster private SSH key.
 +
 [NOTE]
 ====
