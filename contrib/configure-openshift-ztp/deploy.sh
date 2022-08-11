@@ -38,6 +38,7 @@ if ./verify.sh; then
     YOUR_OSC_SECRET_KEY=$( oc -n edgecluster-deployer get secret openshift-zip-configs  -o jsonpath="{.data.AWS_SECRET_ACCESS_KEY}" | base64 --decode)
     curl -OL https://raw.githubusercontent.com/tosin2013/openshift-4-deployment-notes/master/aws/configure-aws-cli.sh
     chmod +x configure-aws-cli.sh 
+    export SKIP_CHECK_CALLER_IDENTITY="true"
     ./configure-aws-cli.sh -i ${YOUR_OSC_ACCESS_KEY} ${YOUR_OSC_SECRET_KEY} us-east-1
     aws --endpoint-url  https://s3-openshift-storage.apps.rto.tosins-cloudlabs.com/ s3 ls
     aws  --endpoint-url  https://s3-openshift-storage.apps.rto.tosins-cloudlabs.com/ s3 cp  s3://openshift-zip-configs/manifest_tower-dev_20220811T151908Z.zip .
