@@ -41,15 +41,18 @@ if ./verify.sh; then
     export SKIP_CHECK_CALLER_IDENTITY="true"
     ./configure-aws-cli.sh -i ${YOUR_OSC_ACCESS_KEY} ${YOUR_OSC_SECRET_KEY} us-east-1
     aws --endpoint-url  https://s3-openshift-storage.apps.rto.tosins-cloudlabs.com/ s3 ls
-    aws  --endpoint-url  https://s3-openshift-storage.apps.rto.tosins-cloudlabs.com/ s3 cp  s3://openshift-zip-configs/manifest_tower-dev_20220811T151908Z.zip .
+    aws  --endpoint-url  https://s3-openshift-storage.apps.rto.tosins-cloudlabs.com/ s3 cp  s3://openshift-zip-configs/manifest_tower-dev_20220811T151908Z.zip ${OUTPUTDIR}/manifest_tower-dev_20220811T151908Z.zip
 
     ## Configure the Hub cluster Operators and Workloads, namely RHACM, AAP2, and RH GitOps (ArgoCD)
+    ls -lath ${OUTPUTDIR}
+    sleep 5s
+
     ansible-playbook ansible/2_configure.yaml \
     -e configure_rhacm=true \
     -e configure_aap2_controller=true \
     -e configure_rh_gitops=true \
-    -e pull_secret_path="${PULL_SECRET}" -e 'ansible_python_interpreter=/usr/bin/python3'  
-    -e subscription_manifest_path=manifest_tower-dev_20220811T151908Z.zip -vv
+    -e pull_secret_path="${PULL_SECRET}" -e 'ansible_python_interpreter=/usr/bin/python3'  \
+    -e subscription_manifest_path=${OUTPUTDIR}/manifest_tower-dev_20220811T151908Z.zip -vv
 
 
     ##############################################################################
