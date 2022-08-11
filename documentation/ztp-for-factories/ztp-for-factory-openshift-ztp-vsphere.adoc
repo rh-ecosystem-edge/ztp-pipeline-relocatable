@@ -1,0 +1,118 @@
+[id="ztp-for-factory-openshift-ztp-vsphere"]
+= Troubleshooting
+include::modules/common-attributes.adoc[]
+:context: ztp-for-factory-openshift-ztp-vsphere
+
+toc::[]
+
+== Deploy Zero Touch Provisioning by the Southeast RTO Team - WIP 
+
+This repository houses assets for deploying OpenShift via ZTP (Zero-Touch Provisioning) to vSphere - other infrastructure platforms will be added as needed.
+
+This process is conducted via Red Hat Advanced Cluster Management ([RH]ACM) as a function of GitOps where clusters and their states and supporting automation are defined in a Git repository for end-to-end provisioning of OpenShift clusters, their governance, policies, and applications.
+https://github.com/Red-Hat-SE-RTO/openshift-ztp
+
+
+
+== Configure ZTP s3 for development 
+
+=== Create bucket
+```console
+$  export KUBECONFIG=/home/admin/kubeconfig
+$ oc project edgecluster-deployer
+$ cat >thanos-object-bucket.yaml<<EOF
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: openshift-zip-configs
+  namespace: edgecluster-deployer
+  finalizers:
+    - objectbucket.io/finalizer
+  labels:
+    app: noobaa
+    bucket-provisioner: openshift-storage.noobaa.io-obc
+    noobaa-domain: openshift-storage.noobaa.io
+spec:
+  additionalConfig:
+    bucketclass: noobaa-default-bucket-class
+  objectBucketName: openshift-zip-configs
+  bucketName: openshift-zip-configs
+  storageClassName: openshift-storage.noobaa.io
+EOFopenshift-storage
+$ oc create -f thanos-object-bucket.yaml
+```
+
+```console
+YOUR_OSC_ACCESS_KEY=$( oc -n edgecluster-deployer get secret openshift-zip-configs  -o jsonpath="{.data.AWS_ACCESS_KEY_ID}" | base64 --decode)
+YOUR_OSC_SECRET_KEY=$( oc -n edgecluster-deployer get secret openshift-zip-configs  -o jsonpath="{.data.AWS_SECRET_ACCESS_KEY}" | base64 --decode)
+```
+
+
+```console
+curl -OL https://raw.githubusercontent.com/tosin2013/openshift-4-deployment-notes/master/aws/configure-aws-cli.sh
+chmod +x configure-aws-cli.sh 
+./configure-aws-cli.sh -h
+./configure-aws-cli.sh [OPTION]
+
+ Options:
+  -i, --install     Install awscli latest binaries
+  -d, --delete      Remove awscli
+  -h, --help        Display this help and exit
+
+  USAGE: ./configure-aws-cli.sh -i aws_access_key_id aws_secret_access_key aws_region
+
+
+$ ./configure-aws-cli.sh -i ${YOUR_OSC_ACCESS_KEY} ${YOUR_OSC_SECRET_KEY} us-east-1
+$ aws --endpoint-url  https://s3-openshift-storage.apps.rto.tosins-cloudlabs.com/ s3 ls
+2022-08-11 11:12:15 openshift-zip-configs
+$  aws s3 cp /tmp/ s3://openshift-zip-configs
+$ aws --endpoint-url  https://s3-openshift-storage.apps.rto.tosins-cloudlabs.com/ s3 cp /tmp/manifest_tower-dev_20220811T151908Z.zip s3://openshift-zip-configs/manifest_tower-dev_20220811T151908Z.zip
+```
+
+Sample edgeclusters.yaml 
+```
+config:
+  OC_OCP_VERSION: "4.10.18"
+  OC_ACM_VERSION: "2.5"
+  OC_OCS_VERSION: "4.10"
+  vcenter_credential_secret_name: "loe-rdu-vcenter-credentials"
+  pull_secret_secret_name: ztp-deployment-pull-secret
+  cluster_type: sno
+  cluster_name: sno-ocp
+  base_domain: lab.kemo.network
+  cluster_location: loe-rdu
+  source_git_repo: https://gitea-gitea.apps.core-ocp.lab.kemo.network/user-1/openshift-ztp.git
+  git_push_credentials_secret_name: "ztp-git-push-credentials"
+  cluster_node_network_ipam: "dhcp"
+  cluster_node_cidr: "192.168.42.0/24"
+  vcenter_datacenter: LabDC
+  vcenter_cluster: LabCluster
+  vcenter_datastore: nvme
+  vcenter_network: VMNetwork
+  #vsphere_iso_folder: OptionalFolderForISOs # defaults to /ISOs
+  #vsphere_vm_folder: OptionalFolderForVMs # defaults to the cluster_name
+  template_secrets: true
+  manifest_tower_license: manifest_tower-dev_20220811T151908Z.zip
+
+edgeclusters:
+
+# used in the Openshift ZTP repo
+cluster_nodes:
+  - name: sno-white
+    type: sno-node
+    vm:
+      # resource_pool is optional, define a Resource Pool for the VM
+      #resource_pool: vsphere-cluster-rp
+      cpu_cores: 8
+      cpu_sockets: 1
+      cpu_threads: 1
+      memory: 65536
+      disks:
+        - size: 240
+          name: boot
+    network:
+      interfaces:
+        - name: ens192
+          mac_address: 00:50:56:68:47:10
+          dhcp: true
+```
