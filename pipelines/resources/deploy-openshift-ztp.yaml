@@ -163,3 +163,24 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
+
+  # Configure vsphere credentials via ansible
+  - name: configure-vsphere-credentials-on-openshift-ztp
+    taskRef:
+      name: contrib-credentials-openshift-ztp
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-configure-openshift-ztp
+    workspaces:
+      - name: ztp
+        workspace: ztp
