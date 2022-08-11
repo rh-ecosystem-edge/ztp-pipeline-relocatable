@@ -14,6 +14,6 @@ tkn pipeline start -n edgecluster-deployer  -p ztp-container-image="quay.io/taki
 
 # TESTING
 # make all-images
-# podman 
-
+# podman run -it quay.io/takinosh/pipeline:vsphere bash 
+# podman rmi quay.io/takinosh/pipeline:vsphere
 # podman rmi $(podman images | grep none | awk '{print $3}')
