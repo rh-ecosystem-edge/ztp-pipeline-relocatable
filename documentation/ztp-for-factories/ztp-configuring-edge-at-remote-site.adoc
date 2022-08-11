@@ -117,9 +117,14 @@ This new user account is granted `cluster-admin` privileges and should be used r
 
 .. In the **Ingress** screen assign the IP address that will be used for new routes and traffic managed by the ingress controller. A default value is assigned but you are free to update this.
 
-.. Optional: Under Domain create unique URLs for the setup and console URLs for your edge cluster.
+.. Optional: Enter the name of base domain for your edge cluster (e.g. yourdomain.com)
++
+[NOTE]
+====
+The new and the old domain names should be both properly configured in DNS.
+====
 
-.. Click **Download** in the **SSH** screen and download the edge cluster private SSH key.
+.. Click **Download** in the **Download your private SSH key** screen and download the edge cluster private SSH key.
 +
 [NOTE]
 ====
@@ -128,7 +133,7 @@ You need this to access the nodes of the edge cluster.
 
 .. Click **Finish setup**.
 
-.. Selecting **OpenShift console** brings you direct to the web console.
+.. Clicking on **OpenShift console** button will take you the OpenShift web console of the edge cluster.
 
 .. Under **Settings** you have the option to change the values of the **API address**, **Ingress address** and the previously configured **Domain**.
 +
@@ -141,7 +146,7 @@ At this stage you will not be prompted for a username and password as you are al
 
 . Log in to the cluster again.
 
-. Select the newly created identity provider `ztpfw-htpassd-idp`.
+. Select the newly created identity provider `ztpfw-htpasswd-idp`.
 
 . In the cluster log in screen enter the `username` and `password` created in step 8a.
 
