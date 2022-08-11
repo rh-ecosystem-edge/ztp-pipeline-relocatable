@@ -94,6 +94,7 @@ PLATFORM_TYPE=$(oc get Infrastructure cluster -o jsonpath='{.spec.platformSpec.t
 echo ">>>> Platform type: ${PLATFORM_TYPE}"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
 
+# Check for BareMetal As a Platform as well
 if [[ $(oc get nodes | grep -i ready | wc -l) -ne 1 ]] && [[ $(oc get nodes | grep -i ready | wc -l) -ne 3 ]] && [[ $PLATFORM_TYPE == "None" ]]; then
     echo "Error: Nodes are not ready"
     exit 1
