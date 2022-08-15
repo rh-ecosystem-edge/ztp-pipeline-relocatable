@@ -23,7 +23,7 @@ The pipeline arguments and flags are described in the following tables.
 |Pipeline general timeout.
 
 | `--use-param-defaults`
-| Sets default values for not specified params.
+| Sets default values for not specified params. You can get the list of params by running `oc get pipeline <PIPELINE NAME> -o jsonpath='{range .spec.params[*]}{.name}{"\n"}{end}'`.
 
 | `-w`
 |The workspace parameter sets where {product-title} pipelines hold the files during every step. Do not use EmptyDir. The best choice is `name=ztp,claimName=ztp-pvc`. The persistent volume claim  is created during the `bootstrap.sh` execution. It does not need more than 5Gb.
