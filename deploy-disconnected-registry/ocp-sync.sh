@@ -107,10 +107,7 @@ elif [[ ${1} == 'edgecluster' ]]; then
             oc --kubeconfig=${EDGE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
             ## Logging into the Source and Destination registries
-            ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-            ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
-            ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-            ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+			registry_login ${SOURCE_REGISTRY} 
             mirror_ocp 'edgecluster' ${edgecluster}
         else
             echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"

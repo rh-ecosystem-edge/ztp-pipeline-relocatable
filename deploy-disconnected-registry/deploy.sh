@@ -195,21 +195,21 @@ function deploy_registry() {
        #  RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}')
 
 		echo ">> INFO: Creating Quay Creds"
-		QUAY_USER="dummy"
-		QUAY_PASS="dummy123"
-		QUAY_EMAIL="quayadmin@example.com"
+		export REG_US="dummy"
+		export REG_PASS="dummy123"
+		export REG_EMAIL="quayadmin@example.com"
 
 		DATA_JSON_PATH="${OUTPUTDIR}/quay-user-update.json"
 		cp "${WORKDIR}/deploy-disconnected-registry/quay-manifests/quay-user-update.json" "${DATA_JSON_PATH}"
 
-		sed -i "s/QUAY_USER/${QUAY_USER}/g" "${DATA_JSON_PATH}"
-		sed -i "s/QUAY_PASS/${QUAY_PASS}/g" "${DATA_JSON_PATH}"
-		sed -i "s/QUAY_EMAIL/${QUAY_EMAIL}/g" "${DATA_JSON_PATH}"
+		sed -i "s/QUAY_USER/${REG_US}/g" "${DATA_JSON_PATH}"
+		sed -i "s/QUAY_PASS/${REG_PASS}/g" "${DATA_JSON_PATH}"
+		sed -i "s/QUAY_EMAIL/${REG_EMAIL}/g" "${DATA_JSON_PATH}"
 
 		
         # Call quay API to enable the dummy user
         echo ">> INFO: Calling quay API to enable the user"
-        RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data "@${DATA_JSON_PATH}")
+        RESULT=$(curl -s -X POST -k ${APIURL} --header 'Content-Type: application/json' --data "@${DATA_JSON_PATH}")
         
 		# Show result on screen
         echo ${RESULT}
@@ -228,7 +228,7 @@ function deploy_registry() {
         done
 
 		echo ">> INFO: updating pull secret" 
-		b64auth=$( echo "$QUAY_USER:$QUAY_PASS" | base64 )
+		b64auth=$( echo "$REG_US:$REG_PASS" | base64 )
 		AUTHSTRING="{\"$ROUTE\": {\"auth\": \"$b64auth\"}}"
 
 		echo ">> INFO: getting pull secret"
