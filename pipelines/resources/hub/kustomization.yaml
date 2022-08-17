@@ -5,4 +5,5 @@ resources:
   - hub-deploy-httpd-server.yaml
   - hub-deploy-hub-config.yaml
   - hub-deploy-icsp.yaml
+  - hub-deploy-lvmo.yaml
   - hub-save-config.yaml

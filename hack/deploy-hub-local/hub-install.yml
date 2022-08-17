@@ -9,3 +9,7 @@ network: bare-net
 metal3: true
 api_ip: 192.168.150.253
 ingress_ip: 192.168.150.252
+extra_disks:
+- size: 300
+- size: 300
+- size: 300
