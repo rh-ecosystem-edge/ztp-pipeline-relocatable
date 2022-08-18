@@ -10,7 +10,6 @@ PULL_SECRET ?= ${HOME}/openshift_pull.json
 OCP_VERSION ?= 4.10.20
 ACM_VERSION ?= 2.5
 ODF_VERSION ?= 4.10
-REGISTRY ?= ""
 
 
 ifneq ($(TAG),)
