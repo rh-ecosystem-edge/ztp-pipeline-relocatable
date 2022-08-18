@@ -136,7 +136,8 @@ You need this to access the nodes of the edge cluster.
 [NOTE]
 ====
 This will initiate the process of applying changes to the edge cluster. It might take several minutes for the cluster to reconcile.
-Upon success you should get to a page with "Setup complete!" at the top.
+If the domain name was not changed, then upon success you should get to a page with "Setup complete!" at the top.
+In case the domain name was changed, you will be redirected to the edge-cluster-setup page of the new domain, where you will have to login agan.
 ====
 
 .. Clicking on **OpenShift console** button will take you the OpenShift web console of the edge cluster.
