@@ -122,6 +122,9 @@ This new user account is granted `cluster-admin` privileges and should be used r
 [NOTE]
 ====
 The new and the old domain names should be both properly configured in DNS.
+Aditional screen will be displayed for chosing how to create certificates for the new domain.
+When **Automatic** method is selected (default), then all the certificates will be automatically generated and assigned.
+If **Manual** method is selected, then we can chose between uploading or automatically generating specific certificates.
 ====
 
 .. Click **Download** in the **Download your private SSH key** screen and download the edge cluster private SSH key.
