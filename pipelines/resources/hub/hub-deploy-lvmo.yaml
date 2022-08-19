@@ -1,25 +1,24 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: common-pre-flight
+  name: hub-deploy-lvmo
   annotations:
     description: |
-      This task will execute a quick check of some pre-requirements, like binaries, files, etc...
+      This task will deploy LVMO on the SNO Hub cluster Cluster.
 spec:
   workspaces:
     - name: ztp
-      optional: true
   params:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
-    - name: edgeclusters-config
+    - name: kubeconfig
       type: string
       default: ""
     - name: pipeline-name
       type: string
       default: $(context.taskRun.name)
-    - name: kubeconfig
+    - name: edgeclusters-config
       type: string
       default: ""
     - name: mock
@@ -31,27 +30,28 @@ spec:
         value: "/workspace/ztp/$(params.pipeline-name)"
       - name: OUTPUTDIR
         value: "/workspace/ztp/$(params.pipeline-name)/build/$(context.taskRun.name)"
-      - name: KUBECONFIG
-        value: $(params.kubeconfig)
       - name: EDGECLUSTERS_CONFIG
         value: $(params.edgeclusters-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_LVMO_DIR
+        value: "deploy-lvmo"
       - name: SHARED_DIR
         value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: common-pre-flight
+    - name: deploy-lvmo
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          mkdir -p ${WORKDIR}
           mkdir -p ${OUTPUTDIR}
-          cp -r /opt/ztp/* ${WORKDIR}/
-          cd ${WORKDIR}/${SHARED_DIR}
-          ./verify_preflight.sh
+          export WORKDIR=/opt/ztp
+          cd /opt/ztp/${DEPLOY_LVMO_DIR}
+          ./deploy-hub.sh
         else
-          echo "Common Preflight Hub: Mock mode on"
+          echo "Deploy LVMO: Mock mode on"
         fi
