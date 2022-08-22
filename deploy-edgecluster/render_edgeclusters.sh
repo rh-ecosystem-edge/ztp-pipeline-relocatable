@@ -37,6 +37,7 @@ create_edgecluster_definitions() {
     export NUM_M=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
 
     # Generic vars for all edgeclusters
+    export CHANGE_AUTO_DNS="true"
     export CHANGE_MACHINE_CIDR=192.168.7.0/24
     export CHANGE_EDGE_PULL_SECRET_NAME=pull-secret-edgecluster-cluster
     export CHANGE_PULL_SECRET=$(cat "${PULL_SECRET}")
@@ -56,6 +57,18 @@ create_edgecluster_definitions() {
     # Set vars
     export CHANGE_EDGE_NAME=${cluster}
     grab_api_ingress ${cluster}
+    export CHANGE_NETWORK_CONFIGS_OVERRIDE=$(yq eval ".network_override" ${EDGECLUSTERS_FILE} | awk '{ print "   " $0 }')
+
+    if [[ ${CHANGE_NETWORK_CONFIGS_OVERRIDE} == "   null" ]];
+    then
+        export CHANGE_NETWORK_CONFIGS_OVERRIDE=""
+    fi
+
+    if [[ echo ${CHANGE_NETWORK_CONFIGS_OVERRIDE} | grep -q dns-resolver ]];
+    then
+        export CHANGE_AUTO_DNS="false"
+    fi
+
     export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
     export CHANGE_EDGE_MASTER_MGMT_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
     export DATA_PUB_INT_M0=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
@@ -282,6 +295,7 @@ metadata:
    nmstate_config_cluster_name: $CHANGE_EDGE_NAME
 spec:
  config:
+$CHANGE_NETWORK_CONFIGS_OVERRIDE
    interfaces:
      - name: $CHANGE_EDGE_MASTER_MGMT_INT
        type: ethernet
@@ -293,7 +307,7 @@ spec:
        ipv4:
          enabled: true
          dhcp: true
-         auto-dns: true
+         auto-dns: $CHANGE_AUTO_DNS
          auto-gateway: true
          auto-routes: true
        mtu: 1500
