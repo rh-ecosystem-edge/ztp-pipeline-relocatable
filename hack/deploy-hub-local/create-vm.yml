@@ -17,7 +17,7 @@ parameters:
 {% endif %}
   disks:
   - size: 120
-  - size: 200
+  - size: 300
 {% endfor %}
 {% endfor %}
 
@@ -35,5 +35,5 @@ parameters:
 {% endif %}
   disks:
   - size: 120
-  - size: 200
+  - size: 300 
 {% endfor %}

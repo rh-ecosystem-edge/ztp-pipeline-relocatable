@@ -173,8 +173,18 @@ function generate_rsa_edgecluster() {
     export RSA_PUB_FILE="${EDGE_SAFE_FOLDER}/${edgecluster}-rsa.key.pub"
 
     if [[ ! -f ${RSA_KEY_FILE} ]]; then
-        echo "RSA Key for Edge-cluster Cluster ${edgecluster} Not Found, creating one in ${EDGE_SAFE_FOLDER} folder"
-        ssh-keygen -b 4096 -t rsa -f ${RSA_KEY_FILE} -q -N ""
+        echo "RSA Key for Edge-cluster Cluster ${edgecluster} Not Found. Will create one in ${EDGE_SAFE_FOLDER} folder"
+
+        oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} secret/${cluster}-keypair >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo "Extracting the RSA key from a secret"
+            oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${cluster} secret/${cluster}-keypair --keys id_rsa.key --to - 2>/dev/null >${RSA_KEY_FILE}
+            chmod 600 ${RSA_KEY_FILE}
+            oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${cluster} secret/${cluster}-keypair --keys id_rsa.pub --to - 2>/dev/null >${RSA_PUB_FILE}
+        else
+            echo "Generating a new RSA key"
+            ssh-keygen -b 4096 -t rsa -f ${RSA_KEY_FILE} -q -N ""
+        fi
         echo "Checking RSA Keys generated..."
         if [[ ! -f ${RSA_KEY_FILE} || ! -f ${RSA_PUB_FILE} ]]; then
             echo "RSA Private or Public key not found"

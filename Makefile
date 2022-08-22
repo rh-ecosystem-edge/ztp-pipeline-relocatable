@@ -103,7 +103,7 @@ run-pipeline-task:
     			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
-    			-w name=ztp,claimName=ztp-pvc \
+			-w name=ztp,emptyDir="" \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
     			--use-param-defaults $(TASK) && \
@@ -115,6 +115,7 @@ deploy-pipe-hub-mce-sno:
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
 			-p kubeconfig=${KUBECONFIG} \
 			-w name=ztp,claimName=ztp-pvc \
+			-w name=ephemeral,emptyDir="" \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
 			--use-param-defaults deploy-ztp-hub-mce  && \
