@@ -60,7 +60,7 @@ if ! ./verify.sh; then
         echo ">>>> Deploy manifests to install LSO and LocalVolume: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo "Extract Kubeconfig for ${edgecluster}"
-        extract_kubeconfig ${edgecluster}
+        extract_kubeconfig_common ${edgecluster}
         echo "Filling vars for ${edgecluster}"
         extract_vars ".edgeclusters[].${edgecluster}.master0.storage_disk"
         oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-Namespace.yaml
