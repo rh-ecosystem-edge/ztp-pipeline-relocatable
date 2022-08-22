@@ -117,9 +117,9 @@ if ! ./verify.sh; then
         fi
 	if [ "${NUM_M}" -eq "3" ];
 	then
-        sleep 30
-        oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-    fi
+            sleep 30
+            oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass ocs-storagecluster-ceph-rbd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+        fi
 	if [ "${NUM_M}" -eq "1" ];
 	then
 		# By default the StorageCluster creates a Noobaa instances with a single volume of 50Gi for the
