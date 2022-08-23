@@ -129,12 +129,11 @@ function recover_edgecluster_files() {
 }
 
 function store_rsa_secrets() {
-    # Function to save the RSA Key-Pair into the Hub
+    # Function to save the RSA Key-Pair into the Edge
     cluster=${1}
-    echo ">>>> Creating edgecluster cluster Keypair on Hub and Edge-cluster ${cluster} "
+    echo ">>>> Creating edgecluster cluster Keypair on Edge-cluster ${cluster} "
     echo ">> Secret name: ${cluster}-keypair"
     echo ">> Namespace: ${cluster}"
-    oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=id_rsa.key=${RSA_KEY_FILE} --from-file=id_rsa.pub=${RSA_PUB_FILE}
     oc --kubeconfig=${EDGE_KUBECONFIG} -n default create secret generic cluster-ssh-keypair --from-file=id_rsa.key=${RSA_KEY_FILE} --from-file=id_rsa.pub=${RSA_PUB_FILE}
 }
 
