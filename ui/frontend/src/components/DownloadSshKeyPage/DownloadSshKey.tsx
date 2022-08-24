@@ -50,7 +50,8 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
         console.error(e);
         setError({
           title: SSH_PRIVATE_KEY_SECRET_TITLE,
-          message: 'Failed to load secret with the ssh private key.',
+          message:
+            'Downloading the SSH key failed. You will not be able to SSH into the cluster nodes.',
         });
 
         // Do not let the user stuck in case of error
