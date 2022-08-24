@@ -12,3 +12,6 @@ export type ChangeDomainInputType = {
     [key: /* ~ domain */ string]: TlsCertificate;
   };
 };
+
+export type ValidateDomainAPIResult = { result: boolean };
+export type ValidateDomainAPIInput = { domain?: string };

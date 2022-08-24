@@ -13,8 +13,8 @@ The pipeline arguments and flags are described in the following tables.
 |===
 | Flag | Description
 
-| `-n`
-|{product-title} namespace where the resources are located.
+| `-n edgecluster-deployer`
+|{product-title} namespace where the resources are located. It is mandatory to use the edgecluster-deployer namespace.
 
 | `-p`
 | Pipeline parameter.
@@ -23,7 +23,7 @@ The pipeline arguments and flags are described in the following tables.
 |Pipeline general timeout.
 
 | `--use-param-defaults`
-| Specifies that apart from the parameters provided, the remainder use the default options.
+| Sets default values for not specified params. You can get the list of params by running `oc get pipeline <PIPELINE NAME> -o jsonpath='{range .spec.params[*]}{.name}{"\n"}{end}'`.
 
 | `-w`
 |The workspace parameter sets where {product-title} pipelines hold the files during every step. Do not use EmptyDir. The best choice is `name=ztp,claimName=ztp-pvc`. The persistent volume claim  is created during the `bootstrap.sh` execution. It does not need more than 5Gb.
@@ -48,10 +48,10 @@ The pipeline arguments and flags are described in the following tables.
 | Yes
 
 | `-w name=ztp,claimName=ztp-pvc`
-|It is mandatory to use this argument exactly as it’s shown here to have a successfull run. This declaration instructs Tekton to use the workspace `ztp` and that the content should be placed in the `ztp-pvc` persistent volume.
+|It is mandatory to use this argument exactly as it’s shown here to have a successful run. This declaration instructs Tekton to use the workspace `ztp` and that the content should be placed in the `ztp-pvc` persistent volume.
 |Yes
 
 | `Pipeline Name`
-|In the command examples, this is the last argument. This flag instructs Tekton to run the pipeline with the particular name. You can examine the executed pipelines and tasks with `tkn pr ls` and `tkn task ls` respectively.
+|In the command examples, this is the last argument. This flag instructs Tekton to run the pipeline with the particular name. You can examine the executed pipelines and tasks with `tkn pr ls` and `tkn tr ls` respectively.
 |Yes
 |===

@@ -1,5 +1,10 @@
-import { RouteKind } from '../common';
-import { PatchType, Route, RouteApiVersion } from '../frontend-shared';
+import {
+  PatchType,
+  Route,
+  RouteApiVersion,
+  RouteKind,
+  getBackupRouteName,
+} from '../frontend-shared';
 import { getClusterApiUrl, jsonDelete, jsonPatch, jsonPost, jsonRequest } from '../k8s';
 import { ListResult } from './types';
 
@@ -32,7 +37,7 @@ export const backupRoute = async (token: string, route: Route) => {
     return;
   }
 
-  const backupRouteName = `${name}-copy`;
+  const backupRouteName = getBackupRouteName(name);
   try {
     await jsonDelete<Route>(getRouteUrl(namespace, backupRouteName), token);
   } catch (e) {

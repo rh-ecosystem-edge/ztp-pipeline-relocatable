@@ -4,42 +4,36 @@ parameters:
   singlenic: true
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
-edgecluster{{ i }}-cluster-m{{ j }}:
+{{cluster_name}}{{ i }}-cluster-m{{ j }}:
   uefi_legacy: true
   start: false
   memory: 64000
   numcpus: 24
   nets:
   - name: bare-net
-    mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
 {% if not singlenic %}
   - name: ztpfw
     nic: enp2s0
-    mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
 {% endif %}
   disks:
   - size: 120
-  - size: 200
-    thin: False
+  - size: 300
 {% endfor %}
 {% endfor %}
 
 {% for i in range(0, clusters) %}
-edgecluster{{ i }}-cluster-w0:
+{{cluster_name}}{{ i }}-cluster-w0:
   uefi_legacy: true
   start: false
   memory: 16000
   numcpus: 12
   nets:
   - name: bare-net
-    mac: ee:ee:ee:0{{ i }}:0{{ i }}:0e
 {% if not singlenic %}
   - name: ztpfw
     nic: enp2s0
-    mac: aa:aa:aa:0{{ i }}:0{{ i }}:0a
 {% endif %}
   disks:
   - size: 120
-  - size: 200
-    thin: False
+  - size: 300 
 {% endfor %}

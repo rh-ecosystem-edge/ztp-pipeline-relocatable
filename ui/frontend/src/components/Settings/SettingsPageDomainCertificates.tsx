@@ -15,6 +15,10 @@ export const SettingsPageDomainCertificates: React.FC = () => {
     ],
   );
 
+  const helperText = isCertificateAutomatic
+    ? 'Choose whether you want to automatically generate and assign PEM certificates for your cluster domain.'
+    : undefined;
+
   return (
     <>
       <StackItem className="summary-page-sumamary__item">
@@ -22,7 +26,7 @@ export const SettingsPageDomainCertificates: React.FC = () => {
           fieldId="automatic"
           label="Domain certificate assignment"
           isRequired={true}
-          helperText="Choose whether you want to automatically generate and assign PEM certificates for your cluster domain."
+          helperText={helperText}
         >
           <AutomaticManualDecision
             isAutomatic={isCertificateAutomatic}

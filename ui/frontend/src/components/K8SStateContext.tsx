@@ -75,6 +75,7 @@ export const K8SStateContextProvider: React.FC<{
   const [originalDomain, setOriginalDomain] = React.useState<string>();
   const [domainValidation, setDomainValidation] =
     React.useState<K8SStateContextData['domainValidation']>();
+  const forceDomainValidation = setDomainValidation; /* We probably don't need anything more here */
   const handleSetDomain = React.useCallback(
     (newDomain: string) => {
       setDomainValidation(domainValidator(newDomain));
@@ -100,6 +101,11 @@ export const K8SStateContextProvider: React.FC<{
     },
     [customCertsValidation, customCerts, setCustomCerts],
   );
+
+  const clearCustomCertificates = React.useCallback(() => {
+    setCustomCerts({});
+    setCustomCertsValidation({});
+  }, []);
 
   const isAllValid = React.useCallback(() => {
     const result =
@@ -165,9 +171,11 @@ export const K8SStateContextProvider: React.FC<{
 
     domainValidation,
     handleSetDomain,
+    forceDomainValidation,
 
     customCertsValidation,
     setCustomCertificate,
+    clearCustomCertificates,
   };
 
   return <K8SStateContext.Provider value={value}>{children}</K8SStateContext.Provider>;

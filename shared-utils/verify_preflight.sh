@@ -118,14 +118,6 @@ if [[ $(oc get pod -n openshift-machine-api | wc -l) -lt 1 ]]; then
     exit 1
 fi
 
-echo ">>>> Verify the PV available"
-echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-if [[ $(oc get pv | wc -l) -lt 3 ]]; then
-    #TODO verify the PV size  and if does not exists, create it from disk
-    echo "Error: Persistent volumes not available in the hub"
-    exit 1
-fi
-
 echo ">>>> EOF"
 echo ">>>>>>>>"
 exit 0

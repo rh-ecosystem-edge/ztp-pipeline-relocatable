@@ -8,6 +8,7 @@ metadata:
 spec:
   workspaces:
     - name: ztp
+      optional: true
   params:
     - name: ztp-container-image
       type: string
@@ -15,6 +16,9 @@ spec:
     - name: edgeclusters-config
       type: string
       default: ""
+    - name: pipeline-name
+      type: string
+      default: $(context.taskRun.name)
     - name: kubeconfig
       type: string
       default: ""
@@ -24,7 +28,9 @@ spec:
   stepTemplate:
     env:
       - name: WORKDIR
-        value: "/workspace/ztp"
+        value: "/workspace/ztp/$(params.pipeline-name)"
+      - name: OUTPUTDIR
+        value: "/workspace/ztp/$(params.pipeline-name)/build/$(context.taskRun.name)"
       - name: KUBECONFIG
         value: $(params.kubeconfig)
       - name: EDGECLUSTERS_CONFIG
@@ -41,8 +47,9 @@ spec:
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
+          mkdir -p ${WORKDIR}
+          mkdir -p ${OUTPUTDIR}
           cp -r /opt/ztp/* ${WORKDIR}/
-          mkdir -p ${WORKDIR}/build
           cd ${WORKDIR}/${SHARED_DIR}
           ./verify_preflight.sh
         else

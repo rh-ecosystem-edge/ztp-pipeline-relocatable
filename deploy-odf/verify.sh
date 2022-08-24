@@ -20,27 +20,11 @@ source ${WORKDIR}/shared-utils/common.sh
 if [[ -z ${ALLEDGECLUSTERS} ]]; then
     ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
 fi
+export NUM_M=$(oc --kubeconfig=${EDGE_KUBECONFIG} get nodes --no-headers | grep master | wc -l)
 
 for edgecluster in ${ALLEDGECLUSTERS}; do
     echo "Extract Kubeconfig for ${edgecluster}"
     extract_kubeconfig ${edgecluster}
-    echo ">>>> Verifying LSO and LocalVolume: ${edgecluster}"
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "Check Pods..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} pod -n openshift-local-storage | grep -i running | wc -l) -ne $(oc --kubeconfig=${EDGE_KUBECONFIG} get pod -n openshift-local-storage --no-headers | grep -v Completed | wc -l) ]]; then
-        #odf in the edgecluster not exists so we need to create it
-        exit 1
-    fi
-
-    echo "Check LocalVolume..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} LocalVolume -n openshift-local-storage localstorage-disks-block --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
-    fi
-
-    echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc localstorage-sc-block --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
-    fi
 
     echo ">>>> Verifying ODF and StorageCluster: ${edgecluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -51,13 +35,25 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     fi
 
     echo "Check StorageCluster..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} StorageCluster -n openshift-storage ocs-storagecluster --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
+    if [ "${NUM_M}" -eq "3" ]; then
+        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} StorageCluster -n openshift-storage ocs-storagecluster --no-headers | wc -l) -ne 1 ]] ; then
+            exit 1
+        fi
+    else
+        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} StorageCluster -n openshift-storage mcg-storagecluster  --no-headers | wc -l) -ne 1 ]]; then
+            exit 1
+        fi
     fi
 
     echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc ocs-storagecluster-cephfs --no-headers | wc -l) -ne 1 ]]; then
-        exit 1
+    if [ "${NUM_M}" -eq "3" ]; then
+        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc ocs-storagecluster-ceph-rbd --no-headers | wc -l) -ne 1 ]] ; then
+            exit 1
+        fi
+    else
+        if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc openshift-storage.noobaa.io --no-headers | wc -l) -ne 1 ]] ; then
+            exit 1
+        fi
     fi
 done
 

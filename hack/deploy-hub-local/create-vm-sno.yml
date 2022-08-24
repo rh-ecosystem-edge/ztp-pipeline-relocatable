@@ -1,23 +1,23 @@
+{% set ips = cluster_ips.strip().split(" ") %}
+
 parameters:
   nodes: 1
   clusters: 2
   singlenic: true
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
-edgecluster{{ i }}-cluster-m{{ j }}:
+{{cluster_name}}{{ i }}-cluster-m{{ j }}:
   uefi_legacy: true
   start: false
   memory: 64000
   numcpus: 24
   nets:
   - name: bare-net
-    mac: ee:ee:ee:ee:{{ j }}{{ i }}:{{ j }}e
     reserveip: true
-    ip: 192.168.150.201
+    ip: {{ ips[i] }}
 {% if not singlenic %}
   - name: ztpfw
     nic: enp2s0
-    mac: aa:aa:aa:aa:{{ j }}{{ i }}:{{ j }}a
 {% endif %}
   disks:
   - size: 200

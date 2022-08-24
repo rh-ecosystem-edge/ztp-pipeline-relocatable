@@ -1,4 +1,10 @@
-import { ZTPFW_UI_ROUTE_PREFIX } from '../../copy-backend-common';
+import {
+  ZTPFW_UI_ROUTE_PREFIX,
+  ZTPFW_NAMESPACE,
+  getBackupRouteName,
+  ZTPFW_ROUTE_NAME,
+} from '../../copy-backend-common';
+import { deleteRoute } from '../../resources/Route';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
 import { K8SStateContextData } from '../types';
 import { bindOnBeforeUnloadPage, unbindOnBeforeUnloadPage } from '../utils';
@@ -100,8 +106,14 @@ export const persist = async (
       return;
     }
 
-    // delete route backup
-    // TODO
+    try {
+      // delete route backup - no more needed, the flow will be redirected to the new route (domain)
+      await deleteRoute({ name: getBackupRouteName(ZTPFW_ROUTE_NAME), namespace: ZTPFW_NAMESPACE })
+        .promise;
+    } catch (e) {
+      // ignore potential error, the backup route ight be missing, keep going
+      console.info('Attempt to delete backup route failed. This is not an issue. ', e);
+    }
 
     // Do it before onSuccess()
     unbindOnBeforeUnloadPage();

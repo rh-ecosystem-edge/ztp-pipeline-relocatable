@@ -32,9 +32,12 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     workspaces:
       - name: ztp
         workspace: ztp
+
 
   # Deploy HTTPD Server
   - name: deploy-httpd-server
@@ -49,6 +52,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - pre-flight
     workspaces:
@@ -68,6 +73,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-httpd-server
     workspaces:
@@ -87,6 +94,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-disconnected-registry
     workspaces:
@@ -106,6 +115,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-mce
     workspaces:
@@ -125,6 +136,8 @@ spec:
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
     runAfter:
       - deploy-icsp-hub
     workspaces:

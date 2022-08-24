@@ -133,6 +133,9 @@ function deploy_registry() {
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/service.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/pvc-registry.yaml
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${REGISTRY_MANIFESTS}/route.yaml
+        REGISTRY_URI="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+        oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} create configmap ztpfw-config -o yaml --from-literal=uri=$(echo ${REGISTRY_URI} | base64 ) 
+
     elif [[ ${1} == 'edgecluster' ]]; then
         TARGET_KUBECONFIG=${EDGE_KUBECONFIG}
         source ./common.sh ${1}
@@ -146,7 +149,20 @@ function deploy_registry() {
         # Create the registry deployment and wait for it
         echo ">> Creating the registry deployment"
         oc --kubeconfig=${TARGET_KUBECONFIG} -n ${REGISTRY} apply -f ${QUAY_MANIFESTS}/quay-operator.yaml
-        sleep 30
+		QUAY_STATUS=false
+		echo "INFO: waiting for Quay Operator to be ready ( 3 min )" 
+		for i in {1..18}
+		do
+			if [[ $(oc --kubeconfig=${TARGET_KUBECONFIG} get csv -n ${REGISTRY} -o jsonpath='{.items[*].status.phase}' 2>/dev/null ) == "Succeeded" ]]; then
+				QUAY_STATUS=True
+				break
+			fi
+			sleep 10
+		done
+		if [[ "${QUAY_STATUS}" == "false" ]]; then
+			echo "Error: Quay operator failed to start"
+			exit 1
+		fi
         QUAY_OPERATOR=$(oc --kubeconfig=${TARGET_KUBECONFIG} -n "${REGISTRY}" get deployment -o name | grep quay-operator | cut -d '/' -f 2)
         echo ">> Waiting for the registry deployment to be ready"
         check_resource "deployment" "${QUAY_OPERATOR}" "Available" "${REGISTRY}" "${TARGET_KUBECONFIG}"
@@ -174,11 +190,28 @@ function deploy_registry() {
         echo ">>>>>>>>>>> https://${ROUTE}/api/v1/user/initialize "
         APIURL="https://${ROUTE}/api/v1/user/initialize"
 
-        # Call quay API to enable the dummy user
-        echo ">> Calling quay API to enable the user"
-        RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}')
+       #  # Call quay API to enable the dummy user
+       #  echo ">> Calling quay API to enable the user"
+       #  RESULT=$(curl -X POST -k ${APIURL} --header 'Content-Type: application/json' --data '{ "username": "dummy", "password":"dummy123", "email": "quayadmin@example.com", "access_token": true}')
 
-        # Show result on screen
+		echo ">> INFO: Creating Quay Creds"
+		export REG_US="dummy"
+		export REG_PASS="dummy123"
+		export REG_EMAIL="quayadmin@example.com"
+
+		DATA_JSON_PATH="${OUTPUTDIR}/quay-user-update.json"
+		cp "${WORKDIR}/deploy-disconnected-registry/quay-manifests/quay-user-update.json" "${DATA_JSON_PATH}"
+
+		sed -i "s/QUAY_USER/${REG_US}/g" "${DATA_JSON_PATH}"
+		sed -i "s/QUAY_PASS/${REG_PASS}/g" "${DATA_JSON_PATH}"
+		sed -i "s/QUAY_EMAIL/${REG_EMAIL}/g" "${DATA_JSON_PATH}"
+
+		
+        # Call quay API to enable the dummy user
+        echo ">> INFO: Calling quay API to enable the user"
+        RESULT=$(curl -s -X POST -k ${APIURL} --header 'Content-Type: application/json' --data "@${DATA_JSON_PATH}")
+        
+		# Show result on screen
         echo ${RESULT}
 
         # example
@@ -193,17 +226,54 @@ function deploy_registry() {
             echo ">> Creating organization ${organization}"
             curl -X POST -k -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" ${APIURL} --data "{\"name\": \"${organization}\", \"email\": \"${organization}@redhat.com\"}"
         done
+
+		echo ">> INFO: updating pull secret" 
+		b64auth=$( echo "$REG_US:$REG_PASS" | base64 )
+		AUTHSTRING="{\"$ROUTE\": {\"auth\": \"$b64auth\"}}"
+
+		echo ">> INFO: getting pull secret"
+		oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d > "${OUTPUTDIR}/origin-pullsecret.json"
+
+		echo ">> INFO: Creating updated pull secret"
+		jq ".auths += $AUTHSTRING" < "${OUTPUTDIR}/origin-pullsecret.json" > "${OUTPUTDIR}/updated-pull-secret.json"
+
+		echo ">> INFO: pushing openshift config" 
+		oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson="${OUTPUTDIR}/updated-pull-secret.json"
     fi
 
 }
 
-function custom_registry() {
-    trust_internal_registry 'hub'
-    check_mcp 'hub'
-    render_file manifests/machine-config-certs-worker.yaml 'hub'
-    render_file manifests/machine-config-certs-master.yaml 'hub'
-    check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
+function deploy_custom_registry() {
+    if [[ ${1} == 'hub' ]]; then
+        TMP_REGISTRY_DOMAIN=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
+        TMP_REGISTRY_PORT=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f2 )
+        TMP_REGISTRY_IP=$( dig  A +short ${TMP_REGISTRY_DOMAIN} | head -1)
 
+        echo "Create Endpoint"
+        TPL_MANIFEST="${WORKDIR}/deploy-disconnected-registry/manifests/custom-registry-endpoint.yaml"
+        MANIFESTCLONE="${WORKDIR}/build/custom-registry-endpoint.yaml"
+
+        cp -f ${TPL_MANIFEST} ${MANIFESTCLONE}
+        sed -i "s/TMP_REGISTRY_DOMAIN/${TMP_REGISTRY_DOMAIN}/g" ${MANIFESTCLONE}
+        sed -i "s/TMP_REGISTRY_IP/${TMP_REGISTRY_IP}/g" ${MANIFESTCLONE}
+        sed -i "s/TMP_REGISTRY_PORT/${TMP_REGISTRY_PORT}/g" ${MANIFESTCLONE}
+
+        echo "INFO: applying  Endpoint config"
+        cat ${MANIFESTCLONE} | yq e -
+        oc --kubeconfig=${KUBECONFIG_HUB} create namespace ${REGISTRY} 
+        oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${MANIFESTCLONE} 
+
+        echo "INFO: Creating Route"
+        oc create route edge ztpfw-registry \
+            --kubeconfig=${KUBECONFIG_HUB} --namespace  ${REGISTRY}  \
+            --service=external-registry --port=${TMP_REGISTRY_PORT} \
+            --insecure-policy=Redirect \
+            --dry-run=client --hostname "${TMP_REGISTRY_DOMAIN}" \
+            --output=yaml | oc apply -f -
+
+        oc --kubeconfig=${KUBECONFIG_HUB} -n ${REGISTRY} create configmap ztpfw-config -o yaml --from-literal=uri=$(echo ${CUSTOM_REGISTRY_URL} | base64 ) 
+
+    fi
 }
 
 if [[ ${1} == 'hub' ]]; then
@@ -211,16 +281,18 @@ if [[ ${1} == 'hub' ]]; then
     if ! ./verify.sh 'hub'; then
         if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
             deploy_registry 'hub'
-            trust_internal_registry 'hub'
-            check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
-            check_mcp 'hub'
-            render_file manifests/machine-config-certs-worker.yaml 'hub'
-            render_file manifests/machine-config-certs-master.yaml 'hub'
-            check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
-            check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
-        else
-            custom_registry 'hub'
+        elif [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+            deploy_custom_registry 'hub'
         fi
+
+        trust_internal_registry 'hub'
+        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+            check_resource "deployment" "${REGISTRY}" "Available" "${REGISTRY}" "${KUBECONFIG_HUB}"
+        fi
+        check_mcp 'hub'
+        render_file manifests/machine-config-certs-worker.yaml 'hub'
+        render_file manifests/machine-config-certs-master.yaml 'hub'
+        check_resource "mcp" "master" "Updated" "default" "${KUBECONFIG_HUB}"
     else
         echo ">>>> This step to deploy registry on Hub is not neccesary, everything looks ready"
     fi
@@ -242,6 +314,9 @@ elif [[ ${1} == 'edgecluster' ]]; then
 
         # Verify step
         if ! ./verify.sh 'edgecluster'; then
+            if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+                get_external_registry_cert
+            fi
             deploy_registry 'edgecluster' ${edgecluster}
             trust_internal_registry 'edgecluster' ${edgecluster}
 
@@ -249,6 +324,8 @@ elif [[ ${1} == 'edgecluster' ]]; then
             echo ">> Waiting for the registry Quay CR to be ready after updating the CA certificate"
             for dep in $LIST_DEP; do
                 echo ">> Waiting for deployment ${dep} in Quay operator to be ready"
+                echo "REGISTRY: ${REGISTRY}"
+                echo "dep: ${dep}"
                 check_resource "deployment" "${dep}" "Available" "${REGISTRY}" "${EDGE_KUBECONFIG}"
             done
 

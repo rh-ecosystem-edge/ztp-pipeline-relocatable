@@ -12,7 +12,7 @@ function extract_kubeconfig() {
     ## Extract the Edge-cluster kubeconfig and put it on the shared folder
     export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
     echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${EDGE_KUBECONFIG}
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n $edgecluster secret/$edgecluster-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
 }
 
 function prepare_env() {
@@ -85,7 +85,7 @@ function mirror() {
 
     echo "Copy credentails for opm index"
     mkdir -p /var/run/user/0/containers
-    cp -f /workspace/ztp/build/pull-secret.json /var/run/user/0/containers/auth.json
+    cp -f ${OUTPUTDIR}/pull-secret.json /var/run/user/0/containers/auth.json
 
     echo ">>>> Mirror OLM Operators"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -183,13 +183,13 @@ function mirror() {
                 if [ ${MATCH} == 0 ]; then
                     echo
                     echo "Package: ${package}"
-                    echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
-                    skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                    echo "DEBUG: skopeo copy  docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
+                    skopeo copy  docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     if [[ ${?} != 0 ]]; then
                         retry=1
                         while [ ${retry} != 0 ]; do
                             echo "INFO: Failed Image Copy, retrying after 5 seconds..."
-                            skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                            skopeo copy  docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                             if [[ ${?} == 0 ]]; then
                                 retry=0
                             else
@@ -272,7 +272,7 @@ function mirror_certified() {
 
     echo "Copy credentails for opm index"
     mkdir -p /var/run/user/0/containers
-    cp -f /workspace/ztp/build/pull-secret.json /var/run/user/0/containers/auth.json
+    cp -f ${OUTPUTDIR}/pull-secret.json /var/run/user/0/containers/auth.json
 
     echo ">>>> Mirror Certified OLM Operators"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -364,8 +364,8 @@ function mirror_certified() {
                 if [ ${MATCH} == 0 ]; then
                     echo
                     echo "Package: ${package}"
-                    echo "DEBUG: skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
-                    skopeo copy --remove-signatures docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
+                    echo "DEBUG: skopeo copy  docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}"
+                    skopeo copy  docker://${package} docker://${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/$(echo $package | awk -F'/' '{print $2}')-$(basename $package) --all --authfile ${PULL_SECRET}
                     if [[ ${?} != 0 ]]; then
                         echo "INFO: Failed Image Copy, retrying after 5 seconds..."
                         sleep 10

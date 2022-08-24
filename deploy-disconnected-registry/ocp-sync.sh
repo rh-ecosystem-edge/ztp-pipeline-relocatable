@@ -18,7 +18,7 @@ function extract_kubeconfig() {
     ## Extract the Edge-cluster kubeconfig and put it on the shared folder
     export EDGE_KUBECONFIG="${OUTPUTDIR}/kubeconfig-${1}"
     echo "Exporting EDGE_KUBECONFIG: ${EDGE_KUBECONFIG}"
-    oc --kubeconfig=${KUBECONFIG_HUB} get secret -n $edgecluster $edgecluster-admin-kubeconfig -o jsonpath=‘{.data.kubeconfig}’ | base64 -d >${EDGE_KUBECONFIG}
+    oc --kubeconfig=${KUBECONFIG_HUB} extract -n $edgecluster secret/$edgecluster-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
 }
 
 function mirror_ocp() {
@@ -41,17 +41,6 @@ function mirror_ocp() {
     echo "Target Kubeconfig: ${TARGET_KUBECONFIG}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo
-
-    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
-        echo "Checking Private registry creds"
-        if [[ ! $(podman login ${LOCAL_REG} --authfile ${PULL_SECRET}) ]]; then
-            echo "ERROR: Failed to login to ${LOCAL_REG}, please check Pull Secret"
-            exit 1
-        else
-            echo "Login successfully to ${LOCAL_REG}"
-        fi
-    fi
-    #######
 
     # Empty log file
     >${OUTPUTDIR}/mirror-ocp.log
@@ -87,12 +76,6 @@ if [[ ${1} == 'hub' ]]; then
     trust_internal_registry 'hub'
 
     if ! ./verify_ocp_sync.sh 'hub'; then
-
-        if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
-            oc create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
-            # TODO: commented out the next line seems not needed
-            # export REGISTRY_NAME="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
-        fi
         registry_login ${DESTINATION_REGISTRY}
         mirror_ocp 'hub' 'hub'
     else
@@ -124,10 +107,7 @@ elif [[ ${1} == 'edgecluster' ]]; then
             oc --kubeconfig=${EDGE_KUBECONFIG} create namespace ${REGISTRY} -o yaml --dry-run=client | oc apply -f -
 
             ## Logging into the Source and Destination registries
-            ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-            ${PODMAN_LOGIN_CMD} ${SOURCE_REGISTRY} -u ${REG_US} -p ${REG_PASS}
-            ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS} --authfile=${PULL_SECRET}
-            ${PODMAN_LOGIN_CMD} ${DESTINATION_REGISTRY} -u ${REG_US} -p ${REG_PASS}
+			registry_login ${SOURCE_REGISTRY} 
             mirror_ocp 'edgecluster' ${edgecluster}
         else
             echo ">>>> This step to mirror ocp is not neccesary, everything looks ready: ${1}"
