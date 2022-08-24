@@ -214,7 +214,7 @@ export const DomainCertificatesPanel: React.FC<{
       <PanelMain tabIndex={0}>
         <PanelMainBody>
           <span>
-            Provide PEM custom certificates for following subdomains, missing certificates will be
+            Provide PEM custom certificates for following subdomains. Missing certificates will be
             automatically generated as self-signed.
           </span>
           <Certificate

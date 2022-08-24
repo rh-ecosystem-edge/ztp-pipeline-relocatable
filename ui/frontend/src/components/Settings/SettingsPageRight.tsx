@@ -32,11 +32,19 @@ export const SettingsPageRight: React.FC<{
   forceReload: () => void;
 }> = ({ initialError, forceReload }) => {
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isRetry, setIsRetry] = React.useState(false);
   const [_error, setError] = React.useState<PersistErrorType>();
   const { activeTabKey, setActiveTabKey, isEdit, setEdit, isCertificateAutomatic } =
     useSettingsPageContext();
   const state = useK8SStateContext();
   const progress = usePersistProgress();
+
+  React.useEffect(() => {
+    // Keep Retry button forever once an error occurs
+    if (!isRetry && !!_error) {
+      setIsRetry(true);
+    }
+  }, [_error, isRetry]);
 
   const error: PersistErrorType | undefined = initialError
     ? {
@@ -265,7 +273,7 @@ export const SettingsPageRight: React.FC<{
               onClick={onSave}
               isDisabled={isSaveDisabled}
             >
-              {error ? 'Retry' : 'Save'}
+              {isRetry ? 'Retry' : 'Save'}
             </Button>
             <Button
               data-testid="settings-page-button-cancel"

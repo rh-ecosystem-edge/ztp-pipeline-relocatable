@@ -4,7 +4,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: ztp-pvc
 spec:
-  storageClassName: odf-lvm-vg1
   accessModes:
     - ReadWriteOnce
   resources:
