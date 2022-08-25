@@ -35,6 +35,15 @@ function check_aci() {
         exit 1
     else
         echo "AgentClusterInstall for ${cluster} verified"
+        oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} secret/${cluster}-keypair >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo "The RSA key for ${cluster} is already stored on the hub"
+        else
+            echo "Storing the RSA key on the hub"
+            export RSA_KEY_FILE="${WORKDIR}/${cluster}/${cluster}-rsa.key"
+            export RSA_PUB_FILE="${WORKDIR}/${cluster}/${cluster}-rsa.key.pub"
+            oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=id_rsa.key=${RSA_KEY_FILE} --from-file=id_rsa.pub=${RSA_PUB_FILE}
+        fi
     fi
 }
 

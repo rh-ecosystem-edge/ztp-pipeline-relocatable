@@ -9,12 +9,6 @@ set -m
 # uncomment it, change it or get it from gh-env vars (default behaviour: get from gh-env)
 # export KUBECONFIG=/root/admin.kubeconfig
 
-function extract_kubeconfig() {
-    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
-    export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${edgecluster} secret/${edgecluster}-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
-}
-
 # Load common vars
 source ${WORKDIR}/shared-utils/common.sh
 if [[ -z ${ALLEDGECLUSTERS} ]]; then

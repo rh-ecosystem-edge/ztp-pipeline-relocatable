@@ -5,6 +5,9 @@ set -o pipefail
 set -o nounset
 set -m
 
+# Load common vars
+source ${WORKDIR}/shared-utils/common.sh
+
 function render_file() {
     SOURCE_FILE=${1}
     if [[ ${#} -lt 1 ]]; then
@@ -40,18 +43,11 @@ function extract_vars() {
     export CHANGEME_STORAGE_DEVICE_SET_COUNT="${disks_count}"
 }
 
-function extract_kubeconfig() {
-    ## Extract the Edge-cluster kubeconfig and put it on the shared folder
-    export EDGE_KUBECONFIG=${OUTPUTDIR}/kubeconfig-${1}
-    oc --kubeconfig=${KUBECONFIG_HUB} extract -n $edgecluster secret/$edgecluster-admin-kubeconfig --to - >${EDGE_KUBECONFIG}
-}
-
-# Load common vars
-source ${WORKDIR}/shared-utils/common.sh
 if ! ./verify.sh; then
     echo ">>>> Modify files to replace with pipeline info gathered"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     sed -i "s/CHANGEME/$OC_ODF_VERSION/g" manifests/03-LVMO-Subscription.yaml
+    sed -i "s/CATALOG_SOURCE/ztpfw-catalog/g" manifests/03-LVMO-Subscription.yaml
 
     if [[ -z ${ALLEDGECLUSTERS} ]]; then
         ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
@@ -64,7 +60,7 @@ if ! ./verify.sh; then
         echo ">>>> Deploy manifests to install LSO and LocalVolume: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo "Extract Kubeconfig for ${edgecluster}"
-        extract_kubeconfig ${edgecluster}
+        extract_kubeconfig_common ${edgecluster}
         echo "Filling vars for ${edgecluster}"
         extract_vars ".edgeclusters[].${edgecluster}.master0.storage_disk"
         oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/01-Namespace.yaml
