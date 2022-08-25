@@ -24,7 +24,7 @@ if ./verify.sh; then
     # Assuming you have an OCP 4.9+ cluster deployed with OpenShift Assisted Installer Service (OAS), you can simply run the following to bootstrap it into a Hub Cluster:
     # https://github.com/Red-Hat-SE-RTO/openshift-ztp
     ##############################################################################
-    git clone https://github.com/Red-Hat-SE-RTO/openshift-ztp.git
+    git clone ${OPENSHIFT_ZTP_VSPHERE_REPO}
     cd openshift-ztp
     ## Install needed pip modules
     pip3 install -r ./requirements.txt
@@ -51,6 +51,7 @@ if ./verify.sh; then
     -e configure_rhacm=true \
     -e configure_aap2_controller=true \
     -e configure_rh_gitops=true \
+    -e use_services_not_routes=false \
     -e pull_secret_path="${PULL_SECRET}" -e 'ansible_python_interpreter=/usr/bin/python3'  \
     -e subscription_manifest_path=${OUTPUTDIR}/manifest_tower-dev_20220811T151908Z.zip -vv
 

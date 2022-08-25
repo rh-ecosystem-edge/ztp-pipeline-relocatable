@@ -24,7 +24,7 @@ if ./verify.sh; then
     # Assuming you have an OCP 4.9+ cluster deployed with OpenShift Assisted Installer Service (OAS), you can simply run the following to bootstrap it into a Hub Cluster:
     # https://github.com/Red-Hat-SE-RTO/openshift-ztp
     ##############################################################################
-    git clone https://github.com/Red-Hat-SE-RTO/openshift-ztp.git
+    git clone ${OPENSHIFT_ZTP_VSPHERE_REPO}
     cd openshift-ztp
     ## Install needed pip modules
     pip3 install -r ./requirements.txt

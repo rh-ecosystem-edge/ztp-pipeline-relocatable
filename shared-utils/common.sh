@@ -353,6 +353,7 @@ export OC_RHCOS_RELEASE=$(curl -s https://mirror.openshift.com/pub/openshift-v4/
 export OC_ACM_VERSION=$(yq eval ".config.OC_ACM_VERSION" ${EDGECLUSTERS_FILE})
 export OC_ODF_VERSION=$(yq eval ".config.OC_ODF_VERSION" ${EDGECLUSTERS_FILE})
 export OC_OCP_TAG=${OC_OCP_VERSION_FULL}"-x86_64"
+export OPENSHIFT_ZTP_VSPHERE_REPO=$(yq eval ".config.source_git_repo" ${EDGECLUSTERS_FILE})
 VERSION_WITHOUT_QUOTES="${OC_OCP_VERSION_FULL%\"}"
 VERSION_WITHOUT_QUOTES="${VERSION_WITHOUT_QUOTES#\"}"
 export CLUSTERIMAGESET="openshift-v"${VERSION_WITHOUT_QUOTES}
