@@ -24,11 +24,13 @@ if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
         #namespace or resources does not exist. Launching the step to create it...
         exit 1
     fi
-fi 
 
-if [[ $(oc get --kubeconfig=${TG_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -lt 1 ]]; then
-    exit 2
+    if [[ $(oc get --kubeconfig=${TG_KUBECONFIG} route -n ${REGISTRY} --no-headers | wc -l) -lt 1 ]]; then
+        exit 2
+    fi
+else
+    # Running with  Custom registry
+    exit 10
 fi
-
 
 exit 0

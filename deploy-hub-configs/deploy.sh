@@ -29,14 +29,16 @@ if ./verify.sh; then
     sed -i "s/HTTPD_SERVICE/${HTTPSERVICE}/g" 04-agent-service-config.yml
     pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d | jq -c)
     echo -n "  .dockerconfigjson: "\'$pull\' >>05-pullsecrethub.yml
-    REGISTRY=ztpfw-registry
-    LOCAL_REG="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)" #TODO change it to use the global common variable importing here the source commons
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+        REGISTRY=ztpfw-registry
+        LOCAL_REG="$(oc get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})" #TODO change it to use the global common variable importing here the source commons
+    fi
     sed -i "s/CHANGEDOMAIN/${LOCAL_REG}/g" registryconf.txt
     if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
-       export CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} -showcerts < /dev/null | openssl x509)
-       echo "" >>01_Mirror_ConfigMap.yml
-       echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
-       echo -n "${CA_CERT_DATA}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
+        export CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} -showcerts </dev/null | openssl x509)
+        echo "" >>01_Mirror_ConfigMap.yml
+        echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
+        echo -n "${CA_CERT_DATA}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
     else
         CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
         echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
