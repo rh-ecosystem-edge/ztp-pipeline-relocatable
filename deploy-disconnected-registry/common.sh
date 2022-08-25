@@ -68,13 +68,11 @@ function trust_internal_registry() {
     if [[ ${1} == 'hub' ]]; then
         KBKNFG=${KUBECONFIG_HUB}
         clus="hub"
-		MYREGISTRY="$(oc --kubeconfig=${KBKNFG} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-		REGISTRY_NAME=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
-	elif [[ ${1} == 'edgecluster' ]]; then
+        MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry -o jsonpath='{.spec.host}')
+    elif [[ ${1} == 'edgecluster' ]]; then
         KBKNFG=${EDGE_KUBECONFIG}
         clus=${2}
         MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry-quay -o jsonpath='{.spec.host}')
-		REGISTRY_NAME="${MYREGISTRY}"
     fi
 
     export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
@@ -84,16 +82,15 @@ function trust_internal_registry() {
     echo ">> Mode: ${1}"
     echo ">> Cluster: ${clus}"
 
-
-    ## Update trusted CA from Helper
-    #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
-    if [[ ${CUSTOM_REGISTRY} == "true" ]] && [[ "${1}" == "hub"  ]]; then
-        export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+        ## Update trusted CA from Helper
+        #TODO after sync pull secret global because crictl can't use flags and uses the generic with https://access.redhat.com/solutions/4902871
+        export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
+        echo ">> Cert: ${PATH_CA_CERT}"
     else
-		export CA_CERT_DATA=$(oc --kubeconfig=${KBKNFG} get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}')
-
+        export CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} -showcerts </dev/null | openssl x509 | base64 | tr -d '\n')
+        MYREGISTRY=${LOCAL_REG}
     fi
-    echo ">> Cert: ${PATH_CA_CERT}"
 
     ## Update trusted CA from Helper
     echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
@@ -103,27 +100,9 @@ function trust_internal_registry() {
     echo
 
     # Add certificate to OpenShift configuration
-    oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry -n openshift-config --from-file=${REGISTRY_NAME}=${PATH_CA_CERT}
+
+    oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry -n openshift-config --from-file=${MYREGISTRY}=${PATH_CA_CERT}
     oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry"}}}' --type=merge
-
-}
-
-function get_external_registry_cert() { 
-    KBKNFG=${EDGE_KUBECONFIG}
-    echo "INFO: Getting external registry cert"
-    export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')
-
-    export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/external-registry-edge.crt"
-    echo "${CA_CERT_DATA}" | base64 -d >"${PATH_CA_CERT}"
-    echo "${CA_CERT_DATA}" | base64 -d >"${WORKDIR}/build/external-registry-edge.crt"
-
-    update-ca-trust extract
-
-    echo "INFO: updating openthift config with new certifecate"
-
-    MYREGISTRY=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
-    oc --kubeconfig=${KBKNFG} create configmap ztpfwregistry-external -n openshift-config --from-file=${MYREGISTRY}=${PATH_CA_CERT}
-    oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry-external"}}}' --type=merge
 
 }
 
@@ -165,7 +144,11 @@ if [[ ${1} == "hub" ]]; then
     export SOURCE_REGISTRY="quay.io"
     export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
     export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
-    export DESTINATION_REGISTRY="$(oc get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
+    if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
+        export DESTINATION_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
+    else
+        export DESTINATION_REGISTRY=${LOCAL_REG}
+    fi
     # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
@@ -204,8 +187,7 @@ elif [[ ${1} == "edgecluster" ]]; then
         export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
         ## OLM Sync vars
-        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-        
+        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
         ## NS where the OLM images will be mirrored
         export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
         ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored

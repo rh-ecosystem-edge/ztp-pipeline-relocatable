@@ -1,6 +1,0 @@
-{ 
-	"username": "QUAY_USER", 
-	"password": "QUAY_PASS", 
-	"email": "QUAY_EMAIL", 
-	"access_token": true
-}

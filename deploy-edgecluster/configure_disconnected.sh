@@ -84,7 +84,7 @@ function icsp_mutate() {
     MAP=${1}
     DST_REG=${2}
     EDGE=${3}
-    HUB_REG_ROUTE="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
+    HUB_REG_ROUTE="$(oc --kubeconfig=${KUBECONFIG_HUB} get route -n ${REGISTRY} ${REGISTRY} -o jsonpath={'.status.ingress[0].host'})"
     export EDGE_MAPPING_FILE="${MAP%%.*}-${edgecluster}.txt"
     sed "s/${HUB_REG_ROUTE}/${DST_REG}/g" ${MAP} | tee "${MAP%%.*}-${edgecluster}.txt"
 }
