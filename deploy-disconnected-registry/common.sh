@@ -69,7 +69,7 @@ function trust_internal_registry() {
         KBKNFG=${KUBECONFIG_HUB}
         clus="hub"
 		    MYREGISTRY="$(oc --kubeconfig=${KBKNFG} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-		    if [[ ${CUSTOM_REGISTRY} != "true" ]] then
+		    if [[ ${CUSTOM_REGISTRY} != "true" ]]; then
 		      CUSTOM_REGISTRY_URL=${MYREGISTRY}
 		    fi
 		    REGISTRY_NAME=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
