@@ -68,13 +68,16 @@ function trust_internal_registry() {
     if [[ ${1} == 'hub' ]]; then
         KBKNFG=${KUBECONFIG_HUB}
         clus="hub"
-		MYREGISTRY="$(oc --kubeconfig=${KBKNFG} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-		REGISTRY_NAME=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
-	elif [[ ${1} == 'edgecluster' ]]; then
+		    MYREGISTRY="$(oc --kubeconfig=${KBKNFG} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
+		    if [[ ${CUSTOM_REGISTRY} != "true" ]] then
+		      CUSTOM_REGISTRY_URL=${MYREGISTRY}
+		    fi
+		    REGISTRY_NAME=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
+	  elif [[ ${1} == 'edgecluster' ]]; then
         KBKNFG=${EDGE_KUBECONFIG}
         clus=${2}
         MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry-quay -o jsonpath='{.spec.host}')
-		REGISTRY_NAME="${MYREGISTRY}"
+		    REGISTRY_NAME="${MYREGISTRY}"
     fi
 
     export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
