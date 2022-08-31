@@ -1,0 +1,7 @@
+Steps to create a custom registry for lab purposes:
+
+1-. ./01_deploy_registry.sh -> Will create the podman container with a docker registry using the host long name (hostname --long command)
+
+2-. ./02_update_pullsecret.sh -> Using OC and getting the current pull secret loaded into the Openshift cluster, will be updated with the new entry after creating the Registry
+
+3-. Add entry (hostname --long) to dnsmasq in order to make it available to be resolved by hosts inside the cluster
