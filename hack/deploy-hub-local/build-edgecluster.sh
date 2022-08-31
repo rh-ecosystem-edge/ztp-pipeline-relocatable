@@ -116,7 +116,9 @@ EOF
 
 # add registry from env REGISTRY
 if [[ ! -z "${_REGISTRY}" ]]; then
-    yq e '.config.REGISTRY = "${_REGISTRY}"' -i "${CLUSTER_NAME}.yaml"
+    cat <<EOF >>${_CLUSTER_NAME}.yaml
+  REGISTRY: ${_REGISTRY}
+EOF
 fi
 
 # Create header for ${_CLUSTER_NAME}.yaml
