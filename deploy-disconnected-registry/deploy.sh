@@ -228,7 +228,7 @@ function deploy_registry() {
         done
 
 		echo ">> INFO: updating pull secret" 
-		b64auth=$( echo "$REG_US:$REG_PASS" | base64 )
+		b64auth=$( echo -n "$REG_US:$REG_PASS" | base64 )
 		AUTHSTRING="{\"$ROUTE\": {\"auth\": \"$b64auth\"}}"
 
 		echo ">> INFO: getting pull secret"
