@@ -55,6 +55,9 @@ if ! ./verify.sh; then
 
     index=0
     for edgecluster in ${ALLEDGECLUSTERS}; do
+        # wipe disks on nodes 
+        wipe_edge_disks
+
         NUM_M=$(yq e ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
 
         echo ">>>> Deploy manifests to install LSO and LocalVolume: ${edgecluster}"
