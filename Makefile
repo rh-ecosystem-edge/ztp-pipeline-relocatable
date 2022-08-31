@@ -19,7 +19,7 @@ endif
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
 
-.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact build-edgecluster-sno-2nics build-edgecluster-compact-2nics deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-mce-sno deploy-pipe-hub-mce-compact deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci run-pipeline-task run-hub-lvmo-task
+.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact build-edgecluster-sno-2nics build-edgecluster-compact-2nics deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-mce-sno deploy-pipe-hub-mce-compact deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci run-pipeline-task run-hub-lvmo-task build-hub-sno-custom build-edgecluster-sno-2nics-custom build-edgecluster-compact-2nics-custom
 .EXPORT_ALL_VARIABLES:
 
 all-images: pipe-image ui-image
@@ -74,6 +74,10 @@ build-hub-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno
 
+build-hub-sno-custom:
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno $(REGISTRY)
+
 build-hub-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact
@@ -93,6 +97,14 @@ build-edgecluster-sno-2nics:
 build-edgecluster-compact-2nics:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact false
+
+build-edgecluster-sno-2nics-custom:
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno false $(REGISTRY)
+
+build-edgecluster-compact-2nics-custom:
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact false $(REGISTRY)
 
 wait-for-hub-sno:
 	${PWD}/shared-utils/wait_for_sno_mco.sh &
