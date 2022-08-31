@@ -83,17 +83,15 @@ export const DownloadSshKey: React.FC<{ setDownloaded: (isDownloaded: boolean) =
         {error?.title && (
           <Alert
             variant={AlertVariant.danger}
-            title={
-              <>
-                {error.title}{' '}
-                <Button variant={ButtonVariant.link} onClick={() => setError(undefined)} isInline>
-                  Try again
-                </Button>
-              </>
-            }
+            title={error.title}
             isInline
             className="download-item__error"
-          ></Alert>
+          >
+            {error.message}{' '}
+            <Button variant={ButtonVariant.link} onClick={() => setError(undefined)} isInline>
+              Try again
+            </Button>
+          </Alert>
         )}
       </StackItem>
       <StackItem>
