@@ -60,7 +60,7 @@ if ! ./verify.sh; then
 
         NUM_M=$(yq e ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
 
-        echo ">>>> Deploy manifests to install LSO and LocalVolume: ${edgecluster}"
+        echo ">>>> Deploy manifests to install LVMO: ${edgecluster}"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo "Extract Kubeconfig for ${edgecluster}"
         extract_kubeconfig_common ${edgecluster}
