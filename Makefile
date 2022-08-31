@@ -106,8 +106,8 @@ run-pipeline-task:
 			    -w name=ztp,emptyDir="" \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults $(TASK) && \
-	tkn tr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults $(TASK) \
+    			--showlog
 
 run-hub-lvmo-task:
 	tkn task start -n edgecluster-deployer \
@@ -117,8 +117,8 @@ run-hub-lvmo-task:
 			    -w name=ztp,emptyDir="" \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults hub-deploy-lvmo && \
-	tkn tr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults hub-deploy-lvmo \
+    			--showlog
 
 
 deploy-pipe-hub-mce-sno: run-hub-lvmo-task
@@ -130,8 +130,8 @@ deploy-pipe-hub-mce-sno: run-hub-lvmo-task
 			-w name=ephemeral,emptyDir="" \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub-mce  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub-mce  \
+			--showlog
 
 deploy-pipe-hub-mce-compact: run-hub-lvmo-task
 	tkn pipeline start -n edgecluster-deployer \
@@ -141,8 +141,8 @@ deploy-pipe-hub-mce-compact: run-hub-lvmo-task
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub-mce  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub-mce \
+			--showlog
 
 deploy-pipe-hub-sno: run-hub-lvmo-task
 	tkn pipeline start -n edgecluster-deployer \
@@ -152,8 +152,8 @@ deploy-pipe-hub-sno: run-hub-lvmo-task
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub \
+			--showlog
 
 deploy-pipe-hub-compact: run-hub-lvmo-task
 	tkn pipeline start -n edgecluster-deployer \
@@ -163,8 +163,8 @@ deploy-pipe-hub-compact: run-hub-lvmo-task
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub \
+			--showlog
 
 deploy-pipe-edgecluster-sno:
 	tkn pipeline start -n edgecluster-deployer \
@@ -174,8 +174,8 @@ deploy-pipe-edgecluster-sno:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters-sno && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters-sno \
+    			--showlog
 
 deploy-pipe-edgecluster-compact:
 	tkn pipeline start -n edgecluster-deployer \
@@ -185,8 +185,8 @@ deploy-pipe-edgecluster-compact:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters \
+    			--showlog
 
 deploy-pipe-hub-ci:
 	tkn pipeline start -n edgecluster-deployer \
@@ -196,8 +196,8 @@ deploy-pipe-hub-ci:
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub \
+			--showlog
 
 deploy-pipe-edgecluster-sno-ci:
 	tkn pipeline start -n edgecluster-deployer \
@@ -207,8 +207,8 @@ deploy-pipe-edgecluster-sno-ci:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters-sno && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters-sno \
+    			--showlog
 
 deploy-pipe-edgecluster-compact-ci:
 	tkn pipeline start -n edgecluster-deployer \
@@ -218,8 +218,8 @@ deploy-pipe-edgecluster-compact-ci:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters \
+    			--showlog
 
 bootstrap:
 	cd ${PWD}/pipelines && \
