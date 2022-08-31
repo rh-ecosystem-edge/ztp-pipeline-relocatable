@@ -4,4 +4,5 @@ Steps to create a custom registry for lab purposes:
 
 2-. ./02_update_pullsecret.sh -> Using OC and getting the current pull secret loaded into the Openshift cluster, will be updated with the new entry after creating the Registry
 
-3-. Add entry (hostname --long) to dnsmasq in order to make it available to be resolved by hosts inside the cluster
+3-. Add entry (hostname --long) to dnsmasq in order to make it available to be resolved by hosts inside the cluster. In the lab environment, after changing dns should restart services doing something like:
+    systemctl restart dnsmasq libvirtd sushy
