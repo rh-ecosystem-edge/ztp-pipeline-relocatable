@@ -120,8 +120,7 @@ EOF
 
 cat "${CLUSTER_NAME}.yaml"
 
-echo ">>>> Create the PV and sushy and dns"
-./lab-nfs.sh
+echo ">>>> Launch the sushy script"
 ./lab-sushy.sh
 
 echo ">>>> EOF"
