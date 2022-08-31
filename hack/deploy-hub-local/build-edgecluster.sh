@@ -5,7 +5,7 @@ set -o pipefail
 set -o nounset
 set -m
 
-usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> [<hub_architecture(compact|sno)>] [<single_nic(true|false)>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> [<hub_architecture(compact|sno)>] [<single_nic(true|false)>] [<custom_registry_url>]" 1>&2; exit 1; }
 
 if [ $# -lt 4 ]; then
     usage
@@ -47,7 +47,7 @@ export HUB_ARCHITECTURE="${5:-compact}"
 export SINGLE_NIC="${6:-true}"
 export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
 export CLUSTER_IPS=""
-export _REGISTRY=${REGISTRY:-}
+export _REGISTRY=${7:-}
 
 for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
   ip=$(dig +short api.${_CLUSTER_NAME}${edgecluster}-cluster.alklabs.local)
@@ -116,7 +116,7 @@ EOF
 
 # add registry from env REGISTRY
 if [[ ! -z "${_REGISTRY}" ]]; then
-    yq e ".config.REGISTRY = strenv(REGISTRY)" -i "${CLUSTER_NAME}.yaml"
+    yq e '.config.REGISTRY = "${_REGISTRY}"' -i "${CLUSTER_NAME}.yaml"
 fi
 
 # Create header for ${_CLUSTER_NAME}.yaml

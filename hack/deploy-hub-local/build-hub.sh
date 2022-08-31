@@ -6,7 +6,7 @@ set -o nounset
 set -m
 
 usage() {
-    echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> <hub_architecture(installer|sno)>" 1>&2
+    echo "Usage: $0 <pull-secret-file> <ocp-version(4.10.6)> <acm_version(2.4)> <odf_version(4.8)> [<hub_architecture(compact|sno)>] [<custom_registry_url>]" 1>&2
     exit 1
 }
 
@@ -47,7 +47,7 @@ export OC_ACM_VERSION="${acm_version}"
 export OC_ODF_VERSION="${odf_version}"
 export HUB_ARCHITECTURE="${5:-compact}"
 export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
-export _REGISTRY=${REGISTRY:-}
+export _REGISTRY=${6:-}
 
 
 echo ">>>> Set the Pull Secret"
@@ -110,7 +110,7 @@ EOF
 
 # add registry from env REGISTRY
 if [[ ! -z "${_REGISTRY}" ]]; then
-    yq e '.config.REGISTRY = strenv(REGISTRY)' -i "${CLUSTER_NAME}.yaml"
+    yq e '.config.REGISTRY = "${_REGISTRY}"' -i "${CLUSTER_NAME}.yaml"
 fi
 
 # Create header for edgecluster.yaml
