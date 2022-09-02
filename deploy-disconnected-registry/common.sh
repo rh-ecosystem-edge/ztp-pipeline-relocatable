@@ -199,9 +199,27 @@ elif [[ ${1} == "edgecluster" ]]; then
         echo "EDGE: ${EDGE_KUBECONFIG}"
         echo "REGISTRY NS: ${REGISTRY}"
         ## Common
+        ## FIX the race condition where the MCO is restarting services and get lost the route query
+        echo ">>>> Check apiserver to ensure is available"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        timeout=0
+        ready=false
+        while [ "$timeout" -lt "1000" ]; do
+            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} pod -n openshift-apiserver | grep Running | wc -l) -gt 0 ]]; then
+            ready=true
+            break
+            fi
+            sleep 5
+            timeout=$((timeout + 1))
+        done
+
+        if [ "$ready" == "false" ]; then
+            echo "timeout waiting for apiserver after mco service restart..."
+            exit 1
+        fi
         export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
         ## OCP Sync vars
-        echo "DESTIONATION_REGISTRY: ${DESTINATION_REGISTRY}"
+        echo "DESTINATION_REGISTRY: ${DESTINATION_REGISTRY}"
         export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
         ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
         export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
