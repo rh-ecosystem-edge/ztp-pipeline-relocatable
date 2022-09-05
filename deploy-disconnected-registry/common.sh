@@ -198,35 +198,38 @@ elif [[ ${1} == "edgecluster" ]]; then
         echo "HUB: ${KUBECONFIG_HUB}"
         echo "EDGE: ${EDGE_KUBECONFIG}"
         echo "REGISTRY NS: ${REGISTRY}"
-        ## Common
-        ## FIX the race condition where the MCO is restarting services and get lost the route query
-        echo ">>>> Check apiserver to ensure is available"
-        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-        timeout=0
-        ready=false
-        echo "DEBUG: oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'}"
-        while [ "$timeout" -lt "100" ]; do
-            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route  -n ${REGISTRY} ${REGISTRY}-quay | wc -l) -gt 0 ]]; then
-            ready=true
-            break
-            fi
-            sleep 5
-            timeout=$((timeout + 1))
-        done
+        if [[  $(oc get --kubeconfig=${EDGE_KUBECONFIG} ns ${REGISTRY} | wc -l) -gt 0 ]]; then
+          echo "Registry NS exists so, we can continue with the workflow"
+          ## Common
+          ## FIX the race condition where the MCO is restarting services and get lost the route query
+          echo ">>>> Check apiserver to ensure is available"
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          timeout=0
+          ready=false
+          echo "DEBUG: oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'}"
+          while [ "$timeout" -lt "100" ]; do
+              if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route  -n ${REGISTRY} ${REGISTRY}-quay | wc -l) -gt 0 ]]; then
+              ready=true
+              break
+              fi
+              sleep 5
+              timeout=$((timeout + 1))
+          done
 
-        if [ "$ready" == "false" ]; then
-            echo "timeout waiting for route after mco service restart..."
-            exit 1
+          if [ "$ready" == "false" ]; then
+              echo "timeout waiting for route after mco service restart..."
+              exit 1
+          fi
+          export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
+          ## OCP Sync vars
+          echo "DESTINATION_REGISTRY: ${DESTINATION_REGISTRY}"
+
+          export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
+          ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
+          export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
+          ## OCP INDEX IMAGE
+          export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
         fi
-        export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
-        ## OCP Sync vars
-        echo "DESTINATION_REGISTRY: ${DESTINATION_REGISTRY}"
-        export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
-        ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
-        export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
-        ## OCP INDEX IMAGE
-        export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
-
         ## OLM Sync vars
         export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
         
