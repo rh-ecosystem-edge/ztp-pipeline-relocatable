@@ -204,7 +204,7 @@ elif [[ ${1} == "edgecluster" ]]; then
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
-        while [ "$timeout" -lt "1000" ]; do
+        while [ "$timeout" -lt "100" ]; do
             if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} pod -n openshift-apiserver | grep Running | wc -l) -gt 0 ]]; then
             ready=true
             break
