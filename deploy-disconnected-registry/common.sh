@@ -204,8 +204,9 @@ elif [[ ${1} == "edgecluster" ]]; then
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         timeout=0
         ready=false
+        echo "DEBUG: oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'}"
         while [ "$timeout" -lt "100" ]; do
-            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} pod -n openshift-apiserver | grep Running | wc -l) -gt 0 ]]; then
+            if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route  -n ${REGISTRY} ${REGISTRY}-quay | wc -l) -gt 0 ]]; then
             ready=true
             break
             fi
@@ -214,7 +215,7 @@ elif [[ ${1} == "edgecluster" ]]; then
         done
 
         if [ "$ready" == "false" ]; then
-            echo "timeout waiting for apiserver after mco service restart..."
+            echo "timeout waiting for route after mco service restart..."
             exit 1
         fi
         export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
