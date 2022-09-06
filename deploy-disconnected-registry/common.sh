@@ -229,24 +229,25 @@ elif [[ ${1} == "edgecluster" ]]; then
           export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
           ## OCP INDEX IMAGE
           export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
+
+          ## OLM Sync vars
+          export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
+
+          ## NS where the OLM images will be mirrored
+          export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
+          ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
+          export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
+
+          export SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+          export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+
+          ## NS where the OLM CERTIFIED images will be mirrored
+          export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
+          ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
+          export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
+
+          export CERTIFIED_SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+          export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
         fi
-        ## OLM Sync vars
-        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-        
-        ## NS where the OLM images will be mirrored
-        export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
-        ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
-        export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
-
-        export SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-        export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-
-        ## NS where the OLM CERTIFIED images will be mirrored
-        export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
-        ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
-        export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
-
-        export CERTIFIED_SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-        export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
     fi
 fi
