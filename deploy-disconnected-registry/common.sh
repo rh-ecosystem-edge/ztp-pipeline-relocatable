@@ -202,17 +202,18 @@ elif [[ ${1} == "edgecluster" ]]; then
           echo "Registry NS exists so, we can continue with the workflow"
           ## Common
           ## FIX the race condition where the MCO is restarting services and get lost the route query
-          echo ">>>> Check apiserver to ensure is available"
+          echo ">>>> Check route to ensure is available"
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           timeout=0
           ready=false
           echo "DEBUG: oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'}"
           while [ "$timeout" -lt "100" ]; do
-              if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route  -n ${REGISTRY} ${REGISTRY}-quay | wc -l) -gt 0 ]]; then
+              if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route  -n ${REGISTRY} ${REGISTRY}-quay 2> /dev/null ]]; then
               ready=true
               break
               fi
               sleep 5
+              echo "Waiting to get the registry route available"
               timeout=$((timeout + 1))
           done
 
