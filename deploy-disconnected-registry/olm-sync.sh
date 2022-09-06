@@ -391,6 +391,17 @@ if [[ ${1} == 'hub' ]]; then
     create_cs 'hub'
     trust_internal_registry 'hub'
     if ! ./verify_olm_sync.sh 'hub'; then
+        # workaround for https://issues.redhat.com/browse/MGMT-11935
+        cat >/etc/containers/policy.json<<EOF
+{
+    "default": [
+        {
+            "type": "insecureAcceptAnything"
+        }
+    ]
+}
+EOF
+        #end of workarond
         mirror 'hub'
         if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
             echo ">>>> There are no certified operators to be mirrored"
