@@ -2,4 +2,3 @@ resources:
   - common-pre-flight.yaml
   - common-pre-flight-edgeclusters.yaml
   - common-git-fetch.yaml
-  - pvc-template.yaml
