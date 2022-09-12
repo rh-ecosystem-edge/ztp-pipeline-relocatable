@@ -54,6 +54,10 @@ echo ">>>> Set the Pull Secret"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>"
 echo $OC_PULL_SECRET | tr -d [:space:] | sed -e 's/^.//' -e 's/.$//' >./openshift_pull.json
 
+echo ">>>> Install SWTPM to enable TPMv2"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+yum install swtpm
+
 echo ">>>> kcli create plan"
 echo ">>>>>>>>>>>>>>>>>>>>>"
 
