@@ -47,7 +47,6 @@ run-hub-lvmo-task:
     			-p kubeconfig=${KUBECONFIG} \
 			    -w name=ztp,emptyDir="" \
     			--timeout 5h \
-    			--pod-template ./pipelines/resources/common/pod-template.yaml \
     			--use-param-defaults hub-deploy-lvmo \
     			--showlog
 ```
