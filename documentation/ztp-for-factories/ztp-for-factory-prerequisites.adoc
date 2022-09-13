@@ -38,6 +38,18 @@ Installer-provisioned installation of {product-title} requires:
     . 1 for the HTTPD server, which will host the RHCOS images.
     . We need to meet the OpenShift Storage requirements for the Hub like (SSD/NVME).
     . LSO should be enough but we recommend to use a more reliable storage backend like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
+- In case you want to use dynamic PV creation using LVMO we've prepared a Tekton task to do that:
+```
+run-hub-lvmo-task:
+	tkn task start -n edgecluster-deployer \
+    			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
+    			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
+    			-p kubeconfig=${KUBECONFIG} \
+			    -w name=ztp,emptyDir="" \
+    			--timeout 5h \
+    			--use-param-defaults hub-deploy-lvmo \
+    			--showlog
+```
 
 == General
 - `edgeclusters.yaml` file with the configuration for the edgeclusters (In this initial version you will need to bake this file by hand)
