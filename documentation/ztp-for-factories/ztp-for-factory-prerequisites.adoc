@@ -33,12 +33,31 @@ Installer-provisioned installation of {product-title} requires:
 - We need some existing PVs on the HUB
     NOTE:: We cannot use `emptyDir` directive for runninng the pipeline, because between each step in the pipeline the contents will be removed and we require them to further progress.
     . 3 PVs for ACM (the expected size will depend on how many edgeclusters will you deploy)
-    . 1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 200Gb on the Hub
+    . 1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 900Gb on the Hub
     side (Maybe more if you have OCS/ODF deployed).
     . 1 for the HTTPD server, which will host the RHCOS images.
     . We need to meet the OpenShift Storage requirements for the Hub like (SSD/NVME).
     . LSO should be enough but we recommend to use a more reliable storage backend like ODF or NFS in order to avoid issues with the PVs and node scheduling pods.
-- In case you want to use dynamic PV creation using LVMO we've prepared a Tekton task to do that:
+- Create a PVC called `ztp-pvc` that will be used by the hub pipeline itself. You can use the following yaml to create the PVC.
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+  finalizers:
+  - kubernetes.io/pvc-protection
+  name: ztp-pvc
+  namespace: edgecluster-deployer
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+  volumeMode: Filesystem
+```
+- In case you want to use dynamic PV and PVC creation using LVMO - we've prepared a Tekton task to do that:
 ```
 run-hub-lvmo-task:
 	tkn task start -n edgecluster-deployer \
@@ -50,6 +69,9 @@ run-hub-lvmo-task:
     			--use-param-defaults hub-deploy-lvmo \
     			--showlog
 ```
+    NOTE:: You'll need to make sure that the HUB's master nodes have one available block device to form the required volume group. The total size of these block devices should be no less than 900GB.
+
+
 
 == General
 - `edgeclusters.yaml` file with the configuration for the edgeclusters (In this initial version you will need to bake this file by hand)
