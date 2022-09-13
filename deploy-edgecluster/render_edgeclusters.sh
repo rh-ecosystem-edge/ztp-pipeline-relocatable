@@ -131,8 +131,8 @@ metadata:
       agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"}}'
 spec:
   diskEncryption:
-      mode: tpmv2
-      enableOn: all
+    mode: tpmv2
+    enableOn: all
   clusterDeploymentRef:
     name: $CHANGE_EDGE_NAME
 EOF
