@@ -128,8 +128,11 @@ metadata:
   name: $CHANGE_EDGE_NAME
   namespace: $CHANGE_EDGE_NAME
   annotations:
-      agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType": "OpenshiftSDN"}}'
+      agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OpenshiftSDN"}}'
 spec:
+  diskEncryption:
+    mode: tpmv2
+    enableOn: all
   clusterDeploymentRef:
     name: $CHANGE_EDGE_NAME
 EOF
