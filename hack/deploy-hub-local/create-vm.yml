@@ -18,6 +18,7 @@ parameters:
   disks:
   - size: 120
   - size: 300
+  tpm: true
 {% endfor %}
 {% endfor %}
 
@@ -35,5 +36,6 @@ parameters:
 {% endif %}
   disks:
   - size: 120
-  - size: 300 
+  - size: 300
+  tpm: true
 {% endfor %}
