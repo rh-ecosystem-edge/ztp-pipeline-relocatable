@@ -71,6 +71,15 @@ if ! command -v yq &>/dev/null; then
         chmod +x /usr/bin/yq
 fi
 
+echo ">>>> Verify swtpm command"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+if ! command -v  &>/dev/null; then
+    echo "INFO: yq command not found. Installing..."
+    curl -k -s https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linux_amd64 -o /usr/bin/yq &&
+        chmod +x /usr/bin/yq
+fi
+
+
 echo ">>>> Loading the Kubeconfig file"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 if [ ! -f "${KUBECONFIG}" ]; then

@@ -42,6 +42,13 @@ Installer-provisioned installation of {product-title} requires:
 == General
 - `edgeclusters.yaml` file with the configuration for the edgeclusters (In this initial version you will need to bake this file by hand)
 - The enclosure is suppose to be just one Edge-cluster which contains 3 masters, 1 worker and 1 Switch L2-L3
+- The disks will be encrypted with TPMv2 so if you are using virtual environment using libvirt instead of physical servers, you will need to do this:
+    . Install ```swtpm``` package
+    . Configure libvirt device section to add:
+     ``` <tpm model='tpm-tis'>
+         <backend type='emulator' version='2.0'/>
+         </tpm>
+     ```
 
 Of course, the requirements for the installation of {product-title} are also to be satisfied on the hardware involved in the installation.
 
