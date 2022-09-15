@@ -207,7 +207,7 @@ elif [[ ${1} == "edgecluster" ]]; then
           timeout=0
           ready=false
           echo "DEBUG: oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'}"
-          while [ "$timeout" -lt "100" ]; do
+          while [ "$timeout" -lt "1000" ]; do
               if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route  -n ${REGISTRY} ${REGISTRY}-quay 2> /dev/null) ]]; then
               ready=true
               break
