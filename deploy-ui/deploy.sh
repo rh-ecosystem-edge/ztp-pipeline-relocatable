@@ -52,7 +52,7 @@ function deploy_ui() {
 function verify_ui() {
     echo ">>>> Verifying deployment of the user interface on: ${edgecluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    curl ${UI_APP_URL} -k -m 30
+    curl ${UI_APP_URL} -k -m 60
 }
 
 if [[ -z ${ALLEDGECLUSTERS} ]]; then
