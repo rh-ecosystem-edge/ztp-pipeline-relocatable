@@ -68,13 +68,16 @@ function trust_internal_registry() {
     if [[ ${1} == 'hub' ]]; then
         KBKNFG=${KUBECONFIG_HUB}
         clus="hub"
-		MYREGISTRY="$(oc --kubeconfig=${KBKNFG} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-		REGISTRY_NAME=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
-	elif [[ ${1} == 'edgecluster' ]]; then
+		    MYREGISTRY="$(oc --kubeconfig=${KBKNFG} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
+		    if [[ ${CUSTOM_REGISTRY} != "true" ]]; then
+		      CUSTOM_REGISTRY_URL=${MYREGISTRY}
+		    fi
+		    REGISTRY_NAME=$( echo  ${CUSTOM_REGISTRY_URL} | cut -d":" -f1 )
+	  elif [[ ${1} == 'edgecluster' ]]; then
         KBKNFG=${EDGE_KUBECONFIG}
         clus=${2}
         MYREGISTRY=$(oc --kubeconfig=${KBKNFG} get route -n ztpfw-registry ztpfw-registry-quay -o jsonpath='{.spec.host}')
-		REGISTRY_NAME="${MYREGISTRY}"
+		    REGISTRY_NAME="${MYREGISTRY}"
     fi
 
     export PATH_CA_CERT="/etc/pki/ca-trust/source/anchors/internal-registry-${clus}.crt"
@@ -194,32 +197,58 @@ elif [[ ${1} == "edgecluster" ]]; then
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         echo "HUB: ${KUBECONFIG_HUB}"
         echo "EDGE: ${EDGE_KUBECONFIG}"
-        ## Common
-        export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
-        ## OCP Sync vars
-        export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
-        ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
-        export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
-        ## OCP INDEX IMAGE
-        export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
+        echo "REGISTRY NS: ${REGISTRY}"
+        if [[  $(oc get --kubeconfig=${EDGE_KUBECONFIG} ns ${REGISTRY} | wc -l) -gt 0 ]]; then
+          echo "Registry NS exists so, we can continue with the workflow"
+          ## Common
+          ## FIX the race condition where the MCO is restarting services and get lost the route query
+          echo ">>>> Check route to ensure is available"
+          echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          timeout=0
+          ready=false
+          echo "DEBUG: oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'}"
+          while [ "$timeout" -lt "150" ]; do
+              if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} route  -n ${REGISTRY} ${REGISTRY}-quay 2> /dev/null) ]]; then
+              ready=true
+              break
+              fi
+              sleep 5
+              echo "Waiting to get the registry route available"
+              timeout=$((timeout + 1))
+          done
 
-        ## OLM Sync vars
-        export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-        
-        ## NS where the OLM images will be mirrored
-        export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
-        ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
-        export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
+          if [ "$ready" == "false" ]; then
+              echo "timeout waiting for route after mco service restart..."
+              exit 1
+          fi
+          export DESTINATION_REGISTRY="$(oc --kubeconfig=${EDGE_KUBECONFIG} get route -n ${REGISTRY} ${REGISTRY}-quay -o jsonpath={'.status.ingress[0].host'})"
+          ## OCP Sync vars
+          echo "DESTINATION_REGISTRY: ${DESTINATION_REGISTRY}"
 
-        export SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-        export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+          export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
+          ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
+          export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
+          ## OCP INDEX IMAGE
+          export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
-        ## NS where the OLM CERTIFIED images will be mirrored
-        export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
-        ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
-        export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
+          ## OLM Sync vars
+          export SOURCE_REGISTRY="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
 
-        export CERTIFIED_SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-        export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+          ## NS where the OLM images will be mirrored
+          export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
+          ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
+          export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
+
+          export SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+          export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+
+          ## NS where the OLM CERTIFIED images will be mirrored
+          export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
+          ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
+          export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
+
+          export CERTIFIED_SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+          export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+        fi
     fi
 fi

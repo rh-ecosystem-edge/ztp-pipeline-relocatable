@@ -19,7 +19,7 @@ endif
 FULL_PIPE_IMAGE_TAG=$(PIPE_IMAGE):$(BRANCH)
 FULL_UI_IMAGE_TAG=$(UI_IMAGE):$(BRANCH)
 
-.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact build-edgecluster-sno-2nics build-edgecluster-compact-2nics deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-mce-sno deploy-pipe-hub-mce-compact deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci run-pipeline-task
+.PHONY: all-images pipe-image pipe-image-ci ui-image ui-image-ci all-hub-sno all-hub-compact all-edgecluster-sno all-edgecluster-compact build-pipe-image build-ui-image push-pipe-image push-ui-image doc build-hub-sno build-hub-compact wait-for-hub-sno deploy-pipe-hub-sno deploy-pipe-hub-compact build-edgecluster-sno build-edgecluster-compact build-edgecluster-sno-2nics build-edgecluster-compact-2nics deploy-pipe-edgecluster-sno deploy-pipe-edgecluster-compact bootstrap bootstrap-ci deploy-pipe-hub-mce-sno deploy-pipe-hub-mce-compact deploy-pipe-hub-ci deploy-pipe-hub-ci deploy-pipe-edgecluster-sno-ci deploy-pipe-edgecluster-compact-ci all-hub-sno-ci all-hub-compact-ci all-edgecluster-sno-ci all-edgecluster-compact-ci all-images-ci run-pipeline-task run-hub-lvmo-task build-hub-sno-custom build-edgecluster-sno-2nics-custom build-edgecluster-compact-2nics-custom
 .EXPORT_ALL_VARIABLES:
 
 all-images: pipe-image ui-image
@@ -74,6 +74,10 @@ build-hub-sno:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno
 
+build-hub-sno-custom:
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno $(REGISTRY)
+
 build-hub-compact:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-hub.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact
@@ -94,6 +98,14 @@ build-edgecluster-compact-2nics:
 	cd ${PWD}/hack/deploy-hub-local && \
 	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact false
 
+build-edgecluster-sno-2nics-custom:
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) sno false $(REGISTRY)
+
+build-edgecluster-compact-2nics-custom:
+	cd ${PWD}/hack/deploy-hub-local && \
+	./build-edgecluster.sh  $(PULL_SECRET) $(OCP_VERSION) $(ACM_VERSION) $(ODF_VERSION) compact false $(REGISTRY)
+
 wait-for-hub-sno:
 	${PWD}/shared-utils/wait_for_sno_mco.sh &
 
@@ -103,13 +115,25 @@ run-pipeline-task:
     			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
     			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
     			-p kubeconfig=${KUBECONFIG} \
-			-w name=ztp,emptyDir="" \
+			    -w name=ztp,emptyDir="" \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults $(TASK) && \
-	tkn tr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults $(TASK) \
+    			--showlog
 
-deploy-pipe-hub-mce-sno:
+run-hub-lvmo-task:
+	tkn task start -n edgecluster-deployer \
+    			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
+    			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
+    			-p kubeconfig=${KUBECONFIG} \
+			    -w name=ztp,emptyDir="" \
+    			--timeout 5h \
+    			--pod-template ./pipelines/resources/common/pod-template.yaml \
+    			--use-param-defaults hub-deploy-lvmo \
+    			--showlog
+
+
+deploy-pipe-hub-mce-sno: run-hub-lvmo-task
 	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
@@ -118,10 +142,10 @@ deploy-pipe-hub-mce-sno:
 			-w name=ephemeral,emptyDir="" \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub-mce  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub-mce  \
+			--showlog
 
-deploy-pipe-hub-mce-compact:
+deploy-pipe-hub-mce-compact: run-hub-lvmo-task
 	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
@@ -129,10 +153,10 @@ deploy-pipe-hub-mce-compact:
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub-mce  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub-mce \
+			--showlog
 
-deploy-pipe-hub-sno:
+deploy-pipe-hub-sno: run-hub-lvmo-task
 	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
@@ -140,10 +164,10 @@ deploy-pipe-hub-sno:
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub \
+			--showlog
 
-deploy-pipe-hub-compact:
+deploy-pipe-hub-compact: run-hub-lvmo-task
 	tkn pipeline start -n edgecluster-deployer \
 			-p ztp-container-image="$(PIPE_IMAGE):$(BRANCH)" \
 			-p edgeclusters-config="$$(cat $(EDGECLUSTERS_FILE))" \
@@ -151,8 +175,8 @@ deploy-pipe-hub-compact:
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub \
+			--showlog
 
 deploy-pipe-edgecluster-sno:
 	tkn pipeline start -n edgecluster-deployer \
@@ -162,8 +186,8 @@ deploy-pipe-edgecluster-sno:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters-sno && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters-sno \
+    			--showlog
 
 deploy-pipe-edgecluster-compact:
 	tkn pipeline start -n edgecluster-deployer \
@@ -173,8 +197,8 @@ deploy-pipe-edgecluster-compact:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters \
+    			--showlog
 
 deploy-pipe-hub-ci:
 	tkn pipeline start -n edgecluster-deployer \
@@ -184,8 +208,8 @@ deploy-pipe-hub-ci:
 			-w name=ztp,claimName=ztp-pvc \
 			--timeout 5h \
 			--pod-template ./pipelines/resources/common/pod-template.yaml \
-			--use-param-defaults deploy-ztp-hub  && \
-	tkn pr logs -L -n edgecluster-deployer -f
+			--use-param-defaults deploy-ztp-hub \
+			--showlog
 
 deploy-pipe-edgecluster-sno-ci:
 	tkn pipeline start -n edgecluster-deployer \
@@ -195,8 +219,8 @@ deploy-pipe-edgecluster-sno-ci:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters-sno && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters-sno \
+    			--showlog
 
 deploy-pipe-edgecluster-compact-ci:
 	tkn pipeline start -n edgecluster-deployer \
@@ -206,8 +230,8 @@ deploy-pipe-edgecluster-compact-ci:
     			-w name=ztp,claimName=ztp-pvc \
     			--timeout 5h \
     			--pod-template ./pipelines/resources/common/pod-template.yaml \
-    			--use-param-defaults deploy-ztp-edgeclusters && \
-	tkn pr logs -L -n edgecluster-deployer -f
+    			--use-param-defaults deploy-ztp-edgeclusters \
+    			--showlog
 
 bootstrap:
 	cd ${PWD}/pipelines && \

@@ -74,8 +74,7 @@ BOOTPROTO=static
 IPADDR=192.168.7.21
 NETMASK=255.255.255.0
 GATEWAY=192.168.0.1
-DNS1=8.8.8.8
-DNS2=8.8.4.4
+DNS1=192.168.7.10
 ----
 +
 [NOTE]
@@ -143,18 +142,17 @@ If the domain name was not changed, then upon success you should get to a page w
 In case the domain name was changed, you will be redirected to the edge-cluster-setup page of the new domain, where you will have to login agan.
 ====
 
-.. Clicking on **OpenShift console** button will take you the OpenShift web console of the edge cluster.
-
-.. Under **Settings** you have the option to change the values of the **API address**, **Ingress address** and the previously configured **Domain**.
+.. Under **Settings** you have the option to delete the kubeadmin user and to change the values of the **API address**, **Ingress address** and the previously configured **Domain**.
 +
 [NOTE]
 ====
+Deleting the kubeadmin user is recommended. This action is irreversible.
 At this stage you will not be prompted for a username and password as you are already logged in as `kubeadmin`.
 ====
 
-.. Click **Log out** in the top right hand corner.
+.. Click **Log out** in the top right hand corner. This concludes working with the edge cluster configuration user interface.
 
-. Log in to the cluster again.
+. Log in to the web console of your edge cluster.
 
 . Select the newly created identity provider `ztpfw-htpasswd-idp`.
 

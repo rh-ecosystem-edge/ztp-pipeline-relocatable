@@ -55,35 +55,7 @@ if ! ./verify.sh; then
 
     index=0
     for edgecluster in ${ALLEDGECLUSTERS}; do
-        echo ">>>> Nuking storage disks for: ${edgecluster}"
-        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-
-        cluster=$(yq eval ".edgeclusters[${index}]|keys" $EDGECLUSTERS_FILE | awk '{print $2}' | xargs echo)
-
-        for master in $(echo $(seq 0 $(($(yq eval ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l) - 1)))); do
-            EXT_MAC_ADDR=$(yq eval ".edgeclusters[${index}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
-
-            recover_edgecluster_rsa ${cluster}
-
-            echo ""
-            echo ">>>> Nuking storage disks for Master ${master} Node"
-            for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
-                NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
-                if [[ -n ${NODE_IP} ]]; then
-                    echo "Master Node: ${master}"
-                    echo "AGENT: ${agent}"
-                    echo "IP: ${NODE_IP%%/*}"
-                    echo ">>>>"
-
-                    storage_disks=$(yq e ".edgeclusters[${index}].[].master${master}.storage_disk" $EDGECLUSTERS_FILE | awk '{print $2}' | xargs echo)
-
-                    for disk in ${storage_disks}; do
-                        echo ">>> Nuking disk ${disk} at ${master} ${NODE_IP%%/*}"
-                        ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo sgdisk --zap-all $disk;sudo dd if=/dev/zero of=$disk bs=1M count=100 oflag=direct,dsync; sudo blkdiscard $disk"
-                    done
-                fi
-            done
-        done
+        wipe_edge_disks
 
         index=$((index + 1))
 

@@ -122,6 +122,20 @@ if ! ./verify.sh; then
         fi
 	if [ "${NUM_M}" -eq "1" ];
 	then
+
+	  echo ">>>> Waiting for: Backingstore"
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    timeout=0
+    ready=false
+    while [ "$timeout" -lt "1000" ]; do
+      if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage backingstores.noobaa.io -ojsonpath='{.items[*].status.phase}') == "Ready" ]]; then
+        ready=true
+        break
+      fi
+      sleep 5
+      timeout=$((timeout + 1))
+    done
+    
 		# By default the StorageCluster creates a Noobaa instances with a single volume of 50Gi for the
 		# pvPool. This is not enough for the mirror so we are increasing this number to 5
 		oc patch --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage BackingStore noobaa-default-backing-store --type json -p '[{"op": "add", "path": "/spec/pvPool/numVolumes", "value": 5}]'

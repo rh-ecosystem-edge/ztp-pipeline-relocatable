@@ -1,4 +1,4 @@
-FROM centos:stream8
+FROM ubi8
 
 ENV JQ_VERSION=1.6
 ADD https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/jq-linux64  /usr/bin/jq

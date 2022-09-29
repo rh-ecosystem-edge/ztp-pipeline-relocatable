@@ -33,6 +33,11 @@ This step deploys a registry on the hub cluster. The substeps involved in this p
    * Sync the {product-title} and Operator Lifecycle Manager (OLM) images from Quay and Red Hat registries to the internal registry.
    * Update the pull secret globally.
 
+In case you have your own registry already deployed, you should add the next info to the config yaml file:
+`REGISTRY: <url-registry:port>`
+and update the pull secret with the registry entry (url, username and password ) in order to make easy the authentication in your own registry without credentials.
+In this scenario, your own registry will be used as the hub registry in the pipeline.
+
 Deploy RHACM::
 
 This step installs the Red Hat Advanced Cluster Manager and Assisted Installer on the {product-title} hub cluster. Red Hat Advanced Cluster Manager manages the deployment on many managed edge clusters.
