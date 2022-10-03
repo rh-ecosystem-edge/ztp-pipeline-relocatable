@@ -142,12 +142,15 @@ function recover_edgecluster_rsa() {
         WORKDIR=${OUTPUTDIR}/..
     fi
     export EDGE_SAFE_FOLDER="${WORKDIR}/${edgecluster}"
+    mkdir -p ${EDGE_SAFE_FOLDER}
     export RSA_KEY_FILE="${EDGE_SAFE_FOLDER}/${edgecluster}-rsa.key"
     export RSA_PUB_FILE="${EDGE_SAFE_FOLDER}/${edgecluster}-rsa.key.pub"
 
     if [[ ! -f ${RSA_KEY_FILE} ]]; then
-        echo "RSA Key for Edge-cluster Cluster ${edgecluster} Not Found"
-        exit 1
+        echo "Extracting the RSA key from a secret"
+        oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${edgecluster} secret/${edgecluster}-keypair --keys id_rsa.key --to - 2>/dev/null >${RSA_KEY_FILE}
+        chmod 600 ${RSA_KEY_FILE}
+        oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${edgecluster} secret/${edgecluster}-keypair --keys id_rsa.pub --to - 2>/dev/null >${RSA_PUB_FILE}
     else
         echo "RSA Key-pair recovered!"
     fi
@@ -175,12 +178,9 @@ function generate_rsa_edgecluster() {
     if [[ ! -f ${RSA_KEY_FILE} ]]; then
         echo "RSA Key for Edge-cluster Cluster ${edgecluster} Not Found. Will create one in ${EDGE_SAFE_FOLDER} folder"
 
-        oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} secret/${cluster}-keypair >/dev/null 2>&1
+        oc --kubeconfig=${KUBECONFIG_HUB} get -n ${edgecluster} secret/${edgecluster}-keypair >/dev/null 2>&1
         if [ $? -eq 0 ]; then
-            echo "Extracting the RSA key from a secret"
-            oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${cluster} secret/${cluster}-keypair --keys id_rsa.key --to - 2>/dev/null >${RSA_KEY_FILE}
-            chmod 600 ${RSA_KEY_FILE}
-            oc --kubeconfig=${KUBECONFIG_HUB} extract -n ${cluster} secret/${cluster}-keypair --keys id_rsa.pub --to - 2>/dev/null >${RSA_PUB_FILE}
+            recover_edgecluster_rsa ${edgecluster}
         else
             echo "Generating a new RSA key"
             ssh-keygen -b 4096 -t rsa -f ${RSA_KEY_FILE} -q -N ""
@@ -343,7 +343,7 @@ function wipe_edge_disks() {
                 ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo dmsetup remove_all"
             fi
         done
-    done    
+    done
 }
 
 # EDGECLUSTERS_FILE variable must be exported in the environment

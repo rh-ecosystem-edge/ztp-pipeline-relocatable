@@ -130,11 +130,14 @@ metadata:
   annotations:
       agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OpenshiftSDN"}}'
 spec:
+  clusterDeploymentRef:
+    name: $CHANGE_EDGE_NAME
+EOF
+    if [[ $(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.options.tpmv2" ${EDGECLUSTERS_FILE}) -ne "false" ]];
+        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   diskEncryption:
     mode: tpmv2
     enableOn: all
-  clusterDeploymentRef:
-    name: $CHANGE_EDGE_NAME
 EOF
     if [ "${NUM_M}" -eq "1" ]; then
         cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml

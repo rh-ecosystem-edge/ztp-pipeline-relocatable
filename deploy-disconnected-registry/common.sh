@@ -111,7 +111,7 @@ function trust_internal_registry() {
 
 }
 
-function get_external_registry_cert() { 
+function get_external_registry_cert() {
     KBKNFG=${EDGE_KUBECONFIG}
     echo "INFO: Getting external registry cert"
     export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')

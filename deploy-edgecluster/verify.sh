@@ -95,7 +95,10 @@ index=0
 for EDGE in ${ALLEDGECLUSTERS}; do
     echo ">>>> Starting the validation until finish the installation"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    check_bmhs "${EDGE}" "${wait_time}" ${index}
+    if [[ $(yq eval ".edgeclusters[${index}].${EDGE}.contrib|keys" ${EDGECLUSTERS_FILE} | grep vsphere | wc -l) -eq 0 ]];
+    then
+        check_bmhs "${EDGE}" "${wait_time}" ${index}
+    fi
     check_aci "${EDGE}" "${wait_time}" "True"
     index=$((index + 1))
     echo ">>>>EOF"
