@@ -404,6 +404,11 @@ exports[`DownloadSshKeyPage can render 1`] = `
                     Danger alert:
                   </span>
                   Incorrect SSH key secret
+                </h4>
+                <div
+                  class="pf-c-alert__description"
+                >
+                  The secret with ssh private key does not meet the required structure.
                    
                   <button
                     aria-disabled="false"
@@ -415,8 +420,7 @@ exports[`DownloadSshKeyPage can render 1`] = `
                   >
                     Try again
                   </button>
-                </h4>
-                
+                </div>
               </div>
             </div>
             <div
