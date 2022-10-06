@@ -196,14 +196,9 @@ export const persistIdentityProvider = async (
 
   setProgress(PersistSteps.PersistIDP);
 
-  // TODO: This is not enough, let's do it conditionally
-  // We are recently passing without the reconciliation even starts
-
   // Block progress on having reconciliation done
   // Let the operator reconciliation start
-  await delay(DELAY_BEFORE_FINAL_REDIRECT);
-
-  if (!(await waitForClusterOperator(setError, 'authentication'))) {
+  if (!(await waitForClusterOperator(setError, 'authentication', true))) {
     return PersistIdentityProviderResult.error;
   }
 

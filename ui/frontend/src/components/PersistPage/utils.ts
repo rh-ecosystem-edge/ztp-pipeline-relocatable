@@ -78,8 +78,33 @@ export const waitForZtpfwPodToBeRecreated = async (
 export const waitForClusterOperator = async (
   setError: (error: PersistErrorType) => void,
   name: string,
+  waitOnReconciliationStart?: boolean, // Block on starting the reconciliation the operator reconciliation start
 ): Promise<boolean> => {
-  console.info('waitForClusterOperator started for: ', name);
+  console.info(
+    'waitForClusterOperator started for: ',
+    name,
+    ' . Block on start: ',
+    waitForClusterOperator,
+  );
+
+  if (waitOnReconciliationStart) {
+    try {
+      for (let counter = 0; counter < MAX_LIVENESS_CHECK_COUNT; counter++) {
+        console.log('Waiting to start, query co: ', name);
+        const operator = await getClusterOperator(name).promise;
+        if (getCondition(operator, 'Progressing')?.status === 'True') {
+          // Started
+          console.log('Operator is progressing now: ', name);
+          break;
+        }
+        await delay(DELAY_BEFORE_QUERY_RETRY);
+      }
+    } catch (e) {
+      console.error('waitForClusterOperator error: ', e);
+    }
+  }
+
+  // Wait on reconciliation end
   for (let counter = 0; counter < MAX_LIVENESS_CHECK_COUNT; counter++) {
     try {
       console.log('Querying co: ', name);
