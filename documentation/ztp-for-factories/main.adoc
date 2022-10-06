@@ -15,6 +15,8 @@ include::ztp-for-factory-overview-ocp-docs.adoc[leveloffset=+1]
 
 include::ztp-install-factory-hubedge-architecture.adoc[leveloffset=+1]
 
+include::ztp-for-factory-prerequisites.adoc[leveloffset=+1]
+
 include::ztp-create-factory-hub-cluster.adoc[leveloffset=+1]
 
 include::ztp-intro-factory-install.adoc[leveloffset=+1]
@@ -48,5 +50,7 @@ include::ztp-common-expected-errors.adoc[leveloffset=+1]
 include::ztp-configuring-edge-at-remote-site.adoc[leveloffset=+1]
 
 include::ztpfw-pipelines-flags-arguments.adoc[leveloffset=+1]
+
+include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]
 
 include::ztp-for-factory-development.adoc[leveloffset=+1]
