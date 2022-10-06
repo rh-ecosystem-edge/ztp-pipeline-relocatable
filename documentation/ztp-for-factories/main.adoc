@@ -15,6 +15,8 @@ include::ztp-for-factory-overview-ocp-docs.adoc[leveloffset=+1]
 
 include::ztp-install-factory-hubedge-architecture.adoc[leveloffset=+1]
 
+include::ztp-for-factory-prerequisites.adoc[leveloffset=+1]
+
 include::ztp-create-factory-hub-cluster.adoc[leveloffset=+1]
 
 include::ztp-intro-factory-install.adoc[leveloffset=+1]
