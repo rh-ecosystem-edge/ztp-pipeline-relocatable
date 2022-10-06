@@ -1,6 +1,6 @@
 CI_FOLDER = images
 PIPE_IMAGE ?= quay.io/ztpfw/pipeline
-UI_IMAGE = quay.io/ztpfw/ui
+UI_IMAGE ?= quay.io/ztpfw/ui
 BRANCH ?= $(shell git branch --show-current | tr '[:upper:]' '[:lower:]' | tr '\/' '-')
 HASH := $(shell git rev-parse HEAD)
 RELEASE ?= latest
