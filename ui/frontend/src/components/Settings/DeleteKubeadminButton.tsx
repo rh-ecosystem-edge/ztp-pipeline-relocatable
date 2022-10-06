@@ -13,7 +13,7 @@ import { kubeadminSecret, KUBEADMIN_REMOVE_OK } from '../PersistPage/constants';
 import { deleteKubeAdmin } from '../PersistPage/persistIdentityProvider';
 import { PersistErrorType } from '../PersistPage';
 import { getBackendUrl, getRequest } from '../../resources';
-import { delay } from '../utils';
+import { delay, isKubeAdmin } from '../utils';
 
 type DeleteKubeadminModalProps = {
   isOpen: boolean;
@@ -87,14 +87,6 @@ const DeleteKubeadminModal: React.FC<DeleteKubeadminModalProps> = ({
   );
 };
 
-const getUsername = () =>
-  getRequest<{
-    body: {
-      username: string;
-    };
-    statusCode: number;
-  }>(`${getBackendUrl()}/user`).promise;
-
 export const DeleteKubeadminButton: React.FC = () => {
   const [kubeadminDisabledReason, setKubeadminDisabledReason] = React.useState<string | undefined>(
     // the button is disabled by default
@@ -113,16 +105,15 @@ export const DeleteKubeadminButton: React.FC = () => {
         return;
       }
 
-      const name = (await getUsername())?.body?.username;
-
-      if (name === 'kube:admin') {
+      const kubeadmin = await isKubeAdmin();
+      if (kubeadmin) {
         setKubeadminDisabledReason(
           'You are logged in as kubeadmin. Use another cluster-admin account to delete kubeadmin user.',
         );
         return;
       }
 
-      if (!name) {
+      if (kubeadmin === undefined) {
         // TODO: check roles...
         setKubeadminDisabledReason(
           'Kubeadmin can be deleted only by an user with cluster-admin role.',
