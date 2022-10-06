@@ -51,4 +51,6 @@ include::ztp-configuring-edge-at-remote-site.adoc[leveloffset=+1]
 
 include::ztpfw-pipelines-flags-arguments.adoc[leveloffset=+1]
 
+include::ztp-for-factory-troubleshooting.adoc[leveloffset=+1]
+
 include::ztp-for-factory-development.adoc[leveloffset=+1]
