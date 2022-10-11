@@ -4,7 +4,7 @@ oc new-project ztpfw-ui
 
 echo Parameters:
 set -ex
-export EDGE_INGRESS_NAME=$(oc get ingresses.config.openshift.io cluster -o json| jq -j .spec.domain)
+export EDGE_INGRESS_NAME=$(oc get ingresses.config.openshift.io cluster -o jsonpath={'.spec.domain'})
 export UI_NS=ztpfw-ui
 export UI_IMAGE="quay.io\\/ztpfw\\/ui:latest"
 export UI_ROUTE_HOST="edge-cluster-setup.${EDGE_INGRESS_NAME}"

@@ -145,13 +145,6 @@ export async function logout(req: Request, res: Response): Promise<void> {
     logger.error(err);
   }
 
-  // try {
-  //   const url = `${getClusterApiUrl()}/apis/oauth.openshift.io/v1/useroauthaccesstokens/${tokenName}?gracePeriodSeconds=0`;
-  //   await got.delete(url, gotOptions);
-  // } catch (err) {
-  //   logger.error(err);
-  // }
-
   const host = req.headers.host;
 
   deleteCookie(res, { cookie: K8S_ACCESS_TOKEN_COOKIE });

@@ -33,7 +33,7 @@ export const HeaderTools: React.FC = () => {
       input.name = 'then';
       // The /logout oauth endpoint will redirect (HTTP 302) here
       input.value = getAuthorizationEndpointUrl();
-      console.log('After succeful logout, the flow will continue here: ', input.value);
+      console.log('After successful logout, the flow will continue here: ', input.value);
 
       form.appendChild(input);
 
@@ -42,7 +42,7 @@ export const HeaderTools: React.FC = () => {
       form.action = actionUrl;
       document.body.appendChild(form);
 
-      console.log('About to submitt POST: ', actionUrl);
+      console.log('About to submit POST: ', actionUrl);
       form.submit();
       return;
     }
