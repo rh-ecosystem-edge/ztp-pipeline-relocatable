@@ -12,8 +12,8 @@ import { getSecret } from '../../resources/secret';
 import { kubeadminSecret, KUBEADMIN_REMOVE_OK } from '../PersistPage/constants';
 import { deleteKubeAdmin } from '../PersistPage/persistIdentityProvider';
 import { PersistErrorType } from '../PersistPage';
-import { getBackendUrl, getRequest } from '../../resources';
-import { delay, isKubeAdmin } from '../utils';
+import { delay } from '../utils';
+import { isKubeAdmin } from '../../resources/oauth';
 
 type DeleteKubeadminModalProps = {
   isOpen: boolean;

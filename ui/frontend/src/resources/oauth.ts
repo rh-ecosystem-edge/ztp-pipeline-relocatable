@@ -1,6 +1,5 @@
-import { getResource } from './resource-request';
-import { Metadata, IResource } from '../backend-shared';
-import { IDENTITY_PROVIDER_NAME } from '../components/PersistPage/constants';
+import { Metadata, IResource, IDENTITY_PROVIDER_NAME } from '../backend-shared';
+import { getBackendUrl, getRequest, getResource } from './resource-request';
 
 export type OAuthApiVersionType = 'config.openshift.io/v1';
 export const OAuthApiVersion: OAuthApiVersionType = 'config.openshift.io/v1';
@@ -39,3 +38,20 @@ export const getOAuth = () =>
 
 export const getHtpasswdIdentityProvider = (oauth?: OAuth): IndetityProviderType | undefined =>
   oauth?.spec?.identityProviders?.find((ip) => ip.name === IDENTITY_PROVIDER_NAME);
+
+export const getLoggedInUser = () =>
+  getRequest<{
+    body: {
+      username: string;
+    };
+    statusCode: number;
+  }>(`${getBackendUrl()}/user`).promise;
+
+export const isKubeAdmin = async (): Promise<boolean | undefined> => {
+  const username = (await getLoggedInUser())?.body?.username;
+  if (!username) {
+    return undefined;
+  }
+
+  return username === 'kube:admin';
+};

@@ -67,9 +67,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   });
   const url = `${oauthInfo.authorization_endpoint}?${queryString}`;
 
-  // Following can not be used but would solve the logout issue for kubeadmin
-  // deleteCookie(res, {cookie: 'ssn', domain: oauthInfo.authorization_endpoint})
-
   return redirect(res, url);
 };
 

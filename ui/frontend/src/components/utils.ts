@@ -3,7 +3,6 @@ import { Buffer } from 'buffer';
 
 import { DNS_NAME_REGEX, USERNAME_REGEX } from '../backend-shared';
 import { TlsCertificate } from '../copy-backend-common';
-import { getBackendUrl, getRequest } from '../resources';
 import { isPasswordPolicyMet } from './PasswordPage/utils';
 import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
 
@@ -183,19 +182,8 @@ export const unbindOnBeforeUnloadPage = () => {
   window.onbeforeunload = null;
 };
 
-export const getLoggedInUser = () =>
-  getRequest<{
-    body: {
-      username: string;
-    };
-    statusCode: number;
-  }>(`${getBackendUrl()}/user`).promise;
+export const getLoginCallbackUrl = () => `${window.location.origin}/login/callback`;
 
-export const isKubeAdmin = async (): Promise<boolean | undefined> => {
-  const username = (await getLoggedInUser())?.body?.username;
-  if (!username) {
-    return undefined;
-  }
-
-  return username === 'kube:admin';
-};
+// Relative URIs only are allowed here. The only exception is OCP Web Console
+export const getAuthorizationEndpointUrl = () =>
+  `/oauth/authorize?response_type=code&client_id=ztpfwoauth&redirect_uri=${getLoginCallbackUrl()}&scope=user%3Afull&state=`;

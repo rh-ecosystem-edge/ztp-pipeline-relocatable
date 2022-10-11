@@ -7,10 +7,8 @@ import {
   OAuth,
 } from '../../resources/oauth';
 import { deleteSecret, getSecret } from '../../resources/secret';
-import { IResource, Secret, PatchType } from '../../backend-shared';
+import { IResource, Secret, PatchType, IDENTITY_PROVIDER_NAME } from '../../backend-shared';
 import {
-  DELAY_BEFORE_FINAL_REDIRECT,
-  IDENTITY_PROVIDER_NAME,
   kubeadminSecret,
   KUBEADMIN_REMOVE,
   PERSIST_IDP,
@@ -21,7 +19,6 @@ import {
 import { CLUSTER_ADMIN_ROLE_BINDING, HTPASSWD_SECRET } from './resourceTemplates';
 import { PersistErrorType } from './types';
 import { PersistSteps, UsePersistProgressType } from '../PersistProgress';
-import { delay } from '../utils';
 import { waitForClusterOperator } from './utils';
 
 const getHtpasswdData = async (
