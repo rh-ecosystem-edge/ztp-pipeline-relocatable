@@ -1,0 +1,33 @@
+.basic-layout-left {
+  padding-top: var(--pf-global--spacer--2xl);
+  background-color: var(--pf-global--BackgroundColor--dark-100);
+  color: var(--pf-global--Color--light-100);
+  height: 100vh;
+  overflow: auto;
+}
+
+.basic-layout-title {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.basic-layout-right {
+  padding-top: var(--pf-global--spacer--2xl);
+}
+
+.basic-layout-left-center {
+  height: 70vh;
+}
+
+.basic-layout-logout {
+  background-color: var(--pf-global--Color--300) !important;
+}
+
+.basic-layout-content {
+  height: 80vh;
+}
+
+.basic-layout-bottom-row {
+  position: absolute;
+  bottom: var(--pf-global--spacer--3xl);
+}
