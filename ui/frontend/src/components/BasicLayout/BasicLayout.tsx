@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  Alert,
+  AlertVariant,
   Button,
   ButtonVariant,
   Divider,
@@ -12,13 +14,24 @@ import { PowerOffIcon } from '@patternfly/react-icons';
 import { Sidebar, SidebarContent, SidebarPanel } from '@patternfly/react-core';
 
 import { Navigation } from '../Navigation';
+import { UIError } from '../types';
 
 import RedHatLogo from './RedHatLogo.svg';
 import cloudyCircles from './cloudyCircles.svg';
 
 import './BasicLayout.css';
+import { SaveInProgress } from '../SaveInProgress';
 
-export const BasicLayout: React.FC = ({ children }) => {
+const onCancel = () => {
+  window.location.reload();
+};
+
+export const BasicLayout: React.FC<{
+  error?: UIError;
+  isValueChanged: boolean;
+  isSaving: boolean;
+  onSave: () => void;
+}> = ({ error, isValueChanged, isSaving, onSave, children }) => {
   return (
     <Sidebar tabIndex={0}>
       <SidebarPanel variant="sticky" width={{ default: 'width_25' }} className="basic-layout-left">
@@ -66,17 +79,46 @@ export const BasicLayout: React.FC = ({ children }) => {
             }}
           />
 
-          <Flex justifyContent={{ default: 'justifyContentCenter' }} flex={{ default: 'flex_1' }}>
-            <Stack hasGutter>
-              <StackItem isFilled className="basic-layout-content">
-                {children}
-              </StackItem>
-              <StackItem className="basic-layout-bottom-row">
-                <Button>Save</Button>
-                <Button variant={ButtonVariant.link}>Cancel</Button>
-              </StackItem>
-            </Stack>
-          </Flex>
+          {isSaving && (
+            <Flex
+              justifyContent={{ default: 'justifyContentCenter' }}
+              alignSelf={{ default: 'alignSelfStretch' }}
+              flex={{ default: 'flex_1' }}
+            >
+              <Stack hasGutter>
+                <StackItem isFilled className="basic-layout-content">
+                  <SaveInProgress />
+                </StackItem>
+              </Stack>
+            </Flex>
+          )}
+
+          {!isSaving && (
+            <Flex justifyContent={{ default: 'justifyContentCenter' }} flex={{ default: 'flex_1' }}>
+              <Stack hasGutter>
+                {error?.title && (
+                  <Alert variant={AlertVariant.danger} isInline title={error.title}>
+                    {error.message}
+                  </Alert>
+                )}
+                <StackItem isFilled className="basic-layout-content">
+                  {children}
+                </StackItem>
+                <StackItem className="basic-layout-bottom-row">
+                  <Button onClick={onSave} isDisabled={!isValueChanged || isSaving}>
+                    Save
+                  </Button>
+                  <Button
+                    variant={ButtonVariant.link}
+                    onClick={onCancel}
+                    isDisabled={!isValueChanged || isSaving}
+                  >
+                    Cancel
+                  </Button>
+                </StackItem>
+              </Stack>
+            </Flex>
+          )}
         </Flex>
       </SidebarContent>
     </Sidebar>

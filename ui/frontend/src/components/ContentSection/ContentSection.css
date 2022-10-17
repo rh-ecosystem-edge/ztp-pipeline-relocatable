@@ -1,6 +1,6 @@
 .content-section {
     /* width: 768px; */
-    width: 600px;
+    width: 55vw;
     background-color: var(--pf-global--BackgroundColor--200);
     border-radius: 16px;
 }

@@ -6,7 +6,13 @@ import { Page } from '../Page';
 export const Layer3Page = () => {
   return (
     <Page>
-      <BasicLayout>
+      <BasicLayout
+        isValueChanged={false}
+        isSaving={false}
+        onSave={() => {
+          console.log('TODO: onSave');
+        }}
+      >
         <ContentSection>Ingress page content</ContentSection>
       </BasicLayout>
     </Page>
