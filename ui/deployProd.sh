@@ -29,7 +29,7 @@ cat ./deploy.yaml |
     oc apply -f -
 
 ### Restart the pod - just to be sure, i.e. TLS could be changed
-oc delete pod $(oc get pods | grep ztpfw-ui | awk '{print $1}' -)
+#oc delete pod $(oc get pods | grep ztpfw-ui | awk '{print $1}' -)
 oc get pods
 
 echo Do not forget to deploy CRDS via scripts/applyCrds.sh
