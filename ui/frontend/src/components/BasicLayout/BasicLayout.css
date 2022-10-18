@@ -1,3 +1,9 @@
+@media screen and (max-device-width: 1010px), screen and (max-width: 1010px) {
+  .pf-c-sidebar__panel {
+    max-width: 110px;
+  }
+}
+
 .basic-layout-left {
   padding-top: var(--pf-global--spacer--2xl);
   background-color: var(--pf-global--BackgroundColor--dark-100);
