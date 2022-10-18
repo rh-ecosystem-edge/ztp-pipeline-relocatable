@@ -1,8 +1,7 @@
 import React from 'react';
-import { Bullseye, Flex, FlexItem, Spinner, Text, TextContent } from '@patternfly/react-core';
+import { Bullseye, Flex, FlexItem, Spinner } from '@patternfly/react-core';
 
-// TODO: Change the picture
-import SittingGuyPict from '../BasicLayout/RedHatLogo.svg';
+import WorkingOnHybridCloud from './WorkingOnHybridCloud.svg';
 
 import './SaveInProgress.css';
 
@@ -10,7 +9,7 @@ export const SaveInProgress: React.FC = () => (
   <Bullseye>
     <Flex direction={{ default: 'column' }}>
       <FlexItem className="save-in-progress-item">
-        <img src={SittingGuyPict} alt="Logo" />
+        <img src={WorkingOnHybridCloud} alt="Logo" />
       </FlexItem>
       <FlexItem className="save-in-progress-item">
         <h1>Saving configuration...</h1>
