@@ -1,0 +1,9 @@
+.save-in-progress-item {
+  text-align: center;
+  align-items: center;
+}
+
+.save-in-progress-item > h1 {
+  font-weight: 500;
+  font-size: var(--pf-global--FontSize--xl);
+}
