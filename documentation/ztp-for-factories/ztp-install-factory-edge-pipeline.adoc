@@ -176,12 +176,12 @@ $ export KUBECONFIG=<path_to_kubeconfig>/kubeconfig-file
 +
 [source,terminal]
 ----
-$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster-yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters
+$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster-yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 7h --use-param-defaults deploy-ztp-edgeclusters
 ----
 +
 [NOTE]
 ====
-This command starts the pipeline in the namespace `edgecluster-deployer` with the defined configuration and the `kube` configuration in the workspace ztp with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
+This command starts the pipeline in the namespace `edgecluster-deployer` with the defined configuration and the `kube` configuration in the workspace ztp with the previously configured persistent storage claim `ztp-pvc`. A timeout of 7 hours is set for the execution of the `deploy-ztp-edgeclusters` with all other parameters set to the default.
 ====
 +
 .Example output
