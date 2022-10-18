@@ -21,6 +21,7 @@ import cloudyCircles from './cloudyCircles.svg';
 
 import './BasicLayout.css';
 import { SaveInProgress } from '../SaveInProgress';
+import { onLogout } from '../logout';
 
 const onCancel = () => {
   window.location.reload();
@@ -60,7 +61,7 @@ export const BasicLayout: React.FC<{
           </Flex>
 
           <Flex justifyContent={{ default: 'justifyContentCenter' }}>
-            <Button className="basic-layout-logout basic-layout-bottom-row">
+            <Button className="basic-layout-logout basic-layout-bottom-row" onClick={onLogout}>
               <PowerOffIcon />
               &nbsp;Log out
             </Button>
