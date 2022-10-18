@@ -6,9 +6,7 @@ import { ContentSection } from '../ContentSection';
 import { Page } from '../Page';
 import { IpTripletProps, IpTripletSelectorValidationType, UIError } from '../types';
 import { initialValidation, IpTripletsSelector } from '../IpTripletsSelector';
-import { SaveInProgress } from '../SaveInProgress';
-import { EMPTY_VIP } from '../constants';
-import { delay, ipTripletAddressValidator } from '../utils';
+import { ipTripletAddressValidator } from '../utils';
 
 import { loadIngressData } from './dataLoad';
 import { saveIngress } from './persist';
