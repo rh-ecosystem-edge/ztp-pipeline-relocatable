@@ -9,6 +9,9 @@ import {
   FlexItem,
   Stack,
   StackItem,
+  Text,
+  TextContent,
+  TextVariants,
 } from '@patternfly/react-core';
 import { PowerOffIcon } from '@patternfly/react-icons';
 import { Sidebar, SidebarContent, SidebarPanel } from '@patternfly/react-core';
@@ -74,6 +77,10 @@ export const BasicLayout: React.FC<{
       <SidebarContent className="basic-layout-right">
         <Flex>
           <FlexItem>
+            <TextContent className="basic-layout__settings">
+              <Text component={TextVariants.h1}>Settings</Text>
+            </TextContent>
+
             <Navigation />
           </FlexItem>
           <Divider

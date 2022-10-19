@@ -37,3 +37,8 @@
   position: absolute;
   bottom: var(--pf-global--spacer--3xl);
 }
+
+.basic-layout__settings {
+  margin-left: var(--pf-global--spacer--lg);
+  margin-bottom: var(--pf-global--spacer--xl);
+}
