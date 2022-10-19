@@ -23,19 +23,3 @@ export const SERVICE_TEMPLATE_METALLB_INGRESS: Service = {
     type: 'LoadBalancer',
   },
 };
-
-export const ADDRESS_POOL_TEMPLATE = {
-  apiVersion: 'metallb.io/v1alpha1',
-  kind: 'AddressPool',
-  metadata: {
-    generateName: 'ztpfw-', // To be filled
-    name: '',
-    namespace: ADDRESS_POOL_NAMESPACE,
-  },
-  spec: {
-    protocol: 'layer2',
-    addresses: [
-      '', // To be filled, example: '172.18.0.100-172.18.0.255',
-    ],
-  },
-};
