@@ -14,6 +14,7 @@ import {
 import { SaveInProgress } from './components/SaveInProgress';
 import { Layer3Page } from './components/Layer3Page/Layer3Page';
 import { IngressPage } from './components/IngressPage';
+import { OCPConsolePage } from './components/OCPConsolePage';
 
 import './App.css';
 
@@ -35,7 +36,7 @@ function App() {
         <Route path={URI_DOMAIN} element={<SaveInProgress />} />
         <Route path={URI_CREDENTIALS} element={<SaveInProgress />} />
         <Route path={URI_SSHKEY} element={<SaveInProgress />} />
-        <Route path={URI_CONSOLE} element={<SaveInProgress />} />
+        <Route path={URI_CONSOLE} element={<OCPConsolePage />} />
 
         <Route path="*" element={<Redirect to={URI_LAYER3} />} />
       </Routes>

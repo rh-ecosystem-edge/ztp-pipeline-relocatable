@@ -15,13 +15,13 @@ import { Sidebar, SidebarContent, SidebarPanel } from '@patternfly/react-core';
 
 import { Navigation } from '../Navigation';
 import { UIError } from '../types';
+import { SaveInProgress } from '../SaveInProgress';
+import { onLogout } from '../logout';
 
 import RedHatLogo from './RedHatLogo.svg';
 import cloudyCircles from './cloudyCircles.svg';
 
 import './BasicLayout.css';
-import { SaveInProgress } from '../SaveInProgress';
-import { onLogout } from '../logout';
 
 const onCancel = () => {
   window.location.reload();
@@ -29,10 +29,12 @@ const onCancel = () => {
 
 export const BasicLayout: React.FC<{
   error?: UIError;
-  isValueChanged: boolean;
-  isSaving: boolean;
-  onSave: () => void;
+  onSave?: () => void;
+  isValueChanged?: boolean;
+  isSaving?: boolean;
 }> = ({ error, isValueChanged, isSaving, onSave, children }) => {
+  const isSaveButton = onSave !== undefined;
+
   return (
     <Sidebar tabIndex={0}>
       <SidebarPanel variant="sticky" width={{ default: 'width_25' }} className="basic-layout-left">
@@ -105,18 +107,21 @@ export const BasicLayout: React.FC<{
                 <StackItem isFilled className="basic-layout-content">
                   {children}
                 </StackItem>
-                <StackItem className="basic-layout-bottom-row">
-                  <Button onClick={onSave} isDisabled={!isValueChanged || isSaving}>
-                    Save
-                  </Button>
-                  <Button
-                    variant={ButtonVariant.link}
-                    onClick={onCancel}
-                    isDisabled={!isValueChanged || isSaving}
-                  >
-                    Cancel
-                  </Button>
-                </StackItem>
+
+                {isSaveButton && (
+                  <StackItem className="basic-layout-bottom-row">
+                    <Button onClick={onSave} isDisabled={!isValueChanged || isSaving}>
+                      Save
+                    </Button>
+                    <Button
+                      variant={ButtonVariant.link}
+                      onClick={onCancel}
+                      isDisabled={!isValueChanged || isSaving}
+                    >
+                      Cancel
+                    </Button>
+                  </StackItem>
+                )}
               </Stack>
             </Flex>
           )}

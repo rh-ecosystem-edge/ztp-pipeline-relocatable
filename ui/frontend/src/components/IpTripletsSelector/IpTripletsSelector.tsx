@@ -1,11 +1,9 @@
 import React from 'react';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_100 as dangerColor } from '@patternfly/react-tokens';
-import { TextInput } from '@patternfly/react-core';
 
 import { IpTripletIndex, IpTripletProps, IpTripletSelectorValidationType } from '../types';
 import { IpTriplet } from '../IpTriplet';
-import { addIpDots } from '../utils';
 
 export const initialValidation: IpTripletSelectorValidationType = {
   valid: true,

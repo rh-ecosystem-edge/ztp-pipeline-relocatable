@@ -4,7 +4,7 @@ import { PatchType, Service } from '../../copy-backend-common';
 import { createResource, patchResource } from '../../resources';
 import { getService } from '../../resources/service';
 import { ADDRESS_POOL_ANNOTATION_KEY, ADDRESS_POOL_NAMESPACE } from '../constants';
-import { setUIErrorType, UIError } from '../types';
+import { setUIErrorType } from '../types';
 import { addIpDots } from '../utils';
 
 import { ADDRESS_POOL_TEMPLATE, SERVICE_TEMPLATE_METALLB_INGRESS } from './template';
