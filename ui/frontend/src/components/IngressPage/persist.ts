@@ -3,75 +3,12 @@ import { cloneDeep } from 'lodash';
 import { PatchType, Service } from '../../copy-backend-common';
 import { createResource, patchResource } from '../../resources';
 import { getService } from '../../resources/service';
-import { ADDRESS_POOL_ANNOTATION_KEY, ADDRESS_POOL_NAMESPACE } from '../constants';
+import { createAddressPool, patchAddressPool } from '../addressPool';
+import { ADDRESS_POOL_ANNOTATION_KEY } from '../constants';
 import { setUIErrorType } from '../types';
 import { addIpDots } from '../utils';
 
-import { ADDRESS_POOL_TEMPLATE, SERVICE_TEMPLATE_METALLB_INGRESS } from './template';
-
-const createAddressPool = async (
-  setError: setUIErrorType,
-  type: 'api' | 'ingress',
-  serviceIp: string,
-): Promise<string | undefined> => {
-  try {
-    const object = cloneDeep(ADDRESS_POOL_TEMPLATE);
-    object.metadata.generateName = `ztpfw-${type}-`;
-    // object.metadata.namespace = namespace;
-    object.spec.addresses = [`${serviceIp}-${serviceIp}`];
-
-    const response = await createResource(object).promise;
-    console.log('Resource created: ', response);
-
-    return response.metadata.name;
-  } catch (e) {
-    console.error('Can not create resource: ', e);
-    setError({
-      title: 'Resource create failed',
-      message: `Can not create ${type} AddressPool in the ${ADDRESS_POOL_NAMESPACE} namespace.`,
-    });
-  }
-  return undefined;
-};
-
-const patchAddressPool = async (
-  setError: setUIErrorType,
-  addressPoolName: string,
-  serviceIp: string,
-): Promise<boolean> => {
-  const addrPoolObj = {
-    // no need to fetch the resource, patch it right away
-    apiVersion: ADDRESS_POOL_TEMPLATE.apiVersion,
-    kind: ADDRESS_POOL_TEMPLATE.kind,
-    metadata: {
-      name: addressPoolName,
-      namespace: ADDRESS_POOL_NAMESPACE,
-    },
-  };
-  const addrPoolPatches = [
-    {
-      op: 'replace',
-      path: '/spec/addresses',
-      value: [`${serviceIp}-${serviceIp}`],
-    },
-  ];
-
-  try {
-    await patchResource(addrPoolObj, addrPoolPatches).promise;
-    console.log(
-      `Patched ${addressPoolName} AddressPool name in the ${ADDRESS_POOL_NAMESPACE} namespace`,
-    );
-  } catch (e) {
-    console.error('Can not patch resource: ', e, addrPoolObj, addrPoolPatches);
-    setError({
-      title: 'Resource update failed',
-      message: `Can not update ${addressPoolName} AddressPool in the ${ADDRESS_POOL_NAMESPACE} namespace.`,
-    });
-    return false;
-  }
-
-  return true;
-};
+import { SERVICE_TEMPLATE_METALLB_INGRESS } from './template';
 
 export const saveService = async (
   setError: setUIErrorType,

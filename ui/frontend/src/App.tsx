@@ -15,6 +15,7 @@ import { SaveInProgress } from './components/SaveInProgress';
 import { Layer3Page } from './components/Layer3Page/Layer3Page';
 import { IngressPage } from './components/IngressPage';
 import { OCPConsolePage } from './components/OCPConsolePage';
+import { APIPage } from './components/APIPage';
 
 import './App.css';
 
@@ -32,7 +33,7 @@ function App() {
         {/* TODO: Replace SaveInProgress by actual implementation */}
         <Route path={URI_LAYER3} element={<Layer3Page />} />
         <Route path={URI_INGRESS} element={<IngressPage />} />
-        <Route path={URI_API} element={<SaveInProgress />} />
+        <Route path={URI_API} element={<APIPage />} />
         <Route path={URI_DOMAIN} element={<SaveInProgress />} />
         <Route path={URI_CREDENTIALS} element={<SaveInProgress />} />
         <Route path={URI_SSHKEY} element={<SaveInProgress />} />
