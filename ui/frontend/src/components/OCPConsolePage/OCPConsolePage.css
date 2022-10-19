@@ -1,0 +1,34 @@
+.console-page__etc-hosts input {
+  /* Since we have gray backgroud*/
+  background-color: var(--pf-global--BackgroundColor--100) !important;
+
+  width: 50%;
+  min-width: 20rem;
+}
+
+.console-page__main-section {
+  background-color: #e7f1fa;
+
+  height: 60vh;
+}
+
+.console-page__main-section-circles {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 45%;
+  height: auto;
+}
+
+.console-page__main-section-logo-with-button {
+  position: absolute;
+  left: 10%;
+  top: 30%;
+  width: 40%;
+  height: auto;
+}
+
+.console-page__main-section-logo-with-button button {
+  margin-top: var(--pf-global--spacer--sm);
+  margin-left: 20%;
+}

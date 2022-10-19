@@ -6,7 +6,7 @@
 
 .basic-layout-left {
   padding-top: var(--pf-global--spacer--2xl);
-  background-color: var(--pf-global--BackgroundColor--dark-100);
+  background-color: var(--pf-global--BackgroundColor--dark-100) !important;
   color: var(--pf-global--Color--light-100);
   height: 100vh;
   overflow: auto;

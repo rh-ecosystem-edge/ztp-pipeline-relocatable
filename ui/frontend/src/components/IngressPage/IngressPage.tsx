@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextContent, TextVariants, Text, FormGroup } from '@patternfly/react-core';
+import { TextContent, TextVariants, Text, FormGroup, Spinner } from '@patternfly/react-core';
 
 import { BasicLayout } from '../BasicLayout';
 import { ContentSection } from '../ContentSection';
@@ -22,10 +22,9 @@ export const IngressPage = () => {
   React.useEffect(
     () => {
       const doItAsync = async () => {
-        const loaded = '192168  1  1'; // Test data only
+        // const loaded = '192168  1  1'; // Test data only
 
-        // TODO uncomment here:
-        // const loaded = await loadIngressData({ setError });
+        const loaded = await loadIngressData({ setError });
 
         setIngressVip(loaded);
         setLoadedValue(loaded);
@@ -80,6 +79,7 @@ export const IngressPage = () => {
             </Text>
           </TextContent>
           <br />
+          {!ingressVip && <Spinner size="sm" />}
           {ingressVip && (
             <FormGroup
               fieldId="ingress-ip"
