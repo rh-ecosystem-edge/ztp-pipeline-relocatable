@@ -20,22 +20,20 @@ import { Navigation } from '../Navigation';
 import { UIError } from '../types';
 import { SaveInProgress } from '../SaveInProgress';
 import { onLogout } from '../logout';
+import { reloadPage } from '../utils';
 
 import RedHatLogo from './RedHatLogo.svg';
 import cloudyCircles from './cloudyCircles.svg';
 
 import './BasicLayout.css';
 
-const onCancel = () => {
-  window.location.reload();
-};
-
 export const BasicLayout: React.FC<{
   error?: UIError;
   onSave?: () => void;
   isValueChanged?: boolean;
   isSaving?: boolean;
-}> = ({ error, isValueChanged, isSaving, onSave, children }) => {
+  actions?: React.ReactNode[];
+}> = ({ error, isValueChanged, isSaving, onSave, actions = [], children }) => {
   const isSaveButton = onSave !== undefined;
 
   return (
@@ -115,20 +113,24 @@ export const BasicLayout: React.FC<{
                   {children}
                 </StackItem>
 
-                {isSaveButton && (
-                  <StackItem className="basic-layout-bottom-row">
+                <StackItem className="basic-layout-bottom-row">
+                  {isSaveButton && (
                     <Button onClick={onSave} isDisabled={!isValueChanged || isSaving}>
                       Save
                     </Button>
+                  )}
+
+                  {isSaveButton && (
                     <Button
                       variant={ButtonVariant.link}
-                      onClick={onCancel}
+                      onClick={reloadPage}
                       isDisabled={!isValueChanged || isSaving}
                     >
                       Cancel
                     </Button>
-                  </StackItem>
-                )}
+                  )}
+                  {actions}
+                </StackItem>
               </Stack>
             </Flex>
           )}

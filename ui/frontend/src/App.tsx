@@ -16,6 +16,7 @@ import { Layer3Page } from './components/Layer3Page/Layer3Page';
 import { IngressPage } from './components/IngressPage';
 import { OCPConsolePage } from './components/OCPConsolePage';
 import { APIPage } from './components/APIPage';
+import { CredentialsPage } from './components/CredentialsPage';
 
 import './App.css';
 
@@ -35,7 +36,7 @@ function App() {
         <Route path={URI_INGRESS} element={<IngressPage />} />
         <Route path={URI_API} element={<APIPage />} />
         <Route path={URI_DOMAIN} element={<SaveInProgress />} />
-        <Route path={URI_CREDENTIALS} element={<SaveInProgress />} />
+        <Route path={URI_CREDENTIALS} element={<CredentialsPage />} />
         <Route path={URI_SSHKEY} element={<SaveInProgress />} />
         <Route path={URI_CONSOLE} element={<OCPConsolePage />} />
 

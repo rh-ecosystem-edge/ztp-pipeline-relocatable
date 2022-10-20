@@ -67,19 +67,6 @@ export const SERVICE_TEMPLATE_API: Service = {
   },
 };
 
-export const HTPASSWD_SECRET: Secret = {
-  apiVersion: SecretApiVersion,
-  data: {
-    htpasswd: '', // To be filled
-  },
-  kind: SecretKind,
-  metadata: {
-    generateName: 'ztpfw-htpasswd-secret-',
-    namespace: 'openshift-config',
-  },
-  type: 'Opaque',
-};
-
 export const CLUSTER_ADMIN_ROLE_BINDING = {
   apiVersion: 'rbac.authorization.k8s.io/v1',
   kind: 'ClusterRoleBinding',
