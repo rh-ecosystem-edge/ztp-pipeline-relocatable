@@ -38,7 +38,16 @@
   bottom: var(--pf-global--spacer--3xl);
 }
 
+.basic-layout-right .basic-layout-bottom-row {
+  /* Kepp equal to width of the .content-section */
+  width: 50vw;
+}
+
 .basic-layout__settings {
   margin-left: var(--pf-global--spacer--lg);
   margin-bottom: var(--pf-global--spacer--xl);
+}
+
+.basic-layout__extra-action {
+  float: right;
 }

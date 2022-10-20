@@ -1,5 +1,4 @@
 import { Service, ServiceApiVersion, ServiceKind } from '../../copy-backend-common';
-import { ADDRESS_POOL_NAMESPACE } from '../constants';
 
 export const SERVICE_TEMPLATE_METALLB_INGRESS: Service = {
   kind: ServiceKind,
