@@ -1,0 +1,27 @@
+.domain-certificates__panel {
+  background-color: var(--pf-global--BackgroundColor--200);
+}
+
+.domain-certificates__panel .pf-c-panel__main-body {
+  padding: 0px;
+}
+
+.domain-certificates__panel .pf-m-disabled {
+  background-color: var(--pf-global--disabled-color--200);
+}
+
+.domain-certificates__panel .pf-c-form-control[readonly] {
+  background-color: var(--pf-global--disabled-color--200);
+}
+
+.domain-certificates__panel .pf-c-form__group {
+  margin-top: var(--pf-global--spacer--sm);
+}
+
+.domain-certificate {
+  margin-top: var(--pf-global--spacer--xs);
+}
+
+.domain-certificate__keycert {
+  width: 100%;
+}

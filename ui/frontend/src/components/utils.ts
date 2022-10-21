@@ -1,8 +1,20 @@
-import { getCondition } from '../copy-backend-common';
+import { FormGroupProps } from '@patternfly/react-core';
+import { Buffer } from 'buffer';
+
+import { DNS_NAME_REGEX, getCondition, TlsCertificate } from '../copy-backend-common';
 import { getRequest } from '../resources';
 import { getClusterOperator } from '../resources/clusteroperator';
+
 import { DELAY_BEFORE_QUERY_RETRY, EMPTY_VIP, MAX_LIVENESS_CHECK_COUNT } from './constants';
-import { IpTripletSelectorValidationType, setUIErrorType } from './types';
+import {
+  CustomCertsValidationType,
+  IpTripletSelectorValidationType,
+  setUIErrorType,
+} from './types';
+
+export const toBase64 = (str: string) => Buffer.from(str).toString('base64');
+export const fromBase64ToUtf8 = (b64Str?: string): string | undefined =>
+  b64Str === undefined ? undefined : Buffer.from(b64Str, 'base64').toString('utf8');
 
 export const ipWithoutDots = (ip?: string): string => {
   if (ip) {
@@ -31,6 +43,18 @@ export const addIpDots = (addressWithoutDots: string): string => {
   }
 
   throw new Error('Invalid address: ' + addressWithoutDots);
+};
+
+export const domainValidator = (domain: string) => {
+  if (!domain) {
+    return 'Provide a valid domain for the cluster.';
+  }
+
+  if (domain?.match(DNS_NAME_REGEX)) {
+    return ''; // passed
+  }
+
+  return "Valid domain wasn't provided.";
 };
 
 export const ipTripletAddressValidator = (
@@ -161,4 +185,66 @@ export const waitForClusterOperator = async (
   });
 
   return false;
+};
+
+export const customCertsValidator = (
+  oldValidation: CustomCertsValidationType,
+  domain: string,
+  certificate: TlsCertificate,
+): CustomCertsValidationType => {
+  const validation: CustomCertsValidationType = { ...oldValidation };
+
+  let certValidated: FormGroupProps['validated'] = 'default';
+  let certLabelHelperText = '';
+  let certLabelInvalid = '';
+  if (!certificate?.['tls.crt'] && certificate?.['tls.key']) {
+    certValidated = 'error';
+    certLabelInvalid = 'Both key and certificate must be provided at once.';
+  } else if (!certificate?.['tls.crt']) {
+    certLabelHelperText =
+      'When not uploaded, a self-signed certificate will be generated automatically.';
+  }
+
+  let keyValidated: FormGroupProps['validated'] = 'default';
+  let keyLabelInvalid = '';
+  if (certificate?.['tls.crt'] && !certificate?.['tls.key']) {
+    keyValidated = 'error';
+    keyLabelInvalid = 'Both key and certificate must be provided at once.';
+  }
+
+  const tlsCrt = fromBase64ToUtf8(certificate['tls.crt'])?.trim().split('\n');
+  const tlsKey = fromBase64ToUtf8(certificate['tls.key'])?.trim().split('\n');
+  if (tlsCrt?.length && tlsKey?.length && tlsCrt.length > 2 && tlsKey.length > 2) {
+    // The header/footer are not required but commonly used, so let's try to check the format based on them
+    if (
+      !tlsCrt[0].includes('--BEGIN CERTIFICATE--') ||
+      !tlsCrt?.[tlsCrt.length - 1].includes('--END CERTIFICATE--')
+    ) {
+      certValidated = 'error';
+      certLabelInvalid = 'The provided certificate does not conform PEM format.';
+    } else {
+      certValidated = 'success';
+    }
+
+    if (
+      !tlsKey[0].includes('--BEGIN PRIVATE KEY--') ||
+      !tlsKey?.[tlsKey.length - 1].includes('--END PRIVATE KEY--')
+    ) {
+      keyValidated = 'error';
+      keyLabelInvalid = 'The provided key does not conform PEM format.';
+    } else {
+      keyValidated = 'success';
+    }
+  }
+
+  validation[domain] = {
+    certValidated,
+    certLabelHelperText,
+    certLabelInvalid,
+
+    keyValidated,
+    keyLabelInvalid,
+  };
+
+  return validation;
 };

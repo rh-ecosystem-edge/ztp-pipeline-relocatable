@@ -11,13 +11,14 @@ import {
   URI_LAYER3,
   URI_SSHKEY,
 } from './components/Navigation/routes';
-import { SaveInProgress } from './components/SaveInProgress';
+
 import { Layer3Page } from './components/Layer3Page/Layer3Page';
 import { IngressPage } from './components/IngressPage';
 import { OCPConsolePage } from './components/OCPConsolePage';
 import { APIPage } from './components/APIPage';
 import { CredentialsPage } from './components/CredentialsPage';
 import { SshKeyPage } from './components/SshKeyPage/SshKeyPage';
+import { DomainPage } from './components/DomainPage/DomainPage';
 
 import './App.css';
 
@@ -36,7 +37,7 @@ function App() {
         <Route path={URI_LAYER3} element={<Layer3Page />} />
         <Route path={URI_INGRESS} element={<IngressPage />} />
         <Route path={URI_API} element={<APIPage />} />
-        <Route path={URI_DOMAIN} element={<SaveInProgress />} />
+        <Route path={URI_DOMAIN} element={<DomainPage />} />
         <Route path={URI_CREDENTIALS} element={<CredentialsPage />} />
         <Route path={URI_SSHKEY} element={<SshKeyPage />} />
         <Route path={URI_CONSOLE} element={<OCPConsolePage />} />
