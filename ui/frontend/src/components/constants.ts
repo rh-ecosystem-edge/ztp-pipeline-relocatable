@@ -8,3 +8,7 @@ export const DELAY_BEFORE_QUERY_RETRY = 5 * 1000; /* ms */
 export const MAX_LIVENESS_CHECK_COUNT = 20 * ((60 * 1000) / DELAY_BEFORE_QUERY_RETRY); // max 20 minutes
 
 export const KubeadminSecret = { name: 'kubeadmin', namespace: 'kube-system' };
+export const SSH_PRIVATE_KEY_SECRET = {
+  name: 'cluster-ssh-keypair',
+  namespace: 'default' /* !?! */,
+};
