@@ -29,11 +29,12 @@ import './BasicLayout.css';
 
 export const BasicLayout: React.FC<{
   error?: UIError;
+  warning?: UIError;
   onSave?: () => void;
   isValueChanged?: boolean;
   isSaving?: boolean;
   actions?: React.ReactNode[];
-}> = ({ error, isValueChanged, isSaving, onSave, actions = [], children }) => {
+}> = ({ error, warning, isValueChanged, isSaving, onSave, actions = [], children }) => {
   const isSaveButton = onSave !== undefined;
 
   return (
@@ -107,6 +108,11 @@ export const BasicLayout: React.FC<{
                 {error?.title && (
                   <Alert variant={AlertVariant.danger} isInline title={error.title}>
                     {error.message}
+                  </Alert>
+                )}
+                {warning?.title && (
+                  <Alert variant={AlertVariant.warning} isInline title={warning.title}>
+                    {warning.message}
                   </Alert>
                 )}
                 <StackItem isFilled className="basic-layout-content">
