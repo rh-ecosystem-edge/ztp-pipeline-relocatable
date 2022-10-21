@@ -7,6 +7,8 @@ import {
   Divider,
   Flex,
   FlexItem,
+  Panel,
+  PanelMain,
   Stack,
   StackItem,
   Text,
@@ -118,24 +120,27 @@ export const BasicLayout: React.FC<{
                 <StackItem isFilled className="basic-layout-content">
                   {children}
                 </StackItem>
+                <StackItem>
+                  <Panel>
+                    <PanelMain>
+                      {isSaveButton && (
+                        <Button onClick={onSave} isDisabled={!isValueChanged || isSaving}>
+                          Save
+                        </Button>
+                      )}
 
-                <StackItem className="basic-layout-bottom-row">
-                  {isSaveButton && (
-                    <Button onClick={onSave} isDisabled={!isValueChanged || isSaving}>
-                      Save
-                    </Button>
-                  )}
-
-                  {isSaveButton && (
-                    <Button
-                      variant={ButtonVariant.link}
-                      onClick={reloadPage}
-                      isDisabled={!isValueChanged || isSaving}
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                  {actions}
+                      {isSaveButton && (
+                        <Button
+                          variant={ButtonVariant.link}
+                          onClick={reloadPage}
+                          isDisabled={!isValueChanged || isSaving}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                      {actions}
+                    </PanelMain>
+                  </Panel>
                 </StackItem>
               </Stack>
             </Flex>

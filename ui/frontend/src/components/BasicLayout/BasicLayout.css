@@ -19,6 +19,7 @@
 
 .basic-layout-right {
   padding-top: var(--pf-global--spacer--2xl);
+  margin-bottom: var(--pf-global--spacer--2xl);
 }
 
 .basic-layout-left-center {
@@ -30,7 +31,7 @@
 }
 
 .basic-layout-content {
-  height: 80vh;
+  min-height: 80vh;
 }
 
 .basic-layout-bottom-row {
