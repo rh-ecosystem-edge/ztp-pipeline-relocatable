@@ -26,14 +26,15 @@ export const Navigation: React.FC = () => {
   return (
     <Nav aria-label="Main navigation" theme="light" onSelect={onSelect} className="main-navigation">
       <NavGroup title="Networking">
-        <NavItem
+        {/* Temporarily disabled
+         <NavItem
           preventDefault
           to={URI_LAYER3}
           itemId="layer3"
           isActive={activeItem === URI_LAYER3}
         >
           TCP/IP
-        </NavItem>
+        </NavItem> */}
         <NavItem
           preventDefault
           to={URI_INGRESS}
