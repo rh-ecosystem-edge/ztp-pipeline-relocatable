@@ -22,6 +22,11 @@
   margin-bottom: var(--pf-global--spacer--2xl);
 }
 
+.basic-layout__alert {
+  /* like .content-section */
+  width: 50vw;
+}
+
 .basic-layout-left-center {
   height: 70vh;
 }
@@ -30,7 +35,7 @@
   background-color: var(--pf-global--Color--300) !important;
 }
 
-.basic-layout-content {
+.basic-layout__navigation {
   min-height: 80vh;
 }
 

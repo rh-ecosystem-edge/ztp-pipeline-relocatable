@@ -8,7 +8,6 @@ import {
   PanelMainBody,
   FlexItem,
   Flex,
-  FlexProps,
   DescriptionList,
   DescriptionListGroup,
   DescriptionListTerm,
@@ -48,8 +47,6 @@ const getTitle = (
   keyValidated: FormGroupProps['validated'],
 ): React.ReactElement | string => {
   let title: React.ReactElement | string;
-  const forDomain = isExpanded ? undefined : <> certificate for {domain}</>;
-
   if (!domainCert?.['tls.crt'] && !domainCert?.['tls.key']) {
     title = (
       <>

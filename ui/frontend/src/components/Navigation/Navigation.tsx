@@ -8,7 +8,7 @@ import {
   URI_CREDENTIALS,
   URI_DOMAIN,
   URI_INGRESS,
-  URI_LAYER3,
+  //  URI_LAYER3,
   URI_SSHKEY,
 } from './routes';
 

@@ -7,8 +7,11 @@ import {
   Divider,
   Flex,
   FlexItem,
+  List,
+  ListItem,
   Panel,
   PanelMain,
+  Spinner,
   Stack,
   StackItem,
   Text,
@@ -28,6 +31,7 @@ import RedHatLogo from './RedHatLogo.svg';
 import cloudyCircles from './cloudyCircles.svg';
 
 import './BasicLayout.css';
+import { useOperatorsReconciling } from '../operators';
 
 export const BasicLayout: React.FC<{
   error?: UIError;
@@ -37,7 +41,11 @@ export const BasicLayout: React.FC<{
   isSaving?: boolean;
   actions?: React.ReactNode[];
 }> = ({ error, warning, isValueChanged, isSaving, onSave, actions = [], children }) => {
+  const operatorsReconciling = useOperatorsReconciling();
+
   const isSaveButton = onSave !== undefined;
+  const isOperatorReconciling =
+    operatorsReconciling === undefined || operatorsReconciling.length > 0;
 
   return (
     <Sidebar tabIndex={0}>
@@ -77,7 +85,7 @@ export const BasicLayout: React.FC<{
 
       <SidebarContent className="basic-layout-right">
         <Flex>
-          <FlexItem>
+          <FlexItem className="basic-layout__navigation">
             <TextContent className="basic-layout__settings">
               <Text component={TextVariants.h1}>Settings</Text>
             </TextContent>
@@ -107,16 +115,50 @@ export const BasicLayout: React.FC<{
           {!isSaving && (
             <Flex justifyContent={{ default: 'justifyContentCenter' }} flex={{ default: 'flex_1' }}>
               <Stack hasGutter>
-                {error?.title && (
-                  <Alert variant={AlertVariant.danger} isInline title={error.title}>
-                    {error.message}
-                  </Alert>
-                )}
-                {warning?.title && (
-                  <Alert variant={AlertVariant.warning} isInline title={warning.title}>
-                    {warning.message}
-                  </Alert>
-                )}
+                <StackItem>
+                  {error?.title && (
+                    <Alert
+                      variant={AlertVariant.danger}
+                      isInline
+                      title={error.title}
+                      className="basic-layout__alert"
+                    >
+                      {error.message}
+                    </Alert>
+                  )}
+                  {isOperatorReconciling && isSaveButton && (
+                    <Alert
+                      variant={AlertVariant.warning}
+                      isInline
+                      title="Operator reconciliation is in progress"
+                      className="basic-layout__alert"
+                    >
+                      Saving changes is not possible until operators become ready. They are probably
+                      reconciling after previous changes.
+                      {operatorsReconciling !== undefined && (
+                        <>
+                          <br />
+                          <List isPlain>
+                            {operatorsReconciling.map((op) => (
+                              <ListItem key="op.metadata.name">{op.metadata.name}</ListItem>
+                            ))}
+                          </List>
+                        </>
+                      )}
+                    </Alert>
+                  )}
+                  {warning?.title && (
+                    <Alert
+                      variant={AlertVariant.warning}
+                      isInline
+                      title={warning.title}
+                      className="basic-layout__alert"
+                    >
+                      {warning.message}
+                    </Alert>
+                  )}
+                </StackItem>
+
                 <StackItem isFilled className="basic-layout-content">
                   {children}
                 </StackItem>
@@ -125,6 +167,12 @@ export const BasicLayout: React.FC<{
                     <PanelMain>
                       {isSaveButton && (
                         <Button onClick={onSave} isDisabled={!isValueChanged || isSaving}>
+                          {isOperatorReconciling && (
+                            <>
+                              <Spinner size="sm" />
+                              &nbsp;
+                            </>
+                          )}
                           Save
                         </Button>
                       )}
@@ -133,7 +181,7 @@ export const BasicLayout: React.FC<{
                         <Button
                           variant={ButtonVariant.link}
                           onClick={reloadPage}
-                          isDisabled={!isValueChanged || isSaving}
+                          isDisabled={!isValueChanged || isSaving || isOperatorReconciling}
                         >
                           Cancel
                         </Button>
