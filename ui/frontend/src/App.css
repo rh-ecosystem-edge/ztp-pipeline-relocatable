@@ -5,8 +5,16 @@
 .pf-c-form__helper-text.pf-m-error {
   color: var(--pf-global--danger-color--100);
 }
+
 .text-sublabel {
   align-content: center;
   color: var(--pf-global--palette--black-600);
   font-size: var(--pf-global--FontSize--sm);
+}
+
+.text-sublabel-dense {
+  align-content: center;
+  color: var(--pf-global--palette--black-600);
+  font-size: var(--pf-global--FontSize--sm);
+  font-weight: 600;
 }

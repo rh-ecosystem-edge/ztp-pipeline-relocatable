@@ -1,3 +1,9 @@
+export interface OwnerReference {
+  apiVersion: string;
+  kind: string;
+  name: string;
+  uid: string;
+}
 export interface Metadata {
   name?: string;
   namespace?: string;
@@ -10,4 +16,5 @@ export interface Metadata {
   deletionTimestamp?: string;
   selfLink?: string;
   finalizers?: string[];
+  ownerReferences?: OwnerReference[];
 }

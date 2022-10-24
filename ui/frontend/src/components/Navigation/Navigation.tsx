@@ -8,7 +8,7 @@ import {
   URI_CREDENTIALS,
   URI_DOMAIN,
   URI_INGRESS,
-  //  URI_LAYER3,
+  URI_LAYER3,
   URI_SSHKEY,
 } from './routes';
 
@@ -26,15 +26,14 @@ export const Navigation: React.FC = () => {
   return (
     <Nav aria-label="Main navigation" theme="light" onSelect={onSelect} className="main-navigation">
       <NavGroup title="Networking">
-        {/* Temporarily disabled
-         <NavItem
+        <NavItem
           preventDefault
           to={URI_LAYER3}
           itemId="layer3"
           isActive={activeItem === URI_LAYER3}
         >
           TCP/IP
-        </NavItem> */}
+        </NavItem>
         <NavItem
           preventDefault
           to={URI_INGRESS}

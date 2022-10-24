@@ -17,6 +17,7 @@ import {
   user,
   configure,
   validateDomain,
+  changeStaticIps,
 } from './endpoints';
 
 const PORT = process.env.BACKEND_PORT || 3001;
@@ -96,6 +97,7 @@ const start = () => {
   app.post(`/htpasswd`, htpasswd);
   app.post(`/validatedomain`, validateDomain);
   app.post(`/changeDomain`, changeDomain);
+  app.post(`/changeStaticIps`, changeStaticIps);
 
   app.get('/user', user);
   app.get('/configure', configure);

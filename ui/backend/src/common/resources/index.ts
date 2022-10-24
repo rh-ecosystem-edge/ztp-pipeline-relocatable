@@ -12,3 +12,6 @@ export * from './deployment';
 export * from './pod';
 export * from './clusteroperator';
 export * from './utils';
+export * from './NodeNetworkState';
+export * from './NodeNetworkConfigurationPolicy';
+export * from './node';

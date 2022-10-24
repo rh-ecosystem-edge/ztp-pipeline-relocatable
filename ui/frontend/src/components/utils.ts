@@ -1,5 +1,6 @@
 import { FormGroupProps } from '@patternfly/react-core';
 import { Buffer } from 'buffer';
+import { Address4 } from 'ip-address';
 
 import { DNS_NAME_REGEX, getCondition, TlsCertificate } from '../copy-backend-common';
 import { getRequest } from '../resources';
@@ -66,7 +67,7 @@ export const ipTripletAddressValidator = (
   for (let i = 0; i <= 3; i++) {
     const triplet = addr.substring(i * 3, (i + 1) * 3).trim();
     const num = parseInt(triplet);
-    const valid = num >= 0 && num <= 255;
+    const valid = num >= 0 && num <= 255 && /^\d+$/.test(triplet);
 
     validation.valid = validation.valid && valid;
     validation.triplets.push(valid ? 'success' : 'default');
@@ -247,4 +248,37 @@ export const customCertsValidator = (
   };
 
   return validation;
+};
+
+export const ipAddressValidator = (ipWithDots?: string): string | undefined => {
+  // TODO: Use ip-address package instead
+  if (!ipWithDots || !ipWithDots.trim()) {
+    return 'Provide static IP of the interface.';
+  }
+
+  const validation = ipTripletAddressValidator(ipWithoutDots(ipWithDots));
+  return validation.valid ? undefined : validation.message;
+};
+
+export const prefixLengthValidator = (prefLength?: string | number): string | undefined => {
+  if (prefLength === undefined) {
+    return undefined;
+  }
+
+  if (prefLength >= 1 && prefLength <= 32) {
+    return undefined;
+  }
+
+  return 'A number between 1 and 32 is expected.';
+};
+
+export const getSubnetRange = (ip?: string, prefixLength?: number) => {
+  if (!ip || !prefixLength) {
+    return undefined;
+  }
+
+  const subnet = new Address4(`${ip}/${prefixLength}`);
+  const subnetStart = subnet.startAddress().correctForm();
+  const subnetEnd = subnet.endAddress().correctForm();
+  return `(${subnetStart} - ${subnetEnd})`;
 };

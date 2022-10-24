@@ -8,3 +8,4 @@ export * from './changeDomain';
 export * from './user';
 export * from './configure';
 export * from './validateDomain';
+export * from './changeStaticIps';

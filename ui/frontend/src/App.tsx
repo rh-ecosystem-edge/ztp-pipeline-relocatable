@@ -33,7 +33,6 @@ function App() {
           />
         )}
 
-        {/* TODO: Replace SaveInProgress by actual implementation */}
         <Route path={URI_LAYER3} element={<Layer3Page />} />
         <Route path={URI_INGRESS} element={<IngressPage />} />
         <Route path={URI_API} element={<APIPage />} />

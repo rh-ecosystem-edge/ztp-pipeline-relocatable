@@ -36,6 +36,7 @@
     "string.prototype.replaceall": "^1.0.6"
   },
   "scripts": {
+    "postinstall": "hack/patchWebpack.sh",
     "start": "HTTPS=true SSL_CRT_FILE=${TLS_CERT_FILE} SSL_KEY_FILE=${TLS_KEY_FILE} react-scripts start",
     "build": "react-scripts build",
     "backend-common": "rm -rf src/copy-backend-common ; cp -r ../backend/src/common src/copy-backend-common",
