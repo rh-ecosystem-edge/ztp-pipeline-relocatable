@@ -10,8 +10,12 @@ import { ipAddressValidator, prefixLengthValidator } from '../utils';
 import { HostStaticIP } from './HostStaticIP';
 
 import './Layer3Page.css';
+import { loadStaticIPs } from './dataLoad';
+import { getAllNodes } from '../../resources/node';
+import { getAllNodeNetworkStates } from '../../resources/nodeNetworkStates';
 
 export const Layer3Page = () => {
+  const [error, setError] = React.useState<UIError>();
   const [isAutomatic, setAutomatic] = React.useState(true);
   const [hosts, setHosts] = React.useState<HostType[]>([]);
 
@@ -59,19 +63,18 @@ export const Layer3Page = () => {
     [hosts, setHosts],
   );
 
-  // TODO: this can be one-time action
-  const sortedHosts = hosts.sort((h1, h2) => {
-    // First by role, control plane nodes first
-    if (h1.role !== h2.role) {
-      if (h1.role === 'control') {
-        return -1;
-      }
-      return 1;
-    }
+  React.useEffect(
+    () => {
+      const doItAsync = async () => {
+        setHosts(await loadStaticIPs(setError));
+      };
 
-    // Then by hostname
-    return (h1.hostname || h1.nodeName).localeCompare(h2.hostname || h2.nodeName);
-  });
+      doItAsync();
+    },
+    [
+      /* One-time action */
+    ],
+  );
 
   const clearStaticIPs = () => {
     console.log('-- TODO: clearStaticIPs()');
@@ -82,6 +85,7 @@ export const Layer3Page = () => {
       <BasicLayout
         isValueChanged={false}
         isSaving={false}
+        error={error}
         onSave={() => {
           console.log('TODO: onSave');
         }}
@@ -133,7 +137,7 @@ export const Layer3Page = () => {
               </Text>
             </TextContent>
             <br />
-            {sortedHosts.map((h, idx) => {
+            {hosts.map((h, idx) => {
               // Assumption: hosts are sorted by "role", control planes first
               const isLeadingControlPlane = idx === 0;
 
