@@ -89,13 +89,14 @@ export const loginCallback = async (req: Request, res: Response): Promise<void> 
       client_secret: process.env.OAUTH2_CLIENT_SECRET || '',
     };
     const requestQueryString = stringifyQuery(requestQuery);
+    console.log('Requesting access token via ', oauthInfo.token_endpoint);
     const body = await jsonRequest<{ access_token: string }>(
       oauthInfo.token_endpoint + '?' + requestQueryString,
     );
     if (body.access_token) {
       let attributes: string;
       if (process.env.FRONTEND_URL?.startsWith('https://')) {
-        attributes = 'Secure; Path=/';
+        attributes = 'Secure; HttpOnly; Path=/';
       } else {
         logger.log('Setting HttpOnly cookie.');
         attributes = 'HttpOnly; Path=/';

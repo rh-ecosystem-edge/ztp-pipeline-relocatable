@@ -407,14 +407,14 @@ export async function fetchRetry<T>(options: {
       if (!response.headers.get('content-type')?.includes('text/plain')) {
         try {
           responseData = (await response.json()) as T;
-        } catch {
-          console.error('Error getting resource json response.');
+        } catch (e) {
+          console.error('Error getting resource json response.', e);
         }
       } else {
         try {
           responseData = await response.text();
-        } catch {
-          console.error('Error getting resource text response.');
+        } catch (e) {
+          console.error('Error getting resource text response.', e);
         }
       }
 

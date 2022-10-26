@@ -181,3 +181,9 @@ export const bindOnBeforeUnloadPage = (message: string) => {
 export const unbindOnBeforeUnloadPage = () => {
   window.onbeforeunload = null;
 };
+
+export const getLoginCallbackUrl = () => `${window.location.origin}/login/callback`;
+
+// Relative URIs only are allowed here. The only exception is OCP Web Console
+export const getAuthorizationEndpointUrl = () =>
+  `/oauth/authorize?response_type=code&client_id=ztpfwoauth&redirect_uri=${getLoginCallbackUrl()}&scope=user%3Afull&state=`;

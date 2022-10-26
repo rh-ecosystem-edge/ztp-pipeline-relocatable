@@ -8,7 +8,7 @@ import { WelcomePage } from './WelcomePage';
 import { K8SStateContextProvider } from '../K8SStateContext';
 import { WizardProgressContextProvider } from '../WizardProgress';
 import { delay } from '../../test-utils';
-import { IDENTITY_PROVIDER_NAME } from '../PersistPage/constants';
+import { IDENTITY_PROVIDER_NAME } from '../../copy-backend-common';
 
 const mockedUsedNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({

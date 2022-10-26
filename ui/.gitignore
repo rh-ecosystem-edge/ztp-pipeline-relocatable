@@ -7,7 +7,7 @@ frontend/node_modules
 frontend/coverage
 frontend/src/copy-backend-common
 
-scripts/certs
+./deploy.yaml
 
 node_modules
 TODO
