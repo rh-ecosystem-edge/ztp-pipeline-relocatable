@@ -5,6 +5,7 @@ import { Address4 } from 'ip-address';
 import { DNS_NAME_REGEX, getCondition, TlsCertificate } from '../copy-backend-common';
 import { getRequest } from '../resources';
 import { getClusterOperator } from '../resources/clusteroperator';
+import { getZtpfwUrl } from '../resources/utils';
 
 import { DELAY_BEFORE_QUERY_RETRY, EMPTY_VIP, MAX_LIVENESS_CHECK_COUNT } from './constants';
 import {
@@ -97,8 +98,6 @@ export const delay = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
-
-export const getZtpfwUrl = () => `https://${window.location.hostname}:${window.location.port}`;
 
 export const reloadPage = () => {
   window.location.reload();

@@ -7,8 +7,8 @@ import {
   Status,
   StatusKind,
 } from '../backend-shared';
-import { getZtpfwUrl } from '../components/utils';
 import { logFrontendRequest, logFrontendResponse } from './frontendLogging';
+import { getZtpfwUrl } from './utils';
 
 export interface IRequestResult<ResultType = unknown> {
   promise: Promise<ResultType>;

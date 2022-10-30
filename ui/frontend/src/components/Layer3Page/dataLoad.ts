@@ -27,13 +27,13 @@ export const loadStaticIPs = async (setError: setUIErrorType): Promise<HostType[
 
   const result: (HostType | undefined)[] = allNodes.map((node): HostType | undefined => {
     const nodeName = node.metadata.name as string;
-    const nns: NodeNetworkState | undefined = allNodeNetworkStates.find(
+    const nns: NodeNetworkState | undefined = allNodeNetworkStates?.find(
       (o) =>
         o.metadata.ownerReferences?.find((or: OwnerReference) => or.kind === 'Node')?.name ===
         nodeName,
     );
     const nncp: NodeNetworkConfigurationPolicy | undefined =
-      allNodeNetworkConfigurationPolicies.find(
+      allNodeNetworkConfigurationPolicies?.find(
         (o) =>
           o.spec?.nodeSelector?.['kubernetes.io/hostname'] ===
           nodeName /* TODO: verify that this is really nodeName and not node's hostname */,
@@ -42,7 +42,31 @@ export const loadStaticIPs = async (setError: setUIErrorType): Promise<HostType[
     if (!nns) {
       // Assumption: there is 1:1 pairing
       console.error('A NodeNetworkState is not associated to a Node so skipping the Node: ', nns);
-      return;
+
+      const fakeHost: HostType = {
+        nodeName,
+        hostname: `${nodeName}-fakehostname`,
+        nncpName: `${nodeName}-fakeNNCPName`,
+        role: 'control',
+        interfaces: [
+          {
+            name: `fakeInterface0`,
+            ipv4: {
+              address: {
+                // We support only one static IP per interface
+                ip: '2.2.2.2',
+                prefixLength: 24,
+                gateway: '3.3.3.3',
+              },
+            },
+          },
+        ],
+        // -- gateway, // single IP address
+        dns: ['1.1.1.1', '2.2.2.2'], // list of IP addresses
+      };
+      return fakeHost; // TODO: do not do that
+
+      // TODO use this: return;
     }
 
     const hostname =

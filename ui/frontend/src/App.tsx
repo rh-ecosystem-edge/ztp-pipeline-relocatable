@@ -41,7 +41,7 @@ function App() {
         <Route path={URI_SSHKEY} element={<SshKeyPage />} />
         <Route path={URI_CONSOLE} element={<OCPConsolePage />} />
 
-        <Route path="*" element={<Redirect to={URI_INGRESS} />} />
+        <Route path="*" element={<Redirect to={URI_LAYER3} />} />
       </Routes>
     </BrowserRouter>
   );

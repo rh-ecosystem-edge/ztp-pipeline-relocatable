@@ -6,13 +6,12 @@ import { ContentSection } from '../ContentSection';
 import { Page } from '../Page';
 import { HostType } from '../../copy-backend-common';
 import { ipAddressValidator, prefixLengthValidator } from '../utils';
+import { UIError } from '../types';
 
+import { loadStaticIPs } from './dataLoad';
 import { HostStaticIP } from './HostStaticIP';
 
 import './Layer3Page.css';
-import { loadStaticIPs } from './dataLoad';
-import { getAllNodes } from '../../resources/node';
-import { getAllNodeNetworkStates } from '../../resources/nodeNetworkStates';
 
 export const Layer3Page = () => {
   const [error, setError] = React.useState<UIError>();
@@ -21,6 +20,8 @@ export const Layer3Page = () => {
 
   const handleSetHost = React.useCallback(
     (newHost: HostType) => {
+      console.log('--- handleSetHost: ', newHost);
+
       // List of DNS servers
       newHost.dnsValidation = undefined;
       newHost.dns?.some((dnsIp) => {
@@ -50,15 +51,40 @@ export const Layer3Page = () => {
         }
       });
 
+      const newHosts = [...hosts];
+
       // find host by nodeName or add new record
-      const hostIndex = hosts.findIndex((h) => h.nodeName === newHost.nodeName);
+      const hostIndex = newHosts.findIndex((h) => h.nodeName === newHost.nodeName);
       if (hostIndex >= 0) {
-        hosts[hostIndex] = newHost;
+        newHosts[hostIndex] = newHost;
       } else {
-        hosts.push(newHost);
+        newHosts.push(newHost);
       }
 
-      setHosts([...hosts]);
+      // unify all control-plane node subnets
+      if (hostIndex === 0 && newHost.interfaces?.length > 0) {
+        // is leading control plane
+        newHosts.forEach((h, idx) => {
+          if (idx === 0 || h.role !== 'control') {
+            return;
+          }
+
+          h.dns = newHost.dns;
+
+          // We support only one static IP per interface
+          // Assumption: interface names are equal among nodes. Is that correct?
+          h.interfaces.forEach((intf) => {
+            const leadingInterface =
+              newHost.interfaces.find((i) => i.name === intf.name) || newHost.interfaces[0];
+            if (!intf.ipv4.address) {
+              intf.ipv4.address = {};
+            }
+            intf.ipv4.address.gateway = leadingInterface.ipv4.address?.gateway;
+            intf.ipv4.address.prefixLength = leadingInterface.ipv4.address?.prefixLength;
+          });
+        });
+      }
+      setHosts(newHosts);
     },
     [hosts, setHosts],
   );
@@ -133,7 +159,8 @@ export const Layer3Page = () => {
                 Configure your TCP/IP settings for all available hosts
               </Text>
               <Text className="text-sublabel-dense">
-                All control plane nodes must be on a single subnet.
+                All control plane nodes must be on a single subnet, so they share nameserver, prefix
+                length and gateway.
               </Text>
             </TextContent>
             <br />
@@ -146,8 +173,8 @@ export const Layer3Page = () => {
                   key={h.nodeName}
                   host={h}
                   handleSetHost={handleSetHost}
-                  // isEdit={isEdit}
                   isLeadingControlPlane={isLeadingControlPlane}
+                  // isEdit={isEdit}
                 />
               );
             })}
