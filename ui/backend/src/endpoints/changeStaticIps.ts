@@ -15,7 +15,7 @@ import {
   patchNodeNetworkConfigurationPolicy,
 } from '../resources/nodenetworkconfigurationpolicy';
 import { NNCP_TEMPLATE } from '../resources/resourceTemplates';
-import { patchApiServerConfig } from '../resources/apiserver';
+// import { patchApiServerConfig } from '../resources/apiserver';
 
 const logger = console;
 
@@ -42,6 +42,8 @@ const changeStaticIpsImpl = async (
     return;
   }
 
+  // TODO: mind setting DHCP
+  
   // Store the data
   // Optimization: instead of sequential processing wait on all promises at once (not implemented atm due to debugging)
   for (let index = 0; index < hosts.length; index++) {

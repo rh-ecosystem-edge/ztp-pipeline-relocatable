@@ -44,6 +44,8 @@ export const BasicLayout: React.FC<{
   const operatorsReconciling = useOperatorsReconciling();
 
   const isSaveButton = onSave !== undefined;
+  
+  //TODO: Watch nodenetworkstates for changes (static IPs)
   const isOperatorReconciling =
     operatorsReconciling === undefined || operatorsReconciling.length > 0;
 

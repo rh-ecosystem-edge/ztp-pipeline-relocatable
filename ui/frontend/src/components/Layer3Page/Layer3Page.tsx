@@ -12,16 +12,17 @@ import { loadStaticIPs } from './dataLoad';
 import { HostStaticIP } from './HostStaticIP';
 
 import './Layer3Page.css';
+import { saveLayer3 } from './persist';
 
 export const Layer3Page = () => {
   const [error, setError] = React.useState<UIError>();
   const [isAutomatic, setAutomatic] = React.useState(true);
   const [hosts, setHosts] = React.useState<HostType[]>([]);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isValueChanged, setIsValueChanged] = React.useState(false);
 
   const handleSetHost = React.useCallback(
     (newHost: HostType) => {
-      console.log('--- handleSetHost: ', newHost);
-
       // List of DNS servers
       newHost.dnsValidation = undefined;
       newHost.dns?.some((dnsIp) => {
@@ -53,7 +54,7 @@ export const Layer3Page = () => {
 
       const newHosts = [...hosts];
 
-      // find host by nodeName or add new record
+      // either find host by nodeName or add a new record
       const hostIndex = newHosts.findIndex((h) => h.nodeName === newHost.nodeName);
       if (hostIndex >= 0) {
         newHosts[hostIndex] = newHost;
@@ -72,7 +73,7 @@ export const Layer3Page = () => {
           h.dns = newHost.dns;
 
           // We support only one static IP per interface
-          // Assumption: interface names are equal among nodes. Is that correct?
+          // Assumption: interface names are equal among nodes. Is that correct??
           h.interfaces.forEach((intf) => {
             const leadingInterface =
               newHost.interfaces.find((i) => i.name === intf.name) || newHost.interfaces[0];
@@ -84,7 +85,9 @@ export const Layer3Page = () => {
           });
         });
       }
+
       setHosts(newHosts);
+      setIsValueChanged(true);
     },
     [hosts, setHosts],
   );
@@ -92,7 +95,12 @@ export const Layer3Page = () => {
   React.useEffect(
     () => {
       const doItAsync = async () => {
+        setIsSaving(true);
+
         setHosts(await loadStaticIPs(setError));
+
+        setIsValueChanged(false);
+        setIsSaving(false);
       };
 
       doItAsync();
@@ -106,15 +114,19 @@ export const Layer3Page = () => {
     console.log('-- TODO: clearStaticIPs()');
   };
 
+  const onSave = () => {
+    setIsSaving(true);
+    saveLayer3(setError, isAutomatic, hosts);
+    setIsSaving(false);
+  };
+
   return (
     <Page>
       <BasicLayout
-        isValueChanged={false}
-        isSaving={false}
+        isValueChanged={isValueChanged}
+        isSaving={isSaving}
         error={error}
-        onSave={() => {
-          console.log('TODO: onSave');
-        }}
+        onSave={onSave}
       >
         <ContentSection>
           <TextContent>

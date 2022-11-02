@@ -23,8 +23,9 @@ export type HostInterfaceType = {
   // type: 'ethernet' | 'bond' | 'linux-bridge';
   // state: 'up' | 'down';
   ipv4: {
-    // dhcp: boolean; always "false" for our static ips case
-    // enabled: boolean; always true otherwise not found
+    dhcp: boolean; // "false" for static IPs
+    enabled: boolean; // always true otherwise not found
+
     address?: {
       // We support only one static IP per interface
       ip?: string; // regular (dotted) IP form
