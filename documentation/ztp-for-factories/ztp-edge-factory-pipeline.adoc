@@ -6,7 +6,7 @@
 = The edge factory pipeline
 include::modules/common-attributes.adoc[]
 
-This stage deploys and configures the edge clusters. When this pipeline is completed, the edge clusters are ready for use when the enclosure gets relocated to the end customer's remote site.
+This stage deploys and configures the edge clusters. After this pipeline run is completed, the edge clusters are ready to be shipped to the end customer’s remote site.
 
 The flow associated with deploying the edge cluster is:
 
