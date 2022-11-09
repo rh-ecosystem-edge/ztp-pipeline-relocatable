@@ -6,7 +6,7 @@
 = Running the edge cluster factory install pipeline
 include::modules/common-attributes.adoc[]
 
-Run the following steps to run the edge factory install pipeline.
+Follow the steps in this section to run the edge factory install pipeline.
 
 .Prerequisites
 
