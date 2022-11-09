@@ -112,9 +112,9 @@ This `kubeadmin` username and password was created at the factory and should hav
 This new user account is granted `cluster-admin` privileges and should be used rather than the factory created `kubeadmin` account.
 ====
 
-.. In the **API** screen assign the IP address that will be used for API traffic. A default value is assigned but you are free to update this.
+.. In the **API** screen assign the IP address that will be used for API traffic. The default value should be replaced with an IP from the respective subnet.
 
-.. In the **Ingress** screen assign the IP address that will be used for new routes and traffic managed by the ingress controller. A default value is assigned but you are free to update this.
+.. In the **Ingress** screen assign the IP address that will be used for new routes and traffic managed by the ingress controller. The default value should be replaced with an IP from the respective subnet.
 
 .. Optional: Enter the name of base domain for your edge cluster (e.g. yourdomain.com)
 +
