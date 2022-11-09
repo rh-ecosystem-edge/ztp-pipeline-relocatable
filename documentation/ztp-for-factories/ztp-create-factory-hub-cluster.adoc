@@ -52,11 +52,11 @@ Specific requirements are:
 
 * DNS entries need to be configured and resolvable from the external network, with DNS on the DHCP external network.
 * Hub
-** `api.<hub-clustername>.<baseDomain>` and `api-int.<hub-clustername>.<baseDomain>` entries to the same IP address.
+** `api.<hub-clustername>.<baseDomain>` and `api-int.<hub-clustername>.<baseDomain>` entries should resolve to the same IP address.
 ** ingress (`*.apps.<hub-clustername>.<baseDomain>`).
 
 * Edge
-** `api.<edge-cluster-name>.<baseDomain>` and `api-int.<edge-cluster-name>.<baseDomain>` entries to the same IP address.
+** `api.<edge-cluster-name>.<baseDomain>` and `api-int.<edge-cluster-name>.<baseDomain>` entries should resolve to the same IP address.
 ** ingress (`*.apps.<edge-cluster-name>.<baseDomain>`).
 
 [NOTE]
