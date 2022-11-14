@@ -38,9 +38,9 @@ At this stage you are populating the `edgeclusters` section.
 [source,yaml]
 ----
 config:
-  OC_OCP_VERSION: "4.10.9"
-  OC_ACM_VERSION: "2.4"
-  OC_OCS_VERSION: "4.9"
+  OC_OCP_VERSION: "4.10.38"
+  OC_ACM_VERSION: "2.5"
+  OC_OCS_VERSION: "4.10"
   REGISTRY: myregistry.local:5000  <1>
 
 edgeclusters:
@@ -54,12 +54,12 @@ edgeclusters:
         bmc_url: "<url bmc>" <9>
         bmc_user: "user-bmc" <10>
         bmc_pass: "user-pass" <11>
-        root_disk: sda <12>
+        root_disk: /dev/sda <12>
         storage_disk: <13>
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master1:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -69,12 +69,12 @@ edgeclusters:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: sda
+        root_disk: /dev/sda
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master2:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -84,12 +84,12 @@ edgeclusters:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
-        root_disk: sda
+        root_disk: /dev/sda
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
     worker0: <14>
         nic_ext_dhcp: eno4
         nic_int_static: eno5
@@ -109,10 +109,10 @@ edgeclusters:
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master1:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -123,10 +123,10 @@ edgeclusters:
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       master2:
         ignore_ifaces: eno1 eno2
         nic_ext_dhcp: eno4
@@ -137,10 +137,10 @@ edgeclusters:
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
         storage_disk:
-          - sdb
-          - sdc
-          - sde
-          - sdd
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
       worker0:
         nic_ext_dhcp: eno4
         nic_int_static:  eno5
