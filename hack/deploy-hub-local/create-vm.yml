@@ -18,7 +18,9 @@ parameters:
   disks:
   - size: 120
   - size: 300
+{% if tpm %}
   tpm: true
+{% endif %}
 {% endfor %}
 {% endfor %}
 
