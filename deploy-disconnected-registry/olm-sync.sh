@@ -74,7 +74,7 @@ function mirror() {
     registry_login ${SOURCE_REGISTRY}
     echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
     registry_login ${DESTINATION_REGISTRY}
-    cp -rf ${PULL_SECRET} ~/.docker/config.json
+    cp -f ${PULL_SECRET} ~/.docker/config.json
 
     mkdir -p /var/run/user/0/containers
     cp -f ${OUTPUTDIR}/pull-secret.json /var/run/user/0/containers/auth.json
@@ -108,7 +108,7 @@ function mirror() {
         echo "DEBUG: opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX}"
 
         echo ">>> The following operation might take a while... storing in ${OUTPUTDIR}/mirror.log"
-        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} | tee ${OUTPUTDIR}/mirror.log 2>&1
+        opm index prune --from-index ${SOURCE_INDEX} --packages ${SOURCE_PACKAGES} --tag ${OLM_DESTINATION_INDEX} | tee -a ${OUTPUTDIR}/mirror.log 2>&1
         SALIDA=$?
 
         if [ ${SALIDA} -eq 0 ]; then
