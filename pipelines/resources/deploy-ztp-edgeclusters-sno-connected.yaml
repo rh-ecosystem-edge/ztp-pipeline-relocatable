@@ -1,0 +1,187 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: deploy-ztp-edgeclusters-sno-connected
+spec:
+  description: Tekton Pipeline to deploy ZTPFW SNO Edge-clusters without mirroring content to the local registry
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+    - name: edgeclusters-config
+      type: string
+    - name: mock
+      type: string
+      default: "false"
+  workspaces:
+    - name: ztp
+  tasks:
+
+  # Preflight
+  - name: pre-flight
+    taskRef:
+      name: common-pre-flight-edgeclusters
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy Edge-clusters
+  - name: deploy-edgeclusters
+    taskRef:
+      name: edgecluster-deploy-edgecluster
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - pre-flight
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy ICSP Edge-clusters Pre
+  - name: deploy-icsp-edgeclusters-pre
+    taskRef:
+      name: edgecluster-deploy-icsp-edgeclusters-pre
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-edgeclusters
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy MetalLB
+  - name: deploy-metallb
+    taskRef:
+      name: edgecluster-deploy-metallb
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-icsp-edgeclusters-pre
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+
+  # Deploy LVMO
+  - name: deploy-lvmo
+    taskRef:
+      name: edgecluster-deploy-lvmo
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-metallb
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy ZTPFWUI
+  - name: deploy-ui
+    taskRef:
+      name: edgecluster-deploy-ui
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-lvmo
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy ODF
+  - name: deploy-odf
+    taskRef:
+      name: edgecluster-deploy-odf
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-lvmo
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Detach Edge-cluster Cluster
+  - name: detach-cluster
+    taskRef:
+      name: edgecluster-detach-cluster
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-odf
+    workspaces:
+      - name: ztp
+        workspace: ztp
