@@ -45,6 +45,8 @@ config:
 
 edgeclusters:
   - edgecluster1-name: <2>
+      config:
+        tpm: false
       master0: <3>
         ignore_ifaces: eno1,eno2 <4>
         nic_ext_dhcp: eno4 <5>

@@ -48,6 +48,7 @@ export SINGLE_NIC="${6:-true}"
 export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
 export CLUSTER_IPS=""
 export _REGISTRY=${7:-}
+export TPM="${TPM:-false}"
 
 for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
   ip=$(dig +short api.${_CLUSTER_NAME}${edgecluster}-cluster.alklabs.local)
@@ -78,11 +79,11 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
           if [ "${HUB_ARCHITECTURE}" = "sno" ]; then
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan -k -f create-vm-sno.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_ips="${CLUSTER_IPS}" -P cluster_name="${_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            kcli create plan -k -f create-vm-sno.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_ips="${CLUSTER_IPS}" -P cluster_name="${_CLUSTER_NAME}" "${OC_CLUSTER_NAME}" -P tpm="${TPM}"
           else
             echo "Metal3 + Ipv4 + connected"
             t=$(echo "${OC_RELEASE}" | awk -F: '{print $2}')
-            kcli create plan -k -f create-vm.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_name="${_CLUSTER_NAME}" "${OC_CLUSTER_NAME}"
+            kcli create plan -k -f create-vm.yml -P singlenic="${SINGLE_NIC}" -P clusters="${CLUSTERS}" -P cluster_name="${_CLUSTER_NAME}" "${OC_CLUSTER_NAME}" -P tpm="${TPM}"
           fi
         else
             echo "Metal3 + ipv4 + disconnected"
@@ -134,6 +135,8 @@ EOF
 for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
     cat <<EOF >>${_CLUSTER_NAME}.yaml
   - ${_CLUSTER_NAME}${edgecluster}-cluster:
+      config:
+        tpm: ${TPM}
       contrib:
         gpu-operator:
           version: "v1.10.1"

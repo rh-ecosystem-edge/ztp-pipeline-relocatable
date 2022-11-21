@@ -45,15 +45,10 @@ spec:
     - name: mirror-ocp
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
-      resources:
-        requests:
-          memory: "250Mi"
-          cpu: "250m"
-        limits:
-          memory: 8Gi
-          cpu: 10000m
       securityContext:
-        privileged: false
+        capabilities:
+          add: ["SETFCAP"]
+        privileged: true
         runAsUser: 0
       volumeMounts:
       - mountPath: /var/lib/containers

@@ -56,6 +56,7 @@ create_edgecluster_definitions() {
     # Set vars
     export CHANGE_EDGE_NAME=${cluster}
     grab_api_ingress ${cluster}
+    export TPM_ENABLED=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.config.tpm // false" ${EDGECLUSTERS_FILE})
     export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
     export CHANGE_EDGE_MASTER_MGMT_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
     export DATA_PUB_INT_M0=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
@@ -130,12 +131,18 @@ metadata:
   annotations:
       agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OpenshiftSDN"}}'
 spec:
-  diskEncryption:
-    mode: tpmv2
-    enableOn: all
   clusterDeploymentRef:
     name: $CHANGE_EDGE_NAME
 EOF
+
+if [ "${TPM_ENABLED}" == true ]; then
+cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+  diskEncryption:
+    mode: tpmv2
+    enableOn: all
+EOF
+fi
+
     if [ "${NUM_M}" -eq "1" ]; then
         cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   manifestsConfigMapRef:
