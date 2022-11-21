@@ -65,7 +65,8 @@ create_edgecluster_definitions() {
     export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
     export IGN_CHANGE_DEF_ROUTE_SCRIPT=$(base64 change_def_route.sh -w0)
     export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition":{"version":"3.1.0"},"storage":{"files":[{"path":"/etc/hosts","append":[{"source":"data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
-    export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nAfter=network.target\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh '${CHANGE_EDGE_MASTER_MGMT_INT_M0}'\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]},{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]},{"path":"/var/lib/ovnk/iface_default_hint","mode":492,"override":true,"contents":{"source":"data:text/plain;base64,'${DATA_PUB_INT_M0}'"}}]}}'
+        export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service
+\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]},{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]}]}}'
     # Generate the edgecluster definition yaml
     cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
@@ -128,8 +129,6 @@ kind: AgentClusterInstall
 metadata:
   name: $CHANGE_EDGE_NAME
   namespace: $CHANGE_EDGE_NAME
-  annotations:
-      agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OpenshiftSDN"}}'
 spec:
   clusterDeploymentRef:
     name: $CHANGE_EDGE_NAME
@@ -320,6 +319,8 @@ EOF
        vlan:
          base-iface: $CHANGE_EDGE_MASTER_MGMT_INT
          id: 102
+       ipv6:
+         enabled: false
        ipv4:
          enabled: true
          address:
@@ -336,6 +337,8 @@ EOF
          auto-negotiation: true
          duplex: full
          speed: 1000
+       ipv6:
+         enabled: false
        ipv4:
          enabled: true
          address:
@@ -357,21 +360,6 @@ EOF
             done
         fi
 
-        cat <<EOF >>${OUTPUT}
-   routes:
-     config:
-       - destination: $CHANGE_EDGE_MASTER_PUB_INT_ROUTE_DEST
-         next-hop-address: $CHANGE_EDGE_MASTER_PUB_INT_GW
-EOF
-        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
-            cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_MASTER_MGMT_INT.102
-EOF
-        else
-            cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_MASTER_PUB_INT
-EOF
-        fi
         if [[ ${IGN_IFACES} != "null" ]]; then
             for IFACE in $(echo ${IGN_IFACES}); do
                 echo "Ignoring route for: ${IFACE}"
