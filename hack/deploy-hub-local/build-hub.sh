@@ -48,7 +48,7 @@ export OC_ODF_VERSION="${odf_version}"
 export HUB_ARCHITECTURE="${5:-compact}"
 export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
 export _REGISTRY=${6:-}
-export TPM="${TPM:-true}"
+export TPM="${TPM:-false}"
 
 
 echo ">>>> Set the Pull Secret"

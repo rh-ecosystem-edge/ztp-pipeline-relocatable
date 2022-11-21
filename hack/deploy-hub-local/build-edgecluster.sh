@@ -48,7 +48,7 @@ export SINGLE_NIC="${6:-true}"
 export _CLUSTER_NAME=${CLUSTER_NAME:-edgecluster}
 export CLUSTER_IPS=""
 export _REGISTRY=${7:-}
-export TPM="${TPM:-true}"
+export TPM="${TPM:-false}"
 
 for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
   ip=$(dig +short api.${_CLUSTER_NAME}${edgecluster}-cluster.alklabs.local)
