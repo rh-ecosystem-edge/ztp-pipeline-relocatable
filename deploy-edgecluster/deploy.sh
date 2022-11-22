@@ -18,6 +18,19 @@ if ! ./verify.sh 1; then
 
     cd ${OUTPUTDIR}
     oc apply -k .
+    if [[ -z ${ALLEDGECLUSTERS} ]]; then
+        ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})
+    fi
+    
+    index=0
+    
+    for cluster in ${ALLEDGECLUSTERS}; do
+        echo "Storing the RSA key on the hub for cluster ${cluster}"
+        export RSA_KEY_FILE="${WORKDIR}/${cluster}/${cluster}-rsa.key"
+        export RSA_PUB_FILE="${WORKDIR}/${cluster}/${cluster}-rsa.key.pub"
+        oc --kubeconfig=${KUBECONFIG_HUB} -n ${cluster} create secret generic ${cluster}-keypair --from-file=id_rsa.key=${RSA_KEY_FILE} --from-file=id_rsa.pub=${RSA_PUB_FILE}
+        index=$((index + 1))
+    done
 
     oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
 
