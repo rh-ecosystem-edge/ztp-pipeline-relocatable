@@ -1,3 +1,9 @@
 resources:
   - contrib-template.yaml
   - contrib-gpu-operator.yaml
+  - contrib-openshift-ztp-aap.yaml
+  - contrib-openshift-ztp-argocd.yaml
+  - contrib-openshift-ztp-gitea.yaml
+  - contrib-openshift-ztp-reflector.yaml
+  - contrib-configure-openshift-ztp.yaml
+  - contrib-credentials-openshift-ztp.yaml

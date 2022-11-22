@@ -9,5 +9,6 @@ resources:
   - deploy-ztp-edgeclusters.yaml
   - deploy-ztp-edgeclusters-connected.yaml
   - deploy-ztp-edgeclusters-sno.yaml
+  - deploy-openshift-ztp.yaml
 
 namespace: edgecluster-deployer

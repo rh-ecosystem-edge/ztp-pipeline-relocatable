@@ -1,0 +1,186 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: deploy-openshift-ztp
+spec:
+  description: Tekton Pipeline to deploy deploy-openshift-ztp Hub Cluster with ACM
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+    - name: edgeclusters-config
+      type: string
+    - name: mock
+      type: string
+      default: "false"
+  workspaces:
+    - name: ztp
+  tasks:
+
+  # Preflight
+  - name: pre-flight
+    taskRef:
+      name: common-pre-flight
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy RHACM
+  - name: deploy-acm
+    taskRef:
+      name: hub-deploy-acm
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - pre-flight
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy  AAP for openshift-ztp
+  - name: deploy-openshift-ztp-aap
+    taskRef:
+      name: contrib-openshift-ztp-aap
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-acm
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy  ArgoCD for openshift-ztp
+  - name: deploy-openshift-ztp-argocd
+    taskRef:
+      name: contrib-openshift-ztp-argocd
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-openshift-ztp-aap
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy  Gitea for openshift-ztp
+  - name: deploy-openshift-ztp-gitea
+    taskRef:
+      name: contrib-openshift-ztp-gitea
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-openshift-ztp-argocd
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Deploy  Reflector for openshift-reflector
+  - name: deploy-openshift-ztp-reflector
+    taskRef:
+      name: contrib-openshift-ztp-reflector
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-openshift-ztp-gitea
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Configure openshift-ztp via ansible
+  - name: deploy-configure-openshift-ztp
+    taskRef:
+      name: contrib-configure-openshift-ztp
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-openshift-ztp-reflector
+    workspaces:
+      - name: ztp
+        workspace: ztp
+
+  # Configure vsphere credentials via ansible
+  - name: configure-vsphere-credentials-on-openshift-ztp
+    taskRef:
+      name: contrib-credentials-openshift-ztp
+    params:
+      - name: edgeclusters-config
+        value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
+      - name: ztp-container-image
+        value: $(params.ztp-container-image)
+      - name: mock
+        value: $(params.mock)
+      - name: pipeline-name
+        value: $(context.pipelineRun.name)
+    runAfter:
+      - deploy-configure-openshift-ztp
+    workspaces:
+      - name: ztp
+        workspace: ztp

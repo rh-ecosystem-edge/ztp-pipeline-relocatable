@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: contrib-configure-openshift-ztp
+  annotations:
+    description: |
+      This task will configure the server to deploy OpenShift via ZTP (Zero-Touch Provisioning) to vSphere. See https://github.com/Red-Hat-SE-RTO/openshift-ztp for more info.
+spec:
+  workspaces:
+    - name: ztp
+  params:
+    - name: ztp-container-image
+      type: string
+      default: "quay.io/ztpfw/pipeline:latest"
+    - name: pipeline-name
+      type: string
+      default: $(context.taskRun.name)
+    - name: kubeconfig
+      type: string
+      default: ""
+    - name: edgeclusters-config
+      type: string
+      default: ""
+    - name: mock
+      type: string
+      default: "false"
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp/$(params.pipeline-name)"
+      - name: OUTPUTDIR
+        value: "/workspace/ztp/$(params.pipeline-name)/build/$(context.taskRun.name)"
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_CONF_ZTP_DIR
+        value: "contrib/configure-openshift-ztp"
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
+  steps:
+    - name: configure-openshift-ztp
+      image: "$(params.ztp-container-image)"
+      imagePullPolicy: Always
+      script: |
+        #!/usr/bin/bash
+
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_CONF_ZTP_DIR}
+          ./deploy.sh
+        else
+          echo "Deploy DEPLOY_CONF_ZTP_DIR: Mock mode on"
+        fi
+
+
+  volumes:
+  - name: lib-containers
+    emptyDir: {}
