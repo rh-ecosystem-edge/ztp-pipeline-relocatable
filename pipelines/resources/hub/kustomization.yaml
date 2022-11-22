@@ -1,6 +1,8 @@
 resources:
   - hub-deploy-mce.yaml
   - hub-deploy-disconnected-registry.yaml
+  - hub-deploy-mirror-olm.yaml
+  - hub-deploy-update-global-ps.yaml
   - hub-deploy-httpd-server.yaml
   - hub-deploy-hub-config.yaml
   - hub-deploy-icsp.yaml

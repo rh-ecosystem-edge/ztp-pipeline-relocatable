@@ -186,27 +186,6 @@ spec:
       - name: ztp
         workspace: ztp
 
-    # Mirror ocp step in disconnected registry
-  - name: mirror-ocp-images
-    taskRef:
-      name: edgecluster-deploy-disconnected-registry-edgeclusters-ocp
-    params:
-      - name: edgeclusters-config
-        value: $(params.edgeclusters-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
-    runAfter:
-      - deploy-disconnected-registry
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
     # Mirror olm in disconnected registry
   - name: mirror-olm-images
     taskRef:
@@ -244,7 +223,6 @@ spec:
       - name: pipeline-name
         value: $(context.pipelineRun.name)
     runAfter:
-      - mirror-ocp-images
       - mirror-olm-images
     workspaces:
       - name: ztp

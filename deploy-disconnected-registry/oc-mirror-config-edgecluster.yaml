@@ -1,0 +1,42 @@
+apiVersion: mirror.openshift.io/v1alpha2
+kind: ImageSetConfiguration
+storageConfig:
+  registry:
+    imageURL: ${DESTINATION_REGISTRY}/ztpfw/oc-mirror
+mirror:
+  platform:
+    channels:
+      - name: stable-${OC_OCP_VERSION_MIN}
+        minVersion: ${OC_OCP_VERSION_FULL}
+  operators: # Operators we want to mirror
+  - catalog: ${REDHAT_OPERATORS_INDEX}:v${OC_OCP_VERSION_MIN}
+    packages:
+    - name: quay-operator
+      channels:
+      - name: stable-3.7
+      - name: stable-3.8
+    - name: kubernetes-nmstate-operator
+      channels:
+      - name: stable
+    - name: metallb-operator
+      channels:
+      - name: stable
+    - name: local-storage-operator
+      channels:
+      - name: stable
+    - name: odf-operator
+      channels:
+      - name: stable-${OC_ODF_VERSION}
+    - name: odf-lvm-operator
+      channels:
+      - name: stable-${OC_ODF_VERSION}
+    - name: nfd
+      channels:
+      - name: stable
+  - catalog: ${CERTIFIED_OPERATORS_INDEX}:v${OC_OCP_VERSION_MIN}
+    packages:
+    - name: gpu-operator-certified
+      #channels:
+      #- name: stable
+  additionalImages:
+    - name: quay.io/ztpfw/ui:latest 

@@ -31,17 +31,24 @@ echo ">>>> Verify oc"
 echo ">>>>>>>>>>>>>>"
 if ! (command -v oc &>/dev/null); then
     echo "INFO: oc command not found. Installing..."
-    cd /root/bin
     curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz | tar xvz -C /usr/bin
-    rm -rf /usr/bin/README.md
     chmod +x /usr/bin/oc /usr/bin/kubectl
+fi
+
+echo ">>>> Verify oc-mirror"
+echo ">>>>>>>>>>>>>>"
+if ! (command -v oc-mirror &>/dev/null); then
+    echo "INFO: oc-mirror command not found. Installing..."
+    # Need to use 4.13 because there's an ugly bug in oc-mirror<4.13 that won't let us create catalog sources for orgs with nested repos
+    # https://github.com/openshift/oc-mirror/issues/540
+    curl -k -s curl -sL https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp-dev-preview/latest-4.13/oc-mirror.tar.gz | tar xvz -C /usr/bin
+    chmod +x /usr/bin/oc-mirror
 fi
 
 echo ">>>> Verify opm"
 echo ">>>>>>>>>>>>>>>"
 if ! (command -v opm &>/dev/null); then
     echo "INFO: opm command not found. Installing..."
-    cd /root/bin
     curl -k -s https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz | tar xvz -C /usr/bin
     chmod +x /usr/bin/opm
 fi

@@ -41,7 +41,7 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     service=$(oc --kubeconfig=${EDGE_KUBECONFIG} get svc -n metallb --no-headers | wc -l)
     address_pool=$(oc --kubeconfig=${EDGE_KUBECONFIG} get addresspool -n metallb --no-headers | wc -l)
 
-    if [[ ${deployment} == "1" && ${service} == "4" && ${address_pool} == "1" ]]; then
+    if [[ ${deployment} == "1" && ${service} == "4" && ${address_pool} == "2" ]]; then
         echo "MetalLb deployment is up and running"
     else
         echo "MetalLb deployment is not running"

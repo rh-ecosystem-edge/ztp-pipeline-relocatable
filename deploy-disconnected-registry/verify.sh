@@ -15,16 +15,15 @@ source ./common.sh ${1}
 
 if [[ ${1} == 'hub' ]]; then
     TG_KUBECONFIG=${KUBECONFIG_HUB}
+    DEPLOYMENT_NAME=ztpfw-registry
 elif [[ ${1} == 'edgecluster' ]]; then
     TG_KUBECONFIG=${EDGE_KUBECONFIG}
+    DEPLOYMENT_NAME=ztpfw-registry-quay-app
 fi
 
-if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get configmap ztpfw-config | wc -l) -eq 0 ]]; then
-  exit 1 # config map does not exist so we need to deploy registry to create it
-fi
 
 if [[ ${CUSTOM_REGISTRY} == "false" ]]; then
-    if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TG_KUBECONFIG} get -n ztpfw-registry deployment ztpfw-registry -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
+    if [[ $(oc --kubeconfig=${TG_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -eq 0 || $(oc --kubeconfig=${TG_KUBECONFIG} get -n ztpfw-registry deployment $DEPLOYMENT_NAME -ojsonpath='{.status.availableReplicas}') -eq 0 ]]; then
         #namespace or resources does not exist. Launching the step to create it...
         exit 1
     fi

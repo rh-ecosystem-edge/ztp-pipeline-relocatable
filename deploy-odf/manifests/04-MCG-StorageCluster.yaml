@@ -12,3 +12,16 @@ spec:
   multiCloudGateway:
     dbStorageClassName: odf-lvm-vg1
     reconcileStrategy: standalone
+  resources:
+    noobaa-core:
+      limits:
+        cpu: 4
+        memory: 8Gi
+    noobaa-db:
+      limits:
+        cpu: 4
+        memory: 8Gi
+    noobaa-endpoint:
+      limits:
+        cpu: 4
+        memory: 8Gi

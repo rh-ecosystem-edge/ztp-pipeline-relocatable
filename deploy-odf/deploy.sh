@@ -74,7 +74,8 @@ if ! ./verify.sh; then
         sleep 2
         oc --kubeconfig=${EDGE_KUBECONFIG} apply -f manifests/03-ODF-Subscription.yaml
 
-        sleep 60
+        check_resource "crd" "storagesystems.odf.openshift.io" "Established" "openshift-storage" "${EDGE_KUBECONFIG}"
+        check_resource "deployment" "odf-operator-controller-manager" "Available" "openshift-storage" "${EDGE_KUBECONFIG}"
 
         echo ">>>> Labeling nodes for ODF"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -138,7 +139,7 @@ if ! ./verify.sh; then
     
 		# By default the StorageCluster creates a Noobaa instances with a single volume of 50Gi for the
 		# pvPool. This is not enough for the mirror so we are increasing this number to 5
-		oc patch --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage BackingStore noobaa-default-backing-store --type json -p '[{"op": "add", "path": "/spec/pvPool/numVolumes", "value": 5}]'
+		oc patch --kubeconfig=${EDGE_KUBECONFIG} -n openshift-storage BackingStore noobaa-default-backing-store --type json -p '[{"op": "add", "path": "/spec/pvPool/numVolumes", "value": 8},{"op": "add", "path": "/spec/pvPool/resources/limits", "value": {"cpu" : "4", "memory": "8Gi"}}]'
    	fi
     done
 fi

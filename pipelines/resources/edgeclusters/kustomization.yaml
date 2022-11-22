@@ -1,6 +1,5 @@
 resources:
   - edgecluster-deploy-disconnected-registry-edgeclusters.yaml
-  - edgecluster-deploy-disconnected-registry-edgeclusters-ocp.yaml
   - edgecluster-deploy-disconnected-registry-edgeclusters-olm.yaml
   - edgecluster-deploy-disconnected-registry-edgeclusters-ps.yaml
   - edgecluster-deploy-icsp-edgeclusters-post.yaml

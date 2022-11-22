@@ -1,5 +1,5 @@
 ---
-apiVersion: metallb.io/v1alpha1
+apiVersion: metallb.io/v1beta1
 kind: AddressPool
 metadata:
   name: $SVC_NAME
@@ -8,4 +8,4 @@ spec:
   protocol: layer2
   autoAssign: false
   addresses:
-    - $METALLB_IP-$METALLB_IP
+    - $METALLB_IP/32

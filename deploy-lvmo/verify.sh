@@ -17,7 +17,7 @@ fi
 
 for edgecluster in ${ALLEDGECLUSTERS}; do
     echo "Extract Kubeconfig for ${edgecluster}"
-    extract_kubeconfig ${edgecluster}
+    extract_kubeconfig_common ${edgecluster}
     echo ">>>> Verifying LVMCluster and StorageCluster: ${edgecluster}"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     echo "Check Pods..."

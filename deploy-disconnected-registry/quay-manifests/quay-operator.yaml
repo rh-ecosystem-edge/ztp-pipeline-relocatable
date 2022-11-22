@@ -25,5 +25,5 @@ metadata:
 spec:
   channel: "stable-3.7"
   name: quay-operator
-  source: ztpfw-catalog
+  source: redhat-operators
   sourceNamespace: openshift-marketplace
