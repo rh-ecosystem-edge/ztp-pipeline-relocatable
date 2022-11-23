@@ -74,6 +74,7 @@ function mirror() {
     registry_login ${SOURCE_REGISTRY}
     echo ">>>> Podman Login into Destination Registry: ${DESTINATION_REGISTRY}"
     registry_login ${DESTINATION_REGISTRY}
+    [ -d ~/.docker ] || mkdir  ~/.docker
     cp -f ${PULL_SECRET} ~/.docker/config.json
 
     mkdir -p /var/run/user/0/containers
