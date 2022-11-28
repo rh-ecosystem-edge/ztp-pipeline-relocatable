@@ -43,8 +43,6 @@ test-ci-ui:
   - .github/workflows/ui.yml
 
 # ztpfw-core components
-acm:
-  - deploy-acm/**/*
 
 registry:
   - deploy-disconnected-registry/**/*

@@ -51,7 +51,7 @@ subscription.operators.coreos.com/openshift-pipelines-operator-rh unchanged
 pipeline.tekton.dev/deploy-ztp-hub configured
 pipeline.tekton.dev/deploy-ztp-edgeclusters configured
 task.tekton.dev/common-pre-flight configured
-task.tekton.dev/hub-deploy-acm configured
+task.tekton.dev/hub-deploy-mce configured
 task.tekton.dev/hub-deploy-disconnected-registry configured
 task.tekton.dev/hub-deploy-httpd-server configured
 task.tekton.dev/hub-deploy-hub-config configured

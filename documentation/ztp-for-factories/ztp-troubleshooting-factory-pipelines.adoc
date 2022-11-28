@@ -95,7 +95,7 @@ edgeclusters:
 ⏭️  Skipped Tasks
 
  NAME
- ∙ deploy-acm
+ ∙ deploy-mce
  ∙ deploy-icsp-hub
  ∙ deploy-hub-config
 ----
@@ -188,7 +188,7 @@ $ oc get pod -n edgecluster-deployer
 [source,terminal]
 ----
 NAME                                                              READY   STATUS      RESTARTS   AGE
-deploy-ztp-hub-run-rwh4j-deploy-acm-k92kf-pod-85n7t               0/1     Completed   0          159m
+deploy-ztp-hub-run-rwh4j-deploy-mce-k92kf-pod-85n7t               0/1     Completed   0          159m
 deploy-ztp-hub-run-rwh4j-deploy-disconnected-registry-8j9-rk469   0/4     Completed   0          3h2m
 deploy-ztp-hub-run-rwh4j-deploy-httpd-server-fw49r-pod-lhkxf      0/1     Completed   0          3h2m
 deploy-ztp-hub-run-rwh4j-deploy-hub-config-vmgf2-pod-cjg72        0/1     Completed   0          149m

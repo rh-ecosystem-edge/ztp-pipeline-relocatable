@@ -3,7 +3,7 @@ kind: Pipeline
 metadata:
   name: deploy-ztp-hub
 spec:
-  description: Tekton Pipeline to deploy ZTPFW Hub Cluster with ACM
+  description: Tekton Pipeline to deploy ZTPFW Hub Cluster with MCE
   params:
     - name: ztp-container-image
       type: string
@@ -37,6 +37,7 @@ spec:
     workspaces:
       - name: ztp
         workspace: ztp
+
 
   # Deploy HTTPD Server
   - name: deploy-httpd-server
@@ -81,9 +82,9 @@ spec:
         workspace: ztp
 
   # Deploy RHACM
-  - name: deploy-acm
+  - name: deploy-mce
     taskRef:
-      name: hub-deploy-acm
+      name: hub-deploy-mce
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
@@ -117,7 +118,7 @@ spec:
       - name: pipeline-name
         value: $(context.pipelineRun.name)
     runAfter:
-      - deploy-acm
+      - deploy-mce
     workspaces:
       - name: ztp
         workspace: ztp
