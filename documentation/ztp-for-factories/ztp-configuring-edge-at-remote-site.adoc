@@ -142,7 +142,7 @@ If the domain name was not changed, then upon success you should get to a page w
 In case the domain name was changed, you will be redirected to the edge-cluster-setup page of the new domain, where you will have to login agan.
 ====
 
-.. Under **Settings** you have the option to delete the kubeadmin user and to change the values of the **API address**, **Ingress address** and the previously configured **Domain**.
+.. Under **Settings** you have the option to delete the kubeadmin user and to change the values of the **API address**, **Ingress address** and the **Domain name**.
 +
 [NOTE]
 ====
