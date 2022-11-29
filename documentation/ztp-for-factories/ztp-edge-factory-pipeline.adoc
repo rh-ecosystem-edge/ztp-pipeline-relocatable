@@ -47,4 +47,4 @@ The deploy UI stage helps to simplify the configuration of the edge cluster afte
 
 Detach cluster::
 
-This step ensures that everything is correctly configured, it sets the NodeNetworkConfigurationPolicy (NNCP), and ensures the detached edge cluster will work on site. During the edge deployment phase the `kubeconfig` and `kubeadmin` password are saved in the hub. The `SSH-RSA` gets saved in the hub and edge cluster and the newly created edge gets deleted in RHACM. This information is communicated to the end customer and used to complete the edge cluster configuration on site.
+This step ensures that everything is correctly configured, it sets the NodeNetworkConfigurationPolicy (NNCP), and ensures the detached edge cluster will work on site. During the edge deployment phase the `kubeconfig` and `kubeadmin` password are saved in the hub. The `SSH-RSA` gets saved in the hub and edge cluster and the newly created edge gets deleted in MCE. This information is communicated to the end customer and used to complete the edge cluster configuration on site.

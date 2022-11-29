@@ -47,7 +47,7 @@ Compact
 Single-node OpenShift
 |====
 
-Whatever the topology, the hub cluster uses {rh-rhacm-first} and the Assisted Installer (AI) to install edge clusters at scale by using zero touch provisioning (ZTP).
+Whatever the topology, the hub cluster uses {rh-mce-first} and the Assisted Installer (AI) to install edge clusters at scale by using zero touch provisioning (ZTP).
 
 When the edge cluster is installed, it can be shipped to the customer onsite locations and there the end customer unboxes it, and configures the edge cluster making it fully operational.
 

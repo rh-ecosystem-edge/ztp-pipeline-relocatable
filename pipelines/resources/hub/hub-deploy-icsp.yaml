@@ -4,7 +4,7 @@ metadata:
   name: hub-deploy-icsp-hub
   annotations:
     description: |
-      This task will deploy RHACM on the Hub Cluster.
+      This task will create the ICSPs on the Hub Cluster.
 spec:
   workspaces:
     - name: ztp

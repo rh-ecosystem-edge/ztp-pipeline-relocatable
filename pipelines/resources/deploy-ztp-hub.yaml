@@ -81,7 +81,7 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy RHACM
+  # Deploy MCE
   - name: deploy-mce
     taskRef:
       name: hub-deploy-mce

@@ -38,9 +38,9 @@ In case you have your own registry already deployed, you should add the next inf
 and update the pull secret with the registry entry (url, username and password ) in order to make easy the authentication in your own registry without credentials.
 In this scenario, your own registry will be used as the hub registry in the pipeline.
 
-Deploy RHACM::
+Deploy MCE::
 
-This step installs the Red Hat Advanced Cluster Manager and Assisted Installer on the {product-title} hub cluster. Red Hat Advanced Cluster Manager manages the deployment on many managed edge clusters.
+This step installs the Multicluster Engine (MCE) and Assisted Installer on the {product-title} hub cluster.
 
 Transition to disconnected::
 

@@ -10,6 +10,6 @@ The factory install pipeline builds out your factory environment (hub and edge c
 
 A GitHub repository contains all the relevant scripts and YAML files you need to provision the hub cluster and edge clusters.
 
-The edge cluster installation uses a zero touch provisioning (ZTP) approach facilitated by {rh-rhacm-first} using the Assisted Installer (AI) installed as part of running the factory install pipeline.
+The edge cluster installation uses a zero touch provisioning (ZTP) approach facilitated by {rh-mce-first} using the Assisted Installer (AI) installed as part of running the factory install pipeline.
 
-With ZTP and AI, you can provision many {product-title} edge clusters in a factory-type setting. RHACM manages clusters in a hub and edge architecture, where a single hub cluster manages many edge clusters. A hub cluster running RHACM provisions and deploys the edge clusters using ZTP and AI. AI provisions {product-title} on the bare-metal edge clusters.
+With ZTP and AI, you can provision many {product-title} edge clusters in a factory-type setting. MCE manages clusters in a hub and edge architecture, where a single hub cluster manages many edge clusters. A hub cluster running MCE provisions and deploys the edge clusters using ZTP and AI. AI provisions {product-title} on the bare-metal edge clusters.

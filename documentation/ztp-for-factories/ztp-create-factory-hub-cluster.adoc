@@ -39,7 +39,7 @@ If the cluster is greater than 3 nodes, the recommendation is to use OpenShift D
     ** 1 for the hub internal registry that is for the mirror of the images. At least 200GB is required on the hub, more may be required if ODF is installed.
     ** 1 for HTTPD that hosts the Red Hat Enterprise Linux CoreOS (RHCOS) images.
     ** 1 for zero touch provisioning factory workflows (ZTPFW).
-    ** 1 for Red Hat Advanced Cluster Manager (RHACM)
+    ** 1 for Multicluster Engine (MCE)
 
 [discrete]
 === Networking prerequisites

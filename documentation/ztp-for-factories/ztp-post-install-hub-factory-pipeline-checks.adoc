@@ -15,11 +15,11 @@ Perform the following steps after completion of the hub factory pipeline run.
 
 .Procedure
 
-. Verify RHACM is successfully installed:
+. Verify MCE is successfully installed:
 +
 [source,terminal]
 ----
-$ oc get pod -n open-cluster-management
+$ oc get pod -n multicluster-engine
 ----
 +
 .Example output
