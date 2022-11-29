@@ -100,6 +100,12 @@ edgeclusters:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk: /dev/sda
+        storage_disk:
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
   - edgecluster2-name:
       master0:
         ignore_ifaces: eno1 eno2
@@ -110,6 +116,7 @@ edgeclusters:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk: /dev/sda
         storage_disk:
           - /dev/sdb
           - /dev/sdc
@@ -124,6 +131,7 @@ edgeclusters:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk: /dev/sda
         storage_disk:
           - /dev/sdb
           - /dev/sdc
@@ -138,6 +146,7 @@ edgeclusters:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk: /dev/sda
         storage_disk:
           - /dev/sdb
           - /dev/sdc
@@ -151,6 +160,12 @@ edgeclusters:
         bmc_url: "<url bmc>"
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
+        root_disk: /dev/sda
+        storage_disk:
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
 ----
 <1> This parameter is optional just in case you want to use your own registry already deployed. Remember, if you are using your own registry, the pull secret must contains the information related to the entry (url, username and password)
 <2> This option is configurable and sets the name of the edge cluster.
