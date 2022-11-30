@@ -97,6 +97,15 @@ function mirror() {
     sed -i '/^mountopt =.*/d' /etc/containers/storage.conf
     #######
 
+    ####### WORKAROUND: Fixes "Invalid GPG signature for image certified-operator-index"
+    ####### https://access.redhat.com/solutions/6542281 
+    ######  Using jq adding an additional key file to the keyPath array for registry.redhat.io
+    curl -s -o /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-isv https://www.redhat.com/security/data/55A34A82.txt
+    jq '.transports.docker."registry.redhat.io"[].keyPaths+=["/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-isv"]'  /etc/containers/policy.json > /tmp/policy.json && mv /tmp/policy.json /etc/containers/policy.json
+    POLICY=$(cat /etc/containers/policy.json)
+    echo -e "Containers Policy:\n$POLICY"
+    #######
+
     # Empty log file
     >${OUTPUTDIR}/mirror.log
 
