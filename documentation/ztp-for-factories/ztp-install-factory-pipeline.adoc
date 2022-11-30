@@ -32,7 +32,7 @@ config:
 ----
 +
 <1> {product-title} version of the edge cluster.
-<2> Red Hat Advanced Cluster Management (RHACM) version.
+<2> Multicluster Engine (MCE) version.
 <3> The OpenShift Data Foundation (ODF) version.
 <4> This is an optional parameter to set up your own registry already deployed in the hub.
 

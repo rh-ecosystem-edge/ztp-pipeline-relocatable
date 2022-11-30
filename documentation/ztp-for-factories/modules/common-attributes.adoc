@@ -19,5 +19,5 @@ endif::[]
 :cloud-redhat-com: Red Hat OpenShift Cluster Manager
 :op-system-base: RHEL
 :op-system-base-full: Red Hat Enterprise Linux (RHEL)
-:rh-rhacm-first: Red Hat Advanced Cluster Management (RHACM)
+:rh-mce-first: Multcluster Engine (MCE)
 :cluster-manager-first: Red Hat OpenShift Cluster Manager

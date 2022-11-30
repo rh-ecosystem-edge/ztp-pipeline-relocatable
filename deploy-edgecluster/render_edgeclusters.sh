@@ -207,29 +207,6 @@ spec:
   pullSecretRef:
     name: $CHANGE_EDGE_PULL_SECRET_NAME
 ---
-apiVersion: agent.open-cluster-management.io/v1
-kind: KlusterletAddonConfig
-metadata:
-  name: $CHANGE_EDGE_NAME
-  namespace: $CHANGE_EDGE_NAME
-spec:
-  clusterName: $CHANGE_EDGE_NAME
-  clusterNamespace: $CHANGE_EDGE_NAME
-  clusterLabels:
-    name: $CHANGE_EDGE_NAME
-    cloud: Baremetal
-  applicationManager:
-    argocdCluster: false
-    enabled: true
-  certPolicyController:
-    enabled: true
-  iamPolicyController:
-    enabled: true
-  policyController:
-    enabled: true
-  searchCollector:
-    enabled: true
----
 apiVersion: cluster.open-cluster-management.io/v1
 kind: ManagedCluster
 metadata:

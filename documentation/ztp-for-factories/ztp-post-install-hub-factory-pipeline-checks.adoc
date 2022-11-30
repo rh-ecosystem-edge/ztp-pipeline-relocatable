@@ -15,11 +15,11 @@ Perform the following steps after completion of the hub factory pipeline run.
 
 .Procedure
 
-. Verify RHACM is successfully installed:
+. Verify MCE is successfully installed:
 +
 [source,terminal]
 ----
-$ oc get pod -n open-cluster-management
+$ oc get pod -n multicluster-engine
 ----
 +
 .Example output
@@ -119,7 +119,7 @@ edgeclusters:
  NAME                                                            TASK NAME                      STARTED      DURATION     STATUS
  ∙ deploy-ztp-hub-run-tjqp5-deploy-hub-config-26pp5              deploy-hub-config              1 week ago   42 seconds   Succeeded
  ∙ deploy-ztp-hub-run-tjqp5-deploy-icsp-hub-5ctsr                deploy-icsp-hub                1 week ago   16 seconds   Succeeded
- ∙ deploy-ztp-hub-run-tjqp5-deploy-acm-76b6c                     deploy-acm                     1 week ago   9 minutes    Succeeded
+ ∙ deploy-ztp-hub-run-tjqp5-deploy-mce-76b6c                     deploy-mce                     1 week ago   9 minutes    Succeeded
  ∙ deploy-ztp-hub-run-tjqp5-deploy-disconnected-registry-7b9rw   deploy-disconnected-registry   1 week ago   11 minutes   Succeeded
  ∙ deploy-ztp-hub-run-tjqp5-deploy-httpd-server-9mfcn            deploy-httpd-server            1 week ago   8 seconds    Succeeded
  ∙ deploy-ztp-hub-run-tjqp5-pre-flight-pk5bp                     pre-flight                     1 week ago   9 seconds    Succeeded

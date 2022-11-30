@@ -1,5 +1,4 @@
 resources:
-  - hub-deploy-acm.yaml
   - hub-deploy-mce.yaml
   - hub-deploy-disconnected-registry.yaml
   - hub-deploy-httpd-server.yaml
