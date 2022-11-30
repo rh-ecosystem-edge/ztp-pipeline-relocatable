@@ -192,6 +192,16 @@ fi
 index=0
 
 for EDGE in ${ALLEDGECLUSTERS}; do
+    NUM_W=$(yq e ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep worker | wc -l | xargs)
+
+    # No need to proceed with this task
+    # if there are no workers
+    if [[ $NUM_W -eq 0 ]]; then
+        echo "No workers defined for cluster ${EDGE} in the configs... skipping"
+        index=$((index + 1))
+        continue
+    fi
+
     create_worker_definitions ${EDGE} ${index}
     for a in {1..10}; do
         WORKER_AGENT=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${EDGE} --no-headers | grep worker | awk '{print $1}')
