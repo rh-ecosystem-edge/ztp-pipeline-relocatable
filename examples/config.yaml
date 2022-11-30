@@ -1,8 +1,8 @@
 config:
-  OC_OCP_VERSION: "4.10.6"
+  OC_OCP_VERSION: "4.10.38"
   OC_ACM_VERSION: "2.5"
-  OC_ODF_VERSION: "4.9"
-  # optional use your own registry
+  OC_ODF_VERSION: "4.10"
+  # optionally use your own registry
   REGISTRY: "myregistry.domain.local:5000"
 
 edgeclusters:
@@ -115,3 +115,8 @@ edgeclusters:
         bmc_user: "user-bmc"
         bmc_pass: "user-pass"
         root_disk: "/dev/sda"
+        storage_disk:
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd

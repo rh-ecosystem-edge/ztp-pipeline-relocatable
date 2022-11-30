@@ -1,7 +1,7 @@
 xref:config[config]:
   xref:clusterimageset[clusterimageset]: openshift-v4.10.38
   xref:OC_OCP_VERSION[OC_OCP_VERSION]: "4.10.38"
-  xref:OC_OCP_TAG[OC_OCP_TAG]: "4.10.37-x86_64"
+  xref:OC_OCP_TAG[OC_OCP_TAG]: "4.10.38-x86_64"
   xref:OC_RHCOS_RELEASE[OC_RHCOS_RELEASE]: "410.84.202210130022-0"
   xref:OC_ACM_VERSION[OC_ACM_VERSION]: "2.5"
   xref:OC_ODF_VERSION[OC_ODF_VERSION]: "4.10"
@@ -53,6 +53,12 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: /dev/sda
+        xref:storage_disk[storage_disk]:
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
   - xref:edgeclustername[edgecluster2-name]:
       xref:mastername[master0]:
         xref:ignore_ifaces[ignore_ifaces]: eno1 eno2
@@ -107,3 +113,9 @@ xref:edgeclusters[edgeclusters]:
         xref:bmc_url[bmc_url]: "<url bmc>"
         xref:bmc_user[bmc_user]: "user-bmc"
         xref:bmc_pass[bmc_pass]: "user-pass"
+        xref:root_disk[root_disk]: /dev/sda
+        xref:storage_disk[storage_disk]:
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sde
+          - /dev/sdd
