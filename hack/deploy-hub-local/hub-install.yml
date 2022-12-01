@@ -13,4 +13,3 @@ extra_disks:
 - size: 300
 - size: 300
 - size: 300
-tpm: true
