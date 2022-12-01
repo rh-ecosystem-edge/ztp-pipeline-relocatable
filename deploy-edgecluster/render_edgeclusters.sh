@@ -59,14 +59,19 @@ create_edgecluster_definitions() {
     export TPM_ENABLED=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.config.tpm // false" ${EDGECLUSTERS_FILE})
     export CHANGE_EDGE_MASTER_PUB_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_int_static" ${EDGECLUSTERS_FILE})
     export CHANGE_EDGE_MASTER_MGMT_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
-    export DATA_PUB_INT_M0=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
     export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_EDGE_API} ${EDGE_API_NAME}" | base64 -w0)
     export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
     export IGN_CHANGE_DEF_ROUTE_SCRIPT=$(base64 change_def_route.sh -w0)
+
+    if [[ ${CHANGE_EDGE_MASTER_PUB_INT_M0} == "null" ]]; then
+    	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_MGMT_INT_M0}.102" | base64 -w0)
+    else
+    	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
+    fi
+
     export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition":{"version":"3.1.0"},"storage":{"files":[{"path":"/etc/hosts","append":[{"source":"data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
-        export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service
-\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]},{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]}]}}'
+    export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]},{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]},{"path":"/var/lib/ovnk/iface_default_hint","mode":492,"override":true,"contents":{"source":"data:text/plain;base64,'${OVS_IFACE_HINT}'"}}]}}'
     # Generate the edgecluster definition yaml
     cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
 ---

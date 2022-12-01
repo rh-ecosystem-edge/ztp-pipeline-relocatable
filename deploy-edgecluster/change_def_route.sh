@@ -13,8 +13,8 @@ function set_route() {
       return 
    elif [[ $INT_METRIC -eq 0 && $INT_DEV != "br-ex" ]]; then
         echo "Internal network route doesn't exist: adding a new route for the internal network"
-        echo "ip route add default via 192.168.7.1 dev ${INT_DEV} proto kernel metric $((EXT_METRIC - 1))"
-	ip route add default via 192.168.7.1 dev $INT_DEV proto kernel metric $((EXT_METRIC - 1))
+        echo "ip route add default via 192.168.7.1 dev ${INT_DEV} proto kernel metric $((EXT_METRIC + 1))"
+	ip route add default via 192.168.7.1 dev $INT_DEV proto kernel metric $((EXT_METRIC + 1))
    elif [[ $INT_METRIC -eq 0 && $INT_DEV == "br-ex" ]]; then
         echo "Bridge network route doesn't exist: adding a new route for the bridge network"
         echo "ip route add default via 192.168.7.1 dev ${INT_DEV} proto kernel metric $((EXT_METRIC + 1))"
