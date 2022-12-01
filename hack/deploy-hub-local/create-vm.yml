@@ -18,9 +18,7 @@ parameters:
   disks:
   - size: 120
   - size: 300
-{% if tpm %}
-  tpm: true
-{% endif %}
+  tpm: {{tpm}}
 {% endfor %}
 {% endfor %}
 
@@ -39,5 +37,5 @@ parameters:
   disks:
   - size: 120
   - size: 300
-  tpm: true
+  tpm: {{tpm}}
 {% endfor %}

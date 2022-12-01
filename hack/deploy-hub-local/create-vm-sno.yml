@@ -26,6 +26,6 @@ parameters:
   - size: 200
   - size: 200
   - size: 200
-  tpm: true
+  tpm: {{tpm}}
 {% endfor %}
 {% endfor %}
