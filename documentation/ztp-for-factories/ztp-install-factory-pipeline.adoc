@@ -27,7 +27,7 @@ At this stage you only need to build out the `config` section. The `config` sect
 config:
   OC_OCP_VERSION: "4.10.38" <1>
   OC_ACM_VERSION: "2.5" <2>
-  OC_OCS_VERSION: "4.10" <3>
+  OC_ODF_VERSION: "4.10" <3>
   REGISTRY: my-own-registry.local:5000 <4>
 ----
 +
