@@ -12,21 +12,20 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package version
+package edgecluster
 
 import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/spf13/cobra"
-
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/spf13/cobra"
 )
 
 // Command creates and returns the version command.
 func Command() *cobra.Command {
 	return &cobra.Command{
-		Use:   "version",
+		Use:   "edgecluster",
 		Short: "Prints the version information",
 		Long:  "Prints the version information",
 		Args:  cobra.NoArgs,
@@ -36,28 +35,21 @@ func Command() *cobra.Command {
 
 // run executes the version command.
 func run(cmd *cobra.Command, argv []string) error {
+	kclient, err := internal.GetClient()
+	if err != nil {
+		return err
+	}
+
+	sv, err := kclient.Discovery().ServerVersion()
+	if err != nil {
+		return err
+	}
+
 	// Get the tool:
 	tool := internal.ToolFromContext(cmd.Context())
 
-	// Calculate the values:
-	buildCommit := unknownSettingValue
-	buildTime := unknownSettingValue
-	info, ok := debug.ReadBuildInfo()
-	if ok {
-		vcsRevision := getSetting(info, vcsRevisionSettingKey)
-		if vcsRevision != "" {
-			buildCommit = vcsRevision
-		}
-		vcsTime := getSetting(info, vcsTimeSettingKey)
-		if vcsTime != "" {
-			buildTime = vcsTime
-		}
-	}
-
-	// Print the values:
 	out := tool.Out()
-	fmt.Fprintf(out, "Build commit: %s\n", buildCommit)
-	fmt.Fprintf(out, "Build time: %s\n", buildTime)
+	fmt.Fprintf(out, "Server version: %s\n", sv.String())
 
 	return nil
 }

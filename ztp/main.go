@@ -18,8 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/go/internal"
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/go/internal/cmd/version"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/edgecluster"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/version"
 )
 
 func main() {
@@ -30,6 +31,7 @@ func main() {
 		Out(os.Stdout).
 		Err(os.Stderr).
 		Command(version.Command).
+		Command(edgecluster.Command).
 		Build()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
