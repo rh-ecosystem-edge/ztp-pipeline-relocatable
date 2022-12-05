@@ -72,7 +72,7 @@ Tasks Completed: 3 (Failed: 1, Cancelled 0), Skipped: 3 ("step-mirror-olm" exite
  ∙ edgeclusters-config   config:
   OC_OCP_VERSION: '4.10.38'
   OC_ACM_VERSION: '2.5'
-  OC_OCS_VERSION: '4.10'
+  OC_ODF_VERSION: '4.10'
 edgeclusters:
  ∙ ztp-container-image   quay.io/ztpfw/pipeline:latest
 
@@ -147,7 +147,7 @@ Message
  ∙ edgeclusters-config   config:
   OC_OCP_VERSION: '4.10.38'
   OC_ACM_VERSION: '2.5'
-  OC_OCS_VERSION: '4.10'
+  OC_ODF_VERSION: '4.10'
 edgeclusters:
  ∙ kubeconfig            /root/.kcli/clusters/test-ci/auth/kubeconfig
  ∙ ztp-container-image   quay.io/ztpfw/pipeline:latest

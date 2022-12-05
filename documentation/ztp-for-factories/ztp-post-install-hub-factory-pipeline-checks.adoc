@@ -101,7 +101,7 @@ STARTED      DURATION     STATUS
  ∙ edgeclusters-config   config:
   OC_OCP_VERSION: '4.10.38'
   OC_ACM_VERSION: '2.5'
-  OC_OCS_VERSION: '4.10'
+  OC_ODF_VERSION: '4.10'
 edgeclusters:
  ∙ ztp-container-image   quay.io/ztpfw/pipeline:latest
 

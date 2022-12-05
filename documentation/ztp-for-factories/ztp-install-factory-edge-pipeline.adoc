@@ -40,7 +40,7 @@ At this stage you are populating the `edgeclusters` section.
 config:
   OC_OCP_VERSION: "4.10.38"
   OC_ACM_VERSION: "2.5"
-  OC_OCS_VERSION: "4.10"
+  OC_ODF_VERSION: "4.10"
   REGISTRY: myregistry.local:5000  <1>
 
 edgeclusters:
