@@ -45,7 +45,7 @@ $ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to
 +
 [NOTE]
 ====
-This command starts the pipeline in the namespace `edgecluster-deployer` with the defined edge cluster configuration and the `kube` configuration in the workspace `ztp` with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` with all other parameters set to the default.
+This command starts the pipeline in the namespace `edgecluster-deployer` with the defined edge cluster configuration and the `kubeconfig` configuration in the workspace `ztp` with the previously configured persistent storage claim `ztp-pvc`. A timeout of 5 hours is set for the execution of the `deploy-ztp-hub` pipeline with all other parameters set to default.
 ====
 +
 .Example output
