@@ -37,9 +37,9 @@ Deploy Quay::
 
 This step deploys the Quay Operator and components of Quay, because the end customer needs a fully supported solution in the edge and the factory is expected to have their own internal registry. This Quay deployment has a small footprint enabling only the features needed to host an internal registry with basic functions.
 
-Deploy workers::
+Deploy worker::
 
-This step deploys the worker nodes, and adds these to the edge cluster.
+This step deploys the worker node and adds it to the edge cluster.
 
 Deploy UI::
 
