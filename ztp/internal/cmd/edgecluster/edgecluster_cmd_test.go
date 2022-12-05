@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/go/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 )
 
 func TestCmd(t *testing.T) {
