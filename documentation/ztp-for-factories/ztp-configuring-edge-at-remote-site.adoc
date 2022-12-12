@@ -73,7 +73,7 @@ Here `eth0` is the network card name, and it can be different for different comp
 BOOTPROTO=static
 IPADDR=192.168.7.21
 NETMASK=255.255.255.0
-GATEWAY=192.168.0.1
+GATEWAY=192.168.7.1
 DNS1=192.168.7.10
 ----
 +
