@@ -26,11 +26,13 @@ import (
 
 func TestCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Version command")
+	RunSpecs(t, "Edge cluster command")
 }
 
-var _ = Describe("Version command", func() {
-	It("Prints the build commit", func() {
+var _ = Describe("Edge cluster command", func() {
+	// TODO: This test is disabled because currently we don't have a Kubernetes API server
+	// running in the tests environment.
+	XIt("Prints the server version", func() {
 		// Prepare buffers to capture the output:
 		inBuffer := &bytes.Buffer{}
 		outBuffer := &bytes.Buffer{}
@@ -38,7 +40,7 @@ var _ = Describe("Version command", func() {
 
 		// Run the command:
 		tool, err := internal.NewTool().
-			Args("ztp", "version").
+			Args("oc-ztp", "edgecluster").
 			Command(Command).
 			In(inBuffer).
 			Out(outBuffer).
@@ -48,11 +50,9 @@ var _ = Describe("Version command", func() {
 		err = tool.Run()
 		Expect(err).ToNot(HaveOccurred())
 
-		// Check the otuput. Note that we expect unknown commit and time because the test
-		// binaries don't include this information.
+		// Check the otuput:
 		outText := outBuffer.String()
-		Expect(outText).To(ContainSubstring("Build commit: unknown"))
-		Expect(outText).To(ContainSubstring("Build time: unknown"))
+		Expect(outText).To(ContainSubstring("Server version: 1.25.2"))
 		errText := errBuffer.String()
 		Expect(errText).To(BeEmpty())
 	})

@@ -42,9 +42,9 @@ all-edgecluster-sno-ci: build-edgecluster-sno bootstrap-ci deploy-pipe-edgeclust
 all-edgecluster-compact-ci: build-edgecluster-compact bootstrap-ci deploy-pipe-edgecluster-compact-ci
 
 ### Manual builds
+.PHONY: build
 build:
-	cd ztp
-	go build -o oc-ztp
+	cd ztp && go build -o oc-ztp
 
 build-pipe-image:
 	podman build --ignorefile $(CI_FOLDER)/.containerignore --platform linux/amd64 -t $(FULL_PIPE_IMAGE_TAG) -f $(CI_FOLDER)/Containerfile.pipeline .

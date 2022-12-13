@@ -15,10 +15,13 @@ License.
 package version
 
 import (
+	"bytes"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
+
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 )
 
 func TestCmd(t *testing.T) {
@@ -27,7 +30,30 @@ func TestCmd(t *testing.T) {
 }
 
 var _ = Describe("Version command", func() {
-	It("Gets version from edgecluster", func() {
+	It("Prints the build commit", func() {
 		// Prepare buffers to capture the output:
+		inBuffer := &bytes.Buffer{}
+		outBuffer := &bytes.Buffer{}
+		errBuffer := &bytes.Buffer{}
+
+		// Run the command:
+		tool, err := internal.NewTool().
+			Args("oc-ztp", "version").
+			Command(Command).
+			In(inBuffer).
+			Out(outBuffer).
+			Err(errBuffer).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		err = tool.Run()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check the otuput. Note that we expect unknown commit and time because the test
+		// binaries don't include this information.
+		outText := outBuffer.String()
+		Expect(outText).To(ContainSubstring("Build commit: unknown"))
+		Expect(outText).To(ContainSubstring("Build time: unknown"))
+		errText := errBuffer.String()
+		Expect(errText).To(BeEmpty())
 	})
 })

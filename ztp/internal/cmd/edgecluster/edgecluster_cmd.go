@@ -16,60 +16,38 @@ package edgecluster
 
 import (
 	"fmt"
-	"runtime/debug"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/spf13/cobra"
 )
 
-// Command creates and returns the version command.
+// Command creates and returns the `edgecluster` command.
 func Command() *cobra.Command {
 	return &cobra.Command{
 		Use:   "edgecluster",
-		Short: "Prints the version information",
-		Long:  "Prints the version information",
+		Short: "Creates an edge cluster",
+		Long:  "Creates an edge cluster",
 		Args:  cobra.NoArgs,
 		RunE:  run,
 	}
 }
 
-// run executes the version command.
+// run executes the `edgecluster` command.
 func run(cmd *cobra.Command, argv []string) error {
+	// Get the tool:
+	tool := internal.ToolFromContext(cmd.Context())
+
+	// Print the server version:
 	kclient, err := internal.GetClient()
 	if err != nil {
 		return err
 	}
-
 	sv, err := kclient.Discovery().ServerVersion()
 	if err != nil {
 		return err
 	}
-
-	// Get the tool:
-	tool := internal.ToolFromContext(cmd.Context())
-
 	out := tool.Out()
 	fmt.Fprintf(out, "Server version: %s\n", sv.String())
 
 	return nil
 }
-
-// getSetting returns the value of the build setting witht he given key. Returns an empty string
-// if no such setting exists.
-func getSetting(info *debug.BuildInfo, key string) string {
-	for _, s := range info.Settings {
-		if s.Key == key {
-			return s.Value
-		}
-	}
-	return ""
-}
-
-// Names of build settings we are interested on:
-const (
-	vcsRevisionSettingKey = "vcs.revision"
-	vcsTimeSettingKey     = "vcs.time"
-)
-
-// Fallback value for unknown settings:
-const unknownSettingValue = "unknown"
