@@ -16,7 +16,7 @@
   "dependencies": {
     "@kubernetes/client-node": "^0.16.2",
     "cors": "^2.8.5",
-    "express": "^4.17.2",
+    "express": "^4.17.3",
     "helmet": "^5.0.2",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.7",
