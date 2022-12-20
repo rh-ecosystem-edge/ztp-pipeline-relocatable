@@ -49,7 +49,7 @@ Single-node OpenShift
 
 Whatever the topology, the hub cluster uses {rh-mce-first} and the Assisted Installer (AI) to install edge clusters at scale by using zero touch provisioning (ZTP).
 
-When the edge cluster is installed, it can be shipped to the customer onsite locations and there the end customer unboxes it, and configures the edge cluster making it fully operational.
+After successful completion of the selected edgecluster pipelinerun, the deployed edge cluster can be shipped to the customer onsite locations. There, the end customer unboxes it and configures the edge cluster, making it fully operational.
 
 The actual workflow and its details can be checked at the files inside the `pipelines` folder.
 

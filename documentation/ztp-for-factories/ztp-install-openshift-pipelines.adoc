@@ -37,7 +37,7 @@ This script:
 * Clones the link:https://github.com/rh-ecosystem-edge/ztp-pipeline-relocatable[ztp-pipeline-relocatable] pipeline repository.
 * Checks that the correct permissions are set on the hub cluster.
 * Deploys the OpenShift Pipelines Operator from the Operator Lifecycle Manager (OLM) catalog.
-* Deploys the ZTP pipeline and associated tasks.
+* Creates ZTP pipelines and the associated tasks.
 
 . Monitor the progress in the terminal window and in the web console.
 
