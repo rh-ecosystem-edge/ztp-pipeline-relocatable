@@ -16,7 +16,7 @@ image::225_OpenShift_Installing_Clusters_0422_pipeline.png[Factory install workf
 
 [NOTE]
 ====
-There are no tasks that run in parallel.
+Some tasks run in parallel.
 ====
 
 
