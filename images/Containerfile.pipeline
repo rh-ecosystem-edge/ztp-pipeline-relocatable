@@ -8,7 +8,8 @@ ADD https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_amd64
 
 RUN curl -k -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz | tar xvz -C /usr/bin && \
     curl -k -s https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/opm-linux.tar.gz | tar xvz  -C /usr/bin && \
-    chmod +x /usr/bin/oc /usr/bin/opm /usr/bin/kubectl  /usr/bin/jq  /usr/bin/yq
+    curl -k -s curl -sL  https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp-dev-preview/latest-4.13/oc-mirror.tar.gz | tar xvz -C /usr/bin && \
+    chmod +x /usr/bin/oc /usr/bin/oc-mirror /usr/bin/opm /usr/bin/kubectl  /usr/bin/jq  /usr/bin/yq
 
 RUN dnf install -y bind-utils openssl openssh-clients httpd-tools conmon skopeo podman gettext fuse-overlayfs iputils nmap-ncat --setopt=install_weak_deps=False  && \
     dnf clean all &&  rm -rf /var/cache/yum

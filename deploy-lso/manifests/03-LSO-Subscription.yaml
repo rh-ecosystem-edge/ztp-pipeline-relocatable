@@ -7,5 +7,5 @@ metadata:
 spec:
   channel: "stable"
   name: local-storage-operator
-  source: ztpfw-catalog
+  source: redhat-operators
   sourceNamespace: openshift-marketplace

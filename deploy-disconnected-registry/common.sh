@@ -4,59 +4,6 @@ set -o pipefail
 set -o nounset
 set -m
 
-function create_cs() {
-
-    local mode=${1}
-
-    if [[ ${mode} == 'hub' ]]; then
-        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-hub.yaml
-        local cluster="hub"
-    elif [[ ${mode} == 'edgecluster' ]]; then
-        local cluster=${2}
-        local CS_OUTFILE=${OUTPUTDIR}/catalogsource-${cluster}.yaml
-    fi
-
-    cat >${CS_OUTFILE} <<EOF
-
-apiVersion: operators.coreos.com/v1alpha1
-kind: CatalogSource
-metadata:
-  name: ${OC_DIS_CATALOG}
-  namespace: ${MARKET_NS}
-spec:
-  sourceType: grpc
-  image: ${OLM_DESTINATION_INDEX}
-  displayName: Disconnected Lab
-  publisher: disconnected-lab
-  updateStrategy:
-    registryPoll:
-      interval: 30m
-EOF
-    echo
-
-    if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
-        echo ">>>> There are no certified operators to be mirrored"
-    else
-        cat >>${CS_OUTFILE} <<EOF
----
-apiVersion: operators.coreos.com/v1alpha1
-kind: CatalogSource
-metadata:
-  name: ${OC_DIS_CATALOG}-certfied
-  namespace: ${MARKET_NS}
-spec:
-  sourceType: grpc
-  image: ${OLM_CERTIFIED_DESTINATION_INDEX}
-  displayName: Disconnected Lab Certified
-  publisher: disconnected-lab-certified
-  updateStrategy:
-    registryPoll:
-      interval: 30m
-EOF
-    fi
-    echo
-}
-
 function trust_internal_registry() {
 
     if [[ $# -lt 1 ]]; then
@@ -111,7 +58,7 @@ function trust_internal_registry() {
 
 }
 
-function get_external_registry_cert() { 
+function get_external_registry_cert() {
     KBKNFG=${EDGE_KUBECONFIG}
     echo "INFO: Getting external registry cert"
     export CA_CERT_DATA=$(openssl s_client -connect ${CUSTOM_REGISTRY_URL} -showcerts < /dev/null | openssl x509 | base64 | tr -d '\n')
@@ -129,7 +76,6 @@ function get_external_registry_cert() {
     oc --kubeconfig=${KBKNFG} patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"ztpfwregistry-external"}}}' --type=merge
 
 }
-
 if [[ $# -lt 1 ]]; then
     echo "Usage :"
     echo '  $1: hub|edgecluster'
@@ -152,11 +98,8 @@ export QUAY_MANIFESTS=quay-manifests
 export SECRET=auth
 export REGISTRY_CONFIG=config.yml
 
-export SOURCE_PACKAGES='quay-operator,kubernetes-nmstate-operator,metallb-operator,ocs-operator,odf-operator,odf-csi-addons-operator,local-storage-operator,advanced-cluster-management,multicluster-engine,mcg-operator,nfd,odf-lvm-operator'
-export CERTIFIED_SOURCE_PACKAGES='gpu-operator-certified'
-export PACKAGES_FORMATED=$(echo ${SOURCE_PACKAGES} | tr "," " ")
-export CERTIFIED_PACKAGES_FORMATED=$(echo ${CERTIFIED_SOURCE_PACKAGES} | tr "," " ")
 export EXTRA_IMAGES=('quay.io/jparrill/registry:3' 'registry.access.redhat.com/rhscl/httpd-24-rhel7:latest' 'quay.io/ztpfw/ui:latest')
+
 # TODO: Change static passwords by dynamic ones
 export REG_US=dummy
 export REG_PASS=dummy123
@@ -166,28 +109,23 @@ if [[ ${1} == "hub" ]]; then
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     export OPENSHIFT_RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OC_OCP_TAG}"
     export SOURCE_REGISTRY="quay.io"
-    export SOURCE_INDEX="registry.redhat.io/redhat/redhat-operator-index:v${OC_OCP_VERSION_MIN}"
-    export CERTIFIED_SOURCE_INDEX="registry.redhat.io/redhat/certified-operator-index:v${OC_OCP_VERSION_MIN}"
+    export REDHAT_OPERATORS_INDEX="registry.redhat.io/redhat/redhat-operator-index"
+    export CERTIFIED_OPERATORS_INDEX="registry.redhat.io/redhat/certified-operator-index"
+
     export DESTINATION_REGISTRY="$(oc get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
     # OLM
     ## NS where the OLM images will be mirrored
     export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
     ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
-    export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
-    ## OLM INDEX IMAGE
-    export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+    #export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat/redhat-operator-index
+    export OLM_DESTINATION_REGISTRY_INDEX_NS=ztpfw/redhat/redhat-operator-index
 
-    ## NS where the OLM CERTIFIED images will be mirrored
-    export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
-    ## Image name where the OLM INDEX for RH CERTIFIED OPERATORS image will be mirrored
-    export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
-    ## OLM CERTIFIED INDEX IMAGE
-    export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
     # OCP
     ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
-    export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
+    export OCP_DESTINATION_REGISTRY_IMAGE_NS=ztpfw/openshift/release-images
     ## OCP INDEX IMAGE
     export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
+    export OC_MIRROR_DESTINATION_REGISTRY=${DESTINATION_REGISTRY}
 
 elif [[ ${1} == "edgecluster" ]]; then
     if [[ ${EDGE_KUBECONFIG:-} == "" ]]; then
@@ -198,7 +136,8 @@ elif [[ ${1} == "edgecluster" ]]; then
         echo "HUB: ${KUBECONFIG_HUB}"
         echo "EDGE: ${EDGE_KUBECONFIG}"
         echo "REGISTRY NS: ${REGISTRY}"
-        if [[  $(oc get --kubeconfig=${EDGE_KUBECONFIG} ns ${REGISTRY} | wc -l) -gt 0 ]]; then
+
+        if [[ $(oc --kubeconfig=${EDGE_KUBECONFIG} get ns | grep ${REGISTRY} | wc -l) -gt 0 && $(oc --kubeconfig=${EDGE_KUBECONFIG} get -n ztpfw-registry deployment ztpfw-registry-quay-app  -ojsonpath='{.status.availableReplicas}') -gt 0 ]]; then
           echo "Registry NS exists so, we can continue with the workflow"
           ## Common
           ## FIX the race condition where the MCO is restarting services and get lost the route query
@@ -227,7 +166,7 @@ elif [[ ${1} == "edgecluster" ]]; then
 
           export OPENSHIFT_RELEASE_IMAGE="$(oc --kubeconfig=${KUBECONFIG_HUB} get clusterimageset --no-headers openshift-v${OC_OCP_VERSION_FULL} -o jsonpath={.spec.releaseImage})"
           ## The NS for INDEX and IMAGE will be the same here, this is why there is only 1
-          export OCP_DESTINATION_REGISTRY_IMAGE_NS=ocp4/openshift4
+          export OCP_DESTINATION_REGISTRY_IMAGE_NS=ztpfw/openshift/release-image
           ## OCP INDEX IMAGE
           export OCP_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OCP_DESTINATION_REGISTRY_IMAGE_NS}:${OC_OCP_TAG}"
 
@@ -237,18 +176,14 @@ elif [[ ${1} == "edgecluster" ]]; then
           ## NS where the OLM images will be mirrored
           export OLM_DESTINATION_REGISTRY_IMAGE_NS=olm
           ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
-          export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat-operator-index
+          #export OLM_DESTINATION_REGISTRY_INDEX_NS=${OLM_DESTINATION_REGISTRY_IMAGE_NS}/redhat/redhat-operator-index
+          export OLM_DESTINATION_REGISTRY_INDEX_NS=ztpfw/redhat/redhat-operator-index
 
-          export SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-          export OLM_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-
-          ## NS where the OLM CERTIFIED images will be mirrored
-          export OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS=olm
-          ## Image name where the OLM INDEX for RH OPERATORS image will be mirrored
-          export OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS=${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS}/certified-operator-index
-
-          export CERTIFIED_SOURCE_INDEX="${SOURCE_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
-          export OLM_CERTIFIED_DESTINATION_INDEX="${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_INDEX_NS}:v${OC_OCP_VERSION_MIN}"
+          export OC_MIRROR_DESTINATION_REGISTRY=${DESTINATION_REGISTRY}/ztpfw
+	  export REDHAT_OPERATORS_INDEX=$(oc --kubeconfig=${KUBECONFIG_HUB} get catalogsource -n openshift-marketplace redhat-operators -o template={{.spec.image}})
+	  export REDHAT_OPERATORS_INDEX="${REDHAT_OPERATORS_INDEX%%:*}"
+	  export CERTIFIED_OPERATORS_INDEX=$(oc --kubeconfig=${KUBECONFIG_HUB} get catalogsource -n openshift-marketplace certified-operators -o template={{.spec.image}})
+	  export CERTIFIED_OPERATORS_INDEX="${CERTIFIED_OPERATORS_INDEX%%:*}"
         fi
     fi
 fi

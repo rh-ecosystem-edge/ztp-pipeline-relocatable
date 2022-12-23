@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: hub-deploy-disconnected-registry
+  name: hub-deploy-mirror-olm
   annotations:
     description: |
       This task will deploy the Disconnected Internal registry.
@@ -44,15 +44,21 @@ spec:
       - name: MOCK
         value: $(params.mock)
   steps:
-    - name: deploy-disconnected-registry
+    - name: mirror-olm
       image: "$(params.ztp-container-image)"
-      imagePullPolicy: Always
+      imagePullPolicy: Always   
+      securityContext:
+        capabilities:
+          add: ["SETFCAP"]
+        privileged: true
+        runAsUser: 0
       script: |
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
           cd ${WORKDIR}/${DEPLOY_REGISTRY_DIR}
-          ./deploy.sh 'hub'
+          echo "Starting OLM Catalog Image Mirroring Step"
+          ./olm-sync.sh 'hub'
         else
-          echo "Deploy Registry Hub: Mock mode on"
+          echo "Mirror OLM: Mock mode on"
         fi

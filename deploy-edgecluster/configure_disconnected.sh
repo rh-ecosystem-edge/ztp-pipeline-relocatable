@@ -26,7 +26,7 @@ function copy_files() {
     fi
 
     echo "Copying source files:" "${src_files[@]}" "to Node ${dst_node}"
-    ${SCP_COMMAND} -i ${RSA_KEY_FILE} "${src_files[@]}" core@${dst_node}:${dst_folder}
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} -r "${src_files[@]}" core@${dst_node}:${dst_folder}
 }
 
 function grab_master_ext_ips() {
@@ -79,100 +79,21 @@ function extract_kubeconfig() {
     oc --kubeconfig=${KUBECONFIG_HUB} get secret -n ${edgename} ${edgename}-admin-kubeconfig -o jsonpath='{.data.kubeconfig}' | base64 -d >${EDGE_KUBECONFIG}
 }
 
-function icsp_mutate() {
-    echo ">>>> Mutating Registry for: ${edgecluster}"
-    MAP=${1}
-    DST_REG=${2}
-    EDGE=${3}
-    HUB_REG_ROUTE="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)"
-    export EDGE_MAPPING_FILE="${MAP%%.*}-${edgecluster}.txt"
-    sed "s/${HUB_REG_ROUTE}/${DST_REG}/g" ${MAP} | tee "${MAP%%.*}-${edgecluster}.txt"
-}
-
 function generate_mapping() {
     echo ">>>> Loading Common file"
     ## Not fully sure but we create the base mapping file using the hub definition and then, when it makes sense we mutate it changing the destination registry
     source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
-    echo ">>>> Creating OLM Manifests"
-    echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
-    GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests
 
-    # Check if certified OLM operators required and if so add them to the mapping
-    if [ -z $CERTIFIED_SOURCE_PACKAGES ]; then
-        echo ">>>> There are no certified operators to be mirrored"
-    else
-        echo ">>>> Creating Certified OLM Manifests"
-        echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-manifests"
-        GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${OLM_CERTIFIED_DESTINATION_INDEX} ${DESTINATION_REGISTRY}/${OLM_CERTIFIED_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${OUTPUTDIR}/olm-certified-manifests
-        # Merge additional certified olm mapping with the redhat olm in order to create just one icsp object with all the images
-        cat ${OUTPUTDIR}/olm-certified-manifests/mapping.txt >>${OUTPUTDIR}/olm-manifests/mapping.txt
-    fi
+    MAP_FILENAME=$1
+    SOURCE_INDEX=$2
+    INDEX_MANIFESTS=${OUTPUTDIR}/mappings/
+
+    mkdir -p $INDEX_MANIFESTS
+
+
     echo ">>>> Copying mapping file to ${OUTPUTDIR}/mapping.txt"
     unalias cp &>/dev/null || echo "Unaliased cp: Done!"
-    cp -f ${OUTPUTDIR}/olm-manifests/mapping.txt ${OUTPUTDIR}/mapping.txt
-}
-
-function recover_mapping() {
-    MAP_FILENAME='mapping.txt'
-    echo ">>>> Finding Map file for OLM Sync"
-    if [[ ! -f "${OUTPUTDIR}/${MAP_FILENAME}" ]]; then
-        echo ">>>> No mapping file found for OLM Sync"
-        MAP="${OUTPUTDIR}/${MAP_FILENAME}"
-        find ${OUTPUTDIR} -name "${MAP_FILENAME}*" -exec cp {} ${MAP} \;
-        if [[ ! -f ${MAP} ]]; then
-            generate_mapping
-        fi
-    fi
-}
-
-function gen_header() {
-    cat <<EOF >${ICSP_OUTFILE}
----
-apiVersion: operator.openshift.io/v1alpha1
-kind: ImageContentSourcePolicy
-metadata:
-  labels:
-    operators.openshift.org/catalog: "true"
-  name: ztpfw-${cluster}
-spec:
-  repositoryDigestMirrors:
-EOF
-}
-
-function add_icsp_entry() {
-    ## Add entry for every image on the packageManifests
-    SRC_IMG=${1}
-    DST_IMG=${2}
-
-    cat <<EOF >>${ICSP_OUTFILE}
-  - mirrors:
-    - ${DST_IMG}
-    source: ${SRC_IMG}
-EOF
-
-}
-
-function icsp_maker() {
-    # This function generated the ICSP for the current edgecluster
-    if [[ $# -lt 3 ]]; then
-        echo "Usage :"
-        echo "  icsp_maker (MAPPING FILE) (ICSP DESTINATION FILE) hub|<edgecluster>"
-        exit 1
-    fi
-
-    export MAP_FILE=${1}
-    export ICSP_OUTFILE=${2}
-    export cluster=${3}
-
-    gen_header ${ICSP_OUTFILE} ${cluster}
-
-    while read entry; do
-        RAW_SRC=${entry%%=*}
-        RAW_DST=${entry##*=}
-        SRC_IMG="${RAW_SRC%%@*}"
-        DST_IMG="${RAW_DST}"
-        add_icsp_entry ${SRC_IMG} ${DST_IMG}
-    done <${MAP_FILE}
+    cp -f ${INDEX_MANIFESTS}/mapping.txt ${MAP_FILENAME}
 }
 
 function wait_for_mcp_ready() {
@@ -213,30 +134,7 @@ function wait_for_mcp_ready() {
 source ${WORKDIR}/shared-utils/common.sh
 export MAP_FILENAME='mapping.txt'
 
-if [[ ${1} == 'hub' ]]; then
-    # Validation
-    if [[ $# -lt 1 ]]; then
-        echo "Usage :"
-        echo "  $0 hub|edgecluster (STAGE (mandatory on edgecluster MODE))"
-        exit 1
-    fi
-
-    echo ">>>> Creating ICSP for: Hub"
-    source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
-    # Recover mapping calls the source over the common.sh file under deploy-disconnected
-    trust_internal_registry 'hub'
-    recover_mapping
-    icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
-    oc --kubeconfig=${KUBECONFIG_HUB} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-    if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
-        echo "CatalogSource File does not exists, generating a new one..."
-        create_cs 'hub'
-    fi
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/catalogsource-hub.yaml
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f ${OUTPUTDIR}/icsp-hub.yaml
-    wait_for_mcp_ready ${KUBECONFIG_HUB} 'hub' 240
-
-elif [[ ${1} == 'edgecluster' ]]; then
+if [[ ${1} == 'edgecluster' ]]; then
     # Validation
     if [[ $# -lt 2 ]]; then
         echo "Usage :"
@@ -269,18 +167,43 @@ elif [[ ${1} == 'edgecluster' ]]; then
 
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
             trust_internal_registry 'hub'
-            recover_mapping
 
-            if [[ ! -f ${OUTPUTDIR}/catalogsource-hub.yaml ]]; then
-                echo "CatalogSource Hub File does not exists, generating a new one..."
-                create_cs 'hub'
-            fi
+	    HUB_DEFAULT_SOURCES_DISABLED=$(oc --kubeconfig=$KUBECONFIG_HUB get OperatorHub cluster --template="{{.spec.disableAllDefaultSources}}")
+	    EDGE_DEFAULT_SOURCES_DISABLED=$(oc --kubeconfig=$EDGE_KUBECONFIG get OperatorHub cluster --template="{{.spec.disableAllDefaultSources}}")
+	    if [[ "${HUB_DEFAULT_SOURCES_DISABLED}" != "true" || "${EDGE_DEFAULT_SOURCES_DISABLED}" == "true" ]];
+	    then
+		 echo "Local cluster already disconnected! No need to apply hub catalogs again"
+	         exit 0
+	    fi
 
-            if [[ ! -f ${OUTPUTDIR}/icsp-hub.yaml ]]; then
-                echo "ICSP Hub File does not exists, generating a new one..."
-                icsp_maker ${OUTPUTDIR}/${MAP_FILENAME} ${OUTPUTDIR}/icsp-hub.yaml 'hub'
-            fi
+	    echo "Creating CatalogSource and ICSPs from Hub"
+	    export APPLY_MANIFEST_DIR=${OUTPUTDIR}/manifests-apply
+	    mkdir -p $APPLY_MANIFEST_DIR 
+	    cat <<EOF >$APPLY_MANIFEST_DIR/operator-hub.patch
+[
+  {
+    "op": "add",
+    "path": "/spec/disableAllDefaultSources",
+    "value": true
+  }
+]
+EOF
+
+	    for catalog in $(oc --kubeconfig=$KUBECONFIG_HUB get catalogsource -n openshift-marketplace -ojson | jq -r ".items[] | .metadata.name");
+	    do
+		MANIFESTS_DIR="${OUTPUTDIR}/$catalog-manifests/"
+		mkdir -p $MANIFESTS_DIR
+		INDEX=$(oc --kubeconfig=$KUBECONFIG_HUB get catalogsource $catalog -n openshift-marketplace --template={{.spec.image}});
+		echo ">>>> Creating manifests for ${catalog}"
+		echo "DEBUG: GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror #${INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=${MANIFESTS_DIR}"
+		GODEBUG=x509ignoreCN=0 oc --kubeconfig=${KUBECONFIG_HUB} adm catalog mirror ${INDEX} ${DESTINATION_REGISTRY}/${OLM_DESTINATION_REGISTRY_IMAGE_NS} --registry-config=${PULL_SECRET} --manifests-only --to-manifests=$MANIFESTS_DIR
+		cp $MANIFESTS_DIR/imageContentSourcePolicy.yaml $APPLY_MANIFEST_DIR/$catalog-icsp.yaml
+		oc --kubeconfig=${KUBECONFIG_HUB} get catalogsource -n openshift-marketplace $catalog -ojson | jq 'del(.metadata.resourceVersion,.metadata.uid,.metadata.selfLink,.metadata.creationTimestamp,.metadata.annotations,.metadata.generation,.metadata.ownerReferences,.status)' | yq eval . --prettyPrint > $APPLY_MANIFEST_DIR/catalogsource-hub-$catalog.yaml
+	    done
+
             recover_edgecluster_rsa ${edgecluster}
+
+
 
             # In this stage the edgecluster's registry does not exist, so we need to trust the Hub's ingress cert
             # Check API
@@ -293,28 +216,21 @@ elif [[ ${1} == 'edgecluster' ]]; then
                 grab_master_ext_ips ${edgecluster} ${_index}
                 check_connectivity "${EDGE_NODE_IP}"
                 # Execute commands and Copy files
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "mkdir -p ~/manifests/ ~/.kube"
                 copy_files "${EDGE_KUBECONFIG}" "${EDGE_NODE_IP}" "./.kube/config"
-                copy_files "${OUTPUTDIR}/catalogsource-hub.yaml" "${EDGE_NODE_IP}" "./manifests/catalogsource-hub.yaml"
-                copy_files "${OUTPUTDIR}/icsp-hub.yaml" "${EDGE_NODE_IP}" "./manifests/icsp-hub.yaml"
+                copy_files "${APPLY_MANIFEST_DIR}" "${EDGE_NODE_IP}" "./manifests/icsp"
                 # Check ICSP
-                RCICSP=$(${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc get ImageContentSourcePolicy ztpfw-hub | wc -l || true")
                 OC_COMMAND="${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} oc"
-                MANIFESTS_PATH='manifests'
+                MANIFESTS_PATH='manifests/icsp'
             else
-                RCICSP=$(oc --kubeconfig=${EDGE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${edgecluster} | wc -l || true)
                 OC_COMMAND="oc --kubeconfig=${EDGE_KUBECONFIG}"
-                MANIFESTS_PATH="${OUTPUTDIR}"
+                MANIFESTS_PATH="${APPLY_MANIFEST_DIR}"
             fi
 
-            if [[ ${RCICSP} -eq 2 ]]; then
-                echo "Skipping ICSP creation as it already exists"
-            else
-                # Edge-cluster Sync from the Hub cluster as a Source
-                echo ">>>> Deploying ICSP for: ${edgecluster} using the Hub as a source"
-                ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/catalogsource-hub.yaml
-                ${OC_COMMAND} apply -f ${MANIFESTS_PATH}/icsp-hub.yaml
-            fi
+	    # Edge-cluster Sync from the Hub cluster as a Source
+	    echo ">>>> Deploying ICSP for: ${edgecluster} using the Hub as a source"
+	    ${OC_COMMAND} patch OperatorHub cluster --type=json --patch-file=$MANIFESTS_PATH/operator-hub.patch
+	    ${OC_COMMAND} apply -f ${MANIFESTS_PATH}
         elif [[ ${STAGE} == 'post' ]]; then
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'edgecluster'
 
@@ -327,12 +243,10 @@ elif [[ ${1} == 'edgecluster' ]]; then
 
             source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'hub'
             trust_internal_registry 'edgecluster' ${edgecluster}
-            if [[ ! -f ${OUTPUTDIR}/catalogsource-${edgecluster}.yaml ]]; then
-                echo "CatalogSource File does not exists, generating a new one..."
-                create_cs 'edgecluster' ${edgecluster}
-            fi
-            recover_mapping
             recover_edgecluster_rsa ${edgecluster}
+
+	    export APPLY_MANIFEST_DIR=${OUTPUTDIR}/icsp
+	    mkdir -p $APPLY_MANIFEST_DIR 
 
             RCICSP=$(oc --kubeconfig=${EDGE_KUBECONFIG} get ImageContentSourcePolicy ztpfw-${edgecluster} | wc -l || true)
             if [[ ${RCICSP} -eq 2 ]]; then
@@ -341,11 +255,8 @@ elif [[ ${1} == 'edgecluster' ]]; then
                 echo ">>>> Creating ICSP for: ${edgecluster}"
                 # Use the Edge-cluster's registry as a source
                 source ${WORKDIR}/${DEPLOY_REGISTRY_DIR}/common.sh 'edgecluster'
-                icsp_mutate ${OUTPUTDIR}/${MAP_FILENAME} ${DESTINATION_REGISTRY} ${edgecluster}
-                icsp_maker ${EDGE_MAPPING_FILE} ${OUTPUTDIR}/icsp-${edgecluster}.yaml ${edgecluster}
 
                 # Clean Old stuff
-                oc --kubeconfig=${EDGE_KUBECONFIG} delete -f ${OUTPUTDIR}/catalogsource-hub.yaml || echo "CatalogSoruce already deleted!"
                 oc --kubeconfig=${EDGE_KUBECONFIG} delete -f ${OUTPUTDIR}/icsp-hub.yaml || echo "ICSP already deleted!"
 
                 echo ">>>> Waiting for old stuff deletion..."
@@ -353,7 +264,7 @@ elif [[ ${1} == 'edgecluster' ]]; then
 
                 # Deploy New ICSP + CS
                 oc --kubeconfig=${EDGE_KUBECONFIG} apply -f ${OUTPUTDIR}/catalogsource-${edgecluster}.yaml
-                oc --kubeconfig=${EDGE_KUBECONFIG} apply -f ${OUTPUTDIR}/icsp-${edgecluster}.yaml
+                oc --kubeconfig=${EDGE_KUBECONFIG} apply -f ${APPLY_MANIFEST_DIR}
 
                 wait_for_mcp_ready ${EDGE_KUBECONFIG} ${edgecluster} 120
             fi

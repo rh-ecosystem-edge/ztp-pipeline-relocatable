@@ -120,8 +120,8 @@ function render_manifests() {
     # Render the subscription to be connected or disconnected (assuming sno is connected)
     export NUM_M=$(yq e ".edgeclusters[0].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
     if [ "${NUM_M}" -eq "3" ]; then # 3 masters and disconnected
-        sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-MLB-Subscription.yaml
-        sed -i "s/CHANGE_SOURCE/ztpfw-catalog/g" manifests/03-NMS-Subscription.yaml
+        sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-MLB-Subscription.yaml
+        sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-NMS-Subscription.yaml
     else # sno is connected so the source should be upstream
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-MLB-Subscription.yaml
         sed -i "s/CHANGE_SOURCE/redhat-operators/g" manifests/03-NMS-Subscription.yaml
@@ -310,7 +310,8 @@ if ! ./verify.sh; then
             export FILENAME=${edgecluster}-nncp-${NODENAME}
             # I've been forced to do that, don't blame me :(
             ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/${FILENAME}.yaml"
-            verify_remote_resource ${edgecluster} "default" "nncp" "${NODENAME}-nncp" "Available"
+            #verify_remote_resource ${edgecluster} "default" "nncp" "${NODENAME}-nncp" "Available"
+            sleep 60
         done
         echo
 
@@ -329,10 +330,8 @@ if ! ./verify.sh; then
         verify_remote_resource ${edgecluster} "openshift-kube-apiserver" "service" "metallb-api" "."
         verify_remote_resource ${edgecluster} "metallb" "AddressPool" "ingress-public-ip" "."
         verify_remote_resource ${edgecluster} "openshift-ingress" "service" "metallb-ingress" "."
-        echo
+
         check_external_access ${edgecluster}
-        echo 'Patch external CatalogSources'
-        oc --kubeconfig=${EDGE_KUBECONFIG} patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
         echo ">>>> Edge-cluster ${edgecluster} finished!"
         let index++
     done

@@ -47,7 +47,7 @@ if ! ./verify.sh; then
     echo ">>>> Modify files to replace with pipeline info gathered"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     sed -i "s/CHANGEME/$OC_ODF_VERSION/g" manifests/03-LVMO-Subscription.yaml
-    sed -i "s/CATALOG_SOURCE/ztpfw-catalog/g" manifests/03-LVMO-Subscription.yaml
+    sed -i "s/CATALOG_SOURCE/redhat-operators/g" manifests/03-LVMO-Subscription.yaml
 
     if [[ -z ${ALLEDGECLUSTERS} ]]; then
         ALLEDGECLUSTERS=$(yq e '(.edgeclusters[] | keys)[]' ${EDGECLUSTERS_FILE})

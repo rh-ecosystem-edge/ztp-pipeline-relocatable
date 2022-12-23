@@ -7,5 +7,5 @@ metadata:
 spec:
   channel: "stable-CHANGEME"
   name: odf-operator
-  source: ztpfw-catalog
+  source: redhat-operators
   sourceNamespace: openshift-marketplace

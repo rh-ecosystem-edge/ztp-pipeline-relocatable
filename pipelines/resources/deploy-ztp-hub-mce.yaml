@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: deploy-ztp-hub
+  name: deploy-ztp-hub-mce
 spec:
   description: Tekton Pipeline to deploy ZTPFW Hub Cluster with MCE
   params:
@@ -60,70 +60,7 @@ spec:
       - name: ztp
         workspace: ztp
 
-  # Deploy Disconnected Registry
-  - name: deploy-disconnected-registry
-    taskRef:
-      name: hub-deploy-disconnected-registry
-    params:
-      - name: edgeclusters-config
-        value: $(params.edgeclusters-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
-    runAfter:
-      - deploy-httpd-server
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # mirror olm
-  - name: deploy-mirror-olm
-    taskRef:
-      name: hub-deploy-mirror-olm
-    params:
-      - name: edgeclusters-config
-        value: $(params.edgeclusters-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
-    runAfter:
-      - deploy-disconnected-registry
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # update-global-ps
-  - name: deploy-update-global-ps
-    taskRef:
-      name: hub-deploy-update-global-ps
-    params:
-      - name: edgeclusters-config
-        value: $(params.edgeclusters-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
-    runAfter:
-      - deploy-mirror-olm
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # Deploy MCE
+  # Deploy RHACM
   - name: deploy-mce
     taskRef:
       name: hub-deploy-mce
@@ -139,28 +76,7 @@ spec:
       - name: pipeline-name
         value: $(context.pipelineRun.name)
     runAfter:
-      - deploy-update-global-ps
-    workspaces:
-      - name: ztp
-        workspace: ztp
-
-  # Deploy ICSP Hub
-  - name: deploy-icsp-hub
-    taskRef:
-      name: hub-deploy-icsp-hub
-    params:
-      - name: edgeclusters-config
-        value: $(params.edgeclusters-config)
-      - name: kubeconfig
-        value: $(params.kubeconfig)
-      - name: ztp-container-image
-        value: $(params.ztp-container-image)
-      - name: mock
-        value: $(params.mock)
-      - name: pipeline-name
-        value: $(context.pipelineRun.name)
-    runAfter:
-      - deploy-mce
+      - deploy-httpd-server
     workspaces:
       - name: ztp
         workspace: ztp
@@ -181,7 +97,7 @@ spec:
       - name: pipeline-name
         value: $(context.pipelineRun.name)
     runAfter:
-      - deploy-icsp-hub
+      - deploy-mce
     workspaces:
       - name: ztp
         workspace: ztp

@@ -9,12 +9,10 @@ parameters:
 {{cluster_name}}{{ i }}-cluster-m{{ j }}:
   uefi_legacy: true
   start: false
-  memory: 64000
-  numcpus: 24
+  memory: 128000
+  numcpus: 32
   nets:
   - name: bare-net
-    reserveip: true
-    ip: {{ ips[i] }}
 {% if not singlenic %}
   - name: ztpfw
     nic: enp2s0

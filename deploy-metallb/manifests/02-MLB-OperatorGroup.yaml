@@ -6,4 +6,4 @@ metadata:
   namespace: metallb
 spec:
   targetNamespaces:
-  - metallb
+    - metallb
