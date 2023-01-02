@@ -26,9 +26,11 @@ mirror:
       - name: stable
     - name: odf-operator
       channels:
+      - name: stable-4.10
       - name: stable-${OC_ODF_VERSION}
     - name: odf-lvm-operator
       channels:
+      - name: stable-4.10
       - name: stable-${OC_ODF_VERSION}
     - name: nfd
       channels:

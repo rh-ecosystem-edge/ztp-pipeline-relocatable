@@ -46,6 +46,9 @@ spec:
     - name: deploy-icsp-edgeclusters-post
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
+      securityContext:
+        capabilities:
+          add: ["SETFCAP"]
       script: |
         #!/usr/bin/bash
 

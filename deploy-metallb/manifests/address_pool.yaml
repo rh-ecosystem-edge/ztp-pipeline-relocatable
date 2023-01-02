@@ -1,11 +1,19 @@
 ---
 apiVersion: metallb.io/v1beta1
-kind: AddressPool
+kind: IPAddressPool
 metadata:
   name: $SVC_NAME
   namespace: metallb
 spec:
-  protocol: layer2
   autoAssign: false
   addresses:
     - $METALLB_IP/32
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: $SVC_NAME
+  namespace: metallb
+spec:
+  ipAddressPools:
+  - $SVC_NAME

@@ -4,6 +4,3 @@ kind: OperatorGroup
 metadata:
   name: metallb-operator-operatorgroup
   namespace: metallb
-spec:
-  targetNamespaces:
-    - metallb
