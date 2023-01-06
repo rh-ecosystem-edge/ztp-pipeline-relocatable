@@ -39,9 +39,9 @@ This script:
 * Deploys the OpenShift Pipelines Operator from the Operator Lifecycle Manager (OLM) catalog.
 * Creates ZTP pipelines and the associated tasks.
 
-. Monitor the progress in the terminal window and in the web console.
+. Optional: Monitor the progress in the terminal window(a) and/or in the web console(b).
 
-.. In the terminal window you are expected to see the following:
+.. In the terminal window you are expected to see an output similar to the following:
 +
 [source,terminal]
 ----
