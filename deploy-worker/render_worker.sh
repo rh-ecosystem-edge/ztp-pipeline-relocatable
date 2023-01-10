@@ -24,9 +24,8 @@ create_worker_definitions() {
     echo ">> Detecting number of workers"
     NUM_W=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep worker | wc -l | xargs)
     echo ">> Workers: ${NUM_W}"
-    NUM_W=$((NUM_W - 1))
 
-    for worker in $(seq 0 ${NUM_W}); do
+    for worker in $(seq 0 $((NUM_W - 1))); do
         export CHANGE_EDGE_WORKER_PUB_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_int_static" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_PUB_INT_IP=192.168.7.13
@@ -228,6 +227,7 @@ for EDGE in ${ALLEDGECLUSTERS}; do
 
     
     extract_kubeconfig_common ${EDGE}
+    echo ">> Waiting for workers: ${NUM_W}"
     for worker in $(seq 0 $((NUM_W - 1))); do
         check_resource "node" "ztpfw-${EDGE}-worker-${worker}" "Ready" "kube-system" "${EDGE_KUBECONFIG}"
     done
