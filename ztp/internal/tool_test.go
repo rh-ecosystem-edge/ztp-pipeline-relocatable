@@ -17,17 +17,31 @@ package internal
 import (
 	"bytes"
 	"io"
+	"math"
 
+	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Tool", func() {
+	var logger logr.Logger
+
+	BeforeEach(func() {
+		var err error
+		logger, err = NewLogger().
+			SetWriter(GinkgoWriter).
+			SetV(math.MaxInt).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 	It("Can't be created without at least one argument", func() {
 		tool, err := NewTool().
-			In(&bytes.Buffer{}).
-			Out(io.Discard).
-			Err(io.Discard).
+			SetLogger(logger).
+			SetIn(&bytes.Buffer{}).
+			SetOut(io.Discard).
+			SetErr(io.Discard).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
@@ -38,9 +52,10 @@ var _ = Describe("Tool", func() {
 
 	It("Can't be created standard input stream", func() {
 		tool, err := NewTool().
-			Args("ztp").
-			Out(io.Discard).
-			Err(io.Discard).
+			SetLogger(logger).
+			AddArgs("ztp").
+			SetOut(io.Discard).
+			SetErr(io.Discard).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
@@ -51,9 +66,10 @@ var _ = Describe("Tool", func() {
 
 	It("Can't be created standard output stream", func() {
 		tool, err := NewTool().
-			Args("ztp").
-			In(&bytes.Buffer{}).
-			Err(io.Discard).
+			SetLogger(logger).
+			AddArgs("ztp").
+			SetIn(&bytes.Buffer{}).
+			SetErr(io.Discard).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
@@ -64,9 +80,10 @@ var _ = Describe("Tool", func() {
 
 	It("Can't be created standard error stream", func() {
 		tool, err := NewTool().
-			Args("ztp").
-			In(&bytes.Buffer{}).
-			Out(io.Discard).
+			SetLogger(logger).
+			AddArgs("ztp").
+			SetIn(&bytes.Buffer{}).
+			SetOut(io.Discard).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()

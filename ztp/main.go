@@ -26,12 +26,12 @@ import (
 func main() {
 	// Create the tool:
 	tool, err := internal.NewTool().
-		Args(os.Args...).
-		In(os.Stdin).
-		Out(os.Stdout).
-		Err(os.Stderr).
-		Command(version.Command).
-		Command(edgecluster.Command).
+		AddArgs(os.Args...).
+		SetIn(os.Stdin).
+		SetOut(os.Stdout).
+		SetErr(os.Stderr).
+		AddCommand(version.Command).
+		AddCommand(edgecluster.Command).
 		Build()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())

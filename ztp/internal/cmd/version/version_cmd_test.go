@@ -38,11 +38,11 @@ var _ = Describe("Version command", func() {
 
 		// Run the command:
 		tool, err := internal.NewTool().
-			Args("oc-ztp", "version").
-			Command(Command).
-			In(inBuffer).
-			Out(outBuffer).
-			Err(errBuffer).
+			AddArgs("oc-ztp", "version").
+			AddCommand(Command).
+			SetIn(inBuffer).
+			SetOut(outBuffer).
+			SetErr(errBuffer).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 		err = tool.Run()
