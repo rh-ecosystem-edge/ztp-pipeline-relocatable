@@ -44,6 +44,11 @@ spec:
     - name: deploy-hub-config
       image: "$(params.ztp-container-image)"
       imagePullPolicy: Always
+      securityContext:
+        capabilities:
+          add: ["SETFCAP"]
+        privileged: true
+        runAsUser: 0
       script: |
         #!/usr/bin/bash
 
