@@ -321,14 +321,14 @@ if ! ./verify.sh; then
         verify_remote_resource ${edgecluster} "metallb" "deployment.apps" "controller" "."
         verify_remote_pod ${edgecluster} "metallb" "pod" "component=speaker"
 
-        echo ">> Deploying MetalLB AddressPools and Services for ${edgecluster}"
+        echo ">> Deploying MetalLB IPAddressPools and Services for ${edgecluster}"
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "oc apply -f manifests/${edgecluster}-metallb-api.yaml -f manifests/${edgecluster}-metallb-api-svc.yaml -f manifests/${edgecluster}-metallb-ingress-svc.yaml -f manifests/${edgecluster}-metallb-ingress.yaml"
         echo
 
         sleep 2
-        verify_remote_resource ${edgecluster} "metallb" "AddressPool" "api-public-ip" "."
+        verify_remote_resource ${edgecluster} "metallb" "IPAddressPool" "api-public-ip" "."
         verify_remote_resource ${edgecluster} "openshift-kube-apiserver" "service" "metallb-api" "."
-        verify_remote_resource ${edgecluster} "metallb" "AddressPool" "ingress-public-ip" "."
+        verify_remote_resource ${edgecluster} "metallb" "IPAddressPool" "ingress-public-ip" "."
         verify_remote_resource ${edgecluster} "openshift-ingress" "service" "metallb-ingress" "."
 
         check_external_access ${edgecluster}

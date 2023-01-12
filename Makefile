@@ -7,10 +7,9 @@ RELEASE ?= latest
 CLUSTER_NAME ?= edgecluster
 EDGECLUSTERS_FILE ?= ${PWD}/hack/deploy-hub-local/${CLUSTER_NAME}.yaml
 PULL_SECRET ?= ${HOME}/openshift_pull.json
-OCP_VERSION ?= 4.10.42
-ACM_VERSION ?= 2.5
-ODF_VERSION ?= 4.10
-
+OCP_VERSION ?= 4.11.20
+ACM_VERSION ?= 2.6
+ODF_VERSION ?= 4.11
 
 ifneq ($(TAG),)
 BRANCH := $(TAG)

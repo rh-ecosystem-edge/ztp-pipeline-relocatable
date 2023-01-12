@@ -24,9 +24,8 @@ create_worker_definitions() {
     echo ">> Detecting number of workers"
     NUM_W=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep worker | wc -l | xargs)
     echo ">> Workers: ${NUM_W}"
-    NUM_W=$((NUM_W - 1))
 
-    for worker in $(seq 0 ${NUM_W}); do
+    for worker in $(seq 0 $((NUM_W - 1))); do
         export CHANGE_EDGE_WORKER_PUB_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_int_static" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_PUB_INT_IP=192.168.7.13
@@ -37,6 +36,14 @@ create_worker_definitions() {
         export CHANGE_EDGE_WORKER_BMC_URL=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.bmc_url" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_MGMT_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_ROOT_DISK=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.root_disk" ${EDGECLUSTERS_FILE})
+
+        if [[ ${CHANGE_EDGE_WORKER_PUB_INT} == "null" ]]; then
+        	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_WORKER_MGMT_INT}.102" | base64 -w0)
+        else
+        	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_WORKER_PUB_INT}" | base64 -w0)
+        fi
+        export IGN_CHANGE_DEF_ROUTE_SCRIPT=$(base64 change_def_route.sh -w0)
+    	export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]},{"path":"/var/lib/ovnk/iface_default_hint","mode":492,"override":true,"contents":{"source":"data:text/plain;base64,'${OVS_IFACE_HINT}'"}}]}}'
 
         # Now, write the template to disk
         OUTPUT="${OUTPUTDIR}/${cluster}-worker${worker}.yaml"
@@ -155,6 +162,7 @@ metadata:
    inspect.metal3.io: disabled
    bmac.agent-install.openshift.io/hostname: 'ztpfw-${cluster}-worker-${worker}'
    bmac.agent-install.openshift.io/role: worker
+   bmac.agent-install.openshift.io/ignition-config-overrides: '${JSON_STRING_CFG_OVERRIDE_BMH}'
 spec:
  online: false
  bootMACAddress: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
@@ -214,6 +222,14 @@ for EDGE in ${ALLEDGECLUSTERS}; do
         echo "Now worker agent is ${WORKER_AGENT}"
         break
     done
+
     check_resource "agent" "${WORKER_AGENT}" "Installed" "${EDGE}" "${KUBECONFIG_HUB}"
+
+    
+    extract_kubeconfig_common ${EDGE}
+    echo ">> Waiting for workers: ${NUM_W}"
+    for worker in $(seq 0 $((NUM_W - 1))); do
+        check_resource "node" "ztpfw-${EDGE}-worker-${worker}" "Ready" "kube-system" "${EDGE_KUBECONFIG}"
+    done
     index=$((index + 1))
 done

@@ -42,9 +42,13 @@ if ./verify.sh; then
         echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
         echo -n "${CABUNDLE}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
     fi
+
+    export REG_US=dummy
+    export REG_PASS=dummy123
+    registry_login ${LOCAL_REG}
     echo "" >>01_Mirror_ConfigMap.yml
     cat registryconf.txt >>01_Mirror_ConfigMap.yml
-    NEWTAG=${LOCAL_REG}/openshift/release-images:${OC_OCP_TAG}
+    NEWTAG=$(skopeo inspect --tls-verify=false --format "{{.Name}}@{{.Digest}}" "docker://${LOCAL_REG}/openshift/release-images:${OC_OCP_TAG}")
     sed -i "s/CHANGE_EDGE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
     sed -i "s%TAG_OCP_IMAGE_RELEASE%${NEWTAG}%g" 02-cluster_imageset.yml
 

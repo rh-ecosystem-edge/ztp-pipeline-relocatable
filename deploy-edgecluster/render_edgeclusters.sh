@@ -88,9 +88,6 @@ metadata:
 stringData:
   .dockerconfigjson: '$CHANGE_PULL_SECRET'
   type: kubernetes.io/dockerconfigjson
-EOF
-    if [ "${NUM_M}" -eq "1" ]; then
-        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -125,9 +122,6 @@ data:
             filesystem: root
             mode: 420
             path: /etc/default/nodeip-configuration
-EOF
-    fi
-    cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
 apiVersion: extensions.hive.openshift.io/v1beta1
 kind: AgentClusterInstall
@@ -137,6 +131,11 @@ metadata:
 spec:
   clusterDeploymentRef:
     name: $CHANGE_EDGE_NAME
+  manifestsConfigMapRef:
+    name: $CHANGE_EDGE_NAME-manifests-override
+  imageSetRef:
+    name: $CHANGE_EDGE_CLUSTERIMAGESET
+  fips: true
 EOF
 
 if [ "${TPM_ENABLED}" == true ]; then
@@ -146,23 +145,12 @@ cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
     enableOn: all
 EOF
 fi
-
-    if [ "${NUM_M}" -eq "1" ]; then
-        cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
-  manifestsConfigMapRef:
-    name: $CHANGE_EDGE_NAME-manifests-override
-EOF
-    fi
-    cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
-  imageSetRef:
-    name: $CHANGE_EDGE_CLUSTERIMAGESET
-  fips: true
-EOF
     if [ "${NUM_M}" -eq "3" ]; then
         cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   apiVIP: "$CHANGE_EDGE_API"
   ingressVIP: "$CHANGE_EDGE_INGRESS"
   networking:
+    networkType: OVNKubernetes
     clusterNetwork:
       - cidr: "$CHANGE_EDGE_CLUSTER_NET_CIDR"
         hostPrefix: $CHANGE_EDGE_CLUSTER_NET_PREFIX
