@@ -36,10 +36,10 @@ jobs:
         working-directory: ztp
     steps:
     - name: Checkout the source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: 1.19
 
@@ -57,10 +57,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Setup Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
 
     - name: Run the linter
-      uses: golangci/golangci-lint-action@v2
+      uses: golangci/golangci-lint-action@v3
       with:
         working-directory: ztp
         version: v1.50.1
