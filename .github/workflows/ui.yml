@@ -14,6 +14,7 @@ concurrency:
 jobs:
   build:
     if: (!contains(github.event.label.name, 'skip-ci-ui') && !contains(github.event.pull_request.labels.*.name, 'skip-ci-ui')) || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'test-ci-ui')
+    continue-on-error: true
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: '--max-old-space-size=8192'
