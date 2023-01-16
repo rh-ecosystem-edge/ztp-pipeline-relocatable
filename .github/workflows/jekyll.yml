@@ -28,7 +28,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gems-
 
-    - uses: iranzo/gh-pages-jekyll-action@1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GHAREPO }}
-        SOURCE_FOLDER: website
+    - uses: helaili/jekyll-action@v2
+      with:
+        token: ${{ secrets.GHAREPO }}
+        jekyll_src: website
