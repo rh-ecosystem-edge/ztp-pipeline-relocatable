@@ -7,6 +7,7 @@ on:
     paths:
       - 'website/**'
       - 'documentation/**'
+      - '.github/workflows/jekyll.yml'
   schedule:
     - cron:  '0 0 * * *'
 
