@@ -69,3 +69,4 @@ jobs:
       with:
         working-directory: ztp
         version: v1.50.1
+        args: --timeout 5m
