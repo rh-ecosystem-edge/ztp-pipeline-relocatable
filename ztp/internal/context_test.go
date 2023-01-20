@@ -18,18 +18,32 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"math"
 
+	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Context", func() {
+	var logger logr.Logger
+
+	BeforeEach(func() {
+		var err error
+		logger, err = NewLogger().
+			SetWriter(GinkgoWriter).
+			SetV(math.MaxInt).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 	It("Extracts tool from the context if previously added", func() {
 		original, err := NewTool().
-			Args("ztp").
-			In(&bytes.Buffer{}).
-			Out(io.Discard).
-			Err(io.Discard).
+			SetLogger(logger).
+			AddArgs("ztp").
+			SetIn(&bytes.Buffer{}).
+			SetOut(io.Discard).
+			SetErr(io.Discard).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 		ctx := ToolIntoContext(context.Background(), original)

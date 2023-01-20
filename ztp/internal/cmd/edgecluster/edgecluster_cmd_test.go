@@ -16,8 +16,10 @@ package edgecluster
 
 import (
 	"bytes"
+	"math"
 	"testing"
 
+	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 
@@ -30,6 +32,17 @@ func TestCmd(t *testing.T) {
 }
 
 var _ = Describe("Edge cluster command", func() {
+	var logger logr.Logger
+
+	BeforeEach(func() {
+		var err error
+		logger, err = internal.NewLogger().
+			SetWriter(GinkgoWriter).
+			SetV(math.MaxInt).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 	// TODO: This test is disabled because currently we don't have a Kubernetes API server
 	// running in the tests environment.
 	XIt("Prints the server version", func() {
@@ -40,11 +53,12 @@ var _ = Describe("Edge cluster command", func() {
 
 		// Run the command:
 		tool, err := internal.NewTool().
-			Args("oc-ztp", "edgecluster").
-			Command(Command).
-			In(inBuffer).
-			Out(outBuffer).
-			Err(errBuffer).
+			SetLogger(logger).
+			AddArgs("oc-ztp", "edgecluster").
+			AddCommand(Command).
+			SetIn(inBuffer).
+			SetOut(outBuffer).
+			SetErr(errBuffer).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 		err = tool.Run()
