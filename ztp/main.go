@@ -26,6 +26,7 @@ import (
 func main() {
 	// Create the tool:
 	tool, err := internal.NewTool().
+		AddEnv(os.Environ()...).
 		AddArgs(os.Args...).
 		SetIn(os.Stdin).
 		SetOut(os.Stdout).
