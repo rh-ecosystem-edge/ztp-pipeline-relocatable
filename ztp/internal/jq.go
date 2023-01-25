@@ -62,10 +62,10 @@ func (b *JQBuilder) Build() (result *JQ, err error) {
 	return
 }
 
-// Run the given query on the given input data and stores the result into the given output variable.
-// An error will be returned if the query can't be parsed or if the data doesn't fit into the output
-// variable.
-func (j *JQ) Run(query string, input any, output any) error {
+// Query the given query on the given input data and stores the result into the given output
+// variable.  An error will be returned if the query can't be parsed or if the data doesn't fit into
+// the output variable.
+func (j *JQ) Query(query string, input any, output any) error {
 	// Check that the output is a pointer:
 	outputValue := reflect.ValueOf(output)
 	if outputValue.Kind() != reflect.Pointer {
