@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   jekyll:
-    runs-on: ruby:2.7-alpine
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -29,6 +29,9 @@ jobs:
         key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
         restore-keys: |
           ${{ runner.os }}-gems-
+
+    - name: Install dependencies
+      run: apt-get -y update && apt-get install -y ruby ruby-dev  && gem install bundler
 
     - name: Build asciidoc
       run: bash -x build.sh
