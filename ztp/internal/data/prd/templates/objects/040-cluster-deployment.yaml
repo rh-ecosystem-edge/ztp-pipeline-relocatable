@@ -1,0 +1,22 @@
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  namespace: {{ .Cluster.Name }}
+  name: {{ .Cluster.Name }}
+spec:
+  baseDomain: {{ .Cluster.DNS.Domain }}
+  clusterName: {{ .Cluster.Name }}
+  controlPlaneConfig:
+    servingCertificates: {}
+  clusterInstallRef:
+    group: extensions.hive.openshift.io
+    kind: AgentClusterInstall
+    name: {{ .Cluster.Name }}
+    version: v1beta1
+  platform:
+    agentBareMetal:
+      agentSelector:
+        matchLabels:
+          cluster-name: {{ .Cluster.Name }}
+  pullSecretRef:
+    name: pull-secret-edgecluster-cluster

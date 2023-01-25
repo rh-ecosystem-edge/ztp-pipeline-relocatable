@@ -3,8 +3,6 @@ module github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp
 go 1.19
 
 require (
-	github.com/docker/docker v20.10.23+incompatible
-	github.com/docker/go-connections v0.4.0
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/uuid v1.3.0
@@ -20,20 +18,9 @@ require (
 )
 
 require (
-	github.com/Microsoft/go-winio v0.6.0 // indirect
-	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/go-units v0.5.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
-	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect
-	github.com/morikuni/aec v1.0.0 // indirect
-	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
-	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/tools v0.4.0 // indirect
-	gotest.tools/v3 v3.4.0 // indirect
 )
 
 require (
@@ -47,7 +34,7 @@ require (
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/imdario/mergo v0.3.6 // indirect
+	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/itchyny/gojq v0.12.11
 	github.com/josharian/intern v1.0.0 // indirect

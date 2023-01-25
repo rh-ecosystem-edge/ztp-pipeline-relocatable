@@ -31,6 +31,11 @@ jobs:
     - name: Checkout the source
       uses: actions/checkout@v3
 
+    - name: Setup Kind
+      uses: helm/kind-action@v1.4.0
+      with:
+        cluster_name: ztp-testing
+
     - name: Setup Go
       uses: actions/setup-go@v3
       with:
@@ -43,7 +48,10 @@ jobs:
         go install "${package}/ginkgo@${version}"
 
     - name: Run the tests
-      run: ginkgo -r internal
+      run: |
+        go build
+        ./ztp dev setup
+        ginkgo run -r
 
   lint:
     name: Lint CLI

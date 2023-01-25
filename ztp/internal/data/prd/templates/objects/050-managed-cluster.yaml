@@ -1,0 +1,11 @@
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  namespace: {{ .Cluster.Name }}
+  name: {{ .Cluster.Name }}
+  labels:
+    name: {{ .Cluster.Name }}
+    ztpfw: "true"
+spec:
+  hubAcceptsClient: true
+  leaseDurationSeconds: 60

@@ -15,78 +15,183 @@ License.
 package edgecluster
 
 import (
+	"context"
 	"fmt"
-	"os"
+	"strings"
+
+	"github.com/go-logr/logr"
+	"github.com/spf13/cobra"
+	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
-	"github.com/spf13/cobra"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/templating"
 )
 
-// Command creates and returns the `edgecluster` command.
-func Command() *cobra.Command {
+// Cobra creates and returns the `edgecluster` command.
+func Cobra() *cobra.Command {
+	c := NewCommand()
 	return &cobra.Command{
-		Use:   "edgecluster TIMEOUT",
+		Use:   "edgecluster",
 		Short: "Creates an edge cluster",
 		Long:  "Creates an edge cluster",
-		Args:  cobra.ExactArgs(1),
-		RunE:  run,
+		Args:  cobra.NoArgs,
+		RunE:  c.Run,
 	}
 }
 
-// run executes the `edgecluster` command.
-func run(cmd *cobra.Command, argv []string) error {
+// Command contains the data and logic needed to run the `edgecluster` command.
+type Command struct {
+	logger    logr.Logger
+	env       map[string]string
+	tool      *internal.Tool
+	config    models.Config
+	client    clnt.WithWatch
+	templates *templating.Engine
+	enricher  *internal.Enricher
+	renderer  *internal.Renderer
+}
+
+// NewCommand creates a new runner that knows how to execute the `edgecluster` command.
+func NewCommand() *Command {
+	return &Command{}
+}
+
+// Run runs the `edgecluster` command.
+func (c *Command) Run(cmd *cobra.Command, argv []string) (err error) {
 	// Get the context:
 	ctx := cmd.Context()
 
-	// Get the tool:
-	tool := internal.ToolFromContext(ctx)
-	logger := internal.LoggerFromContext(ctx)
+	// Get the dependencies from the context:
+	c.logger = internal.LoggerFromContext(ctx)
+	c.tool = internal.ToolFromContext(ctx)
+
+	// Get the environment:
+	c.env = c.tool.Env()
+
+	// Load the templates:
+	fmt.Fprintf(c.tool.Out(), "Loading templates\n")
+	c.templates, err = templating.NewEngine().
+		SetLogger(c.logger).
+		SetFS(internal.DataFS).
+		SetDir("data/prd/templates").
+		Build()
+	if err != nil {
+		err = fmt.Errorf("failed to parse the templates: %v", err)
+		return
+	}
+	templates := []string{}
+	for _, name := range c.templates.Names() {
+		if strings.HasPrefix(name, "objects/") && strings.HasSuffix(name, ".yaml") {
+			templates = append(templates, name)
+		}
+	}
 
 	// Load the configuration:
-	configFile, ok := os.LookupEnv("EDGECLUSTERS_FILE")
+	fmt.Fprintf(c.tool.Out(), "Loading configuration\n")
+	file, ok := c.env["EDGECLUSTERS_FILE"]
 	if !ok {
-		return fmt.Errorf(
+		err = fmt.Errorf(
 			"failed to load configuration because environment variable " +
 				"'EDGECLUSTERS_FILE' isn't defined",
 		)
+		return
 	}
-	config, err := internal.NewConfigLoader().
-		SetLogger(logger).
-		SetSource(configFile).
+	c.config, err = internal.NewConfigLoader().
+		SetLogger(c.logger).
+		SetSource(file).
 		Load()
 	if err != nil {
-		return fmt.Errorf(
+		err = fmt.Errorf(
 			"failed to load configuration from file '%s': %v",
-			configFile, err,
+			file, err,
 		)
+		return
 	}
 
-	// TODO: This is an example of how to use the configuration, it will eventually be removed.
-	fmt.Fprintf(tool.Out(), "Properties:\n")
-	for name, value := range config.Properties {
-		fmt.Fprintf(tool.Out(), "\t%s: %s\n", name, value)
+	// Create the client for the API:
+	fmt.Fprintf(c.tool.Out(), "Creating API client\n")
+	c.client, err = internal.NewClient().
+		SetLogger(c.logger).
+		SetEnv(c.env).
+		Build()
+	if err != nil {
+		err = fmt.Errorf(
+			"failed to create API client: %v",
+			err,
+		)
+		return
 	}
-	for _, cluster := range config.Clusters {
-		fmt.Fprintf(tool.Out(), "Cluster '%s':\n", cluster.Name)
-		for _, node := range cluster.Nodes {
-			fmt.Fprintf(tool.Out(), "\tNode '%s'\n", node.Name)
-			fmt.Fprintf(tool.Out(), "\t\tKind: %s\n", node.Kind)
-			fmt.Fprintf(tool.Out(), "\t\tBMC URL: %s\n", node.BMC.URL)
-			fmt.Fprintf(tool.Out(), "\t\tBMC user: %s\n", node.BMC.User)
-			fmt.Fprintf(tool.Out(), "\t\tBMC password: %s\n", node.BMC.Pass)
-			fmt.Fprintf(tool.Out(), "\t\tRoot disk: %s\n", node.RootDisk)
-			if len(node.StorageDisks) > 0 {
-				fmt.Fprintf(tool.Out(), "\t\tStorage disks:\n")
-				for _, disk := range node.StorageDisks {
-					fmt.Fprintf(tool.Out(), "\t\t\t%s\n", disk)
-				}
-			}
-			fmt.Fprintf(tool.Out(), "\t\tInternal NIC:\n")
-			fmt.Fprintf(tool.Out(), "\t\t\tName: %s\n", node.InternalNIC.Name)
-			fmt.Fprintf(tool.Out(), "\t\t\tMAC: %s\n", node.InternalNIC.MAC)
-			fmt.Fprintf(tool.Out(), "\t\tExternal NIC:\n")
-			fmt.Fprintf(tool.Out(), "\t\t\tName: %s\n", node.ExternalNIC.Name)
-			fmt.Fprintf(tool.Out(), "\t\t\tMAC: %s\n", node.ExternalNIC.MAC)
+
+	// Create the enricher and the renderer:
+	c.enricher, err = internal.NewEnricher().
+		SetLogger(c.logger).
+		SetEnv(c.env).
+		SetClient(c.client).
+		Build()
+	if err != nil {
+		err = fmt.Errorf(
+			"failed to create enricher: %v",
+			err,
+		)
+		return
+	}
+	c.renderer, err = internal.NewRenderer().
+		SetLogger(c.logger).
+		SetTemplates(c.templates, templates...).
+		Build()
+	if err != nil {
+		err = fmt.Errorf(
+			"failed to create renderer: %v",
+			err,
+		)
+		return
+	}
+
+	// Deploy the clusters:
+	for _, cluster := range c.config.Clusters {
+		fmt.Fprintf(c.tool.Out(), "Deploying cluster '%s'\n", cluster.Name)
+		err = c.deploy(ctx, &cluster)
+		if err != nil {
+			err = fmt.Errorf(
+				"failed to deploy cluster '%s': %v",
+				cluster.Name, err,
+			)
+			return
+		}
+	}
+
+	return
+}
+
+func (c *Command) deploy(ctx context.Context, cluster *models.Cluster) error {
+	// Render the objects:
+	fmt.Fprintf(c.tool.Out(), "Rendering objects for cluster '%s'\n", cluster.Name)
+	err := c.enricher.Enrich(ctx, cluster)
+	if err != nil {
+		return err
+	}
+	c.logger.V(2).Info(
+		"Enriched cluster",
+		"cluster", cluster,
+	)
+	objects, err := c.renderer.Render(ctx, map[string]any{
+		"Cluster": cluster,
+	})
+	if err != nil {
+		return err
+	}
+	c.logger.V(2).Info(
+		"Rendered objects",
+		"objects", objects,
+	)
+
+	// Create the objects:
+	fmt.Fprintf(c.tool.Out(), "Creating objects for cluster '%s'\n", cluster.Name)
+	for _, object := range objects {
+		err = c.client.Create(ctx, object)
+		if err != nil {
+			return err
 		}
 	}
 

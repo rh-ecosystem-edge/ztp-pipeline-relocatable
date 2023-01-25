@@ -1,0 +1,11 @@
+{{ if .Cluster.SNO }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  namespace: {{ .Cluster.Name }}
+  name: {{ .Cluster.Name }}-manifests-override
+  annotations:
+    manifests-directory: manifests
+data:
+  node-ip-config.yml: {{ execute "files/node-ip-config.yaml" . | json }}
+{{ end}}

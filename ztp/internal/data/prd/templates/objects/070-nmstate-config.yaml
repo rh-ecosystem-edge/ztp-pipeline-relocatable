@@ -1,0 +1,77 @@
+{{ range .Cluster.Nodes }}
+---
+apiVersion: agent-install.openshift.io/v1beta1
+kind: NMStateConfig
+metadata:
+ namespace: {{ $.Cluster.Name }}
+ name: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}
+ labels:
+   nmstate_config_cluster_name: {{ $.Cluster.Name }}
+spec:
+
+  interfaces:
+  - name: {{ .ExternalNIC.Name }}
+    macAddress: {{ .ExternalNIC.MAC }}
+  {{ if .InternalNIC.Name }}
+  - name: {{ .InternalNIC.Name }}
+    macAddress: {{ .InternalNIC.MAC }}
+  {{ end }}
+
+  config:
+
+    interfaces:
+
+    - name: {{ .ExternalNIC.Name }}
+      type: ethernet
+      state: up
+      ethernet:
+        auto-negotiation: true
+        duplex: full
+        speed: 10000
+      ipv4:
+        enabled: true
+        dhcp: true
+        auto-dns: true
+        auto-gateway: true
+        auto-routes: true
+      mtu: 1500
+      mac-address: {{ .ExternalNIC.MAC }}
+ 
+    {{ if .InternalNIC.Name }}
+    - name: {{ .InternalNIC.Name }}
+      type: ethernet
+      state: up
+      ethernet:
+        auto-negotiation: true
+        duplex: full
+        speed: 1000
+      ipv6:
+        enabled: false
+      ipv4:
+        enabled: true
+        address:
+        - ip: {{ .InternalNIC.IP }}
+          prefix-length: {{ .InternalNIC.Mask }}
+      mtu: 1500
+    {{ else }}
+    - name: {{ .ExternalNIC.Name }}.102
+      type: vlan
+      state: up
+      vlan:
+        base-iface: {{ .ExternalNIC.Name }}
+        id: 102
+      ipv6:
+        enabled: false
+      ipv4:
+        enabled: true
+        address:
+        - ip: 0.0.0.0
+          prefix-length: 32
+      mtu: 1500
+    {{ end }}
+ 
+    {{ range .IgnoredNICs }}
+    - name: {{ . }}
+      state: absent
+    {{ end }}
+{{ end }}

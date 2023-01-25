@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package version
+package cmd
 
 import (
 	"fmt"
@@ -23,19 +23,29 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 )
 
-// Command creates and returns the version command.
-func Command() *cobra.Command {
+// Cobra creates and returns the `version` command.
+func Cobra() *cobra.Command {
+	c := NewCommand()
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Prints the version information",
 		Long:  "Prints the version information",
 		Args:  cobra.NoArgs,
-		RunE:  run,
+		RunE:  c.run,
 	}
 }
 
-// run executes the version command.
-func run(cmd *cobra.Command, argv []string) error {
+// Command contains the data and logic needed to run the `version` command.
+type Command struct {
+}
+
+// NewCommand creates a new runner that knows how to execute the `version` command.
+func NewCommand() *Command {
+	return &Command{}
+}
+
+// run executes the `version` command.
+func (c *Command) run(cmd *cobra.Command, argv []string) error {
 	// Get the tool:
 	tool := internal.ToolFromContext(cmd.Context())
 
@@ -44,11 +54,11 @@ func run(cmd *cobra.Command, argv []string) error {
 	buildTime := unknownSettingValue
 	info, ok := debug.ReadBuildInfo()
 	if ok {
-		vcsRevision := getSetting(info, vcsRevisionSettingKey)
+		vcsRevision := c.getSetting(info, vcsRevisionSettingKey)
 		if vcsRevision != "" {
 			buildCommit = vcsRevision
 		}
-		vcsTime := getSetting(info, vcsTimeSettingKey)
+		vcsTime := c.getSetting(info, vcsTimeSettingKey)
 		if vcsTime != "" {
 			buildTime = vcsTime
 		}
@@ -64,7 +74,7 @@ func run(cmd *cobra.Command, argv []string) error {
 
 // getSetting returns the value of the build setting witht he given key. Returns an empty string
 // if no such setting exists.
-func getSetting(info *debug.BuildInfo, key string) string {
+func (c *Command) getSetting(info *debug.BuildInfo, key string) string {
 	for _, s := range info.Settings {
 		if s.Key == key {
 			return s.Value

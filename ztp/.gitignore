@@ -1,2 +1,3 @@
-/tests.kubeconfig
+*.kubeconfig
+*.test
 /ztp

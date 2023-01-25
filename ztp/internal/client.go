@@ -152,7 +152,7 @@ func (b *ClientBuilder) loadDefaultConfig() (result *rest.Config, err error) {
 		if err != nil {
 			return
 		}
-		cfgFile = filepath.Join(homeDir, ".kube", homeDir)
+		cfgFile = filepath.Join(homeDir, ".kube", "config")
 	}
 	cfgData, err := os.ReadFile(cfgFile)
 	if errors.Is(err, os.ErrNotExist) {

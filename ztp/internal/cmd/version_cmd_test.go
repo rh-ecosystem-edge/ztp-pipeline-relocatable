@@ -12,24 +12,19 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package version
+package cmd
 
 import (
 	"bytes"
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	versioncmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/version"
 )
 
-func TestCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Version command")
-}
-
-var _ = Describe("Version command", func() {
+var _ = Describe("'version' command", func() {
 	It("Prints the build commit", func() {
 		// Prepare buffers to capture the output:
 		inBuffer := &bytes.Buffer{}
@@ -39,7 +34,7 @@ var _ = Describe("Version command", func() {
 		// Run the command:
 		tool, err := internal.NewTool().
 			AddArgs("oc-ztp", "version").
-			AddCommand(Command).
+			AddCommand(versioncmd.Cobra).
 			SetIn(inBuffer).
 			SetOut(outBuffer).
 			SetErr(errBuffer).
