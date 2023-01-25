@@ -17,7 +17,7 @@ include::modules/common-attributes.adoc[]
 
 * Cluster is reachable using a `KUBECONFIG` file.
 
-* The dns names for `api.<hub-clustername>.<baseDomain>`, `api-int.<hub-clustername>.<baseDomain>` and `*.apps.<hub-clustername>.<baseDomain>` should be deployed on edge cluster on the DHCP external network.
+* The dns names for `api.<hub-clustername>.<baseDomain>`, `api-int.<hub-clustername>.<baseDomain>` and `*.apps.<hub-clustername>.<baseDomain>` should be resolvable and reachable from edge clusters via the external DHCP network.
 
 * link:https://metal3.io/[Metal³] has to be available in the hub cluster.
 
