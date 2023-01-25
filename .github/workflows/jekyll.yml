@@ -17,7 +17,8 @@ concurrency:
 
 jobs:
   jekyll:
-    runs-on: ubuntu-latest
+    runs-on: ruby:2.7-alpine
+
     steps:
     - uses: actions/checkout@v3
 
@@ -29,7 +30,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gems-
 
+    - name: Build asciidoc
+      run: bash -x build.sh
+
     - uses: helaili/jekyll-action@v2
       with:
+        target_path: /
+        keep_history: true
+        target_branch: gh-pages
         token: ${{ secrets.GITHUB_TOKEN }}
         jekyll_src: website
