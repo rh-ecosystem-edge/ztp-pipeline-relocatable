@@ -30,8 +30,6 @@ build_for_release() {
 
     echo "Building documentation doc ${doc} for release ${release}"
 
-    bundle install
-
     basedir=$(dirname $(readlink "documentation/${doc}.adoc"))
     basefile=$(basename $(readlink "documentation/${doc}.adoc"))
 
