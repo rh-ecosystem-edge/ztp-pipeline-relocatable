@@ -181,12 +181,12 @@ func (l *ConfigLoader) loadFromReader(reader io.Reader) (result map[string]any, 
 }
 
 func (l *ConfigLoader) loadProperties(content any, config *models.Config) error {
-	return l.jq.Run(`.config`, content, &config.Properties)
+	return l.jq.Query(`.config`, content, &config.Properties)
 }
 
 func (l *ConfigLoader) loadClusters(content any, config *models.Config) error {
 	var data []map[string]any
-	err := l.jq.Run(`.edgeclusters`, content, &data)
+	err := l.jq.Query(`.edgeclusters`, content, &data)
 	if err != nil {
 		return err
 	}
@@ -207,7 +207,7 @@ func (l *ConfigLoader) loadClusters(content any, config *models.Config) error {
 
 func (l *ConfigLoader) loadCluster(content any, cluster *models.Cluster) error {
 	var data map[string]any
-	err := l.jq.Run(`.`, content, &data)
+	err := l.jq.Query(`.`, content, &data)
 	if err != nil {
 		return err
 	}
@@ -235,7 +235,7 @@ func (l *ConfigLoader) loadCluster(content any, cluster *models.Cluster) error {
 
 func (l *ConfigLoader) loadClusterConfig(content any, cluster *models.Cluster) error {
 	var data configData
-	err := l.jq.Run(".", content, &data)
+	err := l.jq.Query(".", content, &data)
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func (l *ConfigLoader) loadClusterConfig(content any, cluster *models.Cluster) e
 
 func (l *ConfigLoader) loadNode(content any, node *models.Node) error {
 	var data nodeData
-	err := l.jq.Run(".", content, &data)
+	err := l.jq.Query(".", content, &data)
 	if err != nil {
 		return err
 	}
