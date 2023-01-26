@@ -1135,7 +1135,7 @@ spec:
 <p>Cluster is reachable using a <code>KUBECONFIG</code> file.</p>
 </li>
 <li>
-<p>The dns names for <code>api.&lt;hub-clustername&gt;.&lt;baseDomain&gt;</code>, <code>api-int.&lt;hub-clustername&gt;.&lt;baseDomain&gt;</code> and <code>*.apps.&lt;hub-clustername&gt;.&lt;baseDomain&gt;</code> should be deployed on edge cluster on the DHCP external network.</p>
+<p>The dns names for <code>api.&lt;hub-clustername&gt;.&lt;baseDomain&gt;</code>, <code>api-int.&lt;hub-clustername&gt;.&lt;baseDomain&gt;</code> and <code>*.apps.&lt;hub-clustername&gt;.&lt;baseDomain&gt;</code> should be resolvable and reachable from edge clusters via the external DHCP network.</p>
 </li>
 <li>
 <p><a href="https://metal3.io/">Metal³</a> has to be available in the hub cluster.</p>
@@ -3434,7 +3434,7 @@ tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-01-26 00:59:47 UTC
+Last updated 2023-01-26 11:17:09 UTC
 </div>
 </div>
 </body>
