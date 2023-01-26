@@ -61,17 +61,25 @@ create_edgecluster_definitions() {
     export CHANGE_EDGE_MASTER_MGMT_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
     export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_EDGE_API} ${EDGE_API_NAME}" | base64 -w0)
-    export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
     export IGN_CHANGE_DEF_ROUTE_SCRIPT=$(base64 change_def_route.sh -w0)
-
+    
     if [[ ${CHANGE_EDGE_MASTER_PUB_INT_M0} == "null" ]]; then
-    	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_MGMT_INT_M0}.102" | base64 -w0)
+    	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_MGMT_INT_M0}" | base64 -w0)
     else
     	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
     fi
 
-    export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition":{"version":"3.1.0"},"storage":{"files":[{"path":"/etc/hosts","append":[{"source":"data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
-    export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"csr-approver.service","enabled":true,"contents":"[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"},{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/csr-approver.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CSR_APPROVER_SCRIPT}'"}]},{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]},{"path":"/var/lib/ovnk/iface_default_hint","mode":492,"override":true,"contents":{"source":"data:text/plain;base64,'${OVS_IFACE_HINT}'"}}]}}'
+    if [ "${NUM_M}" -eq "1" ];
+    then
+        export NODE_IP="192.168.7.10"
+    fi
+
+    export STATIC_IP_INTERFACE=$CHANGE_EDGE_MASTER_MGMT_INT_M0
+    envsubst '$STATIC_IP_INTERFACE $NODE_IP' <99-add-host-int-ip.sh >${OUTPUTDIR}/99-add-host-int-ip.sh
+    cat ${OUTPUTDIR}/99-add-host-int-ip.sh
+    export STATIC_IP_SINGLE_NIC=$(base64 ${OUTPUTDIR}/99-add-host-int-ip.sh -w0)
+
+    export JSON_STRING_CFG_OVERRIDE_INFRAENV='{"ignition":{"version":"3.1.0"},"storage":{"files":[{"path":"/etc/NetworkManager/dispatcher.d/pre-up.d/99-add-host-int-ip","mode":493,"override":true,"contents":{"source":"data:text/plain;base64,'${STATIC_IP_SINGLE_NIC}'"}}, {"path":"/etc/hosts","append":[{"source":"data:text/plain;base64,'${IGN_OVERRIDE_API_HOSTS}'"}]}]}}'
     # Generate the edgecluster definition yaml
     cat <<EOF >${OUTPUTDIR}/${cluster}-cluster.yaml
 ---
@@ -247,6 +255,22 @@ EOF
         export CHANGE_EDGE_MASTER_MGMT_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_MASTER_ROOT_DISK=$(yq eval ".edgeclusters[${edgeclusternumber}].[].master${master}.root_disk" ${EDGECLUSTERS_FILE})
 
+	export STATIC_IP_INTERFACE=br-ex
+	export NODE_IP="192.168.7.1${master}"
+        envsubst '$STATIC_IP_INTERFACE $NODE_IP' <99-add-host-int-ip.sh >${OUTPUTDIR}/99-add-host-int-ip-m$master.sh
+        export STATIC_IP_SINGLE_NIC=$(base64 ${OUTPUTDIR}/99-add-host-int-ip-m$master.sh -w0)
+
+        envsubst '$NODE_IP' <30-nodenet.conf >${OUTPUTDIR}/30-nodenet.conf.m$master
+        export KUBELET_NODENET=$(base64 ${OUTPUTDIR}/30-nodenet.conf.m$master -w0)
+
+        envsubst '$NODE_IP' <30-nodenet-crio.conf >${OUTPUTDIR}/30-nodenet-crio.conf.m$master
+        export CRIO_NODENET=$(base64 ${OUTPUTDIR}/30-nodenet-crio.conf.m$master -w0)
+
+
+    	export IGN_CSR_APPROVER_SCRIPT=$(base64 csr_autoapprover.sh -w0)
+        envsubst '$IGN_CSR_APPROVER_SCRIPT $STATIC_IP_SINGLE_NIC $KUBELET_NODENET $CRIO_NODENET' <bmh-ignition.json >${OUTPUTDIR}/bmh-ignition.json.m$master
+	export JSON_STRING_CFG_OVERRIDE_BMH=$(cat ${OUTPUTDIR}/bmh-ignition.json.m$master)
+    
         # Now, write the template to disk
         OUTPUT="${OUTPUTDIR}/${cluster}-master-${master}.yaml"
         cat <<EOF >${OUTPUT}
@@ -274,30 +298,22 @@ spec:
          auto-dns: true
          auto-gateway: true
          auto-routes: true
-       mtu: 1500
-       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
 EOF
         echo ">> Checking Number of Interfaces"
         echo "Edge-cluster: ${cluster}"
         echo "Master: ${master}"
         if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]]; then
             cat <<EOF >>${OUTPUT}
-     - name: $CHANGE_EDGE_MASTER_MGMT_INT.102
-       type: vlan
-       state: up
-       vlan:
-         base-iface: $CHANGE_EDGE_MASTER_MGMT_INT
-         id: 102
-       ipv6:
-         enabled: false
-       ipv4:
-         enabled: true
          address:
            - ip: $CHANGE_EDGE_MASTER_PUB_INT_IP
              prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
-       mtu: 1500
 EOF
-        else
+       fi
+            cat <<EOF >>${OUTPUT}
+       mtu: 1500
+       mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
+EOF
+        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} != "null" ]]; then
             cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_MASTER_PUB_INT
        type: ethernet
@@ -381,7 +397,7 @@ spec:
    credentialsName: 'ztpfw-${cluster}-master-${master}-bmc-secret'
 EOF
 
-    done
+  done
 }
 
 ## MAIN

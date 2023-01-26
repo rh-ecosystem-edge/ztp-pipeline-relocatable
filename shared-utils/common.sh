@@ -321,12 +321,12 @@ function wipe_edge_disks() {
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     cluster=$(yq eval ".edgeclusters[${index}]|keys" $EDGECLUSTERS_FILE | awk '{print $2}' | xargs echo)
     for master in $(echo $(seq 0 $(($(yq eval ".edgeclusters[${index}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l) - 1)))); do
-        EXT_MAC_ADDR=$(yq eval ".edgeclusters[${index}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         recover_edgecluster_rsa ${cluster}
         echo ""
         echo ">>>> Wipe storage disks for Master ${master} Node"
-        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -o name); do
-            NODE_IP=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} ${agent} -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${EXT_MAC_ADDR}\")].ipV4Addresses[0]}")
+        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -ojsonpath='{.items[].metadata.name}'); do
+            NODE_IP=$(grab_node_ext_ips ${cluster} ${index} ${agent})
+
             if [[ -n ${NODE_IP} ]]; then
                 echo "Master Node: ${master}"
                 echo "AGENT: ${agent}"
@@ -334,16 +334,36 @@ function wipe_edge_disks() {
                 echo ">>>>"
                 storage_disks=$(yq e ".edgeclusters[${index}].[].master${master}.storage_disk" $EDGECLUSTERS_FILE | awk '{print $2}' | xargs echo)
                 for disk in ${storage_disks}; do
-                    echo ">>> Wipe disk ${disk} at ${master} ${NODE_IP%%/*}"
-                    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo sgdisk --zap-all $disk;sudo dd if=/dev/zero of=$disk bs=1M count=100 oflag=direct,dsync; sudo blkdiscard $disk"
+                    echo ">>> Wipe disk ${disk} at ${master} ${NODE_IP}"
+                    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "sudo sgdisk --zap-all $disk;sudo dd if=/dev/zero of=$disk bs=1M count=100 oflag=direct,dsync; sudo blkdiscard $disk"
                 done
                 echo ">>>>"
                 echo "Remove all the existing VolumeGroups"
                 echo ">>>>"
-                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo dmsetup remove_all"
+                ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "sudo dmsetup remove_all"
             fi
         done
     done    
+}
+
+function grab_node_ext_ips() {
+    edgecluster=${1}
+    local edgeclusternumber=${2}
+
+    if [ -z ${3+x} ];
+    then
+        ## Grab 1 master and 1 IP
+        agent=$(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${edgecluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}' | awk '{print $1}')
+    else
+    	agent=${3}
+    fi
+
+    EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${edgecluster} ${agent} -o jsonpath={.spec.hostname})
+    master=${EDGE_NODE_NAME##*-}
+    CHANGE_EDGE_MASTER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].${edgecluster}.master${master}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
+    EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${edgecluster} --no-headers -ojson | jq -r "(.status.inventory.interfaces[] | select(.name==\"${CHANGE_EDGE_MASTER_MGMT_INT}\")).ipV4Addresses[] | select(. | contains(\"192.168.7\") | not)")
+    EDGE_NODE_IP=${EDGE_NODE_IP_RAW%%/*}
+    echo "$EDGE_NODE_IP"
 }
 
 # EDGECLUSTERS_FILE variable must be exported in the environment

@@ -42,8 +42,21 @@ create_worker_definitions() {
         else
         	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_WORKER_PUB_INT}" | base64 -w0)
         fi
-        export IGN_CHANGE_DEF_ROUTE_SCRIPT=$(base64 change_def_route.sh -w0)
-    	export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]},{"path":"/var/lib/ovnk/iface_default_hint","mode":492,"override":true,"contents":{"source":"data:text/plain;base64,'${OVS_IFACE_HINT}'"}}]}}'
+
+	export STATIC_IP_INTERFACE=br-ex
+	export NODE_IP="192.168.7.2${worker}"
+        envsubst '$STATIC_IP_INTERFACE $NODE_IP' <99-add-host-int-ip.sh >${OUTPUTDIR}/99-add-host-int-ip-w$worker.sh
+        export STATIC_IP_SINGLE_NIC=$(base64 ${OUTPUTDIR}/99-add-host-int-ip-w$worker.sh -w0)
+
+        envsubst '$NODE_IP' <30-nodenet.conf >${OUTPUTDIR}/30-nodenet.conf.w$worker
+        export KUBELET_NODENET=$(base64 ${OUTPUTDIR}/30-nodenet.conf.w$worker -w0)
+
+        envsubst '$NODE_IP' <30-nodenet-crio.conf >${OUTPUTDIR}/30-nodenet-crio.conf.w$worker
+        export CRIO_NODENET=$(base64 ${OUTPUTDIR}/30-nodenet-crio.conf.w$worker -w0)
+
+
+        envsubst '$STATIC_IP_SINGLE_NIC $KUBELET_NODENET $CRIO_NODENET' <bmh-ignition.json >${OUTPUTDIR}/bmh-ignition.json.w$worker
+	export JSON_STRING_CFG_OVERRIDE_BMH=$(cat ${OUTPUTDIR}/bmh-ignition.json.w$worker)
 
         # Now, write the template to disk
         OUTPUT="${OUTPUTDIR}/${cluster}-worker${worker}.yaml"
@@ -77,22 +90,7 @@ spec:
        mtu: 1500
        mac-address: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
 EOF
-        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
-            cat <<EOF >>${OUTPUT}
-     - name: $CHANGE_EDGE_WORKER_MGMT_INT.102
-       type: vlan
-       state: up
-       vlan:
-         base-iface: $CHANGE_EDGE_WORKER_MGMT_INT
-         id: 102
-       ipv4:
-         enabled: true
-         address:
-           - ip: $CHANGE_EDGE_WORKER_PUB_INT_IP
-             prefix-length: $CHANGE_EDGE_WORKER_PUB_INT_MASK
-       mtu: 1500
-EOF
-        else
+        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} != "null" ]]; then
             cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_WORKER_PUB_INT
        type: ethernet
@@ -114,17 +112,13 @@ EOF
      config:
        server:
          - $EDGE_MASTER_0_INT_IP
+EOF
+        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} != "null" ]]; then
+            cat <<EOF >>${OUTPUT}
    routes:
      config:
        - destination: $CHANGE_EDGE_WORKER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_WORKER_PUB_INT_GW
-EOF
-        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
-            cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_WORKER_MGMT_INT.102
-EOF
-        else
-            cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_WORKER_PUB_INT
 EOF
         fi
