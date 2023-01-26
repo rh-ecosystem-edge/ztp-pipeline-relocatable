@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
+	github.com/google/uuid v1.3.0
 	github.com/onsi/ginkgo/v2 v2.6.1
 	github.com/onsi/gomega v1.24.1
 	github.com/spf13/cobra v1.6.1
@@ -12,11 +13,13 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 	k8s.io/client-go v0.26.0
+	sigs.k8s.io/controller-runtime v0.14.1
 )
 
 require (
+	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
-	go.uber.org/goleak v1.2.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 )
 
 require (
@@ -53,7 +56,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.26.0 // indirect
-	k8s.io/apimachinery v0.26.0 // indirect
+	k8s.io/apimachinery v0.26.0
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448 // indirect

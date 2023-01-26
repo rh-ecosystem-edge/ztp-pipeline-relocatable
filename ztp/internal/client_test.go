@@ -13,3 +13,20 @@ License.
 */
 
 package internal
+
+import (
+	. "github.com/onsi/ginkgo/v2/dsl/core"
+	. "github.com/onsi/gomega"
+)
+
+var _ = Describe("Client", func() {
+	It("Can't be created without a logger", func() {
+		client, err := NewTemplate().
+			Build()
+		Expect(err).To(HaveOccurred())
+		msg := err.Error()
+		Expect(msg).To(ContainSubstring("logger"))
+		Expect(msg).To(ContainSubstring("mandatory"))
+		Expect(client).To(BeNil())
+	})
+})
