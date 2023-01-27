@@ -60,6 +60,7 @@ type Environment struct {
 	dockerClient *docker.Client
 	etcdCont     *environmentContainer
 	apiCont      *environmentContainer
+	tmpDirs      []string
 }
 
 // environmentContainer contains information about the containers created by the testing
@@ -205,6 +206,12 @@ func (e *Environment) Stop(ctx context.Context) error {
 	err := e.collectGarbage(ctx)
 	if err != nil {
 		e.logger.Error(err, "Failed to remove containers")
+	}
+
+	// Remove temporary directories:
+	err = e.removeTmpDirs()
+	if err != nil {
+		e.logger.Error(err, "Failed to remove temporary directories")
 	}
 
 	return nil
@@ -587,13 +594,28 @@ func (e *Environment) removeContainer(ctx context.Context, container environment
 	})
 }
 
-func (e *Environment) writeConfig(files map[string][]byte) (dir string, err error) {
-	tmp, err := os.MkdirTemp("", "*.test")
+func (e *Environment) removeTmpDirs() error {
+	for _, tmpDir := range e.tmpDirs {
+		err := os.RemoveAll(tmpDir)
+		if err != nil {
+			e.logger.Error(
+				err,
+				"Failed to remove temporary directory",
+				"dir", tmpDir,
+			)
+		}
+	}
+	return nil
+}
+
+func (e *Environment) writeConfig(files map[string][]byte) (result string, err error) {
+	tmpDir, err := os.MkdirTemp("", "*.test")
 	if err != nil {
 		return
 	}
+	e.tmpDirs = append(e.tmpDirs, tmpDir)
 	for name, data := range files {
-		path := filepath.Join(tmp, name)
+		path := filepath.Join(tmpDir, name)
 		sub := filepath.Dir(path)
 		err = os.MkdirAll(sub, 0600)
 		if errors.Is(err, os.ErrExist) {
@@ -607,7 +629,7 @@ func (e *Environment) writeConfig(files map[string][]byte) (dir string, err erro
 			return
 		}
 	}
-	dir = tmp
+	result = tmpDir
 	return
 }
 
