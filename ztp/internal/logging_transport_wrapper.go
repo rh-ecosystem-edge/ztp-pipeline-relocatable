@@ -65,8 +65,8 @@ type loggingResponseReader struct {
 // logging transport wrapper.
 func NewLoggingTransportWrapper() *LoggingTransportWrapperBuilder {
 	return &LoggingTransportWrapperBuilder{
-		headerV: 1,
-		bodyV:   2,
+		headerV: 2,
+		bodyV:   3,
 	}
 }
 

@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -33,7 +34,8 @@ import (
 // implements the controller-runtime WithWatch interface. Don't create instances of this type
 // directly, use the NewClient function instead.
 type ClientBuilder struct {
-	logger logr.Logger
+	logger     logr.Logger
+	kubeconfig any
 }
 
 // NewClient creates a builder that can then be used to configure and create a Kubernetes API client
@@ -42,9 +44,18 @@ func NewClient() *ClientBuilder {
 	return &ClientBuilder{}
 }
 
-// Logger sets the logger that the client will use to write to the log.
-func (b *ClientBuilder) Logger(value logr.Logger) *ClientBuilder {
+// SetLogger sets the logger that the client will use to write to the log.
+func (b *ClientBuilder) SetLogger(value logr.Logger) *ClientBuilder {
 	b.logger = value
+	return b
+}
+
+// SetKubeconfig sets the bytes of the kubeconfig file that will be used to create the client. The
+// value can be an array of bytes containing the configuration data or a string containing the name
+// of a file. This is optionaln, and if not specified then the configuration will be loaded from the
+// typical default locations: the `~/.kube/config` file, the `KUBECONFIG` environment variable, etc.
+func (b *ClientBuilder) SetKubeconfig(value any) *ClientBuilder {
+	b.kubeconfig = value
 	return b
 }
 
@@ -55,6 +66,15 @@ func (b *ClientBuilder) Build() (result clnt.WithWatch, err error) {
 		err = errors.New("logger is mandatory")
 		return
 	}
+	switch b.kubeconfig.(type) {
+	case nil, []byte, string:
+	default:
+		err = fmt.Errorf(
+			"kubeconfig must nil, an array of bytes or a file name, but it is of type %T",
+			b.kubeconfig,
+		)
+		return
+	}
 
 	// Load the configuration:
 	config, err := b.loadConfig()
@@ -63,7 +83,7 @@ func (b *ClientBuilder) Build() (result clnt.WithWatch, err error) {
 		return
 	}
 
-	// Create the underlying client that we will delgate to:
+	// Create the client:
 	delegate, err := clnt.NewWithWatch(config, clnt.Options{})
 	if err != nil {
 		err = fmt.Errorf("failed to create delegate: %v", err)
@@ -80,27 +100,73 @@ func (b *ClientBuilder) Build() (result clnt.WithWatch, err error) {
 }
 
 func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
-	// Create the configuration:
-	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	overrides := &clientcmd.ConfigOverrides{}
-	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
-	result, err = config.ClientConfig()
-	if err != nil {
-		return
+	// Load the configuration:
+	var restCfg *rest.Config
+	if b.kubeconfig != nil {
+		restCfg, err = b.loadExplicitConfig()
+		if err != nil {
+			return
+		}
+	} else {
+		restCfg, err = b.loadDefaultConfig()
+		if err != nil {
+			return
+		}
 	}
 
-	// Wrap the transport so that the details of the requests and responses are written to the
-	// log:
-	wrapper, err := NewLoggingTransportWrapper().
+	// Wrap the REST transport so that the details of the requests and responses are written to
+	// the log:
+	loggingWrapper, err := NewLoggingTransportWrapper().
 		SetLogger(b.logger).
-		SetHeaderV(1).
-		SetBodyV(2).
 		Build()
 	if err != nil {
 		return
 	}
-	result.WrapTransport = wrapper.Wrap
+	restCfg.WrapTransport = loggingWrapper.Wrap
 
+	// Return the resulting REST config:
+	result = restCfg
+	return
+}
+
+// loadDefaultConfig loads the configuration from the typical default locations, the
+// `~/.kube/config` file, the `KUBECONFIG` variable, etc.
+func (b *ClientBuilder) loadDefaultConfig() (result *rest.Config, err error) {
+	cfgRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	cfgOverrides := &clientcmd.ConfigOverrides{}
+	clientCfg := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(cfgRules, cfgOverrides)
+	result, err = clientCfg.ClientConfig()
+	return
+}
+
+// loadExplicitConfig loads the configuration from the kubeconfig data set explicitly in the
+// builder.
+func (b *ClientBuilder) loadExplicitConfig() (result *rest.Config, err error) {
+	var clientCfg clientcmd.ClientConfig
+	switch typedCfg := b.kubeconfig.(type) {
+	case []byte:
+		clientCfg, err = clientcmd.NewClientConfigFromBytes(typedCfg)
+		if err != nil {
+			return
+		}
+	case string:
+		var cfgData []byte
+		cfgData, err = os.ReadFile(typedCfg)
+		if err != nil {
+			return
+		}
+		clientCfg, err = clientcmd.NewClientConfigFromBytes(cfgData)
+		if err != nil {
+			return
+		}
+	default:
+		err = fmt.Errorf(
+			"kubeconfig must be an array of bytes or a file name, but it is of type %T",
+			b.kubeconfig,
+		)
+		return
+	}
+	result, err = clientCfg.ClientConfig()
 	return
 }
 
