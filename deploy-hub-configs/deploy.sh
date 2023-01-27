@@ -30,25 +30,35 @@ if ./verify.sh; then
     pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d | jq -c)
     echo -n "  .dockerconfigjson: "\'$pull\' >>05-pullsecrethub.yml
     REGISTRY=ztpfw-registry
-    LOCAL_REG="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)" #TODO change it to use the global common variable importing here the source commons
-    sed -i "s/CHANGEDOMAIN/${LOCAL_REG}/g" registryconf.txt
-    if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
-       export CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} -showcerts < /dev/null | openssl x509)
-       echo "" >>01_Mirror_ConfigMap.yml
-       echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
-       echo -n "${CA_CERT_DATA}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
-    else
-        CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
-        echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
-        echo -n "${CABUNDLE}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
-    fi
 
-    export REG_US=dummy
-    export REG_PASS=dummy123
-    registry_login ${LOCAL_REG}
-    echo "" >>01_Mirror_ConfigMap.yml
-    cat registryconf.txt >>01_Mirror_ConfigMap.yml
-    NEWTAG=$(skopeo inspect --tls-verify=false --format "{{.Name}}@{{.Digest}}" "docker://${LOCAL_REG}/openshift/release-images:${OC_OCP_TAG}")
+    HAS_REGISTRY=$(oc get --no-headers namespace ${REGISTRY} | wc -l)
+
+    if [[ "${HAS_REGISTRY}" -eq "1" ]]; then
+      LOCAL_REG="$(oc --kubeconfig=${KUBECONFIG_HUB} get configmap  --namespace ${REGISTRY} ztpfw-config -o jsonpath='{.data.uri}' | base64 -d)" #TODO change it to use the global common variable importing here the source commons
+      sed -i "s/CHANGEDOMAIN/${LOCAL_REG}/g" registryconf.txt
+      if [[ ${CUSTOM_REGISTRY} == "true" ]]; then
+        export CA_CERT_DATA=$(openssl s_client -connect ${LOCAL_REG} -showcerts < /dev/null | openssl x509)
+        echo "" >>01_Mirror_ConfigMap.yml
+        echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
+        echo -n "${CA_CERT_DATA}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
+      else
+          CABUNDLE=$(oc get cm -n openshift-image-registry kube-root-ca.crt --template='{{index .data "ca.crt"}}')
+          echo "  ca-bundle.crt: |" >>01_Mirror_ConfigMap.yml
+          echo -n "${CABUNDLE}" | sed "s/^/    /" >>01_Mirror_ConfigMap.yml
+      fi
+
+      export REG_US=dummy
+      export REG_PASS=dummy123
+      registry_login ${LOCAL_REG}
+      echo "" >>01_Mirror_ConfigMap.yml
+      cat registryconf.txt >>01_Mirror_ConfigMap.yml
+
+      echo "  mirrorRegistryRef:" >>04-agent-service-config.yml
+      echo "    name: \"mirror-ref\"" >>04-agent-service-config.yml
+      NEWTAG=$(skopeo inspect --tls-verify=false --format "{{.Name}}@{{.Digest}}" "docker://${LOCAL_REG}/openshift/release-images:${OC_OCP_TAG}")
+    else
+      NEWTAG="quay.io/openshift-release-dev/ocp-release:${OC_OCP_TAG}"
+    fi
     sed -i "s/CHANGE_EDGE_CLUSTERIMAGESET/${CLUSTERIMAGESET}/g" 02-cluster_imageset.yml
     sed -i "s%TAG_OCP_IMAGE_RELEASE%${NEWTAG}%g" 02-cluster_imageset.yml
 
@@ -169,8 +179,9 @@ EOF
     fi
     echo ">>>> Deploy hub configs"
     echo ">>>>>>>>>>>>>>>>>>>>>>>"
-
-    oc --kubeconfig=${KUBECONFIG_HUB} apply -f 01_Mirror_ConfigMap.yml
+    if [[ "${HAS_REGISTRY}" -eq "1" ]]; then
+      oc --kubeconfig=${KUBECONFIG_HUB} apply -f 01_Mirror_ConfigMap.yml
+    fi
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 02-cluster_imageset.yml
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 03-configmap.yml
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 04-agent-service-config.yml

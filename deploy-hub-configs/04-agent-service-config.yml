@@ -5,7 +5,7 @@ metadata:
   namespace: multicluster-engine
   name: agent
   annotations:
-    unsupported.agent-install.openshift.io/assisted-service-configmap: 'assisted-service-config'
+    unsupported.agent-install.openshift.io/assisted-service-configmap: "assisted-service-config"
 spec:
   databaseStorage:
     accessModes:
@@ -19,8 +19,6 @@ spec:
     resources:
       requests:
         storage: 200Gi
-  mirrorRegistryRef:
-    name: "mirror-ref"
   osImages:
     - openshiftVersion: "OC_OCP_VERSION_MIN"
       version: "CHANGEME"
