@@ -6,7 +6,7 @@
 = About the factory install pipeline
 include::modules/common-attributes.adoc[]
 
-The factory install pipeline builds out your factory environment (hub and edge clusters) in readiness for the edge cluster to be shipped off site. Red Hat has created a set of community scripts to help you get started with this task.
+The factory install pipelines build out your factory environment (hub and edge clusters) for the edge cluster to reach a state of readiness to be shipped off site. Red Hat has created a set of community scripts to help you get started with this task.
 
 A GitHub repository contains all the relevant scripts and YAML files you need to provision the hub cluster and edge clusters.
 
