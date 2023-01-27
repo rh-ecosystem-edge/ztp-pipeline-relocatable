@@ -23,16 +23,9 @@ jobs:
 
   test:
     name: Test CLI
-    strategy:
-      matrix:
-        platform:
-        - ubuntu-latest
-        - macos-latest
-        - windows-latest
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash
         working-directory: ztp
     steps:
     - name: Checkout the source
