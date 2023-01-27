@@ -17,7 +17,6 @@ package internal
 import (
 	"bytes"
 	"io"
-	"math"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -31,7 +30,7 @@ var _ = Describe("Tool", func() {
 		var err error
 		logger, err = NewLogger().
 			SetWriter(GinkgoWriter).
-			SetV(math.MaxInt).
+			SetV(2).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 	})

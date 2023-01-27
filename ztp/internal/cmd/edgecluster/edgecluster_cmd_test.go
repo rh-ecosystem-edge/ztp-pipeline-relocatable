@@ -16,7 +16,6 @@ package edgecluster
 
 import (
 	"bytes"
-	"math"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -38,7 +37,7 @@ var _ = Describe("Edge cluster command", func() {
 		var err error
 		logger, err = internal.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetV(math.MaxInt).
+			SetV(2).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 	})
