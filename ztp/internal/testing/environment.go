@@ -21,9 +21,11 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"embed"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -37,6 +39,8 @@ import (
 	dockerstdcopy "github.com/docker/docker/pkg/stdcopy"
 	dockernat "github.com/docker/go-connections/nat"
 	"github.com/go-logr/logr"
+	"gopkg.in/yaml.v3"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -194,6 +198,16 @@ func (e *Environment) Start(ctx context.Context) error {
 		return err
 	}
 	err = e.waitAPI()
+	if err != nil {
+		return err
+	}
+
+	// Install the custom resource definitions and the objects:
+	err = e.installCRDs(ctx)
+	if err != nil {
+		return err
+	}
+	err = e.installObjects(ctx)
 	if err != nil {
 		return err
 	}
@@ -703,6 +717,117 @@ func (e *Environment) writeConfig(files map[string][]byte) (result string, err e
 	result = tmpDir
 	return
 }
+
+func (e *Environment) installCRDs(ctx context.Context) error {
+	client, err := e.Client()
+	if err != nil {
+		return err
+	}
+	return fs.WalkDir(
+		environmentFS,
+		"environment/crds",
+		func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !d.Type().IsRegular() {
+				return nil
+			}
+			return e.installCRD(ctx, client, path)
+		},
+	)
+}
+
+func (e *Environment) installCRD(ctx context.Context, client clnt.Client, path string) error {
+	data, err := environmentFS.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	crd := &unstructured.Unstructured{}
+	err = yaml.Unmarshal(data, &crd.Object)
+	if err != nil {
+		return err
+	}
+	err = client.Create(ctx, crd)
+	if err != nil {
+		return err
+	}
+	e.logger.Info(
+		"Installed CRD",
+		"path", path,
+	)
+	return nil
+}
+
+func (e *Environment) installObjects(ctx context.Context) error {
+	client, err := e.Client()
+	if err != nil {
+		return err
+	}
+	return fs.WalkDir(
+		environmentFS,
+		"environment/objects",
+		func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !d.Type().IsRegular() {
+				return nil
+			}
+			return e.installObject(ctx, client, path)
+		},
+	)
+}
+
+func (e *Environment) installObject(ctx context.Context, client clnt.Client, path string) error {
+	// Read the object from the file:
+	objectBytes, err := environmentFS.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var objectMap map[string]any
+	err = yaml.Unmarshal(objectBytes, &objectMap)
+	if err != nil {
+		return err
+	}
+	objectData := &unstructured.Unstructured{
+		Object: objectMap,
+	}
+
+	// The object may have a status, but the API client will ignore it, so we need to extract it
+	// and save it separately after the object has been created.
+	statusAny, ok := objectMap["status"]
+	if ok {
+		delete(objectMap, "status")
+	}
+
+	// Create the object:
+	err = client.Create(ctx, objectData)
+	if err != nil {
+		return err
+	}
+	e.logger.Info(
+		"Created object",
+		"path", path,
+	)
+
+	// Update the status:
+	if statusAny != nil {
+		objectData.Object["status"] = statusAny
+		err = client.Status().Update(ctx, objectData)
+		if err != nil {
+			return err
+		}
+		e.logger.Info(
+			"Updated status",
+			"path", path,
+		)
+	}
+	return nil
+}
+
+//go:embed environment
+var environmentFS embed.FS
 
 // environmentLabel is the name of the label used to mark containers.
 const environmentLabel = "env"
