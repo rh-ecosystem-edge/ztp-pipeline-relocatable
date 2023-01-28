@@ -15,14 +15,17 @@ License.
 package models
 
 type Cluster struct {
-	API        API
-	DNS        DNS
-	ImageSet   string
-	Ingress    Ingress
-	Name       string
-	Nodes      []Node
-	PullSecret []byte
-	SNO        bool
-	SSH        SSH
-	TPM        bool
+	API             API
+	DNS             DNS
+	ImageSet        string
+	Ingress         Ingress
+	Name            string
+	Nodes           []Node
+	PullSecret      []byte
+	SNO             bool
+	SSH             SSH
+	TPM             bool
+	ClusterNetworks []ClusterNetwork
+	MachineNetworks []MachineNetwork
+	ServiceNetworks []ServiceNetwork
 }

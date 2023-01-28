@@ -16,9 +16,15 @@ package models
 
 import "net"
 
-type NIC struct {
-	IP   net.IP
-	MAC  string
-	Mask net.IPMask
-	Name string
+type MachineNetwork struct {
+	CIDR *net.IPNet
+}
+
+type ClusterNetwork struct {
+	CIDR       *net.IPNet
+	HostPrefix int
+}
+
+type ServiceNetwork struct {
+	CIDR *net.IPNet
 }
