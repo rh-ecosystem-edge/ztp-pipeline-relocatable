@@ -18,13 +18,17 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"crypto/x509/pkix"
 	"errors"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	dockertypes "github.com/docker/docker/api/types"
 	dockercontainer "github.com/docker/docker/api/types/container"
@@ -33,6 +37,7 @@ import (
 	dockerstdcopy "github.com/docker/docker/pkg/stdcopy"
 	dockernat "github.com/docker/go-connections/nat"
 	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
@@ -183,8 +188,12 @@ func (e *Environment) Start(ctx context.Context) error {
 		return err
 	}
 
-	// Start the API server:
+	// Start the API server and wait till it is ready:
 	err = e.startAPI(ctx)
+	if err != nil {
+		return err
+	}
+	err = e.waitAPI()
 	if err != nil {
 		return err
 	}
@@ -366,6 +375,68 @@ func (e *Environment) startAPI(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (e *Environment) waitAPI() error {
+	// Create an HTTP client that uses the administrator certificates:
+	crt, err := tls.X509KeyPair(e.adminCrtPEM, e.adminKeyPEM)
+	if err != nil {
+		return err
+	}
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(e.ca.crtPEM)
+	client := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{crt},
+				RootCAs:      pool,
+			},
+		},
+		Timeout: time.Second,
+	}
+
+	// Create the request:
+	address := fmt.Sprintf("https://%s/readyz", e.apiCont.addr)
+	request, err := http.NewRequest(http.MethodGet, address, nil)
+	if err != nil {
+		return nil
+	}
+
+	// There is no point in checking immediately because the API server takes a few seconds to
+	// start the readiness endpoint, so we will wait a bit before trying.
+	e.logger.Info("Waiting before checking API server readiness")
+	time.Sleep(5 * time.Second)
+
+	// Send the request repeatedly till we get a 200 code:
+	return wait.PollImmediate(time.Second, time.Minute, func() (done bool, err error) {
+		response, err := client.Do(request)
+		if err != nil {
+			e.logger.Info(
+				"API server readiness check failed",
+				"error", err.Error(),
+			)
+			err = nil
+			return
+		}
+		defer response.Body.Close()
+		_, err = io.Copy(io.Discard, response.Body)
+		if err != nil {
+			return
+		}
+		done = response.StatusCode == http.StatusOK
+		if done {
+			e.logger.Info(
+				"API server readiness check succeeded",
+				"code", response.StatusCode,
+			)
+		} else {
+			e.logger.Info(
+				"API server readiness check failed",
+				"code", response.StatusCode,
+			)
+		}
+		return
+	})
 }
 
 func (e *Environment) startContainer(ctx context.Context, name string,
