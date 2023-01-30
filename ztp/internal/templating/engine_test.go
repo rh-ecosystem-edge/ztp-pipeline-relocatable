@@ -12,15 +12,12 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package internal
+package templating
 
 import (
 	"bytes"
-	"errors"
-	"io/fs"
 	"math"
 	"os"
-	"path/filepath"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -30,7 +27,7 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
-var _ = Describe("Template", func() {
+var _ = Describe("Engine", func() {
 	var logger logr.Logger
 
 	BeforeEach(func() {
@@ -47,26 +44,26 @@ var _ = Describe("Template", func() {
 		tmp, fsys := TmpFS()
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetFS(fsys).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
 		Expect(msg).To(ContainSubstring("logger"))
 		Expect(msg).To(ContainSubstring("mandatory"))
-		Expect(template).To(BeNil())
+		Expect(engine).To(BeNil())
 	})
 
 	It("Can't be created without a filesystem", func() {
-		template, err := NewTemplate().
+		engine, err := NewEngine().
 			SetLogger(logger).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
 		Expect(msg).To(ContainSubstring("filesystem"))
 		Expect(msg).To(ContainSubstring("mandatory"))
-		Expect(template).To(BeNil())
+		Expect(engine).To(BeNil())
 	})
 
 	It("Loads single template file", func() {
@@ -76,15 +73,15 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Verify that it has loaded the file:
-		names := template.Names()
+		names := engine.Names()
 		Expect(names).To(ConsistOf("a.txt"))
 	})
 
@@ -97,15 +94,15 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Verify that it has loaded the file:
-		names := template.Names()
+		names := engine.Names()
 		Expect(names).To(ConsistOf("a.txt", "b.txt", "c.txt"))
 	})
 
@@ -116,8 +113,8 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			Build()
@@ -125,7 +122,7 @@ var _ = Describe("Template", func() {
 
 		// Execute the template:
 		buffer := &bytes.Buffer{}
-		err = template.Execute(buffer, "a.txt", nil)
+		err = engine.Execute(buffer, "a.txt", nil)
 		Expect(err).ToNot(HaveOccurred())
 		text := buffer.String()
 		Expect(text).To(Equal("a"))
@@ -140,8 +137,8 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			Build()
@@ -149,19 +146,19 @@ var _ = Describe("Template", func() {
 
 		// Execute the first template:
 		buffer := &bytes.Buffer{}
-		err = template.Execute(buffer, "a.txt", nil)
+		err = engine.Execute(buffer, "a.txt", nil)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(buffer.String()).To(Equal("a"))
 
 		// Executes the second template:
 		buffer.Reset()
-		err = template.Execute(buffer, "b.txt", nil)
+		err = engine.Execute(buffer, "b.txt", nil)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(buffer.String()).To(Equal("b"))
 
 		// Executes the third template:
 		buffer.Reset()
-		err = template.Execute(buffer, "c.txt", nil)
+		err = engine.Execute(buffer, "c.txt", nil)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(buffer.String()).To(Equal("c"))
 	})
@@ -173,8 +170,8 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			Build()
@@ -182,7 +179,7 @@ var _ = Describe("Template", func() {
 
 		// Execute the template:
 		buffer := &bytes.Buffer{}
-		err = template.Execute(buffer, "first/second/myfile.txt", nil)
+		err = engine.Execute(buffer, "first/second/myfile.txt", nil)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(buffer.String()).To(Equal("mytext"))
 	})
@@ -194,8 +191,8 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			Build()
@@ -203,7 +200,7 @@ var _ = Describe("Template", func() {
 
 		// Execute the template:
 		buffer := &bytes.Buffer{}
-		err = template.Execute(buffer, "bad.txt", nil)
+		err = engine.Execute(buffer, "bad.txt", nil)
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
 		Expect(msg).To(ContainSubstring("no template"))
@@ -217,8 +214,8 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			Build()
@@ -226,7 +223,7 @@ var _ = Describe("Template", func() {
 
 		// Execute the template:
 		buffer := &bytes.Buffer{}
-		err = template.Execute(buffer, "f.txt", map[string]any{
+		err = engine.Execute(buffer, "f.txt", map[string]any{
 			"X": 42,
 			"Y": 24,
 		})
@@ -241,8 +238,8 @@ var _ = Describe("Template", func() {
 		)
 		defer os.RemoveAll(tmp)
 
-		// Create the template:
-		template, err := NewTemplate().
+		// Create the engine:
+		engine, err := NewEngine().
 			SetLogger(logger).
 			SetFS(fsys).
 			SetDir("mydir").
@@ -251,7 +248,7 @@ var _ = Describe("Template", func() {
 
 		// Execute the template:
 		buffer := &bytes.Buffer{}
-		err = template.Execute(buffer, "myfile.txt", nil)
+		err = engine.Execute(buffer, "myfile.txt", nil)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(buffer.String()).To(Equal("mytext"))
 	})
@@ -265,8 +262,8 @@ var _ = Describe("Template", func() {
 			)
 			defer os.RemoveAll(tmp)
 
-			// Create the template:
-			template, err := NewTemplate().
+			// Create the engine:
+			engine, err := NewEngine().
 				SetLogger(logger).
 				SetFS(fsys).
 				Build()
@@ -274,7 +271,7 @@ var _ = Describe("Template", func() {
 
 			// Execute the template:
 			buffer := &bytes.Buffer{}
-			err = template.Execute(buffer, "caller.txt", nil)
+			err = engine.Execute(buffer, "caller.txt", nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(buffer.String()).To(Equal("mytext"))
 		})
@@ -288,8 +285,8 @@ var _ = Describe("Template", func() {
 			)
 			defer os.RemoveAll(tmp)
 
-			// Create the template:
-			template, err := NewTemplate().
+			// Create the engine:
+			engine, err := NewEngine().
 				SetLogger(logger).
 				SetFS(fsys).
 				Build()
@@ -297,7 +294,7 @@ var _ = Describe("Template", func() {
 
 			// Execute the template:
 			buffer := &bytes.Buffer{}
-			err = template.Execute(buffer, "first.txt", nil)
+			err = engine.Execute(buffer, "first.txt", nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(buffer.String()).To(Equal("mytext"))
 		})
@@ -310,8 +307,8 @@ var _ = Describe("Template", func() {
 			)
 			defer os.RemoveAll(tmp)
 
-			// Create the template:
-			template, err := NewTemplate().
+			// Create the engine:
+			engine, err := NewEngine().
 				SetLogger(logger).
 				SetFS(fsys).
 				Build()
@@ -319,7 +316,7 @@ var _ = Describe("Template", func() {
 
 			// Execute the template:
 			buffer := &bytes.Buffer{}
-			err = template.Execute(buffer, "caller.txt", nil)
+			err = engine.Execute(buffer, "caller.txt", nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(buffer.String()).To(Equal("42"))
 		})
@@ -333,8 +330,8 @@ var _ = Describe("Template", func() {
 			)
 			defer os.RemoveAll(tmp)
 
-			// Create the template:
-			template, err := NewTemplate().
+			// Create the engine:
+			engine, err := NewEngine().
 				SetLogger(logger).
 				SetFS(fsys).
 				Build()
@@ -342,7 +339,7 @@ var _ = Describe("Template", func() {
 
 			// Execute the template:
 			buffer := &bytes.Buffer{}
-			err = template.Execute(buffer, "myfile.txt", nil)
+			err = engine.Execute(buffer, "myfile.txt", nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(buffer.String()).To(Equal("bXl0ZXh0"))
 		})
@@ -357,8 +354,8 @@ var _ = Describe("Template", func() {
 			)
 			defer os.RemoveAll(tmp)
 
-			// Create the template:
-			template, err := NewTemplate().
+			// Create the engine:
+			engine, err := NewEngine().
 				SetLogger(logger).
 				SetFS(fsys).
 				Build()
@@ -366,7 +363,7 @@ var _ = Describe("Template", func() {
 
 			// Execute the template:
 			buffer := &bytes.Buffer{}
-			err = template.Execute(buffer, "myfile.txt", input)
+			err = engine.Execute(buffer, "myfile.txt", input)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(buffer.String()).To(Equal(expected))
 		},
@@ -424,49 +421,3 @@ var _ = Describe("Template", func() {
 		),
 	)
 })
-
-// TmpFS creates a temporary directory containing the given files, and then creates a fs.FS object
-// that can be used to access it.
-//
-// The files are specified as pairs of full path names and content. For example, to create a file
-// named `mydir/myfile.yaml` containig some YAML text and a file `yourdir/yourfile.json` containing
-// some JSON text:
-//
-//	dir, fsys = TmpFS(
-//		"mydir/myfile.yaml",
-//		`
-//			name: Joe
-//			age: 52
-//		`,
-//		"yourdir/yourfile.json",
-//		`{
-//			"name": "Mary",
-//			"age": 59
-//		}`
-//	)
-//
-// Directories are created automatically when they contain at least one file or subdirectory.
-//
-// The caller is responsible for removing the directory once it is no longer needed.
-func TmpFS(args ...string) (dir string, fsys fs.FS) {
-	Expect(len(args) % 2).To(BeZero())
-	dir, err := os.MkdirTemp("", "*.testfs")
-	Expect(err).ToNot(HaveOccurred())
-	for i := 0; i < len(args)/2; i++ {
-		name := args[2*i]
-		text := args[2*i+1]
-		file := filepath.Join(dir, name)
-		sub := filepath.Dir(file)
-		_, err = os.Stat(sub)
-		if errors.Is(err, os.ErrNotExist) {
-			err = os.MkdirAll(sub, 0700)
-			Expect(err).ToNot(HaveOccurred())
-		} else {
-			Expect(err).ToNot(HaveOccurred())
-		}
-		err = os.WriteFile(file, []byte(text), 0600)
-		Expect(err).ToNot(HaveOccurred())
-	}
-	fsys = os.DirFS(dir)
-	return
-}

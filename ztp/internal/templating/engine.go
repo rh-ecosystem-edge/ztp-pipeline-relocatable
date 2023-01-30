@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package internal
+package templating
 
 import (
 	"bytes"
@@ -28,48 +28,49 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// TemplateBuilder contains the data and logic needed to create templates. Don't create objects of
+// EngineBuilder contains the data and logic needed to create templates. Don't create objects of
 // this type directly, use the NewTemplate function instead.
-type TemplateBuilder struct {
+type EngineBuilder struct {
 	logger logr.Logger
 	fsys   fs.FS
 	dir    string
 }
 
-// Template is a template based on template.Template with some additional functions. Don't create
-// objects of this type directly, use the NewTemplate function instead.
-type Template struct {
+// Engine is a template engine based on template.Template with some additional functions. Don't
+// create objects of this type directly, use the NewTemplate function instead.
+type Engine struct {
 	logger   logr.Logger
 	names    []string
 	template *tmpl.Template
 }
 
-// NewTemplate creates a builder that can the be used to create a template.
-func NewTemplate() *TemplateBuilder {
-	return &TemplateBuilder{}
+// NewEngine creates a builder that can the be used to create a template engine.
+func NewEngine() *EngineBuilder {
+	return &EngineBuilder{}
 }
 
-// SetLogger sets the logger that the template will use to write messages to the log. This is
+// SetLogger sets the logger that the engine will use to write messages to the log. This is
 // mandatory.
-func (b *TemplateBuilder) SetLogger(value logr.Logger) *TemplateBuilder {
+func (b *EngineBuilder) SetLogger(value logr.Logger) *EngineBuilder {
 	b.logger = value
 	return b
 }
 
 // SetFS sets the filesystem that will be used to read the templates. This is mandatory.
-func (b *TemplateBuilder) SetFS(value fs.FS) *TemplateBuilder {
+func (b *EngineBuilder) SetFS(value fs.FS) *EngineBuilder {
 	b.fsys = value
 	return b
 }
 
-// SetDir loads the templates only from the given directory. This is optional.
-func (b *TemplateBuilder) SetDir(value string) *TemplateBuilder {
+// SetDir instructs the engine to load load the templates only from the given directory of the
+// filesystem. This is optional and the default is to load all the templates.
+func (b *EngineBuilder) SetDir(value string) *EngineBuilder {
 	b.dir = value
 	return b
 }
 
-// Build uses the configuration stored in the builder to create a new template.
-func (b *TemplateBuilder) Build() (result *Template, err error) {
+// Build uses the configuration stored in the builder to create a new engine.
+func (b *EngineBuilder) Build() (result *Engine, err error) {
 	// Check parameters:
 	if b.logger.GetSink() == nil {
 		err = errors.New("logger is mandatory")
@@ -89,35 +90,35 @@ func (b *TemplateBuilder) Build() (result *Template, err error) {
 		}
 	}
 
-	// We need to create the object early because the some of the functions need the pointer:
-	t := &Template{
+	// We need to create the engine early because the some of the functions need the pointer:
+	e := &Engine{
 		logger:   b.logger,
 		template: tmpl.New(""),
 	}
 
 	// Register the functions:
-	t.template.Funcs(tmpl.FuncMap{
-		"base64":  t.base64Func,
-		"execute": t.executeFunc,
-		"json":    t.jsonFunc,
+	e.template.Funcs(tmpl.FuncMap{
+		"base64":  e.base64Func,
+		"execute": e.executeFunc,
+		"json":    e.jsonFunc,
 	})
 
 	// Find and parse the template files:
-	err = t.findFiles(fsys)
+	err = e.findTemplates(fsys)
 	if err != nil {
 		return
 	}
-	err = t.parseFiles(fsys)
+	err = e.parseTemplates(fsys)
 	if err != nil {
 		return
 	}
 
 	// Return the object:
-	result = t
+	result = e
 	return
 }
 
-func (t *Template) findFiles(fsys fs.FS) error {
+func (e *Engine) findTemplates(fsys fs.FS) error {
 	return fs.WalkDir(fsys, ".", func(name string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -125,14 +126,14 @@ func (t *Template) findFiles(fsys fs.FS) error {
 		if entry.IsDir() {
 			return nil
 		}
-		t.names = append(t.names, name)
+		e.names = append(e.names, name)
 		return nil
 	})
 }
 
-func (t *Template) parseFiles(fsys fs.FS) error {
-	for _, name := range t.names {
-		err := t.parseFile(fsys, name)
+func (e *Engine) parseTemplates(fsys fs.FS) error {
+	for _, name := range e.names {
+		err := e.parseTemplate(fsys, name)
 		if err != nil {
 			return err
 		}
@@ -140,17 +141,17 @@ func (t *Template) parseFiles(fsys fs.FS) error {
 	return nil
 }
 
-func (t *Template) parseFile(fsys fs.FS, name string) error {
+func (e *Engine) parseTemplate(fsys fs.FS, name string) error {
 	data, err := fs.ReadFile(fsys, name)
 	if err != nil {
 		return err
 	}
 	text := string(data)
-	_, err = t.template.New(name).Parse(text)
+	_, err = e.template.New(name).Parse(text)
 	if err != nil {
 		return err
 	}
-	detail := t.logger.V(2)
+	detail := e.logger.V(2)
 	if detail.Enabled() {
 		detail.Info(
 			"Parsed template",
@@ -163,9 +164,9 @@ func (t *Template) parseFile(fsys fs.FS, name string) error {
 
 // Execute executes the template with the given name and passing the given input data. It writes the
 // result to the given writer.
-func (t *Template) Execute(writer io.Writer, name string, data any) error {
+func (e *Engine) Execute(writer io.Writer, name string, data any) error {
 	buffer := &bytes.Buffer{}
-	err := t.template.ExecuteTemplate(buffer, name, data)
+	err := e.template.ExecuteTemplate(buffer, name, data)
 	if err != nil {
 		return err
 	}
@@ -173,7 +174,7 @@ func (t *Template) Execute(writer io.Writer, name string, data any) error {
 	if err != nil {
 		return err
 	}
-	detail := t.logger.V(2)
+	detail := e.logger.V(2)
 	if detail.Enabled() {
 		detail.Info(
 			"Executed template",
@@ -186,8 +187,8 @@ func (t *Template) Execute(writer io.Writer, name string, data any) error {
 }
 
 // Names returns the names of the templates.
-func (t *Template) Names() []string {
-	return slices.Clone(t.names)
+func (e *Engine) Names() []string {
+	return slices.Clone(e.names)
 }
 
 // base64Func is a template function that encodes the given data using Base64 and returns the result
@@ -195,7 +196,7 @@ func (t *Template) Names() []string {
 // string it will be converted to an array of bytes using the UTF-8 encoding. If the data implements
 // the fmt.Stringer interface it will be converted to a string using the String method, and then to
 // an array of bytes using the UTF-8 encoding. Any other kind of data will result in an error.
-func (t *Template) base64Func(value any) (result string, err error) {
+func (e *Engine) base64Func(value any) (result string, err error) {
 	var data []byte
 	switch typed := value.(type) {
 	case []byte:
@@ -222,9 +223,9 @@ func (t *Template) base64Func(value any) (result string, err error) {
 // for example, to encode the result using Base64:
 //
 //	{{ execute "my.tmpl" . | base64 }}
-func (t *Template) executeFunc(name string, data any) (result string, err error) {
+func (e *Engine) executeFunc(name string, data any) (result string, err error) {
 	buffer := &bytes.Buffer{}
-	executed := t.template.Lookup(name)
+	executed := e.template.Lookup(name)
 	err = executed.Execute(buffer, data)
 	if err != nil {
 		return
@@ -241,7 +242,7 @@ func (t *Template) executeFunc(name string, data any) (result string, err error)
 //
 // Note how that the value of that 'content' field doesn't need to sorrounded by quotes, because the
 // 'json' function will generate a valid JSON string, including those quotes.
-func (t *Template) jsonFunc(data any) (result string, err error) {
+func (e *Engine) jsonFunc(data any) (result string, err error) {
 	text, err := json.Marshal(data)
 	if err != nil {
 		return
