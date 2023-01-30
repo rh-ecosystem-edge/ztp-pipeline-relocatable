@@ -23,10 +23,14 @@ if ./verify.sh; then
     echo ">>>> Preparing and replace info in the manifests"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
+    HAS_HTTPD=$(oc get --no-headers -n default deployment httpd | wc -l)
+
     sed -i "s/CHANGEME/${OC_RHCOS_RELEASE}/g" 04-agent-service-config.yml
     sed -i "s/OC_OCP_VERSION_MIN/${OC_OCP_VERSION_MIN}/g" 04-agent-service-config.yml
-    HTTPSERVICE=$(oc get routes -n default | grep httpd-server-route | awk '{print $2}')
-    sed -i "s/HTTPD_SERVICE/${HTTPSERVICE}/g" 04-agent-service-config.yml
+    if [[ "${HAS_HTTPD}" -eq "1" ]]; then
+      HTTPSERVICE=$(oc get routes -n default | grep httpd-server-route | awk '{print $2}')
+      sed -i "s/HTTPD_SERVICE/${HTTPSERVICE}/g" 04-agent-service-config.yml
+    fi
     pull=$(oc get secret -n openshift-config pull-secret -ojsonpath='{.data.\.dockerconfigjson}' | base64 -d | jq -c)
     echo -n "  .dockerconfigjson: "\'$pull\' >>05-pullsecrethub.yml
     REGISTRY=ztpfw-registry
@@ -186,6 +190,10 @@ EOF
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 03-configmap.yml
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 04-agent-service-config.yml
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f 05-pullsecrethub.yml
+
+    if [[ "${HAS_HTTPD}" -eq "0" ]]; then
+      oc patch AgentServiceConfig agent --type=json -p="[{'op': 'remove', 'path': '/spec/osImages'}]"
+    fi
 
     echo ">>>> Wait for Assisted services deployed"
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
