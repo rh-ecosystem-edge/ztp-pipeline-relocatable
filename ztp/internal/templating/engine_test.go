@@ -25,6 +25,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
+	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
 )
 
 var _ = Describe("Engine", func() {
