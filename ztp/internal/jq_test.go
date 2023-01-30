@@ -208,4 +208,46 @@ var _ = Describe("JQ", func() {
 		Expect(msg).To(ContainSubstring("pointer"))
 		Expect(msg).To(ContainSubstring("int"))
 	})
+
+	It("Can read from a string", func() {
+		// Create the instance:
+		jq, err := NewJQ().
+			SetLogger(logger).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check that it can read from a string:
+		var x int
+		err = jq.QueryString(
+			`.x`,
+			`{
+				"x": 42,
+				"y": 24
+			}`,
+			&x,
+		)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(x).To(Equal(42))
+	})
+
+	It("Can read from an array of bytes", func() {
+		// Create the instance:
+		jq, err := NewJQ().
+			SetLogger(logger).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check that it can read from an array of bytes:
+		var x int
+		err = jq.QueryBytes(
+			`.x`,
+			[]byte(`{
+				"x": 42,
+				"y": 24
+			}`),
+			&x,
+		)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(x).To(Equal(42))
+	})
 })

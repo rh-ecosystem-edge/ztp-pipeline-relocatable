@@ -63,9 +63,24 @@ func (b *JQBuilder) Build() (result *JQ, err error) {
 }
 
 // Query the given query on the given input data and stores the result into the given output
-// variable.  An error will be returned if the query can't be parsed or if the data doesn't fit into
+// variable. An error will be returned if the query can't be parsed or if the data doesn't fit into
 // the output variable.
 func (j *JQ) Query(query string, input any, output any) error {
+	inputBytes, err := json.Marshal(input)
+	if err != nil {
+		return fmt.Errorf("failed to marshal input: %v", err)
+	}
+	return j.QueryBytes(query, inputBytes, output)
+}
+
+// QueryString is similar to Query, but it expects an input string containing JSON text.
+func (j *JQ) QueryString(query string, input string, output any) error {
+	return j.QueryBytes(query, []byte(input), output)
+}
+
+// QueryBytes is similar to Query, but it expects as input an array of bytes containing the JSON
+// text.
+func (j *JQ) QueryBytes(query string, input []byte, output any) error {
 	// Check that the output is a pointer:
 	outputValue := reflect.ValueOf(output)
 	if outputValue.Kind() != reflect.Pointer {
@@ -78,20 +93,15 @@ func (j *JQ) Query(query string, input any, output any) error {
 		return fmt.Errorf("failed to parse query '%s': %v", query, err)
 	}
 
-	// Serialize the input and then deserialize it again. This will ensure that we have a type
-	// that the JQ library supports.
-	inputBytes, err := json.Marshal(input)
-	if err != nil {
-		return fmt.Errorf("failed to marshal input: %v", err)
-	}
+	// Deserialize the input to ensure that we have a type that the JQ library supports.
 	var inputObj any
-	err = json.Unmarshal(inputBytes, &inputObj)
+	err = json.Unmarshal(input, &inputObj)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal input: %v", err)
 	}
 
-	// Run the query collecting the output. Note the one of the outputs can be an error, and
-	// in that case we just return it.
+	// Run the query collecting the output. Note one of the outputs can be an error, and in that
+	// case we just return it.
 	var outputList []any
 	outputIter := parsed.Run(inputObj)
 	for {
@@ -109,7 +119,7 @@ func (j *JQ) Query(query string, input any, output any) error {
 	// Marshal the output list and try to unmarshal it into the output variable. This is needed
 	// to convert whatever types are returned by JQ into what the caller expects. If that fails
 	// fails and there is only one result it may be that the caller passed a variable that can
-	// hold only that result instead of an slice, so we try again with single result.
+	// hold only that result instead of an slice, so we try again with that single result.
 	outputBytes, err := json.Marshal(outputList)
 	if err != nil {
 		return err
