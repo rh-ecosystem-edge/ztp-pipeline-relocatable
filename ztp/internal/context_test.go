@@ -23,6 +23,8 @@ import (
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
+
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
 var _ = Describe("Context", func() {
@@ -30,7 +32,7 @@ var _ = Describe("Context", func() {
 
 	BeforeEach(func() {
 		var err error
-		logger, err = NewLogger().
+		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
 			SetV(math.MaxInt).
 			Build()

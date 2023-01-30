@@ -24,6 +24,8 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
 var _ = Describe("Client", func() {
@@ -39,7 +41,7 @@ var _ = Describe("Client", func() {
 		ctx = context.Background()
 
 		// Create the logger:
-		logger, err = NewLogger().
+		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
 			SetV(1).
 			Build()
@@ -76,7 +78,7 @@ var _ = Describe("Client", func() {
 		// Create a logger that writes to a memory buffer and with the v-level 3 enabled, as
 		// that is the level used for the detail of HTTP requests and responses:
 		buffer := &bytes.Buffer{}
-		logger, err := NewLogger().
+		logger, err := logging.NewLogger().
 			SetWriter(buffer).
 			SetV(3).
 			Build()

@@ -28,6 +28,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
 // Client builder contains the data and logic needed to create a Kubernetes API client that
@@ -116,7 +118,7 @@ func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 
 	// Wrap the REST transport so that the details of the requests and responses are written to
 	// the log:
-	loggingWrapper, err := NewLoggingTransportWrapper().
+	loggingWrapper, err := logging.NewTransportWrapper().
 		SetLogger(b.logger).
 		Build()
 	if err != nil {

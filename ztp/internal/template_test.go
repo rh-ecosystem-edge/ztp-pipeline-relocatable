@@ -26,6 +26,8 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/table"
 	. "github.com/onsi/gomega"
+
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
 var _ = Describe("Template", func() {
@@ -33,7 +35,7 @@ var _ = Describe("Template", func() {
 
 	BeforeEach(func() {
 		var err error
-		logger, err = NewLogger().
+		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
 			SetV(math.MaxInt).
 			Build()
