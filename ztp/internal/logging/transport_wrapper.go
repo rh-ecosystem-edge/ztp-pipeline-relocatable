@@ -12,7 +12,7 @@ implied.  See the License for the specific language governing permissions and li
 License.
 */
 
-package internal
+package logging
 
 import (
 	"errors"
@@ -24,47 +24,47 @@ import (
 	"github.com/google/uuid"
 )
 
-// LoggingTransportWrapperBuilder contains the data and logic needed to build a transport wrapper
-// that dumps to the log the details of HTTP requests and responses. Don't create instances of this
-// type directly, use the NewLoggingTransportWrapper function instead.
-type LoggingTransportWrapperBuilder struct {
+// TransportWrapperBuilder contains the data and logic needed to build a transport wrapper that
+// dumps to the log the details of HTTP requests and responses. Don't create instances of this type
+// directly, use the NewLoggingTransportWrapper function instead.
+type TransportWrapperBuilder struct {
 	logger  logr.Logger
 	headerV int
 	bodyV   int
 }
 
-// LoggingTransportWrapper is a transport wrapper that creates round trippers that dump the details
-// of the request and the responses to the log. Don't create instances of this type directly, ue the
+// TransportWrapper is a transport wrapper that creates round trippers that dump the details of the
+// request and the responses to the log. Don't create instances of this type directly, ue the
 // NewLoggingTransportWrapper function instead.
-type LoggingTransportWrapper struct {
+type TransportWrapper struct {
 	headerLogger logr.Logger
 	bodyLogger   logr.Logger
 }
 
-// loggingRoundTripper is an implementation of the http.RoundTripper interface that writes to the
-// log the details of the requests and responses.
-type loggingRoundTripper struct {
+// roundTripper is an implementation of the http.RoundTripper interface that writes to the log the
+// details of the requests and responses.
+type roundTripper struct {
 	headerLogger logr.Logger
 	bodyLogger   logr.Logger
 	wrapped      http.RoundTripper
 }
 
-type loggingRequestReader struct {
+type requestReader struct {
 	logger logr.Logger
 	id     string
 	reader io.ReadCloser
 }
 
-type loggingResponseReader struct {
+type responseReader struct {
 	logger logr.Logger
 	id     string
 	reader io.ReadCloser
 }
 
-// NewLoggingTransportWrapper creates a builder that can then be used to configure and create a
-// logging transport wrapper.
-func NewLoggingTransportWrapper() *LoggingTransportWrapperBuilder {
-	return &LoggingTransportWrapperBuilder{
+// NewTransportWrapper creates a builder that can then be used to configure and create a logging
+// transport wrapper.
+func NewTransportWrapper() *TransportWrapperBuilder {
+	return &TransportWrapperBuilder{
 		headerV: 2,
 		bodyV:   3,
 	}
@@ -72,29 +72,29 @@ func NewLoggingTransportWrapper() *LoggingTransportWrapperBuilder {
 
 // SetLogger sets the logger that will be used to write request and response details to the log.
 // This is mandatory.
-func (b *LoggingTransportWrapperBuilder) SetLogger(
-	value logr.Logger) *LoggingTransportWrapperBuilder {
+func (b *TransportWrapperBuilder) SetLogger(
+	value logr.Logger) *TransportWrapperBuilder {
 	b.logger = value
 	return b
 }
 
 // SetHeaderV sets the v-level that will be used to write the request and response header details.
 // Default is 1.
-func (b *LoggingTransportWrapperBuilder) SetHeaderV(value int) *LoggingTransportWrapperBuilder {
+func (b *TransportWrapperBuilder) SetHeaderV(value int) *TransportWrapperBuilder {
 	b.headerV = value
 	return b
 }
 
 // SetBodyV sets the v-level that will be used to write the request and response body details.
 // Default is 2.
-func (b *LoggingTransportWrapperBuilder) SetBodyV(value int) *LoggingTransportWrapperBuilder {
+func (b *TransportWrapperBuilder) SetBodyV(value int) *TransportWrapperBuilder {
 	b.bodyV = value
 	return b
 }
 
 // Build uses the data stored in the builder to create and configure a new logging transport
 // wrapper.
-func (b *LoggingTransportWrapperBuilder) Build() (result *LoggingTransportWrapper, err error) {
+func (b *TransportWrapperBuilder) Build() (result *TransportWrapper, err error) {
 	// Check parameters:
 	if b.logger.GetSink() == nil {
 		err = errors.New("logger is mandatory")
@@ -116,7 +116,7 @@ func (b *LoggingTransportWrapperBuilder) Build() (result *LoggingTransportWrappe
 	}
 
 	// Create and populate the object:
-	result = &LoggingTransportWrapper{
+	result = &TransportWrapper{
 		headerLogger: b.logger.V(b.headerV),
 		bodyLogger:   b.logger.V(b.bodyV),
 	}
@@ -126,8 +126,8 @@ func (b *LoggingTransportWrapperBuilder) Build() (result *LoggingTransportWrappe
 
 // Wrap creates a round tripper on top of the given one that writes to the log the details of
 // requests and responses.
-func (w *LoggingTransportWrapper) Wrap(transport http.RoundTripper) http.RoundTripper {
-	return &loggingRoundTripper{
+func (w *TransportWrapper) Wrap(transport http.RoundTripper) http.RoundTripper {
+	return &roundTripper{
 		headerLogger: w.headerLogger,
 		bodyLogger:   w.bodyLogger,
 		wrapped:      transport,
@@ -135,10 +135,10 @@ func (w *LoggingTransportWrapper) Wrap(transport http.RoundTripper) http.RoundTr
 }
 
 // Make sure that we implement the http.RoundTripper interface:
-var _ http.RoundTripper = (*loggingRoundTripper)(nil)
+var _ http.RoundTripper = (*roundTripper)(nil)
 
 // RoundTrip is he implementation of the http.RoundTripper interface.
-func (t *loggingRoundTripper) RoundTrip(request *http.Request) (response *http.Response, err error) {
+func (t *roundTripper) RoundTrip(request *http.Request) (response *http.Response, err error) {
 	// Generate an unique identifier for this request, so that it will be easier to correlate it
 	// with the response:
 	id := uuid.NewString()
@@ -148,7 +148,7 @@ func (t *loggingRoundTripper) RoundTrip(request *http.Request) (response *http.R
 
 	// Replace the request body with a reader that writes to the log:
 	if t.bodyLogger.Enabled() && request.Body != nil {
-		request.Body = &loggingRequestReader{
+		request.Body = &requestReader{
 			logger: t.bodyLogger,
 			id:     id,
 			reader: request.Body,
@@ -161,9 +161,9 @@ func (t *loggingRoundTripper) RoundTrip(request *http.Request) (response *http.R
 		return
 	}
 
-	// Replace the response body with a writer that writes to the log:
+	// Replace the response body with a reader that writes to the log:
 	if t.bodyLogger.Enabled() && response.Body != nil {
-		response.Body = &loggingResponseReader{
+		response.Body = &responseReader{
 			logger: t.bodyLogger,
 			id:     id,
 			reader: response.Body,
@@ -176,7 +176,7 @@ func (t *loggingRoundTripper) RoundTrip(request *http.Request) (response *http.R
 	return
 }
 
-func (t *loggingRoundTripper) dumpRequest(request *http.Request, id string) {
+func (t *roundTripper) dumpRequest(request *http.Request, id string) {
 	t.headerLogger.Info(
 		"Sending request header",
 		"id", id,
@@ -187,7 +187,7 @@ func (t *loggingRoundTripper) dumpRequest(request *http.Request, id string) {
 	)
 }
 
-func (t *loggingRoundTripper) dumpResponse(response *http.Response, id string) {
+func (t *roundTripper) dumpResponse(response *http.Response, id string) {
 	t.headerLogger.Info(
 		"Received response header",
 		"id", id,
@@ -198,36 +198,38 @@ func (t *loggingRoundTripper) dumpResponse(response *http.Response, id string) {
 	)
 }
 
-func (r *loggingRequestReader) Read(p []byte) (n int, err error) {
+func (r *requestReader) Read(p []byte) (n int, err error) {
 	n, err = r.reader.Read(p)
-	if err != nil {
-		return
+	eof := errors.Is(err, io.EOF)
+	if err == nil || eof {
+		r.logger.Info(
+			"Sending request body",
+			"id", r.id,
+			"n", n,
+			"eof", eof,
+		)
 	}
-	r.logger.Info(
-		"Sending request body",
-		"id", r.id,
-		"n", n,
-	)
 	return
 }
 
-func (r *loggingRequestReader) Close() error {
+func (r *requestReader) Close() error {
 	return r.reader.Close()
 }
 
-func (r *loggingResponseReader) Read(p []byte) (n int, err error) {
+func (r *responseReader) Read(p []byte) (n int, err error) {
 	n, err = r.reader.Read(p)
-	if err != nil {
-		return
+	eof := errors.Is(err, io.EOF)
+	if err == nil || eof {
+		r.logger.Info(
+			"Received response body",
+			"id", r.id,
+			"n", n,
+			"eof", eof,
+		)
 	}
-	r.logger.Info(
-		"Received response body",
-		"id", r.id,
-		"n", n,
-	)
 	return
 }
 
-func (r *loggingResponseReader) Close() error {
+func (r *responseReader) Close() error {
 	return r.reader.Close()
 }

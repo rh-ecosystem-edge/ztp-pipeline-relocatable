@@ -23,6 +23,7 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
 )
 
@@ -44,7 +45,7 @@ var _ = BeforeSuite(func() {
 	ctx := context.Background()
 
 	// Create the logger:
-	logger, err := NewLogger().
+	logger, err := logging.NewLogger().
 		SetWriter(GinkgoWriter).
 		SetV(2).
 		Build()

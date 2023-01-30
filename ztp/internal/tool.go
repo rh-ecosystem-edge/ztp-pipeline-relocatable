@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"golang.org/x/exp/maps"
@@ -219,7 +220,7 @@ func (b *ToolBuilder) createLogger(flags *pflag.FlagSet) (result logr.Logger, er
 	}
 
 	// Create the basic logger:
-	result, err = NewLogger().SetV(v).Build()
+	result, err = logging.NewLogger().SetV(v).Build()
 	if err != nil {
 		return
 	}

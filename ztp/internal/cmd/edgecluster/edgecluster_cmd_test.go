@@ -23,6 +23,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
 func TestCmd(t *testing.T) {
@@ -35,7 +36,7 @@ var _ = Describe("Edge cluster command", func() {
 
 	BeforeEach(func() {
 		var err error
-		logger, err = internal.NewLogger().
+		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
 			SetV(2).
 			Build()

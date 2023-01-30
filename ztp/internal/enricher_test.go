@@ -24,6 +24,7 @@ import (
 	. "github.com/onsi/gomega"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
 
@@ -41,7 +42,7 @@ var _ = Describe("Enricher", func() {
 		ctx = context.Background()
 
 		// Create the logger:
-		logger, err = NewLogger().
+		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
 			SetV(math.MaxInt).
 			Build()
