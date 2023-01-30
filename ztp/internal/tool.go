@@ -17,14 +17,18 @@ package internal
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"runtime"
 	"runtime/debug"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 // ToolBuilder contains the data and logic needed to create an instance of the command line
@@ -32,7 +36,7 @@ import (
 type ToolBuilder struct {
 	logger logr.Logger
 	cmds   []func() *cobra.Command
-	env    []string
+	envs   []any
 	args   []string
 	in     io.Reader
 	out    io.Writer
@@ -43,7 +47,7 @@ type ToolBuilder struct {
 // NewTool function instead.
 type Tool struct {
 	logger logr.Logger
-	env    []string
+	env    map[string]string
 	args   []string
 	in     io.Reader
 	out    io.Writer
@@ -77,10 +81,10 @@ func (b *ToolBuilder) AddCommands(values ...func() *cobra.Command) *ToolBuilder 
 	return b
 }
 
-// AddEnv adds a collection of environment variables to the tool. Each value should be the name of
-// the environment variable, followed by an equals sign and then the value.
-func (b *ToolBuilder) AddEnv(values ...string) *ToolBuilder {
-	b.env = append(b.env, values...)
+// SetEnv set the environment variables. The value can be a slice of strings or a map where both
+// keys and values are strings. If it is a slice then each item should be a `NAME=value` pair.
+func (b *ToolBuilder) SetEnv(value any) *ToolBuilder {
+	b.envs = append(b.envs, value)
 	return b
 }
 
@@ -136,14 +140,18 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 		err = errors.New("standard error output stream is mandatory")
 		return
 	}
-
-	// Copy the environment variables:
-	env := make([]string, len(b.env))
-	copy(env, b.env)
-
-	// Copy the command line arguments:
-	args := make([]string, len(b.args))
-	copy(args, b.args)
+	for i, env := range b.envs {
+		switch env.(type) {
+		case []string, map[string]string:
+		default:
+			err = fmt.Errorf(
+				"environment %d should be a list of strings or a map where both "+
+					"keys and values are strings, but it is of type %T",
+				i, env,
+			)
+			return
+		}
+	}
 
 	// Create the command:
 	main, err := b.createCommand()
@@ -153,7 +161,7 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 
 	// Parse the command line, but without executing the command, as we want to create the
 	// logger before that:
-	err = main.ParseFlags(args[1:])
+	err = main.ParseFlags(b.args[1:])
 	if err != nil {
 		return
 	}
@@ -166,11 +174,34 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 			return
 		}
 	}
+
+	// Parse the environment variables:
+	env := map[string]string{}
+	for _, data := range b.envs {
+		switch typed := data.(type) {
+		case []string:
+			for _, item := range typed {
+				equals := strings.Index("=", item)
+				var name, value string
+				if equals != -1 {
+					name = item[0:equals]
+					value = item[equals+1:]
+				} else {
+					name = item
+					value = ""
+				}
+				env[name] = value
+			}
+		case map[string]string:
+			env = maps.Clone(typed)
+		}
+	}
+
 	// Create and populate the object:
 	result = &Tool{
 		logger: logger,
 		env:    env,
-		args:   args,
+		args:   slices.Clone(b.args),
 		in:     b.in,
 		out:    b.out,
 		err:    b.err,
@@ -290,4 +321,9 @@ func (t *Tool) Out() io.Writer {
 // Err returns the error output stream of the tool.
 func (t *Tool) Err() io.Writer {
 	return t.err
+}
+
+// Env returns the environment variables of the tool.
+func (t *Tool) Env() map[string]string {
+	return maps.Clone(t.env)
 }
