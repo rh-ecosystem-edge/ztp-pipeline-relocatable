@@ -10,7 +10,7 @@ Perform the following steps after completion of the edge cluster factory pipelin
 
 .Prerequisites
 
-* An {product-title} hub cluster.
+* A successfully deployed edge cluster.
 * Log in as a user with `cluster-admin` privileges.
 
 .Procedure
