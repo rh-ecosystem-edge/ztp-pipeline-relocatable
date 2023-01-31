@@ -207,6 +207,144 @@ var _ = Describe("Config", func() {
 		Expect(node.StorageDisks).To(ConsistOf("/dev/vdb"))
 	})
 
+	It("Loads cluster with multiple network interface cards", func() {
+		By("Load configuration")
+		config, err := NewConfigLoader().
+			SetLogger(logger).
+			SetSource(Dedent(`
+				config:
+				  OC_OCP_VERSION: '4.11.20'
+				  OC_ACM_VERSION: '2.6'
+				  OC_ODF_VERSION: '4.11'
+				edgeclusters:
+				- spk-factory-0:
+				    config:
+				      tpm: true
+				    master0:
+				      nic_ext_dhcp: enp0s3
+				      nic_int_static: enp0s4
+				      mac_int_static: 8d:5c:ec:5c:db:20
+				      mac_ext_dhcp: 1b:22:67:9e:5d:61
+				      bmc_url: redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/3cfeb445-248d-46d3-bc86-15969ebd5245
+				      bmc_user: admin
+				      bmc_pass: password
+				      root_disk: "/dev/sda"
+				      storage_disk:
+				      - /dev/sdb
+				      - /dev/sdc
+				      - /dev/sdd
+				    master1:
+				      nic_ext_dhcp: enp0s3
+				      nic_int_static: enp0s4
+				      mac_int_static: f9:21:50:8f:9d:68
+				      mac_ext_dhcp: 84:e6:4d:94:07:a4
+				      bmc_url: redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/5aa364f7-151c-4de9-8902-5958299e97d3
+				      bmc_user: admin
+				      bmc_pass: password
+				      root_disk: "/dev/sda"
+				      storage_disk:
+				      - /dev/sdb
+				      - /dev/sdc
+				      - /dev/sdd
+				    master2:
+				      nic_ext_dhcp: enp0s3
+				      nic_int_static: enp0s4
+				      mac_int_static: e7:d3:33:60:e8:d0
+				      mac_ext_dhcp: af:73:ab:5b:90:31
+				      bmc_url: redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/c2183827-1f60-473e-a5ee-5f587619a0b0
+				      bmc_user: admin
+				      bmc_pass: password
+				      root_disk: "/dev/sda"
+				      storage_disk:
+				      - /dev/sdb
+				      - /dev/sdc
+				      - /dev/sdd
+				    worker0:
+				      nic_ext_dhcp: enp0s3
+				      nic_int_static: enp0s4
+				      mac_int_static: f5:92:66:41:f1:38
+				      mac_ext_dhcp: ab:1c:50:fc:f7:8a
+				      bmc_url: redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/9e0a017a-00d1-495f-a4c1-4edd5f5ec78f
+				      bmc_user: admin
+				      bmc_pass: password
+				      root_disk: "/dev/sda"
+				      storage_disk:
+				      - /dev/sdb
+				      - /dev/sdc
+				      - /dev/sdd
+			`)).
+			Load()
+		Expect(err).ToNot(HaveOccurred())
+
+		By("Verify properties")
+		Expect(config.Properties).To(HaveKeyWithValue("OC_OCP_VERSION", "4.11.20"))
+		Expect(config.Properties).To(HaveKeyWithValue("OC_ACM_VERSION", "2.6"))
+		Expect(config.Properties).To(HaveKeyWithValue("OC_ODF_VERSION", "4.11"))
+
+		By("Verify cluster")
+		Expect(config.Clusters).To(HaveLen(1))
+		cluster := config.Clusters[0]
+		Expect(cluster.Name).To(Equal("spk-factory-0"))
+		Expect(cluster.TPM).To(BeTrue())
+		Expect(cluster.Nodes).To(HaveLen(4))
+
+		By("Verify first node")
+		node := cluster.Nodes[0]
+		Expect(node.Kind).To(Equal(models.NodeKindControlPlane))
+		Expect(node.Name).To(Equal("master0"))
+		Expect(node.ExternalNIC.Name).To(Equal("enp0s3"))
+		Expect(node.ExternalNIC.MAC).To(Equal("1b:22:67:9e:5d:61"))
+		Expect(node.InternalNIC.Name).To(Equal("enp0s4"))
+		Expect(node.InternalNIC.MAC).To(Equal("8d:5c:ec:5c:db:20"))
+		Expect(node.BMC.URL).To(Equal("redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/3cfeb445-248d-46d3-bc86-15969ebd5245"))
+		Expect(node.BMC.User).To(Equal("admin"))
+		Expect(node.BMC.Pass).To(Equal("password"))
+		Expect(node.RootDisk).To(Equal("/dev/sda"))
+		Expect(node.StorageDisks).To(ConsistOf("/dev/sdb", "/dev/sdc", "/dev/sdd"))
+
+		By("Verify second node")
+		node = cluster.Nodes[1]
+		Expect(node.Kind).To(Equal(models.NodeKindControlPlane))
+		Expect(node.Name).To(Equal("master1"))
+		Expect(node.ExternalNIC.Name).To(Equal("enp0s3"))
+		Expect(node.ExternalNIC.MAC).To(Equal("84:e6:4d:94:07:a4"))
+		Expect(node.InternalNIC.Name).To(Equal("enp0s4"))
+		Expect(node.InternalNIC.MAC).To(Equal("f9:21:50:8f:9d:68"))
+		Expect(node.BMC.URL).To(Equal("redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/5aa364f7-151c-4de9-8902-5958299e97d3"))
+		Expect(node.BMC.User).To(Equal("admin"))
+		Expect(node.BMC.Pass).To(Equal("password"))
+		Expect(node.RootDisk).To(Equal("/dev/sda"))
+		Expect(node.StorageDisks).To(ConsistOf("/dev/sdb", "/dev/sdc", "/dev/sdd"))
+
+		By("Verify third node")
+		node = cluster.Nodes[2]
+		Expect(node.Kind).To(Equal(models.NodeKindControlPlane))
+		Expect(node.Name).To(Equal("master2"))
+		Expect(node.ExternalNIC.Name).To(Equal("enp0s3"))
+		Expect(node.ExternalNIC.MAC).To(Equal("af:73:ab:5b:90:31"))
+		Expect(node.InternalNIC.Name).To(Equal("enp0s4"))
+		Expect(node.InternalNIC.MAC).To(Equal("e7:d3:33:60:e8:d0"))
+		Expect(node.BMC.URL).To(Equal("redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/c2183827-1f60-473e-a5ee-5f587619a0b0"))
+		Expect(node.BMC.User).To(Equal("admin"))
+		Expect(node.BMC.Pass).To(Equal("password"))
+		Expect(node.RootDisk).To(Equal("/dev/sda"))
+		Expect(node.StorageDisks).To(ConsistOf("/dev/sdb", "/dev/sdc", "/dev/sdd"))
+
+		By("Verify fourth node")
+		node = cluster.Nodes[3]
+		Expect(node.Kind).To(Equal(models.NodeKindWorker))
+		Expect(node.Name).To(Equal("worker0"))
+		Expect(node.ExternalNIC.Name).To(Equal("enp0s3"))
+		Expect(node.ExternalNIC.MAC).To(Equal("ab:1c:50:fc:f7:8a"))
+		Expect(node.InternalNIC.Name).To(Equal("enp0s4"))
+		Expect(node.InternalNIC.MAC).To(Equal("f5:92:66:41:f1:38"))
+		Expect(node.BMC.URL).To(Equal("redfish-virtualmedia://192.168.123.1:8000/redfish/v1/Systems/9e0a017a-00d1-495f-a4c1-4edd5f5ec78f"))
+		Expect(node.BMC.User).To(Equal("admin"))
+		Expect(node.BMC.Pass).To(Equal("password"))
+		Expect(node.RootDisk).To(Equal("/dev/sda"))
+		Expect(node.StorageDisks).To(ConsistOf("/dev/sdb", "/dev/sdc", "/dev/sdd"))
+	})
+
 	It("Loads multiple clusters", func() {
 		// Load the configuration:
 		config, err := NewConfigLoader().
