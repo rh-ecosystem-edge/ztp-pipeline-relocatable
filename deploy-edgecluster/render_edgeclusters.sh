@@ -36,6 +36,8 @@ create_edgecluster_definitions() {
     echo ">> Detecting number of masters"
     export NUM_M=$(yq e ".edgeclusters[${edgeclusternumber}].[]|keys" ${EDGECLUSTERS_FILE} | grep master | wc -l | xargs)
 
+    export PROXY=$(yq eval ".config.PROXY" ${EDGECLUSTERS_FILE} | sed 's/^/    /')
+
     # Generic vars for all edgeclusters
     export CHANGE_MACHINE_CIDR=192.168.7.0/24
     export CHANGE_EDGE_PULL_SECRET_NAME=pull-secret-edgecluster-cluster
@@ -145,6 +147,12 @@ cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
     enableOn: all
 EOF
 fi
+if [ "${PROXY}" != "    null" ]; then
+cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+  proxy:
+${PROXY}
+EOF
+fi
     if [ "${NUM_M}" -eq "3" ]; then
         cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
   apiVIP: "$CHANGE_EDGE_API"
@@ -214,21 +222,26 @@ spec:
 apiVersion: agent-install.openshift.io/v1beta1
 kind: InfraEnv
 metadata:
- name: '$CHANGE_EDGE_NAME'
- namespace: '$CHANGE_EDGE_NAME'
+  name: '$CHANGE_EDGE_NAME'
+  namespace: '$CHANGE_EDGE_NAME'
 spec:
- clusterRef:
-   name: '$CHANGE_EDGE_NAME'
-   namespace: '$CHANGE_EDGE_NAME'
- pullSecretRef:
-   name: '$CHANGE_EDGE_PULL_SECRET_NAME'
- nmStateConfigLabelSelector:
-   matchLabels:
-     nmstate_config_cluster_name: $CHANGE_EDGE_NAME
- ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE_INFRAENV}'
- sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
+  clusterRef:
+    name: '$CHANGE_EDGE_NAME'
+    namespace: '$CHANGE_EDGE_NAME'
+  pullSecretRef:
+    name: '$CHANGE_EDGE_PULL_SECRET_NAME'
+  nmStateConfigLabelSelector:
+    matchLabels:
+      nmstate_config_cluster_name: $CHANGE_EDGE_NAME
+  ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE_INFRAENV}'
+  sshAuthorizedKey: '$CHANGE_RSA_PUB_KEY'
 EOF
-
+if [ "${PROXY}" != "    null" ]; then
+cat <<EOF >>${OUTPUTDIR}/${cluster}-cluster.yaml
+  proxy:
+${PROXY}
+EOF
+fi
     # Generic vars for all masters
     export CHANGE_EDGE_MASTER_PUB_INT_MASK=24
     export CHANGE_EDGE_MASTER_PUB_INT_GW=192.168.7.1
