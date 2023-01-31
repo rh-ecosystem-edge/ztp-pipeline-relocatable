@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -37,6 +38,7 @@ import (
 // directly, use the NewClient function instead.
 type ClientBuilder struct {
 	logger     logr.Logger
+	env        map[string]string
 	kubeconfig any
 }
 
@@ -49,6 +51,12 @@ func NewClient() *ClientBuilder {
 // SetLogger sets the logger that the client will use to write to the log.
 func (b *ClientBuilder) SetLogger(value logr.Logger) *ClientBuilder {
 	b.logger = value
+	return b
+}
+
+// SetEnv sets the environment variables.
+func (b *ClientBuilder) SetEnv(value map[string]string) *ClientBuilder {
+	b.env = value
 	return b
 }
 
@@ -134,10 +142,33 @@ func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 // loadDefaultConfig loads the configuration from the typical default locations, the
 // `~/.kube/config` file, the `KUBECONFIG` variable, etc.
 func (b *ClientBuilder) loadDefaultConfig() (result *rest.Config, err error) {
-	cfgRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	cfgOverrides := &clientcmd.ConfigOverrides{}
-	clientCfg := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(cfgRules, cfgOverrides)
-	result, err = clientCfg.ClientConfig()
+	var cfgFile string
+	if b.env != nil {
+		cfgFile = b.env["KUBECONFIG"]
+	}
+	if cfgFile == "" {
+		var homeDir string
+		homeDir, err = os.UserHomeDir()
+		if err != nil {
+			return
+		}
+		cfgFile = filepath.Join(homeDir, ".kube", homeDir)
+	}
+	cfgData, err := os.ReadFile(cfgFile)
+	if errors.Is(err, os.ErrNotExist) {
+		err = fmt.Errorf("kubeconfig file '%s' doesn't exist", cfgFile)
+		return
+	}
+	if err != nil {
+		err = fmt.Errorf("failed to read kubeconfig file '%s': %v", cfgFile, err)
+		return
+	}
+	config, err := clientcmd.NewClientConfigFromBytes(cfgData)
+	if err != nil {
+		err = fmt.Errorf("failed to parse kubeconfig file '%s': %v", cfgFile, err)
+		return
+	}
+	result, err = config.ClientConfig()
 	return
 }
 
