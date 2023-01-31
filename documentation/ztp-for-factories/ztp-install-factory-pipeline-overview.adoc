@@ -6,7 +6,7 @@
 = Factory install workflow
 include::modules/common-attributes.adoc[]
 
-The factory install pipeline builds out your factory environment in readiness for the edge cluster to be shipped off site.
+The factory install pipelines build out your factory environment for the edge cluster to reach a state of readiness to be shipped off site.
 
 The following diagram provides a high level overview of the pipelines used to prepare the edge clusters:
 
