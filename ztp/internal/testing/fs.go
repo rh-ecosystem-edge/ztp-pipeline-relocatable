@@ -46,12 +46,12 @@ import (
 // Directories are created automatically when they contain at least one file or subdirectory.
 //
 // The caller is responsible for removing the directory once it is no longer needed.
-func TmpFS(args ...string) (dir string, fsys fs.FS) {
+func TmpFS(args ...any) (dir string, fsys fs.FS) {
 	Expect(len(args) % 2).To(BeZero())
 	dir, err := os.MkdirTemp("", "*.test")
 	Expect(err).ToNot(HaveOccurred())
 	for i := 0; i < len(args)/2; i++ {
-		name := args[2*i]
+		name := args[2*i].(string)
 		text := args[2*i+1]
 		file := filepath.Join(dir, name)
 		sub := filepath.Dir(file)
@@ -62,7 +62,12 @@ func TmpFS(args ...string) (dir string, fsys fs.FS) {
 		} else {
 			Expect(err).ToNot(HaveOccurred())
 		}
-		err = os.WriteFile(file, []byte(text), 0600)
+		switch typed := text.(type) {
+		case string:
+			err = os.WriteFile(file, []byte(typed), 0600)
+		case []byte:
+			err = os.WriteFile(file, typed, 0600)
+		}
 		Expect(err).ToNot(HaveOccurred())
 	}
 	fsys = os.DirFS(dir)
