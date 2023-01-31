@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -202,6 +203,9 @@ func (l *ConfigLoader) loadClusters(content any, config *models.Config) error {
 			config.Clusters = append(config.Clusters, cluster)
 		}
 	}
+	sort.Slice(config.Clusters, func(i, j int) bool {
+		return strings.Compare(config.Clusters[i].Name, config.Clusters[j].Name) < 0
+	})
 	return nil
 }
 
@@ -230,6 +234,9 @@ func (l *ConfigLoader) loadCluster(content any, cluster *models.Cluster) error {
 			cluster.Nodes = append(cluster.Nodes, node)
 		}
 	}
+	sort.Slice(cluster.Nodes, func(i, j int) bool {
+		return strings.Compare(cluster.Nodes[i].Name, cluster.Nodes[j].Name) < 0
+	})
 	return nil
 }
 
