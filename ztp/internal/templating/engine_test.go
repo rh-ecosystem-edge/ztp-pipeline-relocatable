@@ -321,6 +321,30 @@ var _ = Describe("Engine", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(buffer.String()).To(Equal("42"))
 		})
+
+		It("Fails if executed template doesn't exist", func() {
+			// Create the file system. Note the typo in the name of the called template.
+			tmp, fsys := TmpFS(
+				"caller.txt", `{{ execute "caled.txt" 42 }}`,
+				"called.txt", `{{ . }}`,
+			)
+			defer os.RemoveAll(tmp)
+
+			// Create the engine:
+			engine, err := NewEngine().
+				SetLogger(logger).
+				SetFS(fsys).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+
+			// Execute the template:
+			buffer := &bytes.Buffer{}
+			err = engine.Execute(buffer, "caller.txt", nil)
+			Expect(err).To(HaveOccurred())
+			msg := err.Error()
+			Expect(msg).To(ContainSubstring("find"))
+			Expect(msg).To(ContainSubstring("caled.txt"))
+		})
 	})
 
 	Context("Template function 'base64'", func() {
