@@ -226,6 +226,10 @@ func (e *Engine) base64Func(value any) (result string, err error) {
 func (e *Engine) executeFunc(name string, data any) (result string, err error) {
 	buffer := &bytes.Buffer{}
 	executed := e.template.Lookup(name)
+	if executed == nil {
+		err = fmt.Errorf("failed to find template '%s'", name)
+		return
+	}
 	err = executed.Execute(buffer, data)
 	if err != nil {
 		return
