@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/api/errors"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
@@ -206,11 +207,31 @@ func (c *Command) apply(ctx context.Context, object clnt.Object) error {
 	labels["ztp"] = "true"
 	object.SetLabels(labels)
 
+	// Calculate the display name:
+	displayNS := object.GetNamespace()
+	displayName := object.GetName()
+	if displayNS != "" {
+		displayName = fmt.Sprintf("%s/%s", displayNS, displayName)
+	}
+
 	// Create the object:
 	err := c.client.Create(ctx, object)
+	if errors.IsAlreadyExists(err) {
+		fmt.Fprintf(
+			c.tool.Out(),
+			"Object '%s' already exists\n",
+			displayName,
+		)
+		return nil
+	}
 	if err != nil {
 		return err
 	}
+	fmt.Fprintf(
+		c.tool.Out(),
+		"Created object '%s'\n",
+		displayName,
+	)
 
 	return nil
 }
