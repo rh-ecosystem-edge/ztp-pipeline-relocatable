@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Red Hat Inc.
+Copyright 2023 Red Hat Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
 compliance with the License. You may obtain a copy of the License at
@@ -15,13 +15,8 @@ License.
 package internal
 
 import (
-	"testing"
-
-	. "github.com/onsi/ginkgo/v2/dsl/core"
-	. "github.com/onsi/gomega"
+	"embed"
 )
 
-func TestInternal(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Internal")
-}
+//go:embed data
+var DataFS embed.FS

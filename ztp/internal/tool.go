@@ -182,7 +182,7 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 		switch typed := data.(type) {
 		case []string:
 			for _, item := range typed {
-				equals := strings.Index("=", item)
+				equals := strings.Index(item, "=")
 				var name, value string
 				if equals != -1 {
 					name = item[0:equals]
@@ -234,8 +234,9 @@ func (b *ToolBuilder) createLogger(flags *pflag.FlagSet) (result logr.Logger, er
 func (b *ToolBuilder) createCommand() (result *cobra.Command, err error) {
 	// Create the main command:
 	result = &cobra.Command{
-		Use:  "ztp",
-		Long: "Zero touch provisioning command line tool",
+		Use:          "ztp",
+		Long:         "Zero touch provisioning command line tool",
+		SilenceUsage: true,
 	}
 
 	// Add flags that apply to all the commands:
@@ -324,7 +325,16 @@ func (t *Tool) Err() io.Writer {
 	return t.err
 }
 
-// Env returns the environment variables of the tool.
+// Env returns the environment variables of the tool. Note that this returns a copy of the variables
+// used internally by the tool. If you are going to use only one variable it is cheaper to use the
+// LookupEnv method.
 func (t *Tool) Env() map[string]string {
 	return maps.Clone(t.env)
+}
+
+// LookupEnv returns the environment variable of the tool with the given name and a boolean flag
+// indicating if there is such environment variable.
+func (t *Tool) LookupEnv(name string) (value string, ok bool) {
+	value, ok = t.env[name]
+	return
 }

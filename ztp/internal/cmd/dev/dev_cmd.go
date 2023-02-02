@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Red Hat Inc.
+Copyright 2023 Red Hat Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
 compliance with the License. You may obtain a copy of the License at
@@ -12,16 +12,22 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package internal
+package cmd
 
 import (
-	"testing"
+	"github.com/spf13/cobra"
 
-	. "github.com/onsi/ginkgo/v2/dsl/core"
-	. "github.com/onsi/gomega"
+	devsetupcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/setup"
 )
 
-func TestInternal(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Internal")
+// Cobra creates and returns the `dev` command.
+func Cobra() *cobra.Command {
+	result := &cobra.Command{
+		Use:    "dev",
+		Short:  "Development utilities",
+		Args:   cobra.NoArgs,
+		Hidden: true,
+	}
+	result.AddCommand(devsetupcmd.Cobra())
+	return result
 }

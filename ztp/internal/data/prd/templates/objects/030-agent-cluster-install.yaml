@@ -1,0 +1,54 @@
+apiVersion: extensions.hive.openshift.io/v1beta1
+kind: AgentClusterInstall
+metadata:
+  namespace: {{ .Cluster.Name }}
+  name: {{ .Cluster.Name }}
+spec:
+  clusterDeploymentRef:
+    name: {{ .Cluster.Name }}
+  imageSetRef:
+    name: {{ .Cluster.ImageSet }}
+  fips: true
+  sshPublicKey: {{ .Cluster.SSH.PublicKey | printf "%s" }}
+
+  {{ if .Cluster.TPM }}
+  diskEncryption:
+    mode: tpmv2
+    enableOn: all
+  {{ end}}
+
+  {{ if .Cluster.SNO }}
+  manifestsConfigMapRef:
+    name: {{ .Cluster.Name }}-manifests-override
+  networking:
+    clusterNetwork:
+    {{ range .Cluster.ClusterNetworks }}
+    - cidr: {{ .CIDR }}
+      hostPrefix: {{ .HostPrefix }}
+    {{ end}}
+    machineNetwork:
+    {{ range .Cluster.MachineNetworks }}
+    - cidr: {{ .CIDR }}
+    {{ end }}
+    serviceNetwork:
+    {{ range .Cluster.ServiceNetworks }}
+    - {{ .CIDR }}
+    {{ end }}
+  provisionRequirements:
+    controlPlaneAgents: 1
+  {{ else }}
+  apiVIP: {{ .Cluster.API.VIP }}
+  ingressVIP: {{ .Cluster.Ingress.VIP }}
+  networking:
+    clusterNetwork:
+    {{ range .Cluster.ClusterNetworks }}
+    - cidr: {{ .CIDR }}
+      hostPrefix: {{ .HostPrefix }}
+    {{ end}}
+    serviceNetwork:
+    {{ range .Cluster.ServiceNetworks }}
+    - {{ .CIDR }}
+    {{ end }}
+  provisionRequirements:
+    controlPlaneAgents: 3
+  {{ end }}
