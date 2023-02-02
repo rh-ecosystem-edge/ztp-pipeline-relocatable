@@ -34,7 +34,6 @@ func Cobra() *cobra.Command {
 	return &cobra.Command{
 		Use:   "edgecluster",
 		Short: "Creates an edge cluster",
-		Long:  "Creates an edge cluster",
 		Args:  cobra.NoArgs,
 		RunE:  c.Run,
 	}
@@ -189,10 +188,28 @@ func (c *Command) deploy(ctx context.Context, cluster *models.Cluster) error {
 	// Create the objects:
 	fmt.Fprintf(c.tool.Out(), "Creating objects for cluster '%s'\n", cluster.Name)
 	for _, object := range objects {
-		err = c.client.Create(ctx, object)
+		err = c.apply(ctx, object)
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (c *Command) apply(ctx context.Context, object clnt.Object) error {
+	// Add the label that identifies the object as created by us:
+	labels := object.GetLabels()
+	if labels == nil {
+		labels = map[string]string{}
+	}
+	labels["ztp"] = "true"
+	object.SetLabels(labels)
+
+	// Create the object:
+	err := c.client.Create(ctx, object)
+	if err != nil {
+		return err
 	}
 
 	return nil
