@@ -112,21 +112,29 @@ func (c *Command) installCRDs(ctx context.Context) error {
 
 func (c *Command) installCRD(ctx context.Context, path string) error {
 	// Read the CRD from the file:
-	data, err := internal.DataFS.ReadFile(path)
+	crdBytes, err := internal.DataFS.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	crd := &unstructured.Unstructured{}
-	err = yaml.Unmarshal(data, &crd.Object)
+	crdData := &unstructured.Unstructured{}
+	err = yaml.Unmarshal(crdBytes, &crdData.Object)
 	if err != nil {
 		return err
 	}
+
+	// Add the label that identifies the CRD as created by us:
+	crdLabels := crdData.GetLabels()
+	if crdLabels == nil {
+		crdLabels = map[string]string{}
+	}
+	crdLabels["ztp"] = "true"
+	crdData.SetLabels(crdLabels)
 
 	// Calculate the display name:
-	displayName := crd.GetName()
+	displayName := crdData.GetName()
 
 	// Create the CRD:
-	err = c.client.Create(ctx, crd)
+	err = c.client.Create(ctx, crdData)
 	if errors.IsAlreadyExists(err) {
 		fmt.Fprintf(
 			c.tool.Out(),
@@ -177,6 +185,14 @@ func (c *Command) installObject(ctx context.Context, path string) error {
 	objectData := &unstructured.Unstructured{
 		Object: objectMap,
 	}
+
+	// Add the label that identifies the CRD as created by us:
+	objectLabels := objectData.GetLabels()
+	if objectLabels == nil {
+		objectLabels = map[string]string{}
+	}
+	objectLabels["ztp"] = "true"
+	objectData.SetLabels(objectLabels)
 
 	// Calculate namespace and name that we will display to the user:
 	displayNS := objectData.GetNamespace()

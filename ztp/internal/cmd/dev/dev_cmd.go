@@ -17,6 +17,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	devcleanupcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/cleanup"
 	devsetupcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/setup"
 )
 
@@ -28,6 +29,7 @@ func Cobra() *cobra.Command {
 		Args:   cobra.NoArgs,
 		Hidden: true,
 	}
+	result.AddCommand(devcleanupcmd.Cobra())
 	result.AddCommand(devsetupcmd.Cobra())
 	return result
 }
