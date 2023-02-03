@@ -27,7 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
@@ -110,7 +109,7 @@ var _ = Describe("'edgecluster' command", func() {
 			// Run the command:
 			tool, err := internal.NewTool().
 				SetLogger(logger).
-				AddArgs("oc-ztp", "edgecluster").
+				AddArgs("ztp", "edgecluster", "--wait=0").
 				AddCommand(edgeclustercmd.Cobra).
 				SetEnv(env).
 				SetIn(&bytes.Buffer{}).
@@ -118,7 +117,7 @@ var _ = Describe("'edgecluster' command", func() {
 				SetErr(GinkgoWriter).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run()
+			err = tool.Run(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Create the API client:
@@ -165,11 +164,7 @@ var _ = Describe("'edgecluster' command", func() {
 
 		It("Creates the agent cluster install", func() {
 			object := &unstructured.Unstructured{}
-			object.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "extensions.hive.openshift.io",
-				Version: "v1beta1",
-				Kind:    "AgentClusterInstall",
-			})
+			object.SetGroupVersionKind(internal.AgentClusterIntallGVK)
 			key := clnt.ObjectKey{
 				Namespace: "edgecluster0-cluster",
 				Name:      "edgecluster0-cluster",
@@ -180,11 +175,7 @@ var _ = Describe("'edgecluster' command", func() {
 
 		It("Creates the cluster deployment", func() {
 			object := &unstructured.Unstructured{}
-			object.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "hive.openshift.io",
-				Version: "v1",
-				Kind:    "ClusterDeployment",
-			})
+			object.SetGroupVersionKind(internal.ClusterDeploymentGVK)
 			key := clnt.ObjectKey{
 				Namespace: "edgecluster0-cluster",
 				Name:      "edgecluster0-cluster",
@@ -195,11 +186,7 @@ var _ = Describe("'edgecluster' command", func() {
 
 		It("Creates the managed cluster", func() {
 			object := &unstructured.Unstructured{}
-			object.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "cluster.open-cluster-management.io",
-				Version: "v1",
-				Kind:    "ManagedCluster",
-			})
+			object.SetGroupVersionKind(internal.ManagedClusterGVK)
 			key := clnt.ObjectKey{
 				Name: "edgecluster0-cluster",
 			}
@@ -209,11 +196,7 @@ var _ = Describe("'edgecluster' command", func() {
 
 		It("Creates the infrastructure environment", func() {
 			object := &unstructured.Unstructured{}
-			object.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "agent-install.openshift.io",
-				Version: "v1beta1",
-				Kind:    "InfraEnv",
-			})
+			object.SetGroupVersionKind(internal.InfraEnvGKV)
 			key := clnt.ObjectKey{
 				Namespace: "edgecluster0-cluster",
 				Name:      "edgecluster0-cluster",
@@ -224,11 +207,7 @@ var _ = Describe("'edgecluster' command", func() {
 
 		It("Creates the `nmstate` configuration environment", func() {
 			object := &unstructured.Unstructured{}
-			object.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "agent-install.openshift.io",
-				Version: "v1beta1",
-				Kind:    "NMStateConfig",
-			})
+			object.SetGroupVersionKind(internal.NMStateConfigGVK)
 			key := clnt.ObjectKey{
 				Namespace: "edgecluster0-cluster",
 				Name:      "ztpfw-edgecluster0-cluster-master-master0",
@@ -249,11 +228,7 @@ var _ = Describe("'edgecluster' command", func() {
 
 		It("Creates the bare metal host", func() {
 			object := &unstructured.Unstructured{}
-			object.SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   "metal3.io",
-				Version: "v1alpha1",
-				Kind:    "BareMetalHost",
-			})
+			object.SetGroupVersionKind(internal.BareMetalHostGVK)
 			key := clnt.ObjectKey{
 				Namespace: "edgecluster0-cluster",
 				Name:      "ztpfw-edgecluster0-cluster-master-master0",
@@ -286,7 +261,7 @@ var _ = Describe("'edgecluster' command", func() {
 			// Run the command again:
 			tool, err := internal.NewTool().
 				SetLogger(logger).
-				AddArgs("oc-ztp", "edgecluster").
+				AddArgs("ztp", "edgecluster", "--wait=0").
 				AddCommand(edgeclustercmd.Cobra).
 				SetEnv(env).
 				SetIn(&bytes.Buffer{}).
@@ -294,7 +269,7 @@ var _ = Describe("'edgecluster' command", func() {
 				SetErr(GinkgoWriter).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run()
+			err = tool.Run(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the object has been created:

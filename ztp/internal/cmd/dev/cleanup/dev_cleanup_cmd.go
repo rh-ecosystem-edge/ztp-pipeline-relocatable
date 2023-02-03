@@ -115,19 +115,9 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 func (c *Command) deleteCRDs(ctx context.Context) error {
 	// Find all the CRDs that we installed, so that we can then delete all the objects of those
 	// types:
-	selector, err := labels.Parse("ztp = true")
-	if err != nil {
-		return err
-	}
 	list := &unstructured.UnstructuredList{}
-	list.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "apiextensions.k8s.io",
-		Version: "v1",
-		Kind:    "CustomResourceDefinition",
-	})
-	err = c.client.List(ctx, list, &clnt.ListOptions{
-		LabelSelector: selector,
-	})
+	list.SetGroupVersionKind(internal.CustomResourceDefinitionListGVK)
+	err := c.client.List(ctx, list, clnt.MatchingLabels{"ztp": "true"})
 	if err != nil {
 		return err
 	}
@@ -245,14 +235,8 @@ func (c *Command) deleteObject(ctx context.Context, object *unstructured.Unstruc
 
 func (c *Command) deleteNamespaces(ctx context.Context) error {
 	// Find and all the namespaces that we created:
-	nsSelector, err := labels.Parse("ztp = true")
-	if err != nil {
-		return err
-	}
 	nsList := &corev1.NamespaceList{}
-	err = c.client.List(ctx, nsList, &clnt.ListOptions{
-		LabelSelector: nsSelector,
-	})
+	err := c.client.List(ctx, nsList, clnt.MatchingLabels{"ztp": "true"})
 	if err != nil {
 		return err
 	}

@@ -96,6 +96,11 @@ func (b *LoggerBuilder) Build() (result logr.Logger, err error) {
 
 	// Create the logr logger:
 	result = zapr.NewLoggerWithOptions(logger, zapr.LogInfoLevel("v"))
+
+	// Add the the PID so that it will be easy to identify the process when there are multiple
+	// processes writing to the same log file:
+	result = result.WithValues("pid", os.Getpid())
+
 	return
 }
 

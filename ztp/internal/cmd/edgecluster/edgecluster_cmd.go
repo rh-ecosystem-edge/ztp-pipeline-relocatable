@@ -17,11 +17,14 @@ package edgecluster
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
@@ -32,18 +35,30 @@ import (
 // Cobra creates and returns the `edgecluster` command.
 func Cobra() *cobra.Command {
 	c := NewCommand()
-	return &cobra.Command{
+	result := &cobra.Command{
 		Use:   "edgecluster",
 		Short: "Creates an edge cluster",
 		Args:  cobra.NoArgs,
 		RunE:  c.Run,
 	}
+	flags := result.Flags()
+	flags.DurationVar(
+		&c.flags.wait,
+		"wait",
+		60*time.Minute,
+		"Time to wait till the cluster is ready. Set to zero to disable waiting.",
+	)
+	return result
 }
 
 // Command contains the data and logic needed to run the `edgecluster` command.
 type Command struct {
+	flags struct {
+		wait time.Duration
+	}
 	logger    logr.Logger
 	env       map[string]string
+	jq        *internal.JQ
 	tool      *internal.Tool
 	config    models.Config
 	client    clnt.WithWatch
@@ -58,7 +73,9 @@ func NewCommand() *Command {
 }
 
 // Run runs the `edgecluster` command.
-func (c *Command) Run(cmd *cobra.Command, argv []string) (err error) {
+func (c *Command) Run(cmd *cobra.Command, argv []string) error {
+	var err error
+
 	// Get the context:
 	ctx := cmd.Context()
 
@@ -69,16 +86,22 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) (err error) {
 	// Get the environment:
 	c.env = c.tool.Env()
 
+	// Create the JQ object:
+	c.jq, err = internal.NewJQ().
+		SetLogger(c.logger).
+		Build()
+	if err != nil {
+		return fmt.Errorf("failed to create JQ object: %v", err)
+	}
+
 	// Load the templates:
-	fmt.Fprintf(c.tool.Out(), "Loading templates\n")
 	c.templates, err = templating.NewEngine().
 		SetLogger(c.logger).
 		SetFS(internal.DataFS).
 		SetDir("data/prd/templates").
 		Build()
 	if err != nil {
-		err = fmt.Errorf("failed to parse the templates: %v", err)
-		return
+		return fmt.Errorf("failed to parse the templates: %v", err)
 	}
 	templates := []string{}
 	for _, name := range c.templates.Names() {
@@ -88,39 +111,34 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) (err error) {
 	}
 
 	// Load the configuration:
-	fmt.Fprintf(c.tool.Out(), "Loading configuration\n")
 	file, ok := c.env["EDGECLUSTERS_FILE"]
 	if !ok {
-		err = fmt.Errorf(
+		return fmt.Errorf(
 			"failed to load configuration because environment variable " +
 				"'EDGECLUSTERS_FILE' isn't defined",
 		)
-		return
 	}
 	c.config, err = internal.NewConfigLoader().
 		SetLogger(c.logger).
 		SetSource(file).
 		Load()
 	if err != nil {
-		err = fmt.Errorf(
+		return fmt.Errorf(
 			"failed to load configuration from file '%s': %v",
 			file, err,
 		)
-		return
 	}
 
 	// Create the client for the API:
-	fmt.Fprintf(c.tool.Out(), "Creating API client\n")
 	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
 		SetEnv(c.env).
 		Build()
 	if err != nil {
-		err = fmt.Errorf(
+		return fmt.Errorf(
 			"failed to create API client: %v",
 			err,
 		)
-		return
 	}
 
 	// Create the enricher and the renderer:
@@ -130,22 +148,20 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) (err error) {
 		SetClient(c.client).
 		Build()
 	if err != nil {
-		err = fmt.Errorf(
+		return fmt.Errorf(
 			"failed to create enricher: %v",
 			err,
 		)
-		return
 	}
 	c.renderer, err = internal.NewRenderer().
 		SetLogger(c.logger).
 		SetTemplates(c.templates, templates...).
 		Build()
 	if err != nil {
-		err = fmt.Errorf(
+		return fmt.Errorf(
 			"failed to create renderer: %v",
 			err,
 		)
-		return
 	}
 
 	// Deploy the clusters:
@@ -153,20 +169,43 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) (err error) {
 		fmt.Fprintf(c.tool.Out(), "Deploying cluster '%s'\n", cluster.Name)
 		err = c.deploy(ctx, &cluster)
 		if err != nil {
-			err = fmt.Errorf(
+			return fmt.Errorf(
 				"failed to deploy cluster '%s': %v",
 				cluster.Name, err,
 			)
-			return
 		}
 	}
 
-	return
+	// Wait for clusters to be ready:
+	if c.flags.wait != 0 {
+		fmt.Fprintf(
+			c.tool.Out(),
+			"Waiting up to %s for clusters to be ready\n",
+			c.flags.wait,
+		)
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, c.flags.wait)
+		defer cancel()
+		for _, cluster := range c.config.Clusters {
+			err = c.wait(ctx, &cluster)
+			if os.IsTimeout(err) {
+				fmt.Fprintf(
+					c.tool.Out(),
+					"Clusters aren't ready after waiting for %s\n",
+					c.flags.wait,
+				)
+				return internal.ExitError(1)
+			}
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (c *Command) deploy(ctx context.Context, cluster *models.Cluster) error {
 	// Render the objects:
-	fmt.Fprintf(c.tool.Out(), "Rendering objects for cluster '%s'\n", cluster.Name)
 	err := c.enricher.Enrich(ctx, cluster)
 	if err != nil {
 		return err
@@ -187,7 +226,6 @@ func (c *Command) deploy(ctx context.Context, cluster *models.Cluster) error {
 	)
 
 	// Create the objects:
-	fmt.Fprintf(c.tool.Out(), "Creating objects for cluster '%s'\n", cluster.Name)
 	for _, object := range objects {
 		err = c.apply(ctx, object)
 		if err != nil {
@@ -207,31 +245,123 @@ func (c *Command) apply(ctx context.Context, object clnt.Object) error {
 	labels["ztp"] = "true"
 	object.SetLabels(labels)
 
-	// Calculate the display name:
-	displayNS := object.GetNamespace()
-	displayName := object.GetName()
-	if displayNS != "" {
-		displayName = fmt.Sprintf("%s/%s", displayNS, displayName)
-	}
-
 	// Create the object:
 	err := c.client.Create(ctx, object)
 	if errors.IsAlreadyExists(err) {
-		fmt.Fprintf(
-			c.tool.Out(),
-			"Object '%s' already exists\n",
-			displayName,
-		)
 		return nil
 	}
+	return err
+}
+
+func (c *Command) wait(ctx context.Context, cluster *models.Cluster) error {
+	waitTasks := []func(context.Context, *models.Cluster) error{
+		c.waitHosts,
+		c.waitInstall,
+	}
+	for _, waitTask := range waitTasks {
+		err := waitTask(ctx, cluster)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Command) waitHosts(ctx context.Context, cluster *models.Cluster) error {
+	fmt.Fprintf(
+		c.tool.Out(),
+		"Waiting for hosts of cluster '%s' to be provisioned\n",
+		cluster.Name,
+	)
+
+	// First retrieve the list of hosts in the namespace of the cluster and construct a set with
+	// the names of the hosts that are not yet provisioned.
+	list := &unstructured.UnstructuredList{}
+	list.SetGroupVersionKind(internal.BareMetalHostListGVK)
+	err := c.client.List(ctx, list, clnt.InNamespace(cluster.Name))
 	if err != nil {
 		return err
 	}
+	pending := map[string]bool{}
+	for _, item := range list.Items {
+		pending[item.GetName()] = true
+	}
+
+	// Now watch for changes in the hosts, remove them from the pending set when the status is
+	// `provisioned` and stop when the pending set is empty.
+	watch, err := c.client.Watch(ctx, list, clnt.InNamespace(cluster.Name))
+	if err != nil {
+		return err
+	}
+	defer watch.Stop()
+	for event := range watch.ResultChan() {
+		object, ok := event.Object.(*unstructured.Unstructured)
+		if !ok {
+			continue
+		}
+		var state string
+		err = c.jq.Query(
+			`try .status.provisioning.state`,
+			object.Object, &state,
+		)
+		if err != nil {
+			return err
+		}
+		if state == "provisioned" {
+			name := object.GetName()
+			fmt.Fprintf(
+				c.tool.Out(),
+				"Host '%s' of cluster '%s' is provisioned\n",
+				name, cluster.Name,
+			)
+			delete(pending, name)
+			if len(pending) == 0 {
+				break
+			}
+		}
+	}
+	return nil
+}
+
+func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) error {
 	fmt.Fprintf(
 		c.tool.Out(),
-		"Created object '%s'\n",
-		displayName,
+		"Waiting for installation of cluster '%s' to be completed\n",
+		cluster.Name,
 	)
 
+	// Watch the agent cluster install till the status is `ready`:
+	list := &unstructured.UnstructuredList{}
+	list.SetGroupVersionKind(internal.AgentClusterIntallGVK)
+	watch, err := c.client.Watch(
+		ctx,
+		list,
+		clnt.InNamespace(cluster.Name),
+		clnt.MatchingFields{
+			"metadata.name": cluster.Name,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	defer watch.Stop()
+	for event := range watch.ResultChan() {
+		var status string
+		err = c.jq.Query(
+			`try .status.conditions[] | select(.type == "Completed") | .status`,
+			event.Object, &status,
+		)
+		if err != nil {
+			return err
+		}
+		if status == "ready" {
+			fmt.Fprintf(
+				c.tool.Out(),
+				"Cluster '%s' is installed\n",
+				cluster.Name,
+			)
+			break
+		}
+	}
 	return nil
 }

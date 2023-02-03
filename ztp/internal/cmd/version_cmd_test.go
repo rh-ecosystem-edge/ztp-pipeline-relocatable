@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
@@ -25,6 +26,12 @@ import (
 )
 
 var _ = Describe("'version' command", func() {
+	var ctx context.Context
+
+	BeforeEach(func() {
+		ctx = context.Background()
+	})
+
 	It("Prints the build commit", func() {
 		// Prepare buffers to capture the output:
 		inBuffer := &bytes.Buffer{}
@@ -40,7 +47,7 @@ var _ = Describe("'version' command", func() {
 			SetErr(errBuffer).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
-		err = tool.Run()
+		err = tool.Run(ctx)
 		Expect(err).ToNot(HaveOccurred())
 
 		// Check the otuput. Note that we expect unknown commit and time because the test
