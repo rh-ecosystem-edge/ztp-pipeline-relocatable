@@ -10,14 +10,14 @@ metadata:
   annotations:
     inspect.metal3.io: disabled
     bmac.agent-install.openshift.io/hostname: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}
-    bmac.agent-install.openshift.io/ignition-config-overrides: '${JSON_STRING_CFG_OVERRIDE_BMH}'
-  spec:
-    online: false
-    bootMACAddress: {{ .ExternalNIC.MAC }}
-    rootDeviceHints:
-      deviceName: {{ .RootDisk }}
-    bmc:
-      disableCertificateVerification: true
-      address: {{ .BMC.URL }}
-      credentialsName: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}-bmc-secret
+    bmac.agent-install.openshift.io/ignition-config-overrides: {{ execute "files/cfg-override-bmh.json" . | json }}
+spec:
+  online: false
+  bootMACAddress: {{ .ExternalNIC.MAC }}
+  rootDeviceHints:
+    deviceName: {{ .RootDisk }}
+  bmc:
+    disableCertificateVerification: true
+    address: {{ .BMC.URL }}
+    credentialsName: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}-bmc-secret
 {{ end}}

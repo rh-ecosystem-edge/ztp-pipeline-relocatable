@@ -1,0 +1,12 @@
+[Unit]
+Description=Change-Default-Route
+Before=ovs-configuration.service
+Wants=NetworkManager-wait-online.service
+After=NetworkManager-wait-online.service
+
+[Service]
+User=root
+Type=simple
+ExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"
+
+[Install]\nWantedBy=multi-user.target

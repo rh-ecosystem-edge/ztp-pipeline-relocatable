@@ -1,0 +1,17 @@
+{
+  "ignition": {
+    "version": "3.1.0"
+  },
+  "storage": {
+    "files": [
+      {
+        "path": "/etc/hosts",
+        "append": [
+          {
+            "source": "data:text/plain;base64,{{ execute "files/api_hosts" . | base64 }}"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -42,11 +42,18 @@ func Cobra() *cobra.Command {
 		RunE:  c.Run,
 	}
 	flags := result.Flags()
+	flags.StringVar(
+		&c.flags.config,
+		"config",
+		"",
+		"Location of the configuration file. The default is to use the file specified "+
+			"in the 'EDGECLUSTERS_FILE' environment variable.",
+	)
 	flags.DurationVar(
 		&c.flags.wait,
 		"wait",
 		60*time.Minute,
-		"Time to wait till the cluster is ready. Set to zero to disable waiting.",
+		"Time to wait till the clusters are ready. Set to zero to disable waiting.",
 	)
 	return result
 }
@@ -54,7 +61,8 @@ func Cobra() *cobra.Command {
 // Command contains the data and logic needed to run the `edgecluster` command.
 type Command struct {
 	flags struct {
-		wait time.Duration
+		config string
+		wait   time.Duration
 	}
 	logger    logr.Logger
 	env       map[string]string
@@ -111,22 +119,9 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	}
 
 	// Load the configuration:
-	file, ok := c.env["EDGECLUSTERS_FILE"]
-	if !ok {
-		return fmt.Errorf(
-			"failed to load configuration because environment variable " +
-				"'EDGECLUSTERS_FILE' isn't defined",
-		)
-	}
-	c.config, err = internal.NewConfigLoader().
-		SetLogger(c.logger).
-		SetSource(file).
-		Load()
+	err = c.loadConfiguration()
 	if err != nil {
-		return fmt.Errorf(
-			"failed to load configuration from file '%s': %v",
-			file, err,
-		)
+		return err
 	}
 
 	// Create the client for the API:
@@ -201,6 +196,52 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			}
 		}
 	}
+	return nil
+}
+
+func (c *Command) loadConfiguration() error {
+	// Get the name of the configuration file:
+	file := c.flags.config
+	if file == "" {
+		var ok bool
+		file, ok = c.env["EDGECLUSTERS_FILE"]
+		if !ok {
+			fmt.Fprintf(
+				c.tool.Out(),
+				"Can't load configuration because the '--config' flag is "+
+					"empty and the 'EDGECLUSTERS_FILE' environment "+
+					"variable isn't set",
+			)
+			return internal.ExitError(1)
+		}
+	}
+
+	// Check that the file exists. Note that this is also checked later by the loader, but this
+	// way we can generate a nicer error message in most cases.
+	_, err := os.Stat(file)
+	if os.IsNotExist(err) {
+		fmt.Fprintf(
+			c.tool.Out(),
+			"Configuration file '%s' doesn't exist\n",
+			file,
+		)
+		return internal.ExitError(1)
+	}
+
+	// Load the configuration:
+	c.config, err = internal.NewConfigLoader().
+		SetLogger(c.logger).
+		SetSource(file).
+		Load()
+	if err != nil {
+		fmt.Fprintf(
+			c.tool.Out(),
+			"Failed to load configuration file '%s': %v\n",
+			file, err,
+		)
+		return internal.ExitError(1)
+	}
+
 	return nil
 }
 

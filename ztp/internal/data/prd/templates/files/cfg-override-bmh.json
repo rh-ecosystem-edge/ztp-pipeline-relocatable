@@ -1,0 +1,53 @@
+{
+  "ignition": {
+    "version": "3.2.0"
+  },
+  "systemd": {
+    "units": [
+      {
+        "name": "csr-approver.service",
+        "enabled": true,
+        "contents": {{ execute "files/csr-approver.service" . | json }}
+      },
+      {
+        "name": "change-def-route.service",
+        "enabled": true,
+        "contents": {{ execute "files/change-def-route.service" . | json }}
+      },
+      {
+        "name": "crio-wipe.service",
+        "mask": true
+      }
+    ]
+  },
+  "storage": {
+    "files": [
+      {
+        "path": "/opt/bin/csr-approver.sh",
+        "mode": 492,
+        "append": [
+          {
+            "source": "data:text/plain;base64,{{ execute "files/csr_autoapprover.sh" . | base64 }}"
+          }
+        ]
+      },
+      {
+        "path": "/opt/bin/change_def_route.sh",
+        "mode": 492,
+        "append": [
+          {
+            "source": "data:text/plain;base64,{{ execute "files/change_def_route.sh" . | base64 }}"
+          }
+        ]
+      },
+      {
+        "path": "/var/lib/ovnk/iface_default_hint",
+        "mode": 492,
+        "override": true,
+        "contents": {
+          "source": "data:text/plain;base64,{{ execute "files/iface_default_hint" . | base64 }}"
+        }
+      }
+    ]
+  }
+}

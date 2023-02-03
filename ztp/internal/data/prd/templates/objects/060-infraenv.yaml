@@ -12,5 +12,5 @@ spec:
  nmStateConfigLabelSelector:
    matchLabels:
      nmstate_config_cluster_name: {{ .Cluster.Name }}
- ignitionConfigOverride: '${JSON_STRING_CFG_OVERRIDE_INFRAENV}'
+ ignitionConfigOverride: {{ execute "files/cfg-override-infraenv.json" . | json }}
  sshAuthorizedKey: {{ .Cluster.SSH.PublicKey | printf "%s" }}
