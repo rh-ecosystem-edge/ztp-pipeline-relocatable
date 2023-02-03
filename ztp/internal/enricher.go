@@ -29,7 +29,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
@@ -219,11 +218,7 @@ func (c *Enricher) setDNSDomain(ctx context.Context, cluster *models.Cluster) er
 
 func (c *Enricher) getDNSDomain(ctx context.Context) (result string, err error) {
 	object := &unstructured.Unstructured{}
-	object.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "operator.openshift.io",
-		Version: "v1",
-		Kind:    "IngressController",
-	})
+	object.SetGroupVersionKind(IngressControllerGVK)
 	key := clnt.ObjectKey{
 		Namespace: "openshift-ingress-operator",
 		Name:      "default",

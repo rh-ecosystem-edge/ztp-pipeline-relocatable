@@ -15,6 +15,7 @@ License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -25,6 +26,9 @@ import (
 )
 
 func main() {
+	// Create a context:
+	ctx := context.Background()
+
 	// Create the tool:
 	tool, err := internal.NewTool().
 		SetEnv(os.Environ()).
@@ -42,9 +46,14 @@ func main() {
 	}
 
 	// Run the tool:
-	err = tool.Run()
+	err = tool.Run(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		os.Exit(1)
+		exitErr, ok := err.(internal.ExitError)
+		if ok {
+			os.Exit(exitErr.Code())
+		} else {
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 }

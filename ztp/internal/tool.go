@@ -19,24 +19,23 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 	"runtime/debug"
 	"strings"
 
 	"github.com/go-logr/logr"
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
 // ToolBuilder contains the data and logic needed to create an instance of the command line
 // tool. Don't create instances of this directly, use the NewTool function instead.
 type ToolBuilder struct {
 	logger logr.Logger
-	cmds   []func() *cobra.Command
+	sub    []func() *cobra.Command
 	envs   []any
 	args   []string
 	in     io.Reader
@@ -47,13 +46,16 @@ type ToolBuilder struct {
 // Tool is an instance of the command line tool. Don't create instances of this directly, use the
 // NewTool function instead.
 type Tool struct {
-	logger logr.Logger
-	env    map[string]string
-	args   []string
-	in     io.Reader
-	out    io.Writer
-	err    io.Writer
-	main   *cobra.Command
+	logger      logr.Logger
+	loggerV     int
+	loggerOwned bool
+	cmd         *cobra.Command
+	sub         []func() *cobra.Command
+	env         map[string]string
+	args        []string
+	in          io.Reader
+	out         io.Writer
+	err         io.Writer
 }
 
 // NewTool creates a builder that can then be used to configure and create an instance of the
@@ -72,13 +74,13 @@ func (b *ToolBuilder) SetLogger(value logr.Logger) *ToolBuilder {
 
 // AddCommand adds a sub-command.
 func (b *ToolBuilder) AddCommand(value func() *cobra.Command) *ToolBuilder {
-	b.cmds = append(b.cmds, value)
+	b.sub = append(b.sub, value)
 	return b
 }
 
 // AddCommands adds a list of sub-commands.
 func (b *ToolBuilder) AddCommands(values ...func() *cobra.Command) *ToolBuilder {
-	b.cmds = append(b.cmds, values...)
+	b.sub = append(b.sub, values...)
 	return b
 }
 
@@ -154,30 +156,27 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 		}
 	}
 
-	// Create the command:
-	main, err := b.createCommand()
+	// Create the environment variables:
+	env, err := b.createEnv()
 	if err != nil {
 		return
 	}
 
-	// Parse the command line, but without executing the command, as we want to create the
-	// logger before that:
-	err = main.ParseFlags(b.args[1:])
-	if err != nil {
-		return
+	// Create and populate the object:
+	result = &Tool{
+		logger: b.logger,
+		sub:    slices.Clone(b.sub),
+		env:    env,
+		args:   slices.Clone(b.args),
+		in:     b.in,
+		out:    b.out,
+		err:    b.err,
 	}
+	return
+}
 
-	// Create the logger:
-	logger := b.logger
-	if logger.GetSink() == nil {
-		logger, err = b.createLogger(main.PersistentFlags())
-		if err != nil {
-			return
-		}
-	}
-
-	// Parse the environment variables:
-	env := map[string]string{}
+func (b *ToolBuilder) createEnv() (result map[string]string, err error) {
+	result = map[string]string{}
 	for _, data := range b.envs {
 		switch typed := data.(type) {
 		case []string:
@@ -191,88 +190,40 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 					name = item
 					value = ""
 				}
-				env[name] = value
+				result[name] = value
 			}
 		case map[string]string:
-			env = maps.Clone(typed)
+			result = maps.Clone(typed)
 		}
 	}
-
-	// Create and populate the object:
-	result = &Tool{
-		logger: logger,
-		env:    env,
-		args:   slices.Clone(b.args),
-		in:     b.in,
-		out:    b.out,
-		err:    b.err,
-		main:   main,
-	}
-	return
-}
-
-func (b *ToolBuilder) createLogger(flags *pflag.FlagSet) (result logr.Logger, err error) {
-	// Get the values of the flags:
-	var v int
-	v, err = flags.GetInt("v")
-	if err != nil {
-		return
-	}
-
-	// Create the basic logger:
-	result, err = logging.NewLogger().SetV(v).Build()
-	if err != nil {
-		return
-	}
-
-	// Add the the PID so that it will be easy to identify the process when there are multiple
-	// processes writing to the same log file:
-	result = result.WithValues("pid", os.Getpid())
-	return
-}
-
-func (b *ToolBuilder) createCommand() (result *cobra.Command, err error) {
-	// Create the main command:
-	result = &cobra.Command{
-		Use:          "ztp",
-		Long:         "Zero touch provisioning command line tool",
-		SilenceUsage: true,
-	}
-
-	// Add flags that apply to all the commands:
-	flags := result.PersistentFlags()
-	flags.IntP(
-		"v",
-		"v",
-		0,
-		"Log verbosity level.",
-	)
-
-	// Register sub-commands:
-	for _, cmd := range b.cmds {
-		result.AddCommand(cmd())
-	}
-
 	return
 }
 
 // Run rus the tool.
-func (t *Tool) Run() error {
-	// Create a context containing the tool and the logger:
-	ctx := context.Background()
-	ctx = ToolIntoContext(ctx, t)
-	ctx = LoggerIntoContext(ctx, t.logger)
+func (t *Tool) Run(ctx context.Context) error {
+	// Create the main command:
+	err := t.createCommand()
+	if err != nil {
+		return err
+	}
 
-	// Write build information:
-	t.writeBuildInfo()
+	// Create a default logger that we can use while we haven't yet parsed the command line
+	// flags that contain the logging configuration.
+	if t.logger.GetSink() == nil {
+		t.logger, err = t.createDefaultLogger()
+		if err != nil {
+			return err
+		}
+		t.loggerOwned = true
+	}
 
 	// Execute the main command:
 	t.logger.V(1).Info(
 		"Running command",
 		"args", t.args,
 	)
-	t.main.SetArgs(t.args[1:])
-	err := t.main.ExecuteContext(ctx)
+	t.cmd.SetArgs(t.args[1:])
+	err = t.cmd.ExecuteContext(ctx)
 	if err != nil {
 		t.logger.Error(
 			err,
@@ -281,6 +232,70 @@ func (t *Tool) Run() error {
 		)
 	}
 	return err
+}
+
+func (t *Tool) run(cmd *cobra.Command, args []string) error {
+	var err error
+
+	// Replace the default logger with one configured according to the command line options:
+	if t.loggerOwned {
+		t.logger, err = t.createConfiguredLogger()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Populate the context:
+	ctx := cmd.Context()
+	ctx = ToolIntoContext(ctx, t)
+	ctx = LoggerIntoContext(ctx, t.logger)
+	cmd.SetContext(ctx)
+
+	// Write build information:
+	t.writeBuildInfo()
+
+	return nil
+}
+
+func (t *Tool) createCommand() error {
+	// Create the main command:
+	t.cmd = &cobra.Command{
+		Use:               "ztp",
+		Long:              "Zero touch provisioning command line tool",
+		PersistentPreRunE: t.run,
+		SilenceErrors:     true,
+		SilenceUsage:      true,
+	}
+
+	// Add flags that apply to all the commands:
+	flags := t.cmd.PersistentFlags()
+	flags.IntVarP(
+		&t.loggerV,
+		"v",
+		"v",
+		0,
+		"Log verbosity level.",
+	)
+
+	// Add sub-commands:
+	for _, sub := range t.sub {
+		t.cmd.AddCommand(sub())
+	}
+
+	return nil
+}
+
+func (t *Tool) createDefaultLogger() (result logr.Logger, err error) {
+	result, err = logging.NewLogger().
+		Build()
+	return
+}
+
+func (t *Tool) createConfiguredLogger() (result logr.Logger, err error) {
+	result, err = logging.NewLogger().
+		SetV(t.loggerV).
+		Build()
+	return
 }
 
 func (t *Tool) writeBuildInfo() {
