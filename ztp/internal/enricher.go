@@ -113,15 +113,15 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 
 // Enrich completes the description of the given cluster adding the information that will be later
 // required to create it.
-func (c *Enricher) Enrich(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) Enrich(ctx context.Context, cluster *models.Cluster) error {
 	setters := []func(context.Context, *models.Cluster) error{
-		c.setSNO,
-		c.setPullSecret,
-		c.setSSHKeys,
-		c.setDNSDomain,
-		c.setImageSet,
-		c.setVIPs,
-		c.setNetworks,
+		e.setSNO,
+		e.setPullSecret,
+		e.setSSHKeys,
+		e.setDNSDomain,
+		e.setImageSet,
+		e.setVIPs,
+		e.setNetworks,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, cluster)
@@ -133,7 +133,7 @@ func (c *Enricher) Enrich(ctx context.Context, cluster *models.Cluster) error {
 	return nil
 }
 
-func (c *Enricher) setSNO(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setSNO(ctx context.Context, cluster *models.Cluster) error {
 	count := 0
 	for _, node := range cluster.Nodes {
 		if node.Kind == models.NodeKindControlPlane {
@@ -144,11 +144,11 @@ func (c *Enricher) setSNO(ctx context.Context, cluster *models.Cluster) error {
 	return nil
 }
 
-func (c *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) error {
 	if cluster.PullSecret != nil {
 		return nil
 	}
-	file, ok := c.env["PULL_SECRET"]
+	file, ok := e.env["PULL_SECRET"]
 	if !ok {
 		return fmt.Errorf("environment variable 'PULL_SECRET' isn't set")
 	}
@@ -159,7 +159,7 @@ func (c *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) e
 			file, err,
 		)
 	}
-	c.logger.V(1).Info(
+	e.logger.V(1).Info(
 		"Loaded pull secret",
 		"file", file,
 		"secret", string(data),
@@ -168,12 +168,12 @@ func (c *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) e
 	return nil
 }
 
-func (c *Enricher) setSSHKeys(ctx context.Context, cluster *models.Cluster) error {
-	publicKey, privateKey, err := c.generateSSHKeys()
+func (e *Enricher) setSSHKeys(ctx context.Context, cluster *models.Cluster) error {
+	publicKey, privateKey, err := e.generateSSHKeys()
 	if err != nil {
 		return fmt.Errorf("failed to generate RSA key pair: %v", err)
 	}
-	c.logger.V(1).Info(
+	e.logger.V(1).Info(
 		"Generated SSH keys",
 		"public", string(publicKey),
 		"private", string(privateKey),
@@ -183,7 +183,7 @@ func (c *Enricher) setSSHKeys(ctx context.Context, cluster *models.Cluster) erro
 	return nil
 }
 
-func (c *Enricher) generateSSHKeys() (publicKey, privateKey []byte, err error) {
+func (e *Enricher) generateSSHKeys() (publicKey, privateKey []byte, err error) {
 	rsaKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return
@@ -200,15 +200,15 @@ func (c *Enricher) generateSSHKeys() (publicKey, privateKey []byte, err error) {
 	return
 }
 
-func (c *Enricher) setDNSDomain(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setDNSDomain(ctx context.Context, cluster *models.Cluster) error {
 	if cluster.DNS.Domain != "" {
 		return nil
 	}
-	domain, err := c.getDNSDomain(ctx)
+	domain, err := e.getDNSDomain(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get DNS domain: %v", err)
 	}
-	c.logger.V(1).Info(
+	e.logger.V(1).Info(
 		"DNS domain name",
 		"domain", domain,
 	)
@@ -216,30 +216,30 @@ func (c *Enricher) setDNSDomain(ctx context.Context, cluster *models.Cluster) er
 	return nil
 }
 
-func (c *Enricher) getDNSDomain(ctx context.Context) (result string, err error) {
+func (e *Enricher) getDNSDomain(ctx context.Context) (result string, err error) {
 	object := &unstructured.Unstructured{}
 	object.SetGroupVersionKind(IngressControllerGVK)
 	key := clnt.ObjectKey{
 		Namespace: "openshift-ingress-operator",
 		Name:      "default",
 	}
-	err = c.client.Get(ctx, key, object)
+	err = e.client.Get(ctx, key, object)
 	if err != nil {
 		return
 	}
-	err = c.jq.Query(`.status.domain`, object, &result)
+	err = e.jq.Query(`.status.domain`, object, &result)
 	return
 }
 
-func (c *Enricher) setImageSet(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setImageSet(ctx context.Context, cluster *models.Cluster) error {
 	if cluster.ImageSet != "" {
 		return nil
 	}
-	value, ok := c.env["CLUSTERIMAGESET"]
+	value, ok := e.env["CLUSTERIMAGESET"]
 	if !ok {
 		return fmt.Errorf("environment variable 'CLUSTERIMAGESET' isn't set")
 	}
-	c.logger.V(1).Info(
+	e.logger.V(1).Info(
 		"Loaded cluster image set",
 		"value", value,
 	)
@@ -247,7 +247,7 @@ func (c *Enricher) setImageSet(ctx context.Context, cluster *models.Cluster) err
 	return nil
 }
 
-func (c *Enricher) setVIPs(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setVIPs(ctx context.Context, cluster *models.Cluster) error {
 	if !cluster.SNO {
 		return nil
 	}
@@ -256,7 +256,7 @@ func (c *Enricher) setVIPs(ctx context.Context, cluster *models.Cluster) error {
 	return nil
 }
 
-func (c *Enricher) setNetworks(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setNetworks(ctx context.Context, cluster *models.Cluster) error {
 	_, clusterNetworkCIDR, err := net.ParseCIDR(hardcodedClusterNetworkCIDR)
 	if err != nil {
 		return fmt.Errorf("failed to parse cluster network CIDR: %v", err)

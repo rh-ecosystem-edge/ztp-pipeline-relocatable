@@ -6,10 +6,11 @@ metadata:
 spec:
   clusterDeploymentRef:
     name: {{ .Cluster.Name }}
+  manifestsConfigMapRef:
+    name: {{ .Cluster.Name }}-manifests-override
   imageSetRef:
     name: {{ .Cluster.ImageSet }}
   fips: true
-  sshPublicKey: {{ .Cluster.SSH.PublicKey | printf "%s" }}
 
   {{ if .Cluster.TPM }}
   diskEncryption:
@@ -17,29 +18,11 @@ spec:
     enableOn: all
   {{ end}}
 
-  {{ if .Cluster.SNO }}
-  manifestsConfigMapRef:
-    name: {{ .Cluster.Name }}-manifests-override
-  networking:
-    clusterNetwork:
-    {{ range .Cluster.ClusterNetworks }}
-    - cidr: {{ .CIDR }}
-      hostPrefix: {{ .HostPrefix }}
-    {{ end}}
-    machineNetwork:
-    {{ range .Cluster.MachineNetworks }}
-    - cidr: {{ .CIDR }}
-    {{ end }}
-    serviceNetwork:
-    {{ range .Cluster.ServiceNetworks }}
-    - {{ .CIDR }}
-    {{ end }}
-  provisionRequirements:
-    controlPlaneAgents: 1
-  {{ else }}
+  {{ if not .Cluster.SNO }}
   apiVIP: {{ .Cluster.API.VIP }}
   ingressVIP: {{ .Cluster.Ingress.VIP }}
   networking:
+    networkType: OVNKubernetes
     clusterNetwork:
     {{ range .Cluster.ClusterNetworks }}
     - cidr: {{ .CIDR }}
@@ -51,4 +34,23 @@ spec:
     {{ end }}
   provisionRequirements:
     controlPlaneAgents: 3
+  {{ else }}
+  networking:
+    clusterNetwork:
+    {{ range .Cluster.ClusterNetworks }}
+    - cidr: {{ .CIDR }}
+      hostPrefix: {{ .HostPrefix }}
+    {{ end}}
+    serviceNetwork:
+    {{ range .Cluster.ServiceNetworks }}
+    - {{ .CIDR }}
+    {{ end }}
+    machineNetwork:
+    {{ range .Cluster.MachineNetworks }}
+    - cidr: {{ .CIDR }}
+    {{ end }}
+  provisionRequirements:
+    controlPlaneAgents: 1
   {{ end }}
+
+  sshPublicKey: {{ .Cluster.SSH.PublicKey | printf "%s" }}

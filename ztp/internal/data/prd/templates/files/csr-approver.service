@@ -1,0 +1,11 @@
+[Unit]
+Description=CSR Approver
+After=network.target
+
+[Service]
+User=root
+Type=oneshot
+ExecStart=/bin/bash -c /opt/bin/csr-approver.sh
+
+[Install]
+WantedBy=multi-user.target

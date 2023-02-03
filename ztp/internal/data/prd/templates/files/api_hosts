@@ -1,0 +1,1 @@
+192.168.7.243 api.{{ .Cluster.Name }}.{{ .Cluster.DNS.Domain }}
