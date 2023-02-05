@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package cmd
+package cleanup
 
 import (
 	"context"
