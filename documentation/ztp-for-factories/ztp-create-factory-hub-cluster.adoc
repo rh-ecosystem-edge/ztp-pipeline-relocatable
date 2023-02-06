@@ -64,8 +64,7 @@ When deploying a single-node OpenShift cluster, the `api.<edge-cluster-name>.<ba
 
 * External DHCP with enough free IPs on the factory network to provide access to the edge cluster by using the external network interface.
 
-* Every edge cluster needs at least 6 IPs from this external network (without the broadcast and network IP).
+* Every edge cluster needs at least 5 IPs (in case of SNO at least 3 IPs) on this external network (excluding the broadcast and network IP).
 ** 1 per node.
-** 1 for API.
-** 1 for API-INT.
+** 1 for API. Same IP is used for API-INT.
 ** 1 for the Ingress entry (`*.apps.<edge-cluster-name>.<baseDomain>`).
