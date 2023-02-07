@@ -71,7 +71,6 @@ type Command struct {
 	config    models.Config
 	client    clnt.WithWatch
 	templates *templating.Engine
-	enricher  *internal.Enricher
 	renderer  *internal.Renderer
 }
 
@@ -136,27 +135,42 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		)
 	}
 
-	// Create the enricher and the renderer:
-	c.enricher, err = internal.NewEnricher().
+	// Enrich the configuration:
+	enricher, err := internal.NewEnricher().
 		SetLogger(c.logger).
 		SetEnv(c.env).
 		SetClient(c.client).
 		Build()
 	if err != nil {
-		return fmt.Errorf(
-			"failed to create enricher: %v",
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create enricher: %v",
 			err,
 		)
+		return internal.ExitError(1)
 	}
+	err = enricher.Enrich(ctx, &c.config)
+	if err != nil {
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to enrich configuration: %v",
+			err,
+		)
+		return internal.ExitError(1)
+	}
+
+	// Create the renderer:
 	c.renderer, err = internal.NewRenderer().
 		SetLogger(c.logger).
 		SetTemplates(c.templates, templates...).
 		Build()
 	if err != nil {
-		return fmt.Errorf(
-			"failed to create renderer: %v",
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create renderer: %v",
 			err,
 		)
+		return internal.ExitError(1)
 	}
 
 	// Deploy the clusters:
@@ -247,14 +261,6 @@ func (c *Command) loadConfiguration() error {
 
 func (c *Command) deploy(ctx context.Context, cluster *models.Cluster) error {
 	// Render the objects:
-	err := c.enricher.Enrich(ctx, cluster)
-	if err != nil {
-		return err
-	}
-	c.logger.V(2).Info(
-		"Enriched cluster",
-		"cluster", cluster,
-	)
 	objects, err := c.renderer.Render(ctx, map[string]any{
 		"Cluster": cluster,
 	})
