@@ -25,7 +25,7 @@ import (
 	versioncmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/version"
 )
 
-var _ = Describe("'version' command", func() {
+var _ = Describe("Version command", func() {
 	var ctx context.Context
 
 	BeforeEach(func() {
