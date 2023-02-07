@@ -18,18 +18,16 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/labels"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/templating"
 )
 
 // Cobra creates and returns the `edgecluster` command.
@@ -64,14 +62,13 @@ type Command struct {
 		config string
 		wait   time.Duration
 	}
-	logger    logr.Logger
-	env       map[string]string
-	jq        *internal.JQ
-	tool      *internal.Tool
-	config    models.Config
-	client    clnt.WithWatch
-	templates *templating.Engine
-	renderer  *internal.Renderer
+	logger  logr.Logger
+	env     map[string]string
+	jq      *internal.JQ
+	tool    *internal.Tool
+	config  models.Config
+	client  clnt.WithWatch
+	applier *internal.Applier
 }
 
 // NewCommand creates a new runner that knows how to execute the `edgecluster` command.
@@ -98,23 +95,12 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		SetLogger(c.logger).
 		Build()
 	if err != nil {
-		return fmt.Errorf("failed to create JQ object: %v", err)
-	}
-
-	// Load the templates:
-	c.templates, err = templating.NewEngine().
-		SetLogger(c.logger).
-		SetFS(internal.DataFS).
-		SetDir("data/prd/templates").
-		Build()
-	if err != nil {
-		return fmt.Errorf("failed to parse the templates: %v", err)
-	}
-	templates := []string{}
-	for _, name := range c.templates.Names() {
-		if strings.HasPrefix(name, "objects/") && strings.HasSuffix(name, ".yaml") {
-			templates = append(templates, name)
-		}
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create JQ object: %v\n",
+			err,
+		)
+		return internal.ExitError(1)
 	}
 
 	// Load the configuration:
@@ -129,10 +115,12 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		SetEnv(c.env).
 		Build()
 	if err != nil {
-		return fmt.Errorf(
-			"failed to create API client: %v",
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create client: %v\n",
 			err,
 		)
+		return internal.ExitError(1)
 	}
 
 	// Enrich the configuration:
@@ -144,7 +132,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	if err != nil {
 		fmt.Fprintf(
 			c.tool.Err(),
-			"Failed to create enricher: %v",
+			"Failed to create enricher: %v\n",
 			err,
 		)
 		return internal.ExitError(1)
@@ -153,21 +141,25 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	if err != nil {
 		fmt.Fprintf(
 			c.tool.Err(),
-			"Failed to enrich configuration: %v",
+			"Failed to enrich configuration: %v\n",
 			err,
 		)
 		return internal.ExitError(1)
 	}
 
-	// Create the renderer:
-	c.renderer, err = internal.NewRenderer().
+	// Create the applier:
+	c.applier, err = internal.NewApplier().
 		SetLogger(c.logger).
-		SetTemplates(c.templates, templates...).
+		SetClient(c.client).
+		SetFS(internal.DataFS).
+		SetRoot("data/cluster").
+		SetDir("objects").
+		AddLabel(labels.ZTPFW, "").
 		Build()
 	if err != nil {
 		fmt.Fprintf(
 			c.tool.Err(),
-			"Failed to create renderer: %v",
+			"Failed to create applier: %v\n",
 			err,
 		)
 		return internal.ExitError(1)
@@ -178,10 +170,12 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		fmt.Fprintf(c.tool.Out(), "Deploying cluster '%s'\n", cluster.Name)
 		err = c.deploy(ctx, &cluster)
 		if err != nil {
-			return fmt.Errorf(
-				"failed to deploy cluster '%s': %v",
+			fmt.Fprintf(
+				c.tool.Err(),
+				"Failed to deploy cluster '%s': %v\n",
 				cluster.Name, err,
 			)
+			return internal.ExitError(1)
 		}
 	}
 
@@ -199,7 +193,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			err = c.wait(ctx, &cluster)
 			if os.IsTimeout(err) {
 				fmt.Fprintf(
-					c.tool.Out(),
+					c.tool.Err(),
 					"Clusters aren't ready after waiting for %s\n",
 					c.flags.wait,
 				)
@@ -260,44 +254,9 @@ func (c *Command) loadConfiguration() error {
 }
 
 func (c *Command) deploy(ctx context.Context, cluster *models.Cluster) error {
-	// Render the objects:
-	objects, err := c.renderer.Render(ctx, map[string]any{
+	return c.applier.Apply(ctx, map[string]any{
 		"Cluster": cluster,
 	})
-	if err != nil {
-		return err
-	}
-	c.logger.V(2).Info(
-		"Rendered objects",
-		"objects", objects,
-	)
-
-	// Create the objects:
-	for _, object := range objects {
-		err = c.apply(ctx, object)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (c *Command) apply(ctx context.Context, object clnt.Object) error {
-	// Add the label that identifies the object as created by us:
-	labels := object.GetLabels()
-	if labels == nil {
-		labels = map[string]string{}
-	}
-	labels["ztp"] = "true"
-	object.SetLabels(labels)
-
-	// Create the object:
-	err := c.client.Create(ctx, object)
-	if errors.IsAlreadyExists(err) {
-		return nil
-	}
-	return err
 }
 
 func (c *Command) wait(ctx context.Context, cluster *models.Cluster) error {

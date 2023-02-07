@@ -68,6 +68,13 @@ var (
 	}
 	ManagedClusterListGVK = listGVK(ManagedClusterGVK)
 
+	NamespaceGVK = schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Namespace",
+	}
+	NamespaceListGVK = listGVK(NamespaceGVK)
+
 	NMStateConfigGVK = schema.GroupVersionKind{
 		Group:   "agent-install.openshift.io",
 		Version: "v1beta1",
