@@ -26,6 +26,7 @@ import (
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/labels"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
@@ -101,7 +102,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			"Failed to create JQ object: %v\n",
 			err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	// Load the configuration:
@@ -121,7 +122,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			"Failed to create client: %v\n",
 			err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	// Enrich the configuration:
@@ -136,7 +137,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			"Failed to create enricher: %v\n",
 			err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 	err = enricher.Enrich(ctx, &c.config)
 	if err != nil {
@@ -145,7 +146,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			"Failed to enrich configuration: %v\n",
 			err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	// Create the applier:
@@ -163,7 +164,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			"Failed to create applier: %v\n",
 			err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	// Deploy the clusters:
@@ -176,7 +177,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 				"Failed to deploy cluster '%s': %v\n",
 				cluster.Name, err,
 			)
-			return internal.ExitError(1)
+			return exit.Error(1)
 		}
 	}
 
@@ -198,7 +199,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 					"Clusters aren't ready after waiting for %s\n",
 					c.flags.wait,
 				)
-				return internal.ExitError(1)
+				return exit.Error(1)
 			}
 			if err != nil {
 				return err
@@ -221,7 +222,7 @@ func (c *Command) loadConfiguration() error {
 					"empty and the 'EDGECLUSTERS_FILE' environment "+
 					"variable isn't set",
 			)
-			return internal.ExitError(1)
+			return exit.Error(1)
 		}
 	}
 
@@ -234,7 +235,7 @@ func (c *Command) loadConfiguration() error {
 			"Configuration file '%s' doesn't exist\n",
 			file,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	// Load the configuration:
@@ -248,7 +249,7 @@ func (c *Command) loadConfiguration() error {
 			"Failed to load configuration file '%s': %v\n",
 			file, err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	return nil

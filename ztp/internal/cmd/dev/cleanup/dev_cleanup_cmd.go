@@ -29,6 +29,7 @@ import (
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/labels"
 )
 
@@ -79,7 +80,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 			"Failed to create JQ object: %v\n",
 			err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	// Create the client for the API:
@@ -93,7 +94,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 			"Failed to create client: %v\n",
 			err,
 		)
-		return internal.ExitError(1)
+		return exit.Error(1)
 	}
 
 	// Delete the namespaces:
