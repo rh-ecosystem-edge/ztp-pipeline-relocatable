@@ -42,7 +42,7 @@ If the cluster is greater than 3 nodes, the recommendation is to use OpenShift D
 [discrete]
 === Networking prerequisites
 
-The hub cluster requires internet connectivity and should be installed on a private network with customer configured DNS and DHCP services. Configure DNS for the API on the ingress of the hub to reach some routes on the hub cluster. Configure enough DNS entries for the number of edge clusters you intend to deploy in parallel.
+The hub cluster requires internet connectivity and should be installed on a private network with customer configured DNS and DHCP services. Configure DNS to properly resolve all the nodes, the api, api-int and ingress of the hub cluster. In addition, configure DNS entries for all the edge clusters you intend to deploy.
 
 You need enough DHCP addresses to host the number of edge clusters you intend to deploy. Each {product-title} node in the cluster must have access to an NTP server. {product-title} nodes use NTP to synchronize their clocks. For example, cluster nodes use SSL certificates that require validation, which might fail if the date and time between the nodes are not in sync.
 
