@@ -16,23 +16,24 @@ package internal
 
 import (
 	"context"
+	"io/fs"
 	"os"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/templating"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
 )
 
-var _ = Describe("Renderer", func() {
+var _ = Describe("Applier", func() {
 	var (
 		ctx    context.Context
 		logger logr.Logger
+		client clnt.WithWatch
 	)
 
 	BeforeEach(func() {
@@ -48,61 +49,59 @@ var _ = Describe("Renderer", func() {
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
+		// Get the Kubernetes API client:
+		client, err = NewClient().
+			SetLogger(logger).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Describe("Creation", func() {
-		var engine *templating.Engine
+		var fsys fs.FS
 
 		BeforeEach(func() {
-			var err error
-
-			// Create the templates filesystem:
-			tmp, fsys := TmpFS()
+			var tmp string
+			tmp, fsys = TmpFS()
 			DeferCleanup(func() {
 				err := os.RemoveAll(tmp)
 				Expect(err).ToNot(HaveOccurred())
 			})
-
-			// Create the templating engine:
-			engine, err = templating.NewEngine().
-				SetLogger(logger).
-				SetFS(fsys).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Can't be created without a logger", func() {
-			renderer, err := NewRenderer().
-				SetTemplates(engine, "a.txt").
+			applier, err := NewApplier().
+				SetFS(fsys).
+				SetClient(client).
 				Build()
 			Expect(err).To(HaveOccurred())
 			msg := err.Error()
 			Expect(msg).To(ContainSubstring("logger"))
 			Expect(msg).To(ContainSubstring("mandatory"))
-			Expect(renderer).To(BeNil())
+			Expect(applier).To(BeNil())
 		})
 
-		It("Can't be created without a template engine", func() {
-			renderer, err := NewRenderer().
+		It("Can't be created without a filesystem", func() {
+			applier, err := NewApplier().
 				SetLogger(logger).
+				SetClient(client).
 				Build()
 			Expect(err).To(HaveOccurred())
 			msg := err.Error()
-			Expect(msg).To(ContainSubstring("engine"))
+			Expect(msg).To(ContainSubstring("filesystem"))
 			Expect(msg).To(ContainSubstring("mandatory"))
-			Expect(renderer).To(BeNil())
+			Expect(applier).To(BeNil())
 		})
 
-		It("Can't be created without at least one template", func() {
-			renderer, err := NewRenderer().
+		It("Can't be created without a client", func() {
+			applier, err := NewApplier().
 				SetLogger(logger).
-				SetTemplates(engine).
+				SetFS(fsys).
 				Build()
 			Expect(err).To(HaveOccurred())
 			msg := err.Error()
-			Expect(msg).To(ContainSubstring("names"))
+			Expect(msg).To(ContainSubstring("client"))
 			Expect(msg).To(ContainSubstring("mandatory"))
-			Expect(renderer).To(BeNil())
+			Expect(applier).To(BeNil())
 		})
 	})
 
@@ -110,7 +109,7 @@ var _ = Describe("Renderer", func() {
 		It("Renders a single object", func() {
 			// Create the templates filesystem:
 			tmp, fsys := TmpFS(
-				"my-object.yaml",
+				"objects/my-object.yaml",
 				Dedent(`
 					apiVersion: v1
 					kind: Namespace
@@ -123,22 +122,17 @@ var _ = Describe("Renderer", func() {
 				Expect(err).ToNot(HaveOccurred())
 			}()
 
-			// Create the templating engine:
-			engine, err := templating.NewEngine().
+			// Create the applier:
+			applier, err := NewApplier().
 				SetLogger(logger).
 				SetFS(fsys).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-
-			// Create the renderer:
-			renderer, err := NewRenderer().
-				SetLogger(logger).
-				SetTemplates(engine, "my-object.yaml").
+				SetDir("objects").
+				SetClient(client).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
 			// Create the objects:
-			objects, err := renderer.Render(ctx, nil)
+			objects, err := applier.Render(ctx, nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(objects).To(HaveLen(1))
 
@@ -156,7 +150,7 @@ var _ = Describe("Renderer", func() {
 		It("Renders multiple objects", func() {
 			// Create the templates filesystem:
 			tmp, fsys := TmpFS(
-				"my-objects.yaml",
+				"objects/my-objects.yaml",
 				Dedent(`
 					apiVersion: v1
 					kind: Namespace
@@ -189,22 +183,17 @@ var _ = Describe("Renderer", func() {
 				Expect(err).ToNot(HaveOccurred())
 			}()
 
-			// Create the templating engine:
-			engine, err := templating.NewEngine().
+			// Create the renderer:
+			applier, err := NewApplier().
 				SetLogger(logger).
 				SetFS(fsys).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-
-			// Create the renderer:
-			renderer, err := NewRenderer().
-				SetLogger(logger).
-				SetTemplates(engine, "my-objects.yaml").
+				SetDir("objects").
+				SetClient(client).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
 			// Create the objects:
-			objects, err := renderer.Render(ctx, nil)
+			objects, err := applier.Render(ctx, nil)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(objects).To(HaveLen(3))
 
@@ -244,7 +233,7 @@ var _ = Describe("Renderer", func() {
 		It("Supports template constructs", func() {
 			// Create the templates filesystem:
 			tmp, fsys := TmpFS(
-				"my-object.yaml",
+				"objects/my-object.yaml",
 				Dedent(`
 					apiVersion: v1
 					kind: ConfigMap
@@ -255,9 +244,9 @@ var _ = Describe("Renderer", func() {
 					  my-string: "{{ .MyString }}"
 					  my-bytes: {{ .MyBytes | base64 }}
 					  my-int: {{ .MyInt | json }}
-					  my-ip: {{ execute "my-ip.txt" . }}
+					  my-ip: {{ execute "files/my-ip.txt" . }}
 				`),
-				"my-ip.txt",
+				"files/my-ip.txt",
 				`{{ .MyIP }}`,
 			)
 			defer func() {
@@ -265,22 +254,17 @@ var _ = Describe("Renderer", func() {
 				Expect(err).ToNot(HaveOccurred())
 			}()
 
-			// Create the templating engine:
-			engine, err := templating.NewEngine().
+			// Create the applier:
+			applier, err := NewApplier().
 				SetLogger(logger).
 				SetFS(fsys).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-
-			// Create the renderer:
-			renderer, err := NewRenderer().
-				SetLogger(logger).
-				SetTemplates(engine, "my-object.yaml").
+				SetDir("objects").
+				SetClient(client).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
 			// Create the objects:
-			objects, err := renderer.Render(ctx, map[string]any{
+			objects, err := applier.Render(ctx, map[string]any{
 				"MyString": "my-value",
 				"MyBytes":  []byte{1, 2, 3},
 				"MyInt":    42,
@@ -299,13 +283,10 @@ var _ = Describe("Renderer", func() {
 			}))
 			Expect(object.GetNamespace()).To(Equal("my-ns"))
 			Expect(object.GetName()).To(Equal("my-config"))
-			var content *unstructured.Unstructured
-			Expect(object).To(BeAssignableToTypeOf(content))
-			content = object.(*unstructured.Unstructured)
-			Expect(content.Object).To(HaveKey("data"))
+			Expect(object.Object).To(HaveKey("data"))
 			var data map[string]any
-			Expect(content.Object["data"]).To(BeAssignableToTypeOf(data))
-			data = content.Object["data"].(map[string]any)
+			Expect(object.Object["data"]).To(BeAssignableToTypeOf(data))
+			data = object.Object["data"].(map[string]any)
 			Expect(data).To(HaveKeyWithValue("my-string", "my-value"))
 			Expect(data).To(HaveKeyWithValue("my-bytes", "AQID"))
 			Expect(data).To(HaveKeyWithValue("my-int", 42))

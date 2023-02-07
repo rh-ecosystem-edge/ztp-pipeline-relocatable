@@ -25,11 +25,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/labels"
 )
 
 // Cobra creates and returns the `dev setup` command.
@@ -74,25 +74,26 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		SetLogger(c.logger).
 		Build()
 	if err != nil {
-		err = fmt.Errorf(
-			"failed to create JQ object: %v",
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create JQ object: %v\n",
 			err,
 		)
-		return
+		return internal.ExitError(1)
 	}
 
 	// Create the client for the API:
-	fmt.Fprintf(c.tool.Out(), "Creating API client\n")
 	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
 		SetEnv(c.env).
 		Build()
 	if err != nil {
-		err = fmt.Errorf(
-			"failed to create API client: %v",
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create client: %v\n",
 			err,
 		)
-		return
+		return internal.ExitError(1)
 	}
 
 	// Delete the namespaces:
@@ -117,7 +118,7 @@ func (c *Command) deleteCRDs(ctx context.Context) error {
 	// types:
 	list := &unstructured.UnstructuredList{}
 	list.SetGroupVersionKind(internal.CustomResourceDefinitionListGVK)
-	err := c.client.List(ctx, list, clnt.MatchingLabels{"ztp": "true"})
+	err := c.client.List(ctx, list, clnt.HasLabels{labels.ZTPFW})
 	if err != nil {
 		return err
 	}
@@ -175,14 +176,10 @@ func (c *Command) deleteObjects(ctx context.Context, crd *unstructured.Unstructu
 	}
 
 	// Find and delete all the objects of the given type that we created:
-	objectSelector, err := labels.Parse("ztp = true")
-	if err != nil {
-		return err
-	}
 	objectList := &unstructured.UnstructuredList{}
 	objectList.SetGroupVersionKind(objectListGVK)
-	err = c.client.List(ctx, objectList, &clnt.ListOptions{
-		LabelSelector: objectSelector,
+	err = c.client.List(ctx, objectList, clnt.MatchingLabels{
+		labels.ZTPFW: "true",
 	})
 	if err != nil {
 		return err
@@ -190,7 +187,10 @@ func (c *Command) deleteObjects(ctx context.Context, crd *unstructured.Unstructu
 
 	// Sort the objects by type so that the process will be predictable:
 	sort.Slice(objectList.Items, func(i, j int) bool {
-		return strings.Compare(objectList.Items[i].GetName(), objectList.Items[j].GetName()) < 0
+		return strings.Compare(
+			objectList.Items[i].GetName(),
+			objectList.Items[j].GetName(),
+		) < 0
 	})
 
 	// Delete the CRDs:
@@ -236,7 +236,7 @@ func (c *Command) deleteObject(ctx context.Context, object *unstructured.Unstruc
 func (c *Command) deleteNamespaces(ctx context.Context) error {
 	// Find and all the namespaces that we created:
 	nsList := &corev1.NamespaceList{}
-	err := c.client.List(ctx, nsList, clnt.MatchingLabels{"ztp": "true"})
+	err := c.client.List(ctx, nsList, clnt.HasLabels{labels.ZTPFW})
 	if err != nil {
 		return err
 	}
