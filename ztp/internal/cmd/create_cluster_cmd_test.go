@@ -30,12 +30,12 @@ import (
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
-	edgeclustercmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/edgecluster"
+	createcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/create"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
 )
 
-var _ = Describe("'edgecluster' command", func() {
+var _ = Describe("Create cluster command", func() {
 	var (
 		ctx    context.Context
 		logger logr.Logger
@@ -109,8 +109,8 @@ var _ = Describe("'edgecluster' command", func() {
 			// Run the command:
 			tool, err := internal.NewTool().
 				SetLogger(logger).
-				AddArgs("ztp", "edgecluster", "--wait=0").
-				AddCommand(edgeclustercmd.Cobra).
+				AddArgs("ztp", "create", "cluster", "--wait=0").
+				AddCommand(createcmd.Cobra).
 				SetEnv(env).
 				SetIn(&bytes.Buffer{}).
 				SetOut(GinkgoWriter).
@@ -261,8 +261,8 @@ var _ = Describe("'edgecluster' command", func() {
 			// Run the command again:
 			tool, err := internal.NewTool().
 				SetLogger(logger).
-				AddArgs("ztp", "edgecluster", "--wait=0").
-				AddCommand(edgeclustercmd.Cobra).
+				AddArgs("ztp", "create", "cluster", "--wait=0").
+				AddCommand(createcmd.Cobra).
 				SetEnv(env).
 				SetIn(&bytes.Buffer{}).
 				SetOut(GinkgoWriter).

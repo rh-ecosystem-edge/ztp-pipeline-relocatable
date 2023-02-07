@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package edgecluster
+package cluster
 
 import (
 	"context"
@@ -30,14 +30,15 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
 
-// Cobra creates and returns the `edgecluster` command.
+// Cobra creates and returns the `create cluster` command.
 func Cobra() *cobra.Command {
 	c := NewCommand()
 	result := &cobra.Command{
-		Use:   "edgecluster",
-		Short: "Creates an edge cluster",
-		Args:  cobra.NoArgs,
-		RunE:  c.Run,
+		Use:     "cluster",
+		Aliases: []string{"clusters"},
+		Short:   "Creates clusters",
+		Args:    cobra.NoArgs,
+		RunE:    c.Run,
 	}
 	flags := result.Flags()
 	flags.StringVar(
@@ -56,7 +57,7 @@ func Cobra() *cobra.Command {
 	return result
 }
 
-// Command contains the data and logic needed to run the `edgecluster` command.
+// Command contains the data and logic needed to run the `create cluster` command.
 type Command struct {
 	flags struct {
 		config string
@@ -71,12 +72,12 @@ type Command struct {
 	applier *internal.Applier
 }
 
-// NewCommand creates a new runner that knows how to execute the `edgecluster` command.
+// NewCommand creates a new runner that knows how to execute the `create cluster` command.
 func NewCommand() *Command {
 	return &Command{}
 }
 
-// Run runs the `edgecluster` command.
+// Run runs the `create cluster` command.
 func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	var err error
 
