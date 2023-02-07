@@ -47,7 +47,7 @@ xref:edgeclusters[edgeclusters]:
           - /dev/sdc
           - /dev/sde
           - /dev/sdd
-    xref:workername[worker0]:
+      xref:workername[worker0]:
         xref:nic_ext_dhcp[nic_ext_dhcp]: eno4
         xref:mac_ext_dhcp[mac_ext_dhcp]: "aa:ss:dd:ee:b0:19"
         xref:bmc_url[bmc_url]: "<url bmc>"
