@@ -23,6 +23,7 @@ import (
 	createcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/create"
 	devcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev"
 	versioncmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/version"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
 )
 
 func main() {
@@ -48,7 +49,7 @@ func main() {
 	// Run the tool:
 	err = tool.Run(ctx)
 	if err != nil {
-		exitErr, ok := err.(internal.ExitError)
+		exitErr, ok := err.(exit.Error)
 		if ok {
 			os.Exit(exitErr.Code())
 		} else {
