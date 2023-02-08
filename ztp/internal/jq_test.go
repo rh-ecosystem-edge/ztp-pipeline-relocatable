@@ -31,7 +31,7 @@ var _ = Describe("JQ", func() {
 		var err error
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 	})

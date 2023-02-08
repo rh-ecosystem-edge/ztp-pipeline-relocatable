@@ -24,6 +24,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
+	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -32,7 +33,10 @@ import (
 // this directly, use the NewLogger function instead.
 type LoggerBuilder struct {
 	writer io.Writer
-	v      int
+	out    io.Writer
+	err    io.Writer
+	level  int
+	file   string
 }
 
 // NewLogger creates a builder that can then be used to configure and create a logger.
@@ -48,39 +52,71 @@ func (b *LoggerBuilder) SetWriter(value io.Writer) *LoggerBuilder {
 	return b
 }
 
-// SetV sets the maximum v-level, so that messages with a v-level higher than this won't be written
-// to the log. The minimum and default value is zero. Errors are always writen too the log,
+// SetOut sets the standard output stream. This is optional and will only be used then the log file
+// is 'stdout'.
+func (b *LoggerBuilder) SetOut(value io.Writer) *LoggerBuilder {
+	b.out = value
+	return b
+}
+
+// SetErr sets the standard error output stream. This is optional and will only be used when the log
+// file is 'stderr'.
+func (b *LoggerBuilder) SetErr(value io.Writer) *LoggerBuilder {
+	b.err = value
+	return b
+}
+
+// SetFlags sets the command line flags that should be used to configure the logger. This is
+// optional.
+func (b *LoggerBuilder) SetFlags(flags *pflag.FlagSet) *LoggerBuilder {
+	if flags.Changed(levelFlagName) {
+		value, err := flags.GetInt(levelFlagName)
+		if err == nil {
+			b.level = value
+		}
+	}
+	if flags.Changed(fileFlagName) {
+		value, err := flags.GetString(fileFlagName)
+		if err == nil {
+			b.file = value
+		}
+	}
+	return b
+}
+
+// SetLevel sets the maximum log level, so that messages with a level higher than this won't be
+// written to the log. The minimum and default value is zero. Errors are always writen too the log,
 // regardless of this setting.
-func (b *LoggerBuilder) SetV(value int) *LoggerBuilder {
-	b.v = value
+func (b *LoggerBuilder) SetLevel(value int) *LoggerBuilder {
+	b.level = value
 	return b
 }
 
 // Build uses the data stored in the buider to create a new logger.
 func (b *LoggerBuilder) Build() (result logr.Logger, err error) {
 	// Check parameters:
-	if b.v < 0 {
+	if b.level < 0 {
 		err = fmt.Errorf(
-			"v-level %d isn't valid, it must be greater than or equal to zero",
-			b.v,
+			"level %d isn't valid, it must be greater than or equal to zero",
+			b.level,
 		)
 		return
 	}
 
-	// If no writer has been specified then open the default log file:
+	// If no writer has been explicitly provided then open the log file:
 	writer := b.writer
 	if writer == nil {
-		writer, err = b.openDefaultFile()
+		writer, err = b.openWriter()
 		if err != nil {
 			return
 		}
 	}
 
-	// Map the v-level to a zap level, taking into account that in zap there is a maximum of 128
+	// Map the level to a zap level, taking into account that in zap there is a maximum of 128
 	// custom level and they are negative.
 	var level zapcore.Level
-	if b.v <= 128 {
-		level = zapcore.Level(-b.v)
+	if b.level <= 128 {
+		level = zapcore.Level(-b.level)
 	} else {
 		level = zapcore.Level(-128)
 	}
@@ -104,6 +140,28 @@ func (b *LoggerBuilder) Build() (result logr.Logger, err error) {
 	return
 }
 
+func (b *LoggerBuilder) openWriter() (result io.Writer, err error) {
+	switch b.file {
+	case "stdout":
+		if b.out != nil {
+			result = b.out
+		} else {
+			result = os.Stdout
+		}
+	case "stderr":
+		if b.err != nil {
+			result = b.err
+		} else {
+			result = os.Stderr
+		}
+	case "":
+		result, err = b.openDefaultFile()
+	default:
+		result, err = b.openFile(b.file)
+	}
+	return
+}
+
 func (b *LoggerBuilder) openDefaultFile() (result io.Writer, err error) {
 	dir, err := os.UserCacheDir()
 	if err != nil {
@@ -118,6 +176,11 @@ func (b *LoggerBuilder) openDefaultFile() (result io.Writer, err error) {
 		}
 	}
 	file := filepath.Join(dir, "ztp.log")
+	result, err = b.openFile(file)
+	return
+}
+
+func (b *LoggerBuilder) openFile(file string) (result io.Writer, err error) {
 	result, err = os.OpenFile(file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0770)
 	return
 }
@@ -128,7 +191,7 @@ func loggerTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 }
 
 // loggerLevelEncoder encodes the log level avoding negative numbers. For example, if the original
-// v-level is 42 then the zapr adapter that we use will translate it into -42, because zap expects
+// level is 42 then the zapr adapter that we use will translate it into -42, because zap expects
 // negative number for custom log levels. As a result the generated message would be something like
 // this:
 //

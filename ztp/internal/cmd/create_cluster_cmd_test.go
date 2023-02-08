@@ -50,7 +50,7 @@ var _ = Describe("Create cluster command", func() {
 		// Create the logger:
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetV(2).
+			SetLevel(2).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 	})

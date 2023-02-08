@@ -32,7 +32,7 @@ var _ = Describe("Tool", func() {
 		var err error
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetV(2).
+			SetLevel(2).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 	})

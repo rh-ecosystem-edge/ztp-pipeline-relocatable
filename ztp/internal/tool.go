@@ -47,7 +47,6 @@ type ToolBuilder struct {
 // NewTool function instead.
 type Tool struct {
 	logger      logr.Logger
-	loggerV     int
 	loggerOwned bool
 	cmd         *cobra.Command
 	sub         []func() *cobra.Command
@@ -269,13 +268,7 @@ func (t *Tool) createCommand() error {
 
 	// Add flags that apply to all the commands:
 	flags := t.cmd.PersistentFlags()
-	flags.IntVarP(
-		&t.loggerV,
-		"v",
-		"v",
-		0,
-		"Log verbosity level.",
-	)
+	logging.AddFlags(flags)
 
 	// Add sub-commands:
 	for _, sub := range t.sub {
@@ -287,13 +280,17 @@ func (t *Tool) createCommand() error {
 
 func (t *Tool) createDefaultLogger() (result logr.Logger, err error) {
 	result, err = logging.NewLogger().
+		SetOut(t.out).
+		SetErr(t.err).
 		Build()
 	return
 }
 
 func (t *Tool) createConfiguredLogger() (result logr.Logger, err error) {
 	result, err = logging.NewLogger().
-		SetV(t.loggerV).
+		SetFlags(t.cmd.Flags()).
+		SetOut(t.out).
+		SetErr(t.err).
 		Build()
 	return
 }
