@@ -439,5 +439,81 @@ var _ = Describe("Enricher", func() {
 			Expect(msg).To(ContainSubstring("find RHCOS release"))
 			Expect(msg).To(ContainSubstring("release.txt"))
 		})
+
+		It("Sets the hardcoded cluster CIDR", func() {
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					Nodes: []models.Node{
+						{
+							Kind: models.NodeKindControlPlane,
+							Name: "my-node",
+						},
+					},
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.Clusters[0].ClusterNetworks).To(HaveLen(1))
+			Expect(config.Clusters[0].ClusterNetworks[0].CIDR.String()).To(Equal(
+				"10.128.0.0/14",
+			))
+			Expect(config.Clusters[0].ClusterNetworks[0].HostPrefix).To(Equal(23))
+		})
+
+		It("Sets the hardcoded machine CIDR", func() {
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					Nodes: []models.Node{
+						{
+							Kind: models.NodeKindControlPlane,
+							Name: "my-node",
+						},
+					},
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.Clusters[0].MachineNetworks).To(HaveLen(1))
+			Expect(config.Clusters[0].MachineNetworks[0].CIDR.String()).To(Equal(
+				"192.168.7.0/24",
+			))
+		})
+
+		It("Sets the hardcoded service CIDR", func() {
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					Nodes: []models.Node{
+						{
+							Kind: models.NodeKindControlPlane,
+							Name: "my-node",
+						},
+					},
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.Clusters[0].ServiceNetworks).To(HaveLen(1))
+			Expect(config.Clusters[0].ServiceNetworks[0].CIDR.String()).To(Equal(
+				"172.30.0.0/16",
+			))
+		})
 	})
 })

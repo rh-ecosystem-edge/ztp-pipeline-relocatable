@@ -403,7 +403,7 @@ func (e *Enricher) setNetworks(ctx context.Context, cluster *models.Cluster) err
 		HostPrefix: hardcodedClusterNetworkHostPrefix,
 	}}
 
-	_, machineNetworkCIDR, err := net.ParseCIDR(hardcodedClusterNetworkCIDR)
+	_, machineNetworkCIDR, err := net.ParseCIDR(hardcodedMachineNetworkCIDR)
 	if err != nil {
 		return fmt.Errorf("failed to parse machine network CIDR: %v", err)
 	}
