@@ -515,5 +515,110 @@ var _ = Describe("Enricher", func() {
 				"172.30.0.0/16",
 			))
 		})
+
+		It("Sets the hardcoded internal IP addresses for multiple nodes", func() {
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					Nodes: []models.Node{
+						{
+							Kind: models.NodeKindControlPlane,
+							Name: "my-master-0",
+							InternalNIC: models.NIC{
+								Name: "eth0",
+								MAC:  "17:c0:34:9c:f7:52",
+							},
+							ExternalNIC: models.NIC{
+								Name: "eth1",
+								MAC:  "f6:aa:2c:d0:24:40",
+							},
+						},
+						{
+							Kind: models.NodeKindControlPlane,
+							Name: "my-master-1",
+							InternalNIC: models.NIC{
+								Name: "eth0",
+								MAC:  "11:0f:8b:d9:ea:76",
+							},
+							ExternalNIC: models.NIC{
+								Name: "eth1",
+								MAC:  "9c:bf:cd:0f:6a:c4",
+							},
+						},
+						{
+							Kind: models.NodeKindControlPlane,
+							Name: "my-master-2",
+							InternalNIC: models.NIC{
+								Name: "eth0",
+								MAC:  "8e:a2:8c:a7:06:d6",
+							},
+							ExternalNIC: models.NIC{
+								Name: "eth1",
+								MAC:  "24:23:0a:53:8a:16",
+							},
+						},
+						{
+							Kind: models.NodeKindWorker,
+							Name: "my-worker-0",
+							InternalNIC: models.NIC{
+								Name: "eth0",
+								MAC:  "f2:d3:c4:b7:ab:0a",
+							},
+							ExternalNIC: models.NIC{
+								Name: "eth1",
+								MAC:  "69:7e:09:78:33:45",
+							},
+						},
+					},
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			cluster := config.Clusters[0]
+			Expect(cluster.Nodes[0].InternalNIC.IP.String()).To(Equal("192.168.7.10"))
+			Expect(cluster.Nodes[1].InternalNIC.IP.String()).To(Equal("192.168.7.11"))
+			Expect(cluster.Nodes[2].InternalNIC.IP.String()).To(Equal("192.168.7.12"))
+			Expect(cluster.Nodes[3].InternalNIC.IP.String()).To(Equal("192.168.7.13"))
+			Expect(cluster.API.VIP).To(Equal("192.168.7.242"))
+			Expect(cluster.Ingress.VIP).To(Equal("192.168.7.243"))
+		})
+
+		It("Sets the hardcoded internal IP addresses for SNO", func() {
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					Nodes: []models.Node{
+						{
+							Kind: models.NodeKindControlPlane,
+							Name: "my-master-0",
+							InternalNIC: models.NIC{
+								Name: "eth0",
+								MAC:  "17:c0:34:9c:f7:52",
+							},
+							ExternalNIC: models.NIC{
+								Name: "eth1",
+								MAC:  "f6:aa:2c:d0:24:40",
+							},
+						},
+					},
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			cluster := config.Clusters[0]
+			Expect(cluster.Nodes[0].InternalNIC.IP.String()).To(Equal("192.168.7.10"))
+			Expect(cluster.API.VIP).To(BeEmpty())
+			Expect(cluster.Ingress.VIP).To(BeEmpty())
+		})
 	})
 })
