@@ -435,7 +435,7 @@ func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.No
 	ip := slices.Clone(enricherMachineCIDR.IP)
 	ip[len(ip)-1] = byte(10 + index)
 	node.InternalNIC.IP = ip
-	node.InternalNIC.Mask = enricherMachineCIDR.Mask
+	node.InternalNIC.Prefix, _ = enricherMachineCIDR.Mask.Size()
 
 	return nil
 }

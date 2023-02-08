@@ -46,7 +46,7 @@ spec:
         enabled: true
         address:
         - ip: {{ .InternalNIC.IP }}
-          prefix-length: {{ .InternalNIC.Mask }}
+          prefix-length: {{ .InternalNIC.Prefix }}
       mtu: 1500
     {{ else }}
     - name: {{ .ExternalNIC.Name }}.102
