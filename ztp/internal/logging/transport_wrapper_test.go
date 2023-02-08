@@ -36,18 +36,18 @@ var _ = Describe("Transport wrapper", func() {
 		Expect(wrapper).To(BeNil())
 	})
 
-	It("Can't be created with negative header v-level", func() {
+	It("Can't be created with negative header level", func() {
 		// Create the logger:
 		logger, err := NewLogger().
 			SetWriter(io.Discard).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Try to create the wrapper:
 		wrapper, err := NewTransportWrapper().
 			SetLogger(logger).
-			SetHeaderV(-1).
+			SetHeaderLevel(-1).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
@@ -57,18 +57,18 @@ var _ = Describe("Transport wrapper", func() {
 		Expect(wrapper).To(BeNil())
 	})
 
-	It("Can't be created with negative body v-level", func() {
+	It("Can't be created with negative body level", func() {
 		// Create the logger:
 		logger, err := NewLogger().
 			SetWriter(io.Discard).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Try to create the wrapper:
 		wrapper, err := NewTransportWrapper().
 			SetLogger(logger).
-			SetBodyV(-1).
+			SetBodyLevel(-1).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
@@ -94,15 +94,15 @@ var _ = Describe("Transport wrapper", func() {
 			buffer = &bytes.Buffer{}
 			logger, err := NewLogger().
 				SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
-				SetV(math.MaxInt).
+				SetLevel(math.MaxInt).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
 			// Create the client:
 			wrapper, err := NewTransportWrapper().
 				SetLogger(logger).
-				SetHeaderV(15).
-				SetBodyV(16).
+				SetHeaderLevel(15).
+				SetBodyLevel(16).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			transport := wrapper.Wrap(http.DefaultTransport)
@@ -240,7 +240,7 @@ var _ = Describe("Transport wrapper", func() {
 			}
 		})
 
-		It("Honors the header v-level", func() {
+		It("Honors the header level", func() {
 			// Prepare the server:
 			server.AppendHandlers(RespondWith(http.StatusOK, nil))
 
@@ -252,7 +252,7 @@ var _ = Describe("Transport wrapper", func() {
 			_, err = io.Copy(io.Discard, response.Body)
 			Expect(err).ToNot(HaveOccurred())
 
-			// Verify the v-level:
+			// Verify the level:
 			messages := Parse(buffer)
 			Expect(messages).ToNot(BeEmpty())
 			requests := Find(messages, "Sending request header")
@@ -266,7 +266,7 @@ var _ = Describe("Transport wrapper", func() {
 			}
 		})
 
-		It("Honors the body v-level", func() {
+		It("Honors the body level", func() {
 			// Prepare the server:
 			body := make([]byte, 42)
 			server.AppendHandlers(RespondWith(http.StatusOK, body))
@@ -279,7 +279,7 @@ var _ = Describe("Transport wrapper", func() {
 			_, err = io.Copy(io.Discard, response.Body)
 			Expect(err).ToNot(HaveOccurred())
 
-			// Verify the v-level:
+			// Verify the level:
 			messages := Parse(buffer)
 			Expect(messages).ToNot(BeEmpty())
 			requests := Find(messages, "Sending request body")

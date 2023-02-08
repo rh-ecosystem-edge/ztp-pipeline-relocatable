@@ -32,11 +32,11 @@ import (
 )
 
 var _ = Describe("Logger", func() {
-	It("Rejects negative v-level", func() {
+	It("Rejects negative level", func() {
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
 			SetWriter(buffer).
-			SetV(-1).
+			SetLevel(-1).
 			Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
@@ -50,7 +50,7 @@ var _ = Describe("Logger", func() {
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
 			SetWriter(buffer).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -75,7 +75,7 @@ var _ = Describe("Logger", func() {
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
 			SetWriter(buffer).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -97,7 +97,7 @@ var _ = Describe("Logger", func() {
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
 			SetWriter(buffer).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -114,13 +114,13 @@ var _ = Describe("Logger", func() {
 	})
 
 	DescribeTable(
-		"Writes `error` for error messages regardless of the v-level",
+		"Writes `error` for error messages regardless of the level",
 		func(v int) {
 			// Create a logger that writes to a memory buffer:
 			buffer := &bytes.Buffer{}
 			logger, err := NewLogger().
 				SetWriter(buffer).
-				SetV(math.MaxInt).
+				SetLevel(math.MaxInt).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -148,13 +148,13 @@ var _ = Describe("Logger", func() {
 	)
 
 	DescribeTable(
-		"Doesn't write v-level for error messages",
+		"Doesn't write level for error messages",
 		func(v int) {
 			// Create a logger that writes to a memory buffer:
 			buffer := &bytes.Buffer{}
 			logger, err := NewLogger().
 				SetWriter(buffer).
-				SetV(math.MaxInt).
+				SetLevel(math.MaxInt).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -186,7 +186,7 @@ var _ = Describe("Logger", func() {
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
 			SetWriter(buffer).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -202,12 +202,12 @@ var _ = Describe("Logger", func() {
 		Expect(msg.Level).To(Equal("info"))
 	})
 
-	It("Writes `info` for v-level zero", func() {
+	It("Writes `info` for level zero", func() {
 		// Create a logger that writes to a memory buffer:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
 			SetWriter(buffer).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -223,13 +223,13 @@ var _ = Describe("Logger", func() {
 	})
 
 	DescribeTable(
-		"Writes `debug` for v-level greater than zero",
+		"Writes `debug` for level greater than zero",
 		func(v int) {
 			// Create a logger that writes to a memory buffer:
 			buffer := &bytes.Buffer{}
 			logger, err := NewLogger().
 				SetWriter(buffer).
-				SetV(math.MaxInt).
+				SetLevel(math.MaxInt).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -256,13 +256,13 @@ var _ = Describe("Logger", func() {
 	)
 
 	DescribeTable(
-		"Writes for v-level",
+		"Writes for level",
 		func(v int) {
 			// Create a logger that writes to a memory buffer:
 			buffer := &bytes.Buffer{}
 			logger, err := NewLogger().
 				SetWriter(buffer).
-				SetV(math.MaxInt).
+				SetLevel(math.MaxInt).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -289,7 +289,7 @@ var _ = Describe("Logger", func() {
 		Entry("Nine", 9),
 	)
 
-	It("Doesn't write debug messages by default (v-level is zero)", func() {
+	It("Doesn't write debug messages by default (level is zero)", func() {
 		// Create a logger that writes to a memory buffer:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
@@ -304,12 +304,12 @@ var _ = Describe("Logger", func() {
 		Expect(buffer.Len()).To(BeZero())
 	})
 
-	It("Doesn't write debug messages when v-level is explicitly set to zero", func() {
+	It("Doesn't write debug messages when level is explicitly set to zero", func() {
 		// Create a logger that writes to a memory buffer:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
 			SetWriter(buffer).
-			SetV(0).
+			SetLevel(0).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -321,13 +321,13 @@ var _ = Describe("Logger", func() {
 	})
 
 	DescribeTable(
-		"Writes debug messages with v-level less than or equal to the maximum",
+		"Writes debug messages with level less than or equal to the maximum",
 		func(v int) {
 			// Create a logger that writes to a memory buffer:
 			buffer := &bytes.Buffer{}
 			logger, err := NewLogger().
 				SetWriter(buffer).
-				SetV(v).
+				SetLevel(v).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -350,17 +350,17 @@ var _ = Describe("Logger", func() {
 	)
 
 	DescribeTable(
-		"Doesn't write debug messages with v-level greater than the maximum",
+		"Doesn't write debug messages with level greater than the maximum",
 		func(v int) {
 			// Create a logger that writes to a memory buffer:
 			buffer := &bytes.Buffer{}
 			logger, err := NewLogger().
 				SetWriter(buffer).
-				SetV(v).
+				SetLevel(v).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
-			// Write some messages with v-levels greater than the configured one:
+			// Write some messages with levels greater than the configured one:
 			for i := 1; i <= 10; i++ {
 				logger.V(v + i).Info("")
 			}
@@ -401,7 +401,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger witho a writer:
 		logger, err := NewLogger().
 			SetWriter(io.Discard).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -433,7 +433,7 @@ var _ = Describe("Logger", func() {
 
 		// Create the logger without a writer:
 		logger, err := NewLogger().
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -481,7 +481,7 @@ var _ = Describe("Logger", func() {
 
 		// Create the logger without a writer:
 		logger, err := NewLogger().
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 

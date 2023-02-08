@@ -43,7 +43,7 @@ var _ = Describe("Client", func() {
 		// Create the logger:
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetV(1).
+			SetLevel(1).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 	})
@@ -72,12 +72,12 @@ var _ = Describe("Client", func() {
 	})
 
 	It("Writes to the log the details of the request and response", func() {
-		// Create a logger that writes to a memory buffer and with the v-level 3 enabled, as
+		// Create a logger that writes to a memory buffer and with the level 3 enabled, as
 		// that is the level used for the detail of HTTP requests and responses:
 		buffer := &bytes.Buffer{}
 		logger, err := logging.NewLogger().
 			SetWriter(buffer).
-			SetV(3).
+			SetLevel(3).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 

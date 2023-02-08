@@ -28,9 +28,9 @@ import (
 // dumps to the log the details of HTTP requests and responses. Don't create instances of this type
 // directly, use the NewLoggingTransportWrapper function instead.
 type TransportWrapperBuilder struct {
-	logger  logr.Logger
-	headerV int
-	bodyV   int
+	logger      logr.Logger
+	headerLevel int
+	bodyLevel   int
 }
 
 // TransportWrapper is a transport wrapper that creates round trippers that dump the details of the
@@ -65,8 +65,8 @@ type responseReader struct {
 // transport wrapper.
 func NewTransportWrapper() *TransportWrapperBuilder {
 	return &TransportWrapperBuilder{
-		headerV: 2,
-		bodyV:   3,
+		headerLevel: 2,
+		bodyLevel:   3,
 	}
 }
 
@@ -78,17 +78,17 @@ func (b *TransportWrapperBuilder) SetLogger(
 	return b
 }
 
-// SetHeaderV sets the v-level that will be used to write the request and response header details.
-// Default is 1.
-func (b *TransportWrapperBuilder) SetHeaderV(value int) *TransportWrapperBuilder {
-	b.headerV = value
+// SetHeaderLevel sets the level that will be used to write the request and response header details.
+// Default is one.
+func (b *TransportWrapperBuilder) SetHeaderLevel(value int) *TransportWrapperBuilder {
+	b.headerLevel = value
 	return b
 }
 
-// SetBodyV sets the v-level that will be used to write the request and response body details.
-// Default is 2.
-func (b *TransportWrapperBuilder) SetBodyV(value int) *TransportWrapperBuilder {
-	b.bodyV = value
+// SetBodyLevel sets the level that will be used to write the request and response body details.
+// Default is two.
+func (b *TransportWrapperBuilder) SetBodyLevel(value int) *TransportWrapperBuilder {
+	b.bodyLevel = value
 	return b
 }
 
@@ -100,25 +100,25 @@ func (b *TransportWrapperBuilder) Build() (result *TransportWrapper, err error) 
 		err = errors.New("logger is mandatory")
 		return
 	}
-	if b.headerV < 0 {
+	if b.headerLevel < 0 {
 		err = fmt.Errorf(
-			"header v-level %d isn't valid, it must be greater than or equal to 0",
-			b.headerV,
+			"header level %d isn't valid, it must be greater than or equal to 0",
+			b.headerLevel,
 		)
 		return
 	}
-	if b.bodyV < 0 {
+	if b.bodyLevel < 0 {
 		err = fmt.Errorf(
-			"body v-level %d isn't valid, it must be greater than or equal to 0",
-			b.bodyV,
+			"body level %d isn't valid, it must be greater than or equal to 0",
+			b.bodyLevel,
 		)
 		return
 	}
 
 	// Create and populate the object:
 	result = &TransportWrapper{
-		headerLogger: b.logger.V(b.headerV),
-		bodyLogger:   b.logger.V(b.bodyV),
+		headerLogger: b.logger.V(b.headerLevel),
+		bodyLogger:   b.logger.V(b.bodyLevel),
 	}
 
 	return

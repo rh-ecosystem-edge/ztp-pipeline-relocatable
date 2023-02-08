@@ -47,7 +47,7 @@ var _ = Describe("Enricher", func() {
 		// Create the logger:
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetV(math.MaxInt).
+			SetLevel(math.MaxInt).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
