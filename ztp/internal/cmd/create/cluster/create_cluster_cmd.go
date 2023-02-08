@@ -150,8 +150,22 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	}
 
 	// Create the applier:
+	listener, err := internal.NewApplierListener().
+		SetLogger(c.logger).
+		SetOut(c.tool.Out()).
+		SetErr(c.tool.Err()).
+		Build()
+	if err != nil {
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create applier listener: %v\n",
+			err,
+		)
+		return exit.Error(1)
+	}
 	c.applier, err = internal.NewApplier().
 		SetLogger(c.logger).
+		SetListener(listener.Func).
 		SetClient(c.client).
 		SetFS(internal.DataFS).
 		SetRoot("data/cluster").
