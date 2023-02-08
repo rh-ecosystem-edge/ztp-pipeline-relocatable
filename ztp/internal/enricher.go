@@ -25,12 +25,12 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"os"
 	"regexp"
 
 	"github.com/go-logr/logr"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/exp/maps"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -284,20 +284,21 @@ func (e *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) e
 	if cluster.PullSecret != nil {
 		return nil
 	}
-	file, ok := e.env["PULL_SECRET"]
-	if !ok {
-		return fmt.Errorf("environment variable 'PULL_SECRET' isn't set")
+	secret := &corev1.Secret{}
+	key := clnt.ObjectKey{
+		Namespace: "openshift-config",
+		Name:      "pull-secret",
 	}
-	data, err := os.ReadFile(file)
+	err := e.client.Get(ctx, key, secret)
 	if err != nil {
-		return fmt.Errorf(
-			"failed to load pull secret from file '%s': %v",
-			file, err,
-		)
+		return fmt.Errorf("failed to get pull secret: %v", err)
+	}
+	data, ok := secret.Data[".dockerconfigjson"]
+	if !ok {
+		return fmt.Errorf("pull secret doesn't contain the '.dockerconfigjson' key")
 	}
 	e.logger.V(1).Info(
 		"Loaded pull secret",
-		"file", file,
 		"secret", string(data),
 	)
 	cluster.PullSecret = data

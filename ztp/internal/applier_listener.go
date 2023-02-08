@@ -175,7 +175,7 @@ func (l *ApplierListener) friendlyName(object *unstructured.Unstructured) string
 	name := object.GetName()
 	namespace := object.GetNamespace()
 	if namespace != "" {
-		name = fmt.Sprintf("%s/%s", name, namespace)
+		name = fmt.Sprintf("%s/%s", namespace, name)
 	}
 	return name
 }
