@@ -581,9 +581,13 @@ var _ = Describe("Enricher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			cluster := config.Clusters[0]
 			Expect(cluster.Nodes[0].InternalNIC.IP.String()).To(Equal("192.168.7.10"))
+			Expect(cluster.Nodes[0].InternalNIC.Prefix).To(Equal(24))
 			Expect(cluster.Nodes[1].InternalNIC.IP.String()).To(Equal("192.168.7.11"))
+			Expect(cluster.Nodes[1].InternalNIC.Prefix).To(Equal(24))
 			Expect(cluster.Nodes[2].InternalNIC.IP.String()).To(Equal("192.168.7.12"))
+			Expect(cluster.Nodes[2].InternalNIC.Prefix).To(Equal(24))
 			Expect(cluster.Nodes[3].InternalNIC.IP.String()).To(Equal("192.168.7.13"))
+			Expect(cluster.Nodes[3].InternalNIC.Prefix).To(Equal(24))
 			Expect(cluster.API.VIP).To(Equal("192.168.7.242"))
 			Expect(cluster.Ingress.VIP).To(Equal("192.168.7.243"))
 		})
@@ -617,6 +621,7 @@ var _ = Describe("Enricher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			cluster := config.Clusters[0]
 			Expect(cluster.Nodes[0].InternalNIC.IP.String()).To(Equal("192.168.7.10"))
+			Expect(cluster.Nodes[0].InternalNIC.Prefix).To(Equal(24))
 			Expect(cluster.API.VIP).To(BeEmpty())
 			Expect(cluster.Ingress.VIP).To(BeEmpty())
 		})

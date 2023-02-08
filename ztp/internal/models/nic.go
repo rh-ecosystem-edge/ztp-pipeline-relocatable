@@ -17,8 +17,8 @@ package models
 import "net"
 
 type NIC struct {
-	IP   net.IP
-	MAC  string
-	Mask net.IPMask
-	Name string
+	IP     net.IP
+	MAC    string
+	Prefix int
+	Name   string
 }
