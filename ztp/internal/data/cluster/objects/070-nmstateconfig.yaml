@@ -8,7 +8,6 @@ metadata:
  labels:
    nmstate_config_cluster_name: {{ $.Cluster.Name }}
 spec:
-
   interfaces:
   - name: {{ .ExternalNIC.Name }}
     macAddress: {{ .ExternalNIC.MAC }}
@@ -16,11 +15,8 @@ spec:
   - name: {{ .InternalNIC.Name }}
     macAddress: {{ .InternalNIC.MAC }}
   {{ end }}
-
   config:
-
     interfaces:
-
     - name: {{ .ExternalNIC.Name }}
       type: ethernet
       state: up
@@ -36,7 +32,6 @@ spec:
         auto-routes: true
       mtu: 1500
       mac-address: {{ .ExternalNIC.MAC }}
- 
     {{ if .InternalNIC.Name }}
     - name: {{ .InternalNIC.Name }}
       type: ethernet

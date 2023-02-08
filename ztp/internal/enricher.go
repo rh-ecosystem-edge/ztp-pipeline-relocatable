@@ -30,6 +30,7 @@ import (
 	"github.com/go-logr/logr"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
@@ -259,6 +260,7 @@ func (e *Enricher) enrichCluster(ctx context.Context, cluster *models.Cluster) e
 		e.setImageSet,
 		e.setVIPs,
 		e.setNetworks,
+		e.setInternalIPs,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, cluster)
@@ -385,51 +387,100 @@ func (e *Enricher) setImageSet(ctx context.Context, cluster *models.Cluster) err
 }
 
 func (e *Enricher) setVIPs(ctx context.Context, cluster *models.Cluster) error {
-	if !cluster.SNO {
+	if cluster.SNO {
 		return nil
 	}
-	cluster.API.VIP = hardcodedAPIVIP
-	cluster.Ingress.VIP = hardcodedIngressVIP
+	if cluster.API.VIP == "" {
+		cluster.API.VIP = enricherAPIVIP.String()
+	}
+	if cluster.Ingress.VIP == "" {
+		cluster.Ingress.VIP = enricherIngressVIP.String()
+	}
 	return nil
 }
 
 func (e *Enricher) setNetworks(ctx context.Context, cluster *models.Cluster) error {
-	_, clusterNetworkCIDR, err := net.ParseCIDR(hardcodedClusterNetworkCIDR)
-	if err != nil {
-		return fmt.Errorf("failed to parse cluster network CIDR: %v", err)
-	}
 	cluster.ClusterNetworks = []models.ClusterNetwork{{
-		CIDR:       clusterNetworkCIDR,
-		HostPrefix: hardcodedClusterNetworkHostPrefix,
+		CIDR:       enricherClusterCIDR,
+		HostPrefix: enricherHostPrefix,
 	}}
-
-	_, machineNetworkCIDR, err := net.ParseCIDR(hardcodedMachineNetworkCIDR)
-	if err != nil {
-		return fmt.Errorf("failed to parse machine network CIDR: %v", err)
-	}
 	cluster.MachineNetworks = []models.MachineNetwork{{
-		CIDR: machineNetworkCIDR,
+		CIDR: enricherMachineCIDR,
 	}}
-
-	_, serviceNetworkCIDR, err := net.ParseCIDR(hardcodedServiceNetworkCIDR)
-	if err != nil {
-		return fmt.Errorf("failed to parse service network CIDR: %v", err)
-	}
 	cluster.ServiceNetworks = []models.ServiceNetwork{{
-		CIDR: serviceNetworkCIDR,
+		CIDR: enricherServiceCIDR,
 	}}
+	return nil
+}
+
+func (e *Enricher) setInternalIPs(ctx context.Context, cluster *models.Cluster) error {
+	for i := range cluster.Nodes {
+		err := e.setInternalIP(ctx, i, &cluster.Nodes[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.Node) error {
+	// Do nothing if the IP is already set:
+	if node.InternalNIC.IP != nil {
+		return nil
+	}
+
+	// For nodes of the cluster we want to assign IP addresses within the machine network
+	// 192.168.7.0/24, starting with 192.168.7.10 for the first master node, 192.168.7.11 for
+	// the second one, and so on.
+	ip := slices.Clone(enricherMachineCIDR.IP)
+	ip[len(ip)-1] = byte(10 + index)
+	node.InternalNIC.IP = ip
+	node.InternalNIC.Mask = enricherMachineCIDR.Mask
 
 	return nil
 }
 
-const (
-	hardcodedAPIVIP                   = "192.168.7.243"
-	hardcodedIngressVIP               = "192.168.7.242"
-	hardcodedClusterNetworkHostPrefix = 23
-	hardcodedClusterNetworkCIDR       = "10.128.0.0/14"
-	hardcodedMachineNetworkCIDR       = "192.168.7.0/24"
-	hardcodedServiceNetworkCIDR       = "172.30.0.0/16"
+// Hardcoded blocks of addresses used by the cluster, the machines and the services (assigned in the
+// init function below).
+var (
+	enricherClusterCIDR *net.IPNet
+	enricherMachineCIDR *net.IPNet
+	enricherServiceCIDR *net.IPNet
 )
+
+// Hardcoded virtual IP addresses (assigned in the init function below).
+var (
+	enricherAPIVIP     net.IP
+	enricherIngressVIP net.IP
+)
+
+// Harccoded prefix for the block of addressed assigned to the hosts of the cluster.
+const enricherHostPrefix = 23
+
+func init() {
+	var err error
+
+	// Parse the hardcoded CIDRs:
+	_, enricherClusterCIDR, err = net.ParseCIDR("10.128.0.0/14")
+	if err != nil {
+		panic(err)
+	}
+	_, enricherMachineCIDR, err = net.ParseCIDR("192.168.7.0/24")
+	if err != nil {
+		panic(err)
+	}
+	_, enricherServiceCIDR, err = net.ParseCIDR("172.30.0.0/16")
+	if err != nil {
+		panic(err)
+	}
+
+	// Assign the virtual IP addresses, 192.168.7.242 for the API and 192.168.7.243 for the
+	// ingress.
+	enricherAPIVIP = slices.Clone(enricherMachineCIDR.IP)
+	enricherAPIVIP[len(enricherAPIVIP)-1] = 242
+	enricherIngressVIP = slices.Clone(enricherMachineCIDR.IP)
+	enricherIngressVIP[len(enricherIngressVIP)-1] = 243
+}
 
 // enricherDefaultMirror is the debault base URL for downloading the `release.txt` files, used when
 // the `OC_OCP_MIRROR` property isn't set.
