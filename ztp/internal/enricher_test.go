@@ -18,7 +18,6 @@ import (
 	"context"
 	"math"
 	"net/http"
-	"os"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -84,10 +83,8 @@ var _ = Describe("Enricher", func() {
 
 	Context("Usage", func() {
 		var (
-			defaultPullSecretData []byte
-			defaultPullSecretFile string
-			defaultImageSet       string
-			enricher              *Enricher
+			defaultImageSet string
+			enricher        *Enricher
 		)
 
 		BeforeEach(func() {
@@ -100,25 +97,6 @@ var _ = Describe("Enricher", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
-			// Create a temporary file containing the default pull secret:
-			defaultPullSecretData = []byte(`{
-				"auths": {
-					"cloud.openshift.com": {
-						"auth": "bXktdXNlcjpteS1wYXNz",
-						"email": "mary@example.com"
-					}
-				}
-			}`)
-			defaultPullSecretStream, err := os.CreateTemp("", "*.test")
-			Expect(err).ToNot(HaveOccurred())
-			defer func() {
-				err := defaultPullSecretStream.Close()
-				Expect(err).ToNot(HaveOccurred())
-			}()
-			_, err = defaultPullSecretStream.Write(defaultPullSecretData)
-			Expect(err).ToNot(HaveOccurred())
-			defaultPullSecretFile = defaultPullSecretStream.Name()
-
 			// Prepare the default image set:
 			defaultImageSet = "my-image-set"
 
@@ -127,16 +105,9 @@ var _ = Describe("Enricher", func() {
 				SetLogger(logger).
 				SetClient(client).
 				SetEnv(map[string]string{
-					"PULL_SECRET":     defaultPullSecretFile,
 					"CLUSTERIMAGESET": defaultImageSet,
 				}).
 				Build()
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		AfterEach(func() {
-			// Delete the temporary files:
-			err := os.Remove(defaultPullSecretFile)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -204,7 +175,7 @@ var _ = Describe("Enricher", func() {
 
 		It("Doesn't change the pull secret if already set", func() {
 			// Prepare a pull secret different to the one in the environment:
-			customPullSecretData := []byte(`{
+			custom := []byte(`{
 				"auths": {
 					"cloud.openshift.com": {
 						"auth": "eW91ci11c2VyOnlvdXItcGFzcw==",
@@ -222,7 +193,7 @@ var _ = Describe("Enricher", func() {
 				},
 				Clusters: []models.Cluster{{
 					Name:       "my-cluster",
-					PullSecret: customPullSecretData,
+					PullSecret: custom,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -237,10 +208,10 @@ var _ = Describe("Enricher", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the pull secret hasn't changed:
-			Expect(config.Clusters[0].PullSecret).To(Equal(customPullSecretData))
+			Expect(config.Clusters[0].PullSecret).To(Equal(custom))
 		})
 
-		It("Gets the pull secret from the environment variable", func() {
+		It("Gets the pull secret from the environment", func() {
 			// Create the config without a pull secret:
 			config := &models.Config{
 				Properties: map[string]string{
@@ -263,8 +234,15 @@ var _ = Describe("Enricher", func() {
 			err := enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
 
-			// Check that the pull secret has been set:
-			Expect(config.Clusters[0].PullSecret).To(Equal(defaultPullSecretData))
+			// Check that the pull secret is the one from the environment:
+			Expect(config.Clusters[0].PullSecret).To(MatchJSON(`{
+				"auths": {
+					"cloud.openshift.com": {
+						"auth": "bXktdXNlcjpteS1wYXNz",
+						"email": "mary@example.com"
+					}
+				}
+			}`))
 		})
 
 		It("Doesn't change the DNS domain if already set", func() {

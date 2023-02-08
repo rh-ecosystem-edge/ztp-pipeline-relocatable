@@ -102,7 +102,6 @@ var _ = Describe("Create cluster command", func() {
 			// Prepare the environment variables:
 			env = map[string]string{
 				"EDGECLUSTERS_FILE": filepath.Join(tmp, "config.yaml"),
-				"PULL_SECRET":       filepath.Join(tmp, "pull.json"),
 				"CLUSTERIMAGESET":   "my-image",
 			}
 
