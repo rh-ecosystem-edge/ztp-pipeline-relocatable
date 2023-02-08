@@ -34,8 +34,8 @@ mirror:
       - name: stable-${OC_ODF_VERSION}
     - name: multicluster-engine
       channels:
-      - name: stable-2.0
       - name: stable-2.1
+      - name: stable-2.2
     - name: nfd
       channels:
       - name: stable
