@@ -17,6 +17,7 @@ package setup
 import (
 	"fmt"
 
+	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
@@ -38,6 +39,8 @@ func Cobra() *cobra.Command {
 
 // Command contains the data and logic needed to run the `dev setup` command.
 type Command struct {
+	logger logr.Logger
+	tool   *internal.Tool
 }
 
 // NewCommand creates a new runner that knows how to execute the `dev setup` command.
@@ -51,15 +54,15 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	ctx := cmd.Context()
 
 	// Get the dependencies from the context:
-	logger := internal.LoggerFromContext(ctx)
-	tool := internal.ToolFromContext(ctx)
+	c.logger = internal.LoggerFromContext(ctx)
+	c.tool = internal.ToolFromContext(ctx)
 
 	// Get the environment:
-	env := tool.Env()
+	env := c.tool.Env()
 
 	// Create the client for the API:
 	client, err := internal.NewClient().
-		SetLogger(logger).
+		SetLogger(c.logger).
 		SetEnv(env).
 		Build()
 	if err != nil {
@@ -71,9 +74,23 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	}
 
 	// Create the objects:
+	listener, err := internal.NewApplierListener().
+		SetLogger(c.logger).
+		SetOut(c.tool.Out()).
+		SetErr(c.tool.Err()).
+		Build()
+	if err != nil {
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create applier listener: %v\n",
+			err,
+		)
+		return exit.Error(1)
+	}
 	applier, err := internal.NewApplier().
-		SetLogger(logger).
+		SetLogger(c.logger).
 		SetClient(client).
+		SetListener(listener.Func).
 		SetFS(internal.DataFS).
 		SetRoot("data/dev").
 		SetDirs("crds", "objects").
@@ -81,7 +98,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		Build()
 	if err != nil {
 		fmt.Fprintf(
-			tool.Err(),
+			c.tool.Err(),
 			"Failed to create applier: %v\n",
 			err,
 		)
@@ -90,7 +107,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	err = applier.Apply(ctx, nil)
 	if err != nil {
 		fmt.Fprintf(
-			tool.Err(),
+			c.tool.Err(),
 			"Failed to apply objects: %v\n",
 			err,
 		)
