@@ -33,6 +33,7 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -309,18 +310,26 @@ func (e *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) e
 }
 
 func (e *Enricher) setSSHKeys(ctx context.Context, cluster *models.Cluster) error {
-	publicKey, privateKey, err := e.generateSSHKeys()
-	if err != nil {
-		return fmt.Errorf("failed to generate RSA key pair: %v", err)
+	// Do nothing if the keys are already set:
+	if cluster.SSH.PublicKey != nil && cluster.SSH.PrivateKey != nil {
+		return nil
 	}
-	e.logger.V(1).Info(
-		"Generated SSH keys",
-		"public", string(publicKey),
-		"private", string(privateKey),
-	)
-	cluster.SSH.PublicKey = publicKey
-	cluster.SSH.PrivateKey = privateKey
-	return nil
+
+	// Check if the secret containing the keys has already been created:
+	secret := &corev1.Secret{}
+	key := clnt.ObjectKey{
+		Namespace: cluster.Name,
+		Name:      fmt.Sprintf("%s-keypair", cluster.Name),
+	}
+	err := e.client.Get(ctx, key, secret)
+	switch {
+	case err == nil:
+		cluster.SSH.PublicKey = secret.Data["id_rsa.pub"]
+		cluster.SSH.PrivateKey = secret.Data["id_rsa.key"]
+	case apierrors.IsNotFound(err):
+		cluster.SSH.PublicKey, cluster.SSH.PrivateKey, err = e.generateSSHKeys()
+	}
+	return err
 }
 
 func (e *Enricher) generateSSHKeys() (publicKey, privateKey []byte, err error) {

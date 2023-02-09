@@ -16,6 +16,10 @@ package internal
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"math"
 	"net/http"
 
@@ -23,6 +27,10 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
+	"golang.org/x/crypto/ssh"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
@@ -624,6 +632,113 @@ var _ = Describe("Enricher", func() {
 			Expect(cluster.Nodes[0].InternalNIC.Prefix).To(Equal(24))
 			Expect(cluster.API.VIP).To(BeEmpty())
 			Expect(cluster.Ingress.VIP).To(BeEmpty())
+		})
+
+		It("Doesn't change the SSH keys if already set", func() {
+			// Generate the key pair:
+			rsaKey, err := rsa.GenerateKey(rand.Reader, 4096)
+			Expect(err).ToNot(HaveOccurred())
+			sshKey, err := ssh.NewPublicKey(&rsaKey.PublicKey)
+			Expect(err).ToNot(HaveOccurred())
+			publicKey := ssh.MarshalAuthorizedKey(sshKey)
+			privateKey := pem.EncodeToMemory(&pem.Block{
+				Type:  "RSA PRIVATE KEY",
+				Bytes: x509.MarshalPKCS1PrivateKey(rsaKey),
+			})
+
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					SSH: models.SSH{
+						PublicKey:  publicKey,
+						PrivateKey: privateKey,
+					},
+				}},
+			}
+			err = enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			cluster := config.Clusters[0]
+			Expect(cluster.SSH.PublicKey).To(Equal(publicKey))
+			Expect(cluster.SSH.PrivateKey).To(Equal(privateKey))
+		})
+
+		It("Takes the keys from the secret if it exists", func() {
+			// Generate the key pair:
+			rsaKey, err := rsa.GenerateKey(rand.Reader, 4096)
+			Expect(err).ToNot(HaveOccurred())
+			sshKey, err := ssh.NewPublicKey(&rsaKey.PublicKey)
+			Expect(err).ToNot(HaveOccurred())
+			publicKey := ssh.MarshalAuthorizedKey(sshKey)
+			privateKey := pem.EncodeToMemory(&pem.Block{
+				Type:  "RSA PRIVATE KEY",
+				Bytes: x509.MarshalPKCS1PrivateKey(rsaKey),
+			})
+
+			// Create the namespace:
+			namespace := &corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "my-cluster",
+					Labels: map[string]string{
+						"ztpfw": "",
+					},
+				},
+			}
+			err = client.Create(ctx, namespace)
+			if apierrors.IsAlreadyExists(err) {
+				err = nil
+			}
+			Expect(err).ToNot(HaveOccurred())
+
+			// Delete the secret if it exists and create it again with the keys that we
+			// just generated:
+			secret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "my-cluster",
+					Name:      "my-cluster-keypair",
+					Labels: map[string]string{
+						"ztpfw": "",
+					},
+				},
+				Data: map[string][]byte{
+					"id_rsa.pub": publicKey,
+					"id_rsa.key": privateKey,
+				},
+			}
+			err = client.Delete(ctx, secret)
+			if apierrors.IsNotFound(err) {
+				err = nil
+			}
+			Expect(err).ToNot(HaveOccurred())
+			err = client.Create(ctx, secret)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Enrich the cluster:
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					SSH: models.SSH{
+						PublicKey:  publicKey,
+						PrivateKey: privateKey,
+					},
+				}},
+			}
+			err = enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Verify that the keys are still the ones that we generated:
+			cluster := config.Clusters[0]
+			Expect(cluster.SSH.PublicKey).To(Equal(publicKey))
+			Expect(cluster.SSH.PrivateKey).To(Equal(privateKey))
 		})
 	})
 })
