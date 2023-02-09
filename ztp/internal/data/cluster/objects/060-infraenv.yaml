@@ -1,16 +1,16 @@
 apiVersion: agent-install.openshift.io/v1beta1
 kind: InfraEnv
 metadata:
- namespace: {{ .Cluster.Name }}
- name: {{ .Cluster.Name }}
+  namespace: {{ .Cluster.Name }}
+  name: {{ .Cluster.Name }}
 spec:
- clusterRef:
-   namespace: {{ .Cluster.Name }}
-   name: {{ .Cluster.Name }}
- pullSecretRef:
-   name: pull-secret-edgecluster-cluster
- nmStateConfigLabelSelector:
-   matchLabels:
-     nmstate_config_cluster_name: {{ .Cluster.Name }}
- ignitionConfigOverride: {{ execute "files/cfg-override-infraenv.json" . | json }}
- sshAuthorizedKey: {{ .Cluster.SSH.PublicKey | printf "%s" }}
+  clusterRef:
+    namespace: {{ .Cluster.Name }}
+    name: {{ .Cluster.Name }}
+  pullSecretRef:
+    name: pull-secret-edgecluster-cluster
+  nmStateConfigLabelSelector:
+    matchLabels:
+      nmstate_config_cluster_name: {{ .Cluster.Name }}
+  ignitionConfigOverride: {{ execute "files/cfg-override-infraenv.json" . | json }}
+  sshAuthorizedKey: {{ .Cluster.SSH.PublicKey | printf "%s" }}

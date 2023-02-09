@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
+	ignitionconfig "github.com/coreos/ignition/v2/config"
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/decorators"
@@ -194,6 +195,7 @@ var _ = Describe("Create cluster command", func() {
 		})
 
 		It("Creates the infrastructure environment", func() {
+			By("Creating the object")
 			object := &unstructured.Unstructured{}
 			object.SetGroupVersionKind(internal.InfraEnvGKV)
 			key := clnt.ObjectKey{
@@ -202,6 +204,18 @@ var _ = Describe("Create cluster command", func() {
 			}
 			err := client.Get(ctx, key, object)
 			Expect(err).ToNot(HaveOccurred())
+
+			By("Generating valid ignition configuration")
+			ignition, ok, err := unstructured.NestedString(
+				object.Object,
+				"spec",
+				"ignitionConfigOverride",
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(ok).To(BeTrue())
+			_, report, err := ignitionconfig.Parse([]byte(ignition))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(report.Entries).To(BeEmpty())
 		})
 
 		It("Creates the `nmstate` configuration environment", func() {
@@ -226,6 +240,7 @@ var _ = Describe("Create cluster command", func() {
 		})
 
 		It("Creates the bare metal host", func() {
+			By("Creating the object")
 			object := &unstructured.Unstructured{}
 			object.SetGroupVersionKind(internal.BareMetalHostGVK)
 			key := clnt.ObjectKey{
@@ -234,6 +249,15 @@ var _ = Describe("Create cluster command", func() {
 			}
 			err := client.Get(ctx, key, object)
 			Expect(err).ToNot(HaveOccurred())
+
+			By("Generating valid ignition configuration")
+			annotations := object.GetAnnotations()
+			Expect(annotations).ToNot(BeNil())
+			ignition, ok := annotations["bmac.agent-install.openshift.io/ignition-config-overrides"]
+			Expect(ok).To(BeTrue())
+			_, report, err := ignitionconfig.Parse([]byte(ignition))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(report.Entries).To(BeEmpty())
 		})
 
 		It("Creates the SSH secret", func() {
