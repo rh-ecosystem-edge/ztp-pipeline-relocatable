@@ -92,6 +92,14 @@ func (b *LoggerBuilder) SetLevel(value int) *LoggerBuilder {
 	return b
 }
 
+// SetFile sets the file that the logger will write to. This is optional, and if not specified
+// the the logger will write to a `ztp.log` file inside the `ztp` subdirectory of the user cache
+// directory. For example, in a Linux system the default file will be `~/.cache/ztp/ztp.log`
+func (b *LoggerBuilder) SetFile(value string) *LoggerBuilder {
+	b.file = value
+	return b
+}
+
 // Build uses the data stored in the buider to create a new logger.
 func (b *LoggerBuilder) Build() (result logr.Logger, err error) {
 	// Check parameters:
@@ -181,7 +189,7 @@ func (b *LoggerBuilder) openDefaultFile() (result io.Writer, err error) {
 }
 
 func (b *LoggerBuilder) openFile(file string) (result io.Writer, err error) {
-	result, err = os.OpenFile(file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0770)
+	result, err = os.OpenFile(file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0660)
 	return
 }
 
