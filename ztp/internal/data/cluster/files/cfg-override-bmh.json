@@ -43,7 +43,7 @@
       {
         "path": "/var/lib/ovnk/iface_default_hint",
         "mode": 492,
-        "override": true,
+        "overwrite": true,
         "contents": {
           "source": "data:text/plain;base64,{{ execute "files/iface_default_hint" . | base64 }}"
         }

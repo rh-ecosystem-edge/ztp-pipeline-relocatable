@@ -9,4 +9,5 @@ User=root
 Type=simple
 ExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"
 
-[Install]\nWantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
