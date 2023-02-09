@@ -502,4 +502,37 @@ var _ = Describe("Logger", func() {
 		Expect(msg.Msg).To(Equal("my message"))
 		Expect(lines[2]).To(BeEmpty())
 	})
+
+	It("Writes to the explicitly provided file", func() {
+		// Create a temporary directory for the log file:
+		tmp, err := os.MkdirTemp("", "*.test")
+		Expect(err).ToNot(HaveOccurred())
+		defer func() {
+			err := os.RemoveAll(tmp)
+			Expect(err).ToNot(HaveOccurred())
+		}()
+		file := filepath.Join(tmp, "my.log")
+
+		// Create the logger:
+		logger, err := NewLogger().
+			SetLevel(math.MaxInt).
+			SetFile(file).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the file has been created:
+		info, err := os.Stat(file)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(info.Size()).To(BeNumerically(">=", 0))
+
+		// Check that the file has read and write permissions for the owner:
+		Expect(info.Mode() & 0400).ToNot(BeZero())
+		Expect(info.Mode() & 0200).ToNot(BeZero())
+
+		// Check that the file doesn't have execution permissions:
+		Expect(info.Mode() & 0111).To(BeZero())
+	})
 })
