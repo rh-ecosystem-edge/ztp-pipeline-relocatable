@@ -93,7 +93,7 @@ var _ = Describe("Create cluster command", func() {
 					"auths": {
 						"cloud.openshift.com": {
 							"auth": "bXktdXNlcjpteS1wYXNz",
-							"email": "mary@example.com"
+							"email": "mary@my-domain.com"
 						}
 					}
 				}`),
