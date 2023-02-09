@@ -29,6 +29,7 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/table"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/pflag"
 )
 
 var _ = Describe("Logger", func() {
@@ -534,5 +535,48 @@ var _ = Describe("Logger", func() {
 
 		// Check that the file doesn't have execution permissions:
 		Expect(info.Mode() & 0111).To(BeZero())
+	})
+
+	It("Honors flags", func() {
+		// Create a temporary directory for the log file:
+		tmp, err := os.MkdirTemp("", "*.test")
+		Expect(err).ToNot(HaveOccurred())
+		defer func() {
+			err := os.RemoveAll(tmp)
+			Expect(err).ToNot(HaveOccurred())
+		}()
+		file := filepath.Join(tmp, "my.log")
+
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err = flags.Parse([]string{
+			"--log-level", "2",
+			"--log-file", file,
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		logger, err := NewLogger().
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write two messages, one that should be written and another that should be ignored
+		// because of the level configured:
+		logger.V(2).Info("good message")
+		logger.V(3).Info("bad message")
+
+		// Check that the file has been created:
+		info, err := os.Stat(file)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(info.Size()).To(BeNumerically(">=", 0))
+
+		// Check that the good message has been written and the bad message hasn't:
+		data, err := os.ReadFile(file)
+		Expect(err).ToNot(HaveOccurred())
+		text := string(data)
+		Expect(text).To(ContainSubstring("good message"))
+		Expect(text).ToNot(ContainSubstring("bad message"))
 	})
 })
