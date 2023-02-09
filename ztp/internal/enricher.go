@@ -26,6 +26,7 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"golang.org/x/crypto/ssh"
@@ -356,6 +357,7 @@ func (e *Enricher) setDNSDomain(ctx context.Context, cluster *models.Cluster) er
 }
 
 func (e *Enricher) getDNSDomain(ctx context.Context) (result string, err error) {
+	// Get the domain name used by the default ingress controller:
 	object := &unstructured.Unstructured{}
 	object.SetGroupVersionKind(IngressControllerGVK)
 	key := clnt.ObjectKey{
@@ -366,7 +368,23 @@ func (e *Enricher) getDNSDomain(ctx context.Context) (result string, err error) 
 	if err != nil {
 		return
 	}
-	err = e.jq.Query(`.status.domain`, object, &result)
+	var domain string
+	err = e.jq.Query(`.status.domain`, object, &domain)
+
+	// The domain name used by the ingress controller will be something like
+	// `apps.my-cluster.my-domain.com` and we want to use only `my-domain.com` as the base
+	// domain for the clusters that we create, so we need to remove the first two labels:
+	labels := strings.Split(domain, ".")
+	if len(labels) < 3 {
+		err = fmt.Errorf(
+			"failed to extract base DNS domain from ingress controller domain '%s' "+
+				"because it only contains %d labels and at least 3 are required",
+			domain, len(labels),
+		)
+		return
+	}
+	result = strings.Join(labels[2:], ".")
+
 	return
 }
 

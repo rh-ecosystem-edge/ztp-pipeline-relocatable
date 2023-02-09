@@ -179,7 +179,7 @@ var _ = Describe("Enricher", func() {
 				"auths": {
 					"cloud.openshift.com": {
 						"auth": "eW91ci11c2VyOnlvdXItcGFzcw==",
-						"email": "joe@example.com"
+						"email": "joe@my-domain.com"
 					},
 				}
 			}`)
@@ -239,7 +239,7 @@ var _ = Describe("Enricher", func() {
 				"auths": {
 					"cloud.openshift.com": {
 						"auth": "bXktdXNlcjpteS1wYXNz",
-						"email": "mary@example.com"
+						"email": "mary@my-domain.com"
 					}
 				}
 			}`))
@@ -299,7 +299,7 @@ var _ = Describe("Enricher", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the flag has been set:
-			Expect(config.Clusters[0].DNS.Domain).To(Equal("example.com"))
+			Expect(config.Clusters[0].DNS.Domain).To(Equal("my-domain.com"))
 		})
 
 		It("Fails if the OCP version property isn't set", func() {

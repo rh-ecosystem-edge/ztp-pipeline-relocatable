@@ -4,4 +4,4 @@ metadata:
   namespace: openshift-ingress-operator
   name: default
 status:
-  domain: example.com
+  domain: apps.my-hub.my-domain.com
