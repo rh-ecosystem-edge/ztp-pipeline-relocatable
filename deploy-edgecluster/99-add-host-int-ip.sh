@@ -9,13 +9,11 @@ if [[ "$1" == "${DEV}"  ]] && [ $NUM_INT_IP -eq 0 ];
 then
     if [[ "${NODE_IP}" == "" ]];
     then
-	 EXT_IP=$(ip -j -4 a s dev ${DEV} | jq -r ".[0].addr_info[0].local")
-	 IP_SUFFIX=$(echo $EXT_IP | awk -F. '{print $4}')
-	 NEW_IP="192.168.7.${IP_SUFFIX}"
+	 NEW_IP=$(nmcli conn show ${DEV}.0 | grep "ipv4.addresses" | awk '{split($2, a, "/"); print a[1]}')
     else
 	 NEW_IP=${NODE_IP}
-    	 nmcli connection modify ${DEV} +ipv4.addresses ${NEW_IP}/24 ipv4.method auto
     fi
 
+    nmcli connection modify ${DEV} +ipv4.addresses ${NEW_IP}/24 ipv4.method auto
     ip addr add ${NEW_IP}/24 dev ${DEV}
 fi

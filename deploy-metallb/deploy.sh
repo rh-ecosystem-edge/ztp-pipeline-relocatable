@@ -317,6 +317,7 @@ if ! ./verify.sh; then
         verify_remote_resource ${edgecluster} "openshift-ingress" "service" "metallb-ingress" "."
 
         check_external_access ${edgecluster}
+	oc --kubeconfig=${EDGE_KUBECONFIG} patch network.operator/cluster --type merge -p '{"spec":{"defaultNetwork":{"ovnKubernetesConfig":{"gatewayConfig":{"routingViaHost":true}}}}}'
         echo ">>>> Edge-cluster ${edgecluster} finished!"
         let index++
     done

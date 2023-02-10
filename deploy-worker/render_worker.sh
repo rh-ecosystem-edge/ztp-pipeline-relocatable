@@ -28,7 +28,6 @@ create_worker_definitions() {
     for worker in $(seq 0 $((NUM_W - 1))); do
         export CHANGE_EDGE_WORKER_PUB_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_int_static" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
-        export CHANGE_EDGE_WORKER_PUB_INT_IP=192.168.7.13
         export EDGE_MASTER_0_INT_IP=192.168.7.10
         export CHANGE_EDGE_WORKER_PUB_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.mac_int_static" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_BMC_USERNAME=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.bmc_user" ${EDGECLUSTERS_FILE} | base64)
@@ -38,13 +37,12 @@ create_worker_definitions() {
         export CHANGE_EDGE_WORKER_ROOT_DISK=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.root_disk" ${EDGECLUSTERS_FILE})
 
         if [[ ${CHANGE_EDGE_WORKER_PUB_INT} == "null" ]]; then
-        	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_WORKER_MGMT_INT}.102" | base64 -w0)
-        else
-        	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_WORKER_PUB_INT}" | base64 -w0)
+            	export CHANGE_EDGE_WORKER_PUB_INT="${CHANGE_EDGE_WORKER_MGMT_INT}.0"
         fi
 
 	export STATIC_IP_INTERFACE=br-ex
 	export NODE_IP="192.168.7.2${worker}"
+        export CHANGE_EDGE_WORKER_PUB_INT_IP="$NODE_IP"
         envsubst '$STATIC_IP_INTERFACE $NODE_IP' <99-add-host-int-ip.sh >${OUTPUTDIR}/99-add-host-int-ip-w$worker.sh
         export STATIC_IP_SINGLE_NIC=$(base64 ${OUTPUTDIR}/99-add-host-int-ip-w$worker.sh -w0)
 
@@ -89,9 +87,6 @@ spec:
          auto-routes: true
        mtu: 1500
        mac-address: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
-EOF
-        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} != "null" ]]; then
-            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_WORKER_PUB_INT
        type: ethernet
        state: up
@@ -105,9 +100,6 @@ EOF
            - ip: $CHANGE_EDGE_WORKER_PUB_INT_IP
              prefix-length: $CHANGE_EDGE_WORKER_PUB_INT_MASK
        mtu: 1500
-EOF
-        fi
-        cat <<EOF >>${OUTPUT}
    dns-resolver:
      config:
        server:

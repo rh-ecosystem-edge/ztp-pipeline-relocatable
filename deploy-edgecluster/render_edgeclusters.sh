@@ -255,6 +255,11 @@ EOF
         export CHANGE_EDGE_MASTER_MGMT_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].[].master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_MASTER_ROOT_DISK=$(yq eval ".edgeclusters[${edgeclusternumber}].[].master${master}.root_disk" ${EDGECLUSTERS_FILE})
 
+	if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} == "null" ]];
+	then
+            export CHANGE_EDGE_MASTER_PUB_INT="${CHANGE_EDGE_MASTER_MGMT_INT}.0"
+        fi
+
 	export STATIC_IP_INTERFACE=br-ex
 	export NODE_IP="192.168.7.1${master}"
         envsubst '$STATIC_IP_INTERFACE $NODE_IP' <99-add-host-int-ip.sh >${OUTPUTDIR}/99-add-host-int-ip-m$master.sh
@@ -312,9 +317,6 @@ EOF
             cat <<EOF >>${OUTPUT}
        mtu: 1500
        mac-address: '$CHANGE_EDGE_MASTER_MGMT_INT_MAC'
-EOF
-        if [[ ${CHANGE_EDGE_MASTER_PUB_INT_MAC} != "null" ]]; then
-            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_MASTER_PUB_INT
        type: ethernet
        state: up
@@ -331,7 +333,6 @@ EOF
              prefix-length: $CHANGE_EDGE_MASTER_PUB_INT_MASK
        mtu: 1500
 EOF
-        fi
         echo ">> Checking Ignored Interfaces"
         echo "Edge-cluster: ${cluster}"
         echo "Master: ${master}"
