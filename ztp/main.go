@@ -21,6 +21,7 @@ import (
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	createcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/create"
+	deletecmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/delete"
 	devcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev"
 	versioncmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/version"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
@@ -40,6 +41,7 @@ func main() {
 		AddCommand(createcmd.Cobra).
 		AddCommand(devcmd.Cobra).
 		AddCommand(versioncmd.Cobra).
+		AddCommand(deletecmd.Cobra).
 		Build()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())

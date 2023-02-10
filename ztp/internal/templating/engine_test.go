@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/go-logr/logr"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/table"
 	. "github.com/onsi/gomega"
@@ -445,4 +446,28 @@ var _ = Describe("Engine", func() {
 			`{"x":42,"y":24}`,
 		),
 	)
+
+	Context("Template function 'uuid'", func() {
+		It("Generates valid UUIDs", func() {
+			// Create the file system:
+			tmp, fsys := TmpFS(
+				"myuuid.txt", `{{ uuid }}`,
+			)
+			defer os.RemoveAll(tmp)
+
+			// Create the engine:
+			engine, err := NewEngine().
+				SetLogger(logger).
+				SetFS(fsys).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+
+			// Execute the template:
+			buffer := &bytes.Buffer{}
+			err = engine.Execute(buffer, "myuuid.txt", nil)
+			Expect(err).ToNot(HaveOccurred())
+			_, err = uuid.Parse(buffer.String())
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
 })

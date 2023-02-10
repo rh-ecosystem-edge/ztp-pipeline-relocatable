@@ -25,6 +25,7 @@ import (
 	tmpl "text/template"
 
 	"github.com/go-logr/logr"
+	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
 )
 
@@ -101,6 +102,7 @@ func (b *EngineBuilder) Build() (result *Engine, err error) {
 		"base64":  e.base64Func,
 		"execute": e.executeFunc,
 		"json":    e.jsonFunc,
+		"uuid":    e.uuidFunc,
 	})
 
 	// Find and parse the template files:
@@ -253,4 +255,9 @@ func (e *Engine) jsonFunc(data any) (result string, err error) {
 	}
 	result = string(text)
 	return
+}
+
+// uuidFunc is a template function that generates a random UUID.
+func (e *Engine) uuidFunc() string {
+	return uuid.NewString()
 }
