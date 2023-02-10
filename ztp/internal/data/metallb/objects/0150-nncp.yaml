@@ -1,0 +1,26 @@
+{{ range .Cluster.Nodes }}
+---
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: {{ .Name }}-nncp
+spec:
+  parallel: true
+  nodeSelector:
+    kubernetes.io/hostname: {{ .Name }}
+  desiredState:
+    interfaces:
+    - ipv4:
+        auto-dns: true
+        auto-gateway: true
+        auto-route-table-id: 0
+        auto-routes: true
+        dhcp: true
+        enabled: true
+      lldp:
+        enabled: false
+      mtu: 1500
+      name: {{ .ExternalNIC.Name }}
+      state: up
+      type: ethernet
+{{ end }}

@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	createclustercmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/create/cluster"
+	createmetallbcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/create/metallb"
 )
 
 // Cobra creates and returns the `create` command.
@@ -28,5 +29,6 @@ func Cobra() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	result.AddCommand(createclustercmd.Cobra())
+	result.AddCommand(createmetallbcmd.Cobra())
 	return result
 }

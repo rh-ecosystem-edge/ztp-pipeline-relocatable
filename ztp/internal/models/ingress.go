@@ -16,4 +16,5 @@ package models
 
 type Ingress struct {
 	VIP string
+	IP  string
 }

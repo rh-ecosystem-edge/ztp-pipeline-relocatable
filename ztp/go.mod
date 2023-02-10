@@ -8,6 +8,7 @@ require (
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/uuid v1.3.0
 	github.com/iancoleman/strcase v0.2.0
+	github.com/miekg/dns v1.1.50
 	github.com/onsi/ginkgo/v2 v2.8.0
 	github.com/onsi/gomega v1.26.0
 	github.com/spf13/cobra v1.6.1
@@ -29,6 +30,8 @@ require (
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
+	golang.org/x/mod v0.7.0 // indirect
+	golang.org/x/tools v0.5.0 // indirect
 )
 
 require (

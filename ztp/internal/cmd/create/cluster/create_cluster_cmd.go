@@ -45,6 +45,7 @@ func Cobra() *cobra.Command {
 	}
 	flags := result.Flags()
 	config.AddFlags(flags)
+	internal.AddEnricherFlags(flags)
 	flags.StringVarP(
 		&c.flags.output,
 		"output",
@@ -136,6 +137,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	enricher, err := internal.NewEnricher().
 		SetLogger(c.logger).
 		SetClient(c.client).
+		SetFlags(cmd.Flags()).
 		Build()
 	if err != nil {
 		c.console.Error(
@@ -316,7 +318,7 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 
 	// Watch the agent cluster install till the status is `ready`:
 	list := &unstructured.UnstructuredList{}
-	list.SetGroupVersionKind(internal.AgentClusterIntallGVK)
+	list.SetGroupVersionKind(internal.AgentClusterInstallGVK)
 	watch, err := c.client.Watch(
 		ctx,
 		list,

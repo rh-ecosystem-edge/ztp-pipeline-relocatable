@@ -43,7 +43,6 @@ import (
 
 var _ = Describe("Enricher", Ordered, func() {
 	var (
-		ctx      context.Context
 		logger   logr.Logger
 		client   *Client
 		registry *ghttp.Server
@@ -113,19 +112,21 @@ var _ = Describe("Enricher", Ordered, func() {
 
 	Context("Usage", func() {
 		var (
-			enricher   *Enricher
+			ctx        context.Context
+			name       string
 			properties map[string]string
+			enricher   *Enricher
+			dns        *DNSServer
 		)
 
 		BeforeEach(func() {
 			var err error
 
-			// Create the enricher:
-			enricher, err = NewEnricher().
-				SetLogger(logger).
-				SetClient(client).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
+			// Create a context:
+			ctx = context.Background()
+
+			// Generate a random cluster name:
+			name = fmt.Sprintf("my-%s", uuid.NewString())
 
 			// Prepare the default properties. These are convenient in most tests
 			// because otherwise the enricher will try to fetch the `release.txt` file
@@ -137,23 +138,24 @@ var _ = Describe("Enricher", Ordered, func() {
 				"clusterimageset":  "openshift-v4.10.38",
 			}
 
+			// Prepare the DNS server:
+			dns = NewDNSServer()
+			DeferCleanup(dns.Close)
+			dns.AddZone("my-domain.com")
+			dns.AddHost(fmt.Sprintf("api.%s.my-domain.com", name), "192.168.150.100")
+			dns.AddHost(fmt.Sprintf("apps.%s.my-domain.com", name), "192.168.150.101")
+
 			// Create the enricher:
 			enricher, err = NewEnricher().
 				SetLogger(logger).
 				SetClient(client).
+				SetResolver(dns.Address()).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		BeforeEach(func() {
-			// Create a context:
-			ctx = context.Background()
-
-		})
-
 		It("Sets the SNO flag to true when there is only one control plane node", func() {
 			// Create the config:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -177,7 +179,6 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		It("Sets the SNO flag to false when there are three control plane nodes", func() {
 			// Create the config:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -219,7 +220,6 @@ var _ = Describe("Enricher", Ordered, func() {
 			}`)
 
 			// Create the config with that pull secret:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -244,7 +244,6 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		It("Gets the pull secret from the environment", func() {
 			// Create the config without a pull secret:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -274,14 +273,18 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Doesn't change the DNS domain if already set", func() {
+			// Prepare the DNS server:
+			dns.AddZone("your-domain.com")
+			dns.AddHost(fmt.Sprintf("api.%s.your-domain.com", name), "192.168.150.100")
+			dns.AddHost(fmt.Sprintf("apps.%s.your-domain.com", name), "192.168.150.101")
+
 			// Create the cluster:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
 					Name: name,
 					DNS: models.DNS{
-						Domain: "example.net",
+						Domain: "your-domain.com",
 					},
 					Nodes: []*models.Node{
 						{
@@ -297,12 +300,11 @@ var _ = Describe("Enricher", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the flag has been set:
-			Expect(config.Clusters[0].DNS.Domain).To(Equal("example.net"))
+			Expect(config.Clusters[0].DNS.Domain).To(Equal("your-domain.com"))
 		})
 
 		It("Gets the DNS domain from the default ingress controller of the hub", func() {
 			// Create the config:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -434,7 +436,6 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Sets the hardcoded cluster CIDR", func() {
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -457,7 +458,6 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Sets the hardcoded machine CIDR", func() {
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -479,7 +479,6 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Sets the hardcoded service CIDR", func() {
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -501,7 +500,6 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Sets the hardcoded internal IP addresses for multiple nodes", func() {
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -570,7 +568,6 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Sets the hardcoded internal IP addresses for SNO", func() {
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -612,7 +609,6 @@ var _ = Describe("Enricher", Ordered, func() {
 			})
 
 			// Create the cluster with the SSH keys already set:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -645,7 +641,6 @@ var _ = Describe("Enricher", Ordered, func() {
 			})
 
 			// Create the namespace:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			namespace := &corev1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: name,
@@ -690,7 +685,6 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		It("Takes external IP addresses from agents", func() {
 			// Prepare the agents:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			data := map[string]any{
 				"Name":    name,
 				"Indexes": []int{0, 1, 2},
@@ -777,7 +771,6 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		It("Takes kubeconfig from secret", func() {
 			// Prepare the secret:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			data := map[string]any{
 				"Name": name,
 			}
@@ -830,7 +823,6 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		It("Doesn't change kubeconfig if already set", func() {
 			// Enrich the cluster:
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -856,8 +848,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			Expect(config.Properties).To(HaveKeyWithValue("clusterimageset", "openshift-v4.10.38"))
 		})
 
-		It("Doesn't change the cluster image set if already set", func() {
-			name := fmt.Sprintf("my-%s", uuid.NewString())
+		It("Finds the API and ingress addresses via DNS", func() {
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -871,7 +862,6 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Doesn't change the cluster image set if already set", func() {
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -897,7 +887,6 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		It("Copies non default registry to the clusters", func() {
 			properties["REGISTRY"] = registry.Addr()
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -913,7 +902,6 @@ var _ = Describe("Enricher", Ordered, func() {
 		It("Fetches the registry CA certificates", func() {
 			// Create the cluster with the custom registry:
 			properties["REGISTRY"] = registry.Addr()
-			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
@@ -934,6 +922,8 @@ var _ = Describe("Enricher", Ordered, func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 			defer conn.Close()
+			Expect(cluster.API.IP).To(Equal("192.168.150.100"))
+			Expect(cluster.Ingress.IP).To(Equal("192.168.150.101"))
 		})
 	})
 })

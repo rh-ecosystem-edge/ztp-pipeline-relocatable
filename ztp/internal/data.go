@@ -32,3 +32,8 @@ var DataFS embed.FS
 //go:generate get data/dev/crds/0060_nmstateconfig.yaml       https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_nmstateconfigs.yaml
 //go:generate get data/dev/crds/0070_baremetalhost.yaml       https://raw.githubusercontent.com/metal3-io/baremetal-operator/v0.2.0/config/crd/bases/metal3.io_baremetalhosts.yaml
 //go:generate get data/dev/crds/0080_olm.yaml                 https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/v0.23.1/deploy/upstream/quickstart/crds.yaml
+//go:generate get data/dev/crds/0090_metallb.yaml             https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_metallbs.yaml
+//go:generate get data/dev/crds/0100_ipaddresspool.yaml       https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_ipaddresspools.yaml
+//go:generate get data/dev/crds/0110_l2adverisements.yaml     https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_l2advertisements.yaml
+//go:generate get data/dev/crds/0120_nmstate.yaml             https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nmstates.yaml
+//go:generate get data/dev/crds/0130_ncnp.yaml                https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nodenetworkconfigurationpolicies.yaml

@@ -12,23 +12,26 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package config
+package internal
 
-import "github.com/spf13/pflag"
+import (
+	"github.com/spf13/pflag"
+)
 
-// AddFlags adds the flags related to configuration to the given flag set.
-func AddFlags(set *pflag.FlagSet) {
-	_ = set.StringP(
-		configFlagName,
-		"c",
+// AddEnricherFlags adds the enricher flags to the given flag set.
+func AddEnricherFlags(set *pflag.FlagSet) {
+	_ = set.String(
+		enricherResolverFlagName,
 		"",
-		"If this is the name of a file with extension '.yaml' or '.yml' then the "+
-			"configuration text will be loaded from that file. Otherwise the "+
-			"value should be the YAML text itself.",
+		"IP address and port number of the DNS server, for example 127.0.0.1:53. "+
+			"The default is to use the DNS server globally configured in the "+
+			"machine and there is usually no reason to change it; it is "+
+			"intended for use in tests.",
 	)
+	_ = set.MarkHidden(enricherResolverFlagName)
 }
 
 // Names of the flags:
 const (
-	configFlagName = "config"
+	enricherResolverFlagName = "resolver"
 )

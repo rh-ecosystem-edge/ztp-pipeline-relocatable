@@ -26,12 +26,12 @@ var (
 	}
 	AgentListGVK = listGVK(AgentGVK)
 
-	AgentClusterIntallGVK = schema.GroupVersionKind{
+	AgentClusterInstallGVK = schema.GroupVersionKind{
 		Group:   "extensions.hive.openshift.io",
 		Version: "v1beta1",
 		Kind:    "AgentClusterInstall",
 	}
-	AgentClusterIntallListGVK = listGVK(AgentClusterIntallGVK)
+	AgentClusterInstallListGVK = listGVK(AgentClusterInstallGVK)
 
 	BareMetalHostGVK = schema.GroupVersionKind{
 		Group:   "metal3.io",
