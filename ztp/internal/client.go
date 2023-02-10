@@ -89,14 +89,12 @@ func (b *ClientBuilder) Build() (result clnt.WithWatch, err error) {
 	// Load the configuration:
 	config, err := b.loadConfig()
 	if err != nil {
-		err = fmt.Errorf("failed to load configuration: %v", err)
 		return
 	}
 
 	// Create the client:
 	delegate, err := clnt.NewWithWatch(config, clnt.Options{})
 	if err != nil {
-		err = fmt.Errorf("failed to create delegate: %v", err)
 		return
 	}
 
@@ -111,17 +109,18 @@ func (b *ClientBuilder) Build() (result clnt.WithWatch, err error) {
 
 func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 	// Load the configuration:
-	var restCfg *rest.Config
+	var clientCfg clientcmd.ClientConfig
 	if b.kubeconfig != nil {
-		restCfg, err = b.loadExplicitConfig()
-		if err != nil {
-			return
-		}
+		clientCfg, err = b.loadExplicitConfig()
 	} else {
-		restCfg, err = b.loadDefaultConfig()
-		if err != nil {
-			return
-		}
+		clientCfg, err = b.loadDefaultConfig()
+	}
+	if err != nil {
+		return
+	}
+	restCfg, err := clientCfg.ClientConfig()
+	if err != nil {
+		return
 	}
 
 	// Wrap the REST transport so that the details of the requests and responses are written to
@@ -139,67 +138,73 @@ func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 	return
 }
 
-// loadDefaultConfig loads the configuration from the typical default locations, the
-// `~/.kube/config` file, the `KUBECONFIG` variable, etc.
-func (b *ClientBuilder) loadDefaultConfig() (result *rest.Config, err error) {
-	var cfgFile string
-	if b.env != nil {
-		cfgFile = b.env["KUBECONFIG"]
+// loadDefaultConfig loads the configuration from the typical default locations, the `KUBECONFIG`
+// environment variable and the ~/.kube/config` file.
+func (b *ClientBuilder) loadDefaultConfig() (result clientcmd.ClientConfig, err error) {
+	// Check if the `KUBECONFIG` environment variable is set:
+	kcEnv, kcEnvSet := b.env["KUBECONFIG"]
+
+	// Check if the `~/.kube/config` file exists:
+	var homeDir string
+	homeDir, err = os.UserHomeDir()
+	if err != nil {
+		return
 	}
-	if cfgFile == "" {
-		var homeDir string
-		homeDir, err = os.UserHomeDir()
-		if err != nil {
+	kcFile := filepath.Join(homeDir, ".kube", "config")
+	var kcFileExists bool
+	_, err = os.Stat(kcFile)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			kcFileExists = false
+		} else {
 			return
 		}
-		cfgFile = filepath.Join(homeDir, ".kube", "config")
+	} else {
+		kcFileExists = true
 	}
-	cfgData, err := os.ReadFile(cfgFile)
-	if errors.Is(err, os.ErrNotExist) {
-		err = fmt.Errorf("kubeconfig file '%s' doesn't exist", cfgFile)
+
+	// Report an error if the environment variable isn't set and the file doesn't exist:
+	if !kcEnvSet && !kcFileExists {
+		err = fmt.Errorf(
+			"failed to load configuration because environment variable 'KUBECONFIG' "+
+				"isn't set and file '%s' doesn't exist",
+			kcFile,
+		)
 		return
 	}
+
+	// Try to read and parse the configuration file:
+	if kcEnvSet {
+		kcFile = kcEnv
+	}
+	kcData, err := os.ReadFile(kcFile)
 	if err != nil {
-		err = fmt.Errorf("failed to read kubeconfig file '%s': %v", cfgFile, err)
+		err = fmt.Errorf("failed to read configuration file '%s'", kcFile)
 		return
 	}
-	config, err := clientcmd.NewClientConfigFromBytes(cfgData)
-	if err != nil {
-		err = fmt.Errorf("failed to parse kubeconfig file '%s': %v", cfgFile, err)
-		return
-	}
-	result, err = config.ClientConfig()
+	result, err = clientcmd.NewClientConfigFromBytes(kcData)
 	return
 }
 
 // loadExplicitConfig loads the configuration from the kubeconfig data set explicitly in the
 // builder.
-func (b *ClientBuilder) loadExplicitConfig() (result *rest.Config, err error) {
-	var clientCfg clientcmd.ClientConfig
-	switch typedCfg := b.kubeconfig.(type) {
+func (b *ClientBuilder) loadExplicitConfig() (result clientcmd.ClientConfig, err error) {
+	switch typed := b.kubeconfig.(type) {
 	case []byte:
-		clientCfg, err = clientcmd.NewClientConfigFromBytes(typedCfg)
-		if err != nil {
-			return
-		}
+		result, err = clientcmd.NewClientConfigFromBytes(typed)
 	case string:
-		var cfgData []byte
-		cfgData, err = os.ReadFile(typedCfg)
+		var kcData []byte
+		kcData, err = os.ReadFile(typed)
 		if err != nil {
 			return
 		}
-		clientCfg, err = clientcmd.NewClientConfigFromBytes(cfgData)
-		if err != nil {
-			return
-		}
+		result, err = clientcmd.NewClientConfigFromBytes(kcData)
 	default:
 		err = fmt.Errorf(
 			"kubeconfig must be an array of bytes or a file name, but it is of type %T",
 			b.kubeconfig,
 		)
-		return
 	}
-	result, err = clientCfg.ClientConfig()
 	return
 }
 

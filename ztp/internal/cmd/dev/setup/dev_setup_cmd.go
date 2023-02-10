@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
+	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
@@ -41,6 +42,8 @@ func Cobra() *cobra.Command {
 type Command struct {
 	logger logr.Logger
 	tool   *internal.Tool
+	env    map[string]string
+	client clnt.WithWatch
 }
 
 // NewCommand creates a new runner that knows how to execute the `dev setup` command.
@@ -58,19 +61,20 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	c.tool = internal.ToolFromContext(ctx)
 
 	// Get the environment:
-	env := c.tool.Env()
+	c.env = c.tool.Env()
 
 	// Create the client for the API:
-	client, err := internal.NewClient().
+	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
-		SetEnv(env).
+		SetEnv(c.env).
 		Build()
 	if err != nil {
-		err = fmt.Errorf(
-			"failed to create client: %v",
+		fmt.Fprintf(
+			c.tool.Err(),
+			"Failed to create client: %v\n",
 			err,
 		)
-		return
+		return exit.Error(1)
 	}
 
 	// Create the objects:
@@ -82,14 +86,14 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	if err != nil {
 		fmt.Fprintf(
 			c.tool.Err(),
-			"Failed to create applier listener: %v\n",
+			"Failed to create listener: %v\n",
 			err,
 		)
 		return exit.Error(1)
 	}
 	applier, err := internal.NewApplier().
 		SetLogger(c.logger).
-		SetClient(client).
+		SetClient(c.client).
 		SetListener(listener.Func).
 		SetFS(internal.DataFS).
 		SetRoot("data/dev").
@@ -104,11 +108,11 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		)
 		return exit.Error(1)
 	}
-	err = applier.Apply(ctx, nil)
+	err = applier.Create(ctx, nil)
 	if err != nil {
 		fmt.Fprintf(
 			c.tool.Err(),
-			"Failed to apply objects: %v\n",
+			"Failed to create objects: %v\n",
 			err,
 		)
 		return exit.Error(1)

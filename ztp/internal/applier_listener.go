@@ -107,10 +107,16 @@ func (l *ApplierListener) Func(event *ApplierEvent) {
 			"Created %s '%s'\n",
 			friendlyKind, friendlyName,
 		)
-	case ApplierObjectExists:
+	case ApplierObjectExist:
 		fmt.Fprintf(
 			l.out,
 			"%s '%s' already exists\n",
+			capitalizedKind, friendlyName,
+		)
+	case ApplierObjectNotExist:
+		fmt.Fprintf(
+			l.out,
+			"%s '%s' doesn't exist\n",
 			capitalizedKind, friendlyName,
 		)
 	case ApplierObjectError:
@@ -130,6 +136,12 @@ func (l *ApplierListener) Func(event *ApplierEvent) {
 			l.err,
 			"Failed to update status of %s '%s': %v\n",
 			friendlyKind, friendlyName, event.Error,
+		)
+	case ApplierObjectDeleted:
+		fmt.Fprintf(
+			l.err,
+			"Deleted %s '%s'\n",
+			friendlyKind, friendlyName,
 		)
 	default:
 		l.logger.Info(

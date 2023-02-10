@@ -16,12 +16,17 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
 	"os"
+	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -291,6 +296,103 @@ var _ = Describe("Applier", func() {
 			Expect(data).To(HaveKeyWithValue("my-bytes", "AQID"))
 			Expect(data).To(HaveKeyWithValue("my-int", 42))
 			Expect(data).To(HaveKeyWithValue("my-ip", "192.168.122.1"))
+		})
+
+		It("Deletes namespace only when objects are gone", func() {
+			// Prepare a namespace with an object that has a finalizer, so the applier
+			// will have to wait till that finalizer is removed before removing the
+			// namespace:
+			tmp, fsys := TmpFS(
+				"objects.yaml",
+				Dedent(`
+					apiVersion: v1
+					kind: Namespace
+					metadata: 
+					  name: {{ .Namespace }}
+					---
+					apiVersion: v1
+					kind: ConfigMap
+					metadata: 
+					  namespace: {{ .Namespace }}
+					  name: my
+					  finalizers:
+					  - my/finalizer
+				`),
+			)
+			defer func() {
+				err := os.RemoveAll(tmp)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			// Create the applier:
+			applier, err := NewApplier().
+				SetLogger(logger).
+				SetFS(fsys).
+				SetClient(client).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+
+			// Prepare the data for the templates:
+			id := fmt.Sprintf("my-%s", uuid.NewString())
+			data := map[string]any{
+				"Namespace": id,
+			}
+
+			// Create the objects:
+			err = applier.Create(ctx, data)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Delete the objects in a separate goroutine with a reasonable timeout.
+			// This is needed because the applier will wait till the object is
+			// completely deleted, and it won't be till we remove the finalizer.
+			go func() {
+				defer GinkgoRecover()
+				ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+				defer cancel()
+				err = applier.Delete(ctx, data)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			// Wait till the applier has sent the request to delete the object, so that
+			// the object will have the deletion timestamp set.
+			object := &corev1.ConfigMap{}
+			key := clnt.ObjectKey{
+				Namespace: id,
+				Name:      "my",
+			}
+			Eventually(func(g Gomega) bool {
+				err = client.Get(ctx, key, object)
+				g.Expect(err).ToNot(HaveOccurred())
+				return !object.DeletionTimestamp.IsZero()
+			}).Should(BeTrue())
+
+			// Check that the namespace hasn't been deleted yet:
+			namespace := &corev1.Namespace{}
+			key = clnt.ObjectKey{
+				Name: id,
+			}
+			err = client.Get(ctx, key, namespace)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(namespace.DeletionTimestamp).To(BeZero())
+
+			// Remove the finalizer:
+			patched := object.DeepCopy()
+			patched.Finalizers = nil
+			err = client.Patch(ctx, patched, clnt.MergeFrom(object))
+			Expect(err).ToNot(HaveOccurred())
+
+			// Wait till the namespace has been completely deleted:
+			Eventually(
+				func(g Gomega) bool {
+					err = client.Get(ctx, key, namespace)
+					if apierrors.IsNotFound(err) {
+						return true
+					}
+					g.Expect(err).ToNot(HaveOccurred())
+					return false
+				},
+				1*time.Minute,
+			).Should(BeTrue())
 		})
 	})
 })
