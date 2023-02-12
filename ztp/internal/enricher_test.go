@@ -22,6 +22,7 @@ import (
 	"encoding/pem"
 	"math"
 	"net/http"
+	"os"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -42,7 +43,7 @@ var _ = Describe("Enricher", func() {
 	var (
 		ctx    context.Context
 		logger logr.Logger
-		client clnt.Client
+		client clnt.WithWatch
 	)
 
 	BeforeEach(func() {
@@ -739,6 +740,90 @@ var _ = Describe("Enricher", func() {
 			cluster := config.Clusters[0]
 			Expect(cluster.SSH.PublicKey).To(Equal(publicKey))
 			Expect(cluster.SSH.PrivateKey).To(Equal(privateKey))
+		})
+
+		It("Takes external IP addresses from agents", func() {
+			// Prepare the agents:
+			tmp, fsys := TmpFS(
+				"objects.yaml",
+				Dedent(`
+					---
+					apiVersion: v1
+					kind: Namespace
+					metadata:
+					  name: my-cluster
+					{{ range . }}
+					---
+					apiVersion: agent-install.openshift.io/v1beta1
+					kind: Agent
+					metadata:
+					  namespace: my-cluster
+					  name: master{{ . }}
+					status:
+					  inventory:
+					    interfaces:
+					    - flags: []
+					      macAddress: a2:87:c3:6d:61:d{{ . }}
+					      ipV4Addresses:
+					      - 192.168.150.10{{ . }}
+					      ipV6Addresses: []
+					{{ end }}
+				`),
+			)
+			defer os.RemoveAll(tmp)
+			data := []int{0, 1, 2}
+			applier, err := NewApplier().
+				SetLogger(logger).
+				SetClient(client).
+				SetFS(fsys).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := applier.Delete(ctx, data)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			err = applier.Create(ctx, data)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Enrich the cluster:
+			config := &models.Config{
+				Properties: map[string]string{
+					"OC_OCP_VERSION":   "4.10.38",
+					"OC_OCP_TAG":       "4.10.38-x86_64",
+					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				},
+				Clusters: []models.Cluster{{
+					Name: "my-cluster",
+					Nodes: []models.Node{
+						{
+							Name: "master0",
+							ExternalNIC: models.NIC{
+								MAC: "a2:87:c3:6d:61:d0",
+							},
+						},
+						{
+							Name: "master1",
+							ExternalNIC: models.NIC{
+								MAC: "a2:87:c3:6d:61:d1",
+							},
+						},
+						{
+							Name: "master2",
+							ExternalNIC: models.NIC{
+								MAC: "a2:87:c3:6d:61:d2",
+							},
+						},
+					},
+				}},
+			}
+			err = enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Verify external IP addresses:
+			cluster := config.Clusters[0]
+			Expect(cluster.Nodes[0].ExternalNIC.IP.String()).To(Equal("192.168.150.100"))
+			Expect(cluster.Nodes[1].ExternalNIC.IP.String()).To(Equal("192.168.150.101"))
+			Expect(cluster.Nodes[2].ExternalNIC.IP.String()).To(Equal("192.168.150.102"))
 		})
 	})
 })

@@ -19,6 +19,13 @@ import "k8s.io/apimachinery/pkg/runtime/schema"
 // This file contains constants for some GroupVersionKinds that are used frequently in the project.
 
 var (
+	AgentGVK = schema.GroupVersionKind{
+		Group:   "agent-install.openshift.io",
+		Version: "v1beta1",
+		Kind:    "Agent",
+	}
+	AgentListGVK = listGVK(AgentGVK)
+
 	AgentClusterIntallGVK = schema.GroupVersionKind{
 		Group:   "extensions.hive.openshift.io",
 		Version: "v1beta1",
