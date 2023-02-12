@@ -119,10 +119,16 @@ func (l *ApplierListener) Func(event *ApplierEvent) {
 			"%s '%s' doesn't exist\n",
 			capitalizedKind, friendlyName,
 		)
-	case ApplierObjectError:
+	case ApplierCreateError:
 		fmt.Fprintf(
 			l.err,
 			"Failed to create %s '%s': %v\n",
+			friendlyKind, friendlyName, event.Error,
+		)
+	case ApplierDeleteError:
+		fmt.Fprintf(
+			l.err,
+			"Failed to delete %s '%s': %v\n",
 			friendlyKind, friendlyName, event.Error,
 		)
 	case ApplierStatusUpdated:
@@ -143,6 +149,12 @@ func (l *ApplierListener) Func(event *ApplierEvent) {
 			"Deleted %s '%s'\n",
 			friendlyKind, friendlyName,
 		)
+	case ApplierWaitingCRD:
+		fmt.Fprintf(
+			l.err,
+			"Waiting for CRD before creating %s '%s'\n",
+			friendlyKind, friendlyName,
+		)
 	default:
 		l.logger.Info(
 			"Unknown applier event",
@@ -154,33 +166,12 @@ func (l *ApplierListener) Func(event *ApplierEvent) {
 }
 
 func (l *ApplierListener) friendlyKind(object *unstructured.Unstructured) string {
-	gvk := object.GetObjectKind().GroupVersionKind()
-	switch gvk.Kind {
-	case "AgentClusterInstall":
-		return "agent cluster install"
-	case "BareMetalHost":
-		return "bare metal host"
-	case "ConfigMap":
-		return "configmap"
-	case "ClusterDeployment":
-		return "cluster deployment"
-	case "CustomResourceDefinition":
-		return "CRD"
-	case "InfraEnv":
-		return "infrastructure environment"
-	case "IngressController":
-		return "ingress controller"
-	case "ManagedCluster":
-		return "managed cluster"
-	case "Namespace":
-		return "namespace"
-	case "NMStateConfig":
-		return "nmstate configuration"
-	case "Secret":
-		return "secret"
-	default:
-		return "object"
+	kind := object.GetKind()
+	result, ok := applierFriendlyKinds[kind]
+	if ok {
+		return result
 	}
+	return "object"
 }
 
 func (l *ApplierListener) friendlyName(object *unstructured.Unstructured) string {
@@ -199,4 +190,22 @@ func (l *ApplierListener) capitalize(s string) string {
 	r := []rune(s)
 	r[0] = unicode.ToUpper(r[0])
 	return string(r)
+}
+
+var applierFriendlyKinds = map[string]string{
+	"AgentClusterInstall":      "agent cluster install",
+	"BareMetalHost":            "bare metal host",
+	"CatalogSource":            "catalog source",
+	"ClusterDeployment":        "cluster deployment",
+	"ConfigMap":                "configmap",
+	"CustomResourceDefinition": "CRD",
+	"InfraEnv":                 "infrastructure environment",
+	"IngressController":        "ingress controller",
+	"ManagedCluster":           "managed cluster",
+	"MultiClusterEngine":       "multicluster engine",
+	"NMStateConfig":            "nmstate configuration",
+	"Namespace":                "namespace",
+	"OperatorGroup":            "operator group",
+	"Secret":                   "secret",
+	"Subscription":             "subscription",
 }
