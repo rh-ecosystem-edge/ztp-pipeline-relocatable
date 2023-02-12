@@ -252,4 +252,33 @@ var _ = Describe("JQ", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(x).To(Equal(42))
 	})
+
+	It("Accepts struct output", func() {
+		// Create the instance:
+		jq, err := NewJQ().
+			SetLogger(logger).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check that it writes into a struct option:
+		type Point struct {
+			X int `json:"x"`
+			Y int `json:"y"`
+		}
+		var p Point
+		err = jq.QueryString(
+			`{
+				"x": .x,
+				"y": .y
+			}`,
+			`{
+				"x": 42,
+				"y": 24
+			}`,
+			&p,
+		)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(p.X).To(Equal(42))
+		Expect(p.Y).To(Equal(24))
+	})
 })

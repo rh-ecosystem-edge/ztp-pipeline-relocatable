@@ -263,6 +263,7 @@ func (e *Enricher) enrichCluster(ctx context.Context, cluster *models.Cluster) e
 		e.setVIPs,
 		e.setNetworks,
 		e.setInternalIPs,
+		e.setExternalIPs,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, cluster)
@@ -463,6 +464,59 @@ func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.No
 	ip[len(ip)-1] = byte(10 + index)
 	node.InternalNIC.IP = ip
 	node.InternalNIC.Prefix, _ = enricherMachineCIDR.Mask.Size()
+
+	return nil
+}
+
+func (e *Enricher) setExternalIPs(ctx context.Context, cluster *models.Cluster) error {
+	// Fetch the agents for the nodes of the cluster:
+	agents := &unstructured.UnstructuredList{}
+	agents.SetGroupVersionKind(AgentGVK)
+	err := e.client.List(ctx, agents, clnt.InNamespace(cluster.Name))
+	if err != nil {
+		return err
+	}
+
+	// Index the IP addresses by MAC address:
+	index := map[string]string{}
+	type Pair struct {
+		MAC string `json:"mac"`
+		IP  string `json:"ip"`
+	}
+	for _, agent := range agents.Items {
+		var pairs []Pair
+		err = e.jq.Query(
+			`
+				.status.inventory.interfaces[] |
+				{ "mac": .macAddress, "ip": .ipV4Addresses[0] }
+			`,
+			agent.Object, &pairs,
+		)
+		if err != nil {
+			return err
+		}
+		for _, pair := range pairs {
+			if pair.MAC != "" && pair.IP != "" {
+				index[strings.ToLower(pair.MAC)] = pair.IP
+			}
+		}
+	}
+
+	// Find the IP address for each external interface:
+	for i, node := range cluster.Nodes {
+		mac := node.ExternalNIC.MAC
+		ip, ok := index[mac]
+		if ok {
+			e.logger.V(1).Info(
+				"Found external IP address for node",
+				"cluster", cluster.Name,
+				"node", node.Name,
+				"mac", mac,
+				"ip", ip,
+			)
+			cluster.Nodes[i].ExternalNIC.IP = net.ParseIP(ip)
+		}
+	}
 
 	return nil
 }
