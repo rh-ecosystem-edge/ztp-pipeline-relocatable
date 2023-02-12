@@ -816,6 +816,8 @@ func (a *Applier) fireEvent(event *ApplierEvent) {
 			logger.Info("Status error", fields...)
 		case ApplierObjectDeleted:
 			logger.Info("Object deleted", fields...)
+		case ApplierWaitingCRD:
+			logger.Info("Waiting for CRD", fields...)
 		default:
 			logger.Info("Event", fields...)
 		}

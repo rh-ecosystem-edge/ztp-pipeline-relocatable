@@ -18,9 +18,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"unicode"
 
 	"github.com/go-logr/logr"
+	"github.com/iancoleman/strcase"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -171,7 +173,7 @@ func (l *ApplierListener) friendlyKind(object *unstructured.Unstructured) string
 	if ok {
 		return result
 	}
-	return "object"
+	return strings.ToLower(strcase.ToDelimited(kind, ' '))
 }
 
 func (l *ApplierListener) friendlyName(object *unstructured.Unstructured) string {
@@ -193,19 +195,9 @@ func (l *ApplierListener) capitalize(s string) string {
 }
 
 var applierFriendlyKinds = map[string]string{
-	"AgentClusterInstall":      "agent cluster install",
-	"BareMetalHost":            "bare metal host",
-	"CatalogSource":            "catalog source",
-	"ClusterDeployment":        "cluster deployment",
 	"ConfigMap":                "configmap",
 	"CustomResourceDefinition": "CRD",
 	"InfraEnv":                 "infrastructure environment",
-	"IngressController":        "ingress controller",
-	"ManagedCluster":           "managed cluster",
 	"MultiClusterEngine":       "multicluster engine",
 	"NMStateConfig":            "nmstate configuration",
-	"Namespace":                "namespace",
-	"OperatorGroup":            "operator group",
-	"Secret":                   "secret",
-	"Subscription":             "subscription",
 }
