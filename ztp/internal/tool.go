@@ -27,6 +27,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+	"k8s.io/klog/v2"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
@@ -99,6 +100,12 @@ func (b *ToolBuilder) AddArg(value string) *ToolBuilder {
 // AddArgs adds a list of command line arguments.
 func (b *ToolBuilder) AddArgs(values ...string) *ToolBuilder {
 	b.args = append(b.args, values...)
+	return b
+}
+
+// SetArgs sets the list of command line arguments.
+func (b *ToolBuilder) SetArgs(values ...string) *ToolBuilder {
+	b.args = slices.Clone(values)
 	return b
 }
 
@@ -215,6 +222,7 @@ func (t *Tool) Run(ctx context.Context) error {
 		}
 		t.loggerOwned = true
 	}
+	klog.SetLogger(t.logger)
 
 	// Execute the main command:
 	t.logger.V(1).Info(
@@ -243,6 +251,7 @@ func (t *Tool) run(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
+	klog.SetLogger(t.logger)
 
 	// Populate the context:
 	ctx := cmd.Context()
