@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -27,6 +28,7 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -393,6 +395,106 @@ var _ = Describe("Applier", func() {
 				},
 				1*time.Minute,
 			).Should(BeTrue())
+		})
+
+		It("Waits for CRD before creating object", func() {
+			// Prepare the template for the CRD:
+			crdTmp, crdFsys := TmpFS(
+				"crd.yaml",
+				Dedent(`
+					apiVersion: apiextensions.k8s.io/v1
+					kind: CustomResourceDefinition
+					metadata:
+					  name: examples.example.com
+					spec:
+					  group: example.com
+					  names:
+					    kind: Example
+					    listKind: ExampleList
+					    plural: examples
+					    singular: example
+					  scope: Cluster
+					  versions:
+					  - name: v1
+					    served: true
+					    storage: true
+					    schema:
+					      openAPIV3Schema:
+					        type: object
+					        x-kubernetes-preserve-unknown-fields: true
+
+				`),
+			)
+			defer os.RemoveAll(crdTmp)
+
+			// Prepare the template for the object:
+			objectTmp, objectFsys := TmpFS(
+				"object.yaml",
+				Dedent(`
+					apiVersion: example.com/v1
+					kind: Example
+					metadata:
+					  name: example
+				`),
+			)
+			defer os.RemoveAll(objectTmp)
+
+			// Try to create the object in a separate goroutine, as it should block
+			// waiting for the CRD:
+			waitingFlag := &atomic.Bool{}
+			applierListener := func(event *ApplierEvent) {
+				if event.Type == ApplierWaitingCRD {
+					waitingFlag.Store(true)
+				}
+			}
+			objectApplier, err := NewApplier().
+				SetLogger(logger).
+				SetClient(client).
+				SetFS(objectFsys).
+				SetListener(applierListener).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := objectApplier.Delete(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			go func() {
+				defer GinkgoRecover()
+				err := objectApplier.Create(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			// Wait till the object applier is waiting for the CRD:
+			Eventually(waitingFlag.Load).Should(BeTrue())
+
+			// Create the CRD:
+			crdApplier, err := NewApplier().
+				SetLogger(logger).
+				SetClient(client).
+				SetFS(crdFsys).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := crdApplier.Delete(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			err = crdApplier.Create(ctx, nil)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Wait till the object has been created:
+			objectMeta := &metav1.PartialObjectMetadata{}
+			objectMeta.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "example.com",
+				Version: "v1",
+				Kind:    "Example",
+			})
+			objectKey := clnt.ObjectKey{
+				Name: "example",
+			}
+			Eventually(func(g Gomega) bool {
+				err := client.Get(ctx, objectKey, objectMeta)
+				return err != nil
+			}).Should(BeTrue())
 		})
 	})
 })
