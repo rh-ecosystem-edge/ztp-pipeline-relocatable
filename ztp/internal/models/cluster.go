@@ -28,4 +28,5 @@ type Cluster struct {
 	ClusterNetworks []ClusterNetwork
 	MachineNetworks []MachineNetwork
 	ServiceNetworks []ServiceNetwork
+	Kubeconfig      []byte
 }

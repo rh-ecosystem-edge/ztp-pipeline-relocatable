@@ -20,17 +20,18 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"math"
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/go-logr/logr"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
+	. "github.com/onsi/ginkgo/v2/dsl/decorators"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
 	"golang.org/x/crypto/ssh"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -39,31 +40,45 @@ import (
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
 )
 
-var _ = Describe("Enricher", func() {
+var _ = Describe("Enricher", Ordered, func() {
 	var (
-		ctx    context.Context
-		logger logr.Logger
-		client clnt.WithWatch
+		ctx        context.Context
+		logger     logr.Logger
+		client     clnt.WithWatch
+		properties map[string]string
 	)
 
-	BeforeEach(func() {
+	BeforeAll(func() {
 		var err error
-
-		// Create a context:
-		ctx = context.Background()
 
 		// Create the logger:
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetLevel(math.MaxInt).
+			SetLevel(2).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
-		// Get the Kubernetes API client:
+		// Get the Kubernetes API client. Note that we create this only once and share it
+		// for all the tests because the initial discovery is quite expensive and noisy, and
+		// we don't really need to have a separate client for eacch test.
 		client, err = NewClient().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
+	})
+
+	BeforeEach(func() {
+		// Create a context:
+		ctx = context.Background()
+
+		// Prepare the default properties. These are convenient in most tests because
+		// otherwise the enricher will try to fetch the `release.txt` file to determine the
+		// values, and that may fail due to network issues.
+		properties = map[string]string{
+			"OC_OCP_VERSION":   "4.10.38",
+			"OC_OCP_TAG":       "4.10.38-x86_64",
+			"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+		}
 	})
 
 	Context("Creation", func() {
@@ -122,14 +137,11 @@ var _ = Describe("Enricher", func() {
 
 		It("Sets the SNO flag to true when there is only one control plane node", func() {
 			// Create the config:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -149,14 +161,11 @@ var _ = Describe("Enricher", func() {
 
 		It("Sets the SNO flag to false when there are three control plane nodes", func() {
 			// Create the config:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -194,14 +203,11 @@ var _ = Describe("Enricher", func() {
 			}`)
 
 			// Create the config with that pull secret:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name:       "my-cluster",
+					Name:       name,
 					PullSecret: custom,
 					Nodes: []models.Node{
 						{
@@ -222,14 +228,11 @@ var _ = Describe("Enricher", func() {
 
 		It("Gets the pull secret from the environment", func() {
 			// Create the config without a pull secret:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -256,14 +259,11 @@ var _ = Describe("Enricher", func() {
 
 		It("Doesn't change the DNS domain if already set", func() {
 			// Create the cluster:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					DNS: models.DNS{
 						Domain: "example.net",
 					},
@@ -286,14 +286,11 @@ var _ = Describe("Enricher", func() {
 
 		It("Gets the DNS domain from the default ingress controller of the hub", func() {
 			// Create the config:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -320,12 +317,9 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Doesn't change OCP tag if already set", func() {
+			properties["OC_OCP_TAG"] = "my-tag"
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "my-tag",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 			}
 			err := enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
@@ -333,11 +327,9 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Calculates the OCP tag if not set", func() {
+			delete(properties, "OC_OCP_TAG")
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 			}
 			err := enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
@@ -345,31 +337,13 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Doesn't change the RHCOS release if already set", func() {
+			properties["OC_RHCOS_RELEASE"] = "my-release"
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "my-release",
-				},
+				Properties: properties,
 			}
 			err := enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(config.Properties).To(HaveKeyWithValue("OC_RHCOS_RELEASE", "my-release"))
-		})
-
-		It("Doesn't change the RHCOS release if already set", func() {
-			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "my-release",
-				},
-			}
-			err := enricher.Enrich(ctx, config)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(config.Properties).To(HaveKeyWithValue(
-				"OC_RHCOS_RELEASE", "my-release",
-			))
 		})
 
 		It("Extracts the RHCOS release from the `release.txt` file", func() {
@@ -386,12 +360,10 @@ var _ = Describe("Enricher", func() {
 			))
 
 			// Create the enricher:
+			delete(properties, "OC_RHCOS_RELEASE")
+			properties["OC_OCP_MIRROR"] = server.URL()
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION": "4.10.38",
-					"OC_OCP_TAG":     "4.10.38-x86_64",
-					"OC_OCP_MIRROR":  server.URL(),
-				},
+				Properties: properties,
 			}
 
 			// Check that it gets the release returned by the server:
@@ -409,12 +381,10 @@ var _ = Describe("Enricher", func() {
 			server.AppendHandlers(RespondWith(http.StatusNotFound, nil))
 
 			// Create the enricher:
+			delete(properties, "OC_RHCOS_RELEASE")
+			properties["OC_OCP_MIRROR"] = server.URL()
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION": "4.10.38",
-					"OC_OCP_TAG":     "4.10.38-x86_64",
-					"OC_OCP_MIRROR":  server.URL(),
-				},
+				Properties: properties,
 			}
 
 			// Check that it fails:
@@ -433,12 +403,10 @@ var _ = Describe("Enricher", func() {
 			server.AppendHandlers(RespondWith(http.StatusOK, "junk"))
 
 			// Create the enricher:
+			delete(properties, "OC_RHCOS_RELEASE")
+			properties["OC_OCP_MIRROR"] = server.URL()
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION": "4.10.38",
-					"OC_OCP_TAG":     "4.10.38-x86_64",
-					"OC_OCP_MIRROR":  server.URL(),
-				},
+				Properties: properties,
 			}
 
 			// Check that it fails:
@@ -450,14 +418,11 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Sets the hardcoded cluster CIDR", func() {
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -476,14 +441,11 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Sets the hardcoded machine CIDR", func() {
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -501,14 +463,11 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Sets the hardcoded service CIDR", func() {
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -526,14 +485,11 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Sets the hardcoded internal IP addresses for multiple nodes", func() {
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -602,14 +558,11 @@ var _ = Describe("Enricher", func() {
 		})
 
 		It("Sets the hardcoded internal IP addresses for SNO", func() {
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
@@ -647,20 +600,20 @@ var _ = Describe("Enricher", func() {
 				Bytes: x509.MarshalPKCS1PrivateKey(rsaKey),
 			})
 
+			// Create the cluster with the SSH keys already set:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					SSH: models.SSH{
 						PublicKey:  publicKey,
 						PrivateKey: privateKey,
 					},
 				}},
 			}
+
+			// Verify that they aren't replaced:
 			err = enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
 			cluster := config.Clusters[0]
@@ -681,62 +634,44 @@ var _ = Describe("Enricher", func() {
 			})
 
 			// Create the namespace:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
 			namespace := &corev1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: "my-cluster",
-					Labels: map[string]string{
-						"ztpfw": "",
-					},
+					Name: name,
 				},
 			}
 			err = client.Create(ctx, namespace)
-			if apierrors.IsAlreadyExists(err) {
-				err = nil
-			}
 			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := client.Delete(ctx, namespace)
+				Expect(err).ToNot(HaveOccurred())
+			}()
 
-			// Delete the secret if it exists and create it again with the keys that we
-			// just generated:
+			// Create the secret:
 			secret := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "my-cluster",
-					Name:      "my-cluster-keypair",
-					Labels: map[string]string{
-						"ztpfw": "",
-					},
+					Namespace: name,
+					Name:      fmt.Sprintf("%s-keypair", name),
 				},
 				Data: map[string][]byte{
 					"id_rsa.pub": publicKey,
 					"id_rsa.key": privateKey,
 				},
 			}
-			err = client.Delete(ctx, secret)
-			if apierrors.IsNotFound(err) {
-				err = nil
-			}
-			Expect(err).ToNot(HaveOccurred())
 			err = client.Create(ctx, secret)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Enrich the cluster:
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
-					SSH: models.SSH{
-						PublicKey:  publicKey,
-						PrivateKey: privateKey,
-					},
+					Name: name,
 				}},
 			}
 			err = enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
 
-			// Verify that the keys are still the ones that we generated:
+			// Verify that the keys are the ones from the secret:
 			cluster := config.Clusters[0]
 			Expect(cluster.SSH.PublicKey).To(Equal(publicKey))
 			Expect(cluster.SSH.PrivateKey).To(Equal(privateKey))
@@ -744,6 +679,11 @@ var _ = Describe("Enricher", func() {
 
 		It("Takes external IP addresses from agents", func() {
 			// Prepare the agents:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			data := map[string]any{
+				"Name":    name,
+				"Indexes": []int{0, 1, 2},
+			}
 			tmp, fsys := TmpFS(
 				"objects.yaml",
 				Dedent(`
@@ -751,13 +691,13 @@ var _ = Describe("Enricher", func() {
 					apiVersion: v1
 					kind: Namespace
 					metadata:
-					  name: my-cluster
-					{{ range . }}
+					  name: {{ .Name }}
+					{{ range .Indexes }}
 					---
 					apiVersion: agent-install.openshift.io/v1beta1
 					kind: Agent
 					metadata:
-					  namespace: my-cluster
+					  namespace: {{ $.Name }}
 					  name: master{{ . }}
 					status:
 					  inventory:
@@ -771,7 +711,6 @@ var _ = Describe("Enricher", func() {
 				`),
 			)
 			defer os.RemoveAll(tmp)
-			data := []int{0, 1, 2}
 			applier, err := NewApplier().
 				SetLogger(logger).
 				SetClient(client).
@@ -787,13 +726,9 @@ var _ = Describe("Enricher", func() {
 
 			// Enrich the cluster:
 			config := &models.Config{
-				Properties: map[string]string{
-					"OC_OCP_VERSION":   "4.10.38",
-					"OC_OCP_TAG":       "4.10.38-x86_64",
-					"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-				},
+				Properties: properties,
 				Clusters: []models.Cluster{{
-					Name: "my-cluster",
+					Name: name,
 					Nodes: []models.Node{
 						{
 							Name: "master0",
@@ -824,6 +759,77 @@ var _ = Describe("Enricher", func() {
 			Expect(cluster.Nodes[0].ExternalNIC.IP.String()).To(Equal("192.168.150.100"))
 			Expect(cluster.Nodes[1].ExternalNIC.IP.String()).To(Equal("192.168.150.101"))
 			Expect(cluster.Nodes[2].ExternalNIC.IP.String()).To(Equal("192.168.150.102"))
+		})
+
+		It("Takes kubeconfig from secret", func() {
+			// Prepare the secret:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			data := map[string]any{
+				"Name": name,
+			}
+			tmp, fsys := TmpFS(
+				"objects.yaml",
+				Dedent(`
+					---
+					apiVersion: v1
+					kind: Namespace
+					metadata:
+					  name: {{ .Name }}
+					---
+					apiVersion: v1
+					kind: Secret
+					metadata:
+					  namespace: {{ .Name }}
+					  name: {{ .Name }}-admin-kubeconfig
+					data:
+					  kubeconfig: bXkta3ViZWNvbmZpZw==
+				`),
+			)
+			defer os.RemoveAll(tmp)
+			applier, err := NewApplier().
+				SetLogger(logger).
+				SetClient(client).
+				SetFS(fsys).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := applier.Delete(ctx, data)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			err = applier.Create(ctx, data)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Enrich the cluster:
+			config := &models.Config{
+				Properties: properties,
+				Clusters: []models.Cluster{{
+					Name: name,
+				}},
+			}
+			err = enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Verify external IP addresses:
+			cluster := config.Clusters[0]
+			Expect(string(cluster.Kubeconfig)).To(Equal("my-kubeconfig"))
+		})
+
+		It("Doesn't change kubeconfig if already set", func() {
+			// Enrich the cluster:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			config := &models.Config{
+				Properties: properties,
+				Clusters: []models.Cluster{{
+					Name:       name,
+					Kubeconfig: []byte("your-kubeconfig"),
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Verify external IP addresses:
+			cluster := config.Clusters[0]
+			Expect(string(cluster.Kubeconfig)).To(Equal("your-kubeconfig"))
 		})
 	})
 })
