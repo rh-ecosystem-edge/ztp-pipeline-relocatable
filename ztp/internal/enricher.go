@@ -264,6 +264,7 @@ func (e *Enricher) enrichCluster(ctx context.Context, cluster *models.Cluster) e
 		e.setNetworks,
 		e.setInternalIPs,
 		e.setExternalIPs,
+		e.setKubeconfig,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, cluster)
@@ -327,8 +328,17 @@ func (e *Enricher) setSSHKeys(ctx context.Context, cluster *models.Cluster) erro
 	case err == nil:
 		cluster.SSH.PublicKey = secret.Data["id_rsa.pub"]
 		cluster.SSH.PrivateKey = secret.Data["id_rsa.key"]
+		e.logger.V(1).Info(
+			"Found SSH keys",
+			"cluster", cluster.Name,
+			"secret", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),
+		)
 	case apierrors.IsNotFound(err):
 		cluster.SSH.PublicKey, cluster.SSH.PrivateKey, err = e.generateSSHKeys()
+		e.logger.V(1).Info(
+			"Generated SSH keys",
+			"cluster", cluster.Name,
+		)
 	}
 	return err
 }
@@ -359,7 +369,7 @@ func (e *Enricher) setDNSDomain(ctx context.Context, cluster *models.Cluster) er
 		return fmt.Errorf("failed to get DNS domain: %v", err)
 	}
 	e.logger.V(1).Info(
-		"DNS domain name",
+		"Found DNS domain",
 		"domain", domain,
 	)
 	cluster.DNS.Domain = domain
@@ -407,7 +417,7 @@ func (e *Enricher) setImageSet(ctx context.Context, cluster *models.Cluster) err
 		return fmt.Errorf("environment variable 'CLUSTERIMAGESET' isn't set")
 	}
 	e.logger.V(1).Info(
-		"Loaded cluster image set",
+		"Found cluster image set",
 		"value", value,
 	)
 	cluster.ImageSet = value
@@ -471,7 +481,7 @@ func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.No
 func (e *Enricher) setExternalIPs(ctx context.Context, cluster *models.Cluster) error {
 	// Fetch the agents for the nodes of the cluster:
 	agents := &unstructured.UnstructuredList{}
-	agents.SetGroupVersionKind(AgentGVK)
+	agents.SetGroupVersionKind(AgentListGVK)
 	err := e.client.List(ctx, agents, clnt.InNamespace(cluster.Name))
 	if err != nil {
 		return err
@@ -487,6 +497,7 @@ func (e *Enricher) setExternalIPs(ctx context.Context, cluster *models.Cluster) 
 		var pairs []Pair
 		err = e.jq.Query(
 			`
+				try
 				.status.inventory.interfaces[] |
 				{ "mac": .macAddress, "ip": .ipV4Addresses[0] }
 			`,
@@ -504,8 +515,11 @@ func (e *Enricher) setExternalIPs(ctx context.Context, cluster *models.Cluster) 
 
 	// Find the IP address for each external interface:
 	for i, node := range cluster.Nodes {
+		if node.ExternalNIC.IP != nil {
+			continue
+		}
 		mac := node.ExternalNIC.MAC
-		ip, ok := index[mac]
+		ip, ok := index[strings.ToLower(mac)]
 		if ok {
 			e.logger.V(1).Info(
 				"Found external IP address for node",
@@ -518,6 +532,33 @@ func (e *Enricher) setExternalIPs(ctx context.Context, cluster *models.Cluster) 
 		}
 	}
 
+	return nil
+}
+
+func (e *Enricher) setKubeconfig(ctx context.Context, cluster *models.Cluster) error {
+	if cluster.Kubeconfig != nil {
+		return nil
+	}
+	secret := &corev1.Secret{}
+	key := clnt.ObjectKey{
+		Namespace: cluster.Name,
+		Name:      fmt.Sprintf("%s-admin-kubeconfig", cluster.Name),
+	}
+	err := e.client.Get(ctx, key, secret)
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	data, ok := secret.Data["kubeconfig"]
+	if ok {
+		cluster.Kubeconfig = data
+		e.logger.V(1).Info(
+			"Found kubeconfig",
+			"cluster", cluster.Name,
+		)
+	}
 	return nil
 }
 

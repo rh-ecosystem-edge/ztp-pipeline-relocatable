@@ -304,19 +304,23 @@ var _ = Describe("Applier", func() {
 			// Prepare a namespace with an object that has a finalizer, so the applier
 			// will have to wait till that finalizer is removed before removing the
 			// namespace:
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			data := map[string]any{
+				"Name": name,
+			}
 			tmp, fsys := TmpFS(
 				"objects.yaml",
 				Dedent(`
 					apiVersion: v1
 					kind: Namespace
 					metadata: 
-					  name: {{ .Namespace }}
+					  name: {{ .Name }}
 					---
 					apiVersion: v1
 					kind: ConfigMap
 					metadata: 
-					  namespace: {{ .Namespace }}
-					  name: my
+					  namespace: {{ .Name }}
+					  name: my-object
 					  finalizers:
 					  - my/finalizer
 				`),
@@ -333,12 +337,6 @@ var _ = Describe("Applier", func() {
 				SetClient(client).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
-
-			// Prepare the data for the templates:
-			id := fmt.Sprintf("my-%s", uuid.NewString())
-			data := map[string]any{
-				"Namespace": id,
-			}
 
 			// Create the objects:
 			err = applier.Create(ctx, data)
@@ -359,8 +357,8 @@ var _ = Describe("Applier", func() {
 			// the object will have the deletion timestamp set.
 			object := &corev1.ConfigMap{}
 			key := clnt.ObjectKey{
-				Namespace: id,
-				Name:      "my",
+				Namespace: name,
+				Name:      "my-object",
 			}
 			Eventually(func(g Gomega) bool {
 				err = client.Get(ctx, key, object)
@@ -371,7 +369,7 @@ var _ = Describe("Applier", func() {
 			// Check that the namespace hasn't been deleted yet:
 			namespace := &corev1.Namespace{}
 			key = clnt.ObjectKey{
-				Name: id,
+				Name: name,
 			}
 			err = client.Get(ctx, key, namespace)
 			Expect(err).ToNot(HaveOccurred())
