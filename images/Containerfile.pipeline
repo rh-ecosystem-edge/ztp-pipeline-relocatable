@@ -1,3 +1,14 @@
+# This is the builder image, see the next `FROM` directive for the beginning of the pipeline image:
+FROM registry.ci.openshift.org/openshift/release:golang-1.19 AS builder
+
+# Copy the source code into the container:
+COPY ztp .
+
+# Run the build:
+RUN go build -mod=mod -o /ztp
+
+# This is the pipeline image, which includes tools, scripts and the CLI binary built by the previous
+# builder image:
 FROM ubi8
 
 ENV JQ_VERSION=1.6
@@ -15,3 +26,6 @@ RUN dnf install -y bind-utils openssl openssh-clients httpd-tools conmon skopeo 
     dnf clean all &&  rm -rf /var/cache/yum
 
 COPY . /opt/ztp
+
+# Install the CLI binary:
+COPY --from=builder /ztp /usr/bin/
