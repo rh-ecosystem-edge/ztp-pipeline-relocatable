@@ -22,7 +22,6 @@ import (
 	"path/filepath"
 
 	"github.com/go-logr/logr"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -95,19 +94,6 @@ func (b *ClientBuilder) Build() (result clnt.WithWatch, err error) {
 
 	// Create the client:
 	delegate, err := clnt.NewWithWatch(config, clnt.Options{})
-	if err != nil {
-		return
-	}
-
-	// Send an initial request to force the discovery process, this way that noise will be at
-	// the beginning of the log, and also if the discovery process fails we will report the
-	// error earlier.
-	info := &corev1.ConfigMap{}
-	key := clnt.ObjectKey{
-		Namespace: "kube-public",
-		Name:      "cluster-info",
-	}
-	err = delegate.Get(context.Background(), key, info)
 	if err != nil {
 		return
 	}
