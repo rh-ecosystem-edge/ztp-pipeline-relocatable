@@ -120,12 +120,12 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 // Enrich completes the configuration adding the information that will be required later to create
 // the clusters.
 func (e *Enricher) Enrich(ctx context.Context, config *models.Config) error {
-	err := e.enrichProperties(ctx, config.Properties)
+	err := e.enrichConfig(ctx, config)
 	if err != nil {
 		return err
 	}
-	for i := range config.Clusters {
-		err := e.enrichCluster(ctx, &config.Clusters[i])
+	for _, cluster := range config.Clusters {
+		err := e.enrichCluster(ctx, config, cluster)
 		if err != nil {
 			return err
 		}
@@ -133,13 +133,14 @@ func (e *Enricher) Enrich(ctx context.Context, config *models.Config) error {
 	return nil
 }
 
-func (e *Enricher) enrichProperties(ctx context.Context, properties map[string]string) error {
-	setters := []func(context.Context, map[string]string) error{
+func (e *Enricher) enrichConfig(ctx context.Context, config *models.Config) error {
+	setters := []func(context.Context, *models.Config) error{
 		e.setOCPTag,
 		e.setRHCOSRelease,
+		e.setConfigImageSet,
 	}
 	for _, setter := range setters {
-		err := setter(ctx, properties)
+		err := setter(ctx, config)
 		if err != nil {
 			return err
 		}
@@ -147,15 +148,15 @@ func (e *Enricher) enrichProperties(ctx context.Context, properties map[string]s
 	return nil
 }
 
-func (e *Enricher) setOCPTag(ctx context.Context, properties map[string]string) error {
+func (e *Enricher) setOCPTag(ctx context.Context, config *models.Config) error {
 	// Do nothing if already set:
-	ocpTag := properties[models.OCPTagProperty]
+	ocpTag := config.Properties[models.OCPTagProperty]
 	if ocpTag != "" {
 		return nil
 	}
 
 	// Check that the version has been specified:
-	ocpVersion := properties[models.OCPVersionProperty]
+	ocpVersion := config.Properties[models.OCPVersionProperty]
 	if ocpVersion == "" {
 		return fmt.Errorf(
 			"failed to set OCP tag because property '%s' hasn't been specified",
@@ -167,7 +168,7 @@ func (e *Enricher) setOCPTag(ctx context.Context, properties map[string]string) 
 	ocpTag = fmt.Sprintf("%s-x86_64", ocpVersion)
 
 	// Update the properties:
-	properties[models.OCPTagProperty] = ocpTag
+	config.Properties[models.OCPTagProperty] = ocpTag
 	e.logger.V(2).Info(
 		"Set OCP tag property",
 		"name", models.OCPTagProperty,
@@ -176,15 +177,15 @@ func (e *Enricher) setOCPTag(ctx context.Context, properties map[string]string) 
 	return nil
 }
 
-func (e *Enricher) setRHCOSRelease(ctx context.Context, properties map[string]string) error {
+func (e *Enricher) setRHCOSRelease(ctx context.Context, config *models.Config) error {
 	// Do nothing if it is already set:
-	rhcosRelease := properties[models.OCPRCHOSReleaseProperty]
+	rhcosRelease := config.Properties[models.OCPRCHOSReleaseProperty]
 	if rhcosRelease != "" {
 		return nil
 	}
 
 	// Check that the version has been specified:
-	ocpVersion := properties[models.OCPVersionProperty]
+	ocpVersion := config.Properties[models.OCPVersionProperty]
 	if ocpVersion == "" {
 		return fmt.Errorf(
 			"failed to set RHCOS release because property '%s' hasn't been specified",
@@ -193,7 +194,7 @@ func (e *Enricher) setRHCOSRelease(ctx context.Context, properties map[string]st
 	}
 
 	// Download the `release.txt` file:
-	releaseTXT, err := e.downloadReleaseTXT(ctx, properties)
+	releaseTXT, err := e.downloadReleaseTXT(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -206,7 +207,7 @@ func (e *Enricher) setRHCOSRelease(ctx context.Context, properties map[string]st
 	rchosRelease := rhcosReleaseMatches[1]
 
 	// Update the properties:
-	properties[models.OCPRCHOSReleaseProperty] = rchosRelease
+	config.Properties[models.OCPRCHOSReleaseProperty] = rchosRelease
 	e.logger.Info(
 		"Set RHCOS release property",
 		"name", models.OCPRCHOSReleaseProperty,
@@ -216,13 +217,13 @@ func (e *Enricher) setRHCOSRelease(ctx context.Context, properties map[string]st
 	return nil
 }
 
-func (e *Enricher) downloadReleaseTXT(ctx context.Context, properties map[string]string) (result string,
+func (e *Enricher) downloadReleaseTXT(ctx context.Context, config *models.Config) (result string,
 	err error) {
-	mirror := properties[models.OCPMirrorProperty]
+	mirror := config.Properties[models.OCPMirrorProperty]
 	if mirror == "" {
 		mirror = enricherDefaultMirror
 	}
-	version := properties[models.OCPVersionProperty]
+	version := config.Properties[models.OCPVersionProperty]
 	url := fmt.Sprintf(
 		"%s/%s/release.txt",
 		mirror, version,
@@ -253,21 +254,51 @@ func (e *Enricher) downloadReleaseTXT(ctx context.Context, properties map[string
 	return
 }
 
-func (e *Enricher) enrichCluster(ctx context.Context, cluster *models.Cluster) error {
-	setters := []func(context.Context, *models.Cluster) error{
+func (e *Enricher) setConfigImageSet(ctx context.Context, config *models.Config) error {
+	// Do nothing if it is already set:
+	imageSet := config.Properties[models.ClusterImageSetProperty]
+	if imageSet != "" {
+		return nil
+	}
+
+	// Check that the OCM version is set:
+	ocpVersion := config.Properties[models.OCPVersionProperty]
+	if ocpVersion == "" {
+		return fmt.Errorf(
+			"failed to set image set release because property '%s' hasn't been "+
+				"specified",
+			models.OCPVersionProperty,
+		)
+	}
+
+	// Calculate the default value and save
+	imageSet = fmt.Sprintf("openshift-v%s", ocpVersion)
+	config.Properties[models.ClusterImageSetProperty] = imageSet
+	e.logger.Info(
+		"Set image set property",
+		"name", models.ClusterImageSetProperty,
+		"value", imageSet,
+	)
+
+	return nil
+}
+
+func (e *Enricher) enrichCluster(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	setters := []func(context.Context, *models.Config, *models.Cluster) error{
 		e.setSNO,
 		e.setPullSecret,
 		e.setSSHKeys,
 		e.setDNSDomain,
-		e.setImageSet,
 		e.setVIPs,
 		e.setNetworks,
 		e.setInternalIPs,
 		e.setExternalIPs,
 		e.setKubeconfig,
+		e.setClusterImageSet,
 	}
 	for _, setter := range setters {
-		err := setter(ctx, cluster)
+		err := setter(ctx, config, cluster)
 		if err != nil {
 			return err
 		}
@@ -275,7 +306,8 @@ func (e *Enricher) enrichCluster(ctx context.Context, cluster *models.Cluster) e
 	return nil
 }
 
-func (e *Enricher) setSNO(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setSNO(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
 	count := 0
 	for _, node := range cluster.Nodes {
 		if node.Kind == models.NodeKindControlPlane {
@@ -286,7 +318,8 @@ func (e *Enricher) setSNO(ctx context.Context, cluster *models.Cluster) error {
 	return nil
 }
 
-func (e *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setPullSecret(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
 	if cluster.PullSecret != nil {
 		return nil
 	}
@@ -311,7 +344,8 @@ func (e *Enricher) setPullSecret(ctx context.Context, cluster *models.Cluster) e
 	return nil
 }
 
-func (e *Enricher) setSSHKeys(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setSSHKeys(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
 	// Do nothing if the keys are already set:
 	if cluster.SSH.PublicKey != nil && cluster.SSH.PrivateKey != nil {
 		return nil
@@ -360,7 +394,8 @@ func (e *Enricher) generateSSHKeys() (publicKey, privateKey []byte, err error) {
 	return
 }
 
-func (e *Enricher) setDNSDomain(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setDNSDomain(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
 	if cluster.DNS.Domain != "" {
 		return nil
 	}
@@ -408,23 +443,8 @@ func (e *Enricher) getDNSDomain(ctx context.Context) (result string, err error) 
 	return
 }
 
-func (e *Enricher) setImageSet(ctx context.Context, cluster *models.Cluster) error {
-	if cluster.ImageSet != "" {
-		return nil
-	}
-	value, ok := e.env["CLUSTERIMAGESET"]
-	if !ok {
-		return fmt.Errorf("environment variable 'CLUSTERIMAGESET' isn't set")
-	}
-	e.logger.V(1).Info(
-		"Found cluster image set",
-		"value", value,
-	)
-	cluster.ImageSet = value
-	return nil
-}
-
-func (e *Enricher) setVIPs(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setVIPs(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
 	if cluster.SNO {
 		return nil
 	}
@@ -437,23 +457,25 @@ func (e *Enricher) setVIPs(ctx context.Context, cluster *models.Cluster) error {
 	return nil
 }
 
-func (e *Enricher) setNetworks(ctx context.Context, cluster *models.Cluster) error {
-	cluster.ClusterNetworks = []models.ClusterNetwork{{
+func (e *Enricher) setNetworks(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	cluster.ClusterNetworks = []*models.ClusterNetwork{{
 		CIDR:       enricherClusterCIDR,
 		HostPrefix: enricherHostPrefix,
 	}}
-	cluster.MachineNetworks = []models.MachineNetwork{{
+	cluster.MachineNetworks = []*models.MachineNetwork{{
 		CIDR: enricherMachineCIDR,
 	}}
-	cluster.ServiceNetworks = []models.ServiceNetwork{{
+	cluster.ServiceNetworks = []*models.ServiceNetwork{{
 		CIDR: enricherServiceCIDR,
 	}}
 	return nil
 }
 
-func (e *Enricher) setInternalIPs(ctx context.Context, cluster *models.Cluster) error {
-	for i := range cluster.Nodes {
-		err := e.setInternalIP(ctx, i, &cluster.Nodes[i])
+func (e *Enricher) setInternalIPs(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	for i, node := range cluster.Nodes {
+		err := e.setInternalIP(ctx, i, node)
 		if err != nil {
 			return err
 		}
@@ -478,7 +500,8 @@ func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.No
 	return nil
 }
 
-func (e *Enricher) setExternalIPs(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setExternalIPs(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
 	// Fetch the agents for the nodes of the cluster:
 	agents := &unstructured.UnstructuredList{}
 	agents.SetGroupVersionKind(AgentListGVK)
@@ -535,7 +558,8 @@ func (e *Enricher) setExternalIPs(ctx context.Context, cluster *models.Cluster) 
 	return nil
 }
 
-func (e *Enricher) setKubeconfig(ctx context.Context, cluster *models.Cluster) error {
+func (e *Enricher) setKubeconfig(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
 	if cluster.Kubeconfig != nil {
 		return nil
 	}
@@ -559,6 +583,33 @@ func (e *Enricher) setKubeconfig(ctx context.Context, cluster *models.Cluster) e
 			"cluster", cluster.Name,
 		)
 	}
+	return nil
+}
+
+func (e *Enricher) setClusterImageSet(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	// Do nothing if it is already set:
+	if cluster.ImageSet != "" {
+		return nil
+	}
+
+	// Check that the value is in the properties:
+	imageSet := config.Properties[models.ClusterImageSetProperty]
+	if imageSet == "" {
+		return fmt.Errorf(
+			"failed to set image set for cluster '%s' because image set property '%s' "+
+				"hasn't been specified",
+			cluster.Name, models.ClusterImageSetProperty,
+		)
+	}
+
+	// Set the value:
+	cluster.ImageSet = imageSet
+	e.logger.Info(
+		"Set cluster image set",
+		"value", imageSet,
+	)
+
 	return nil
 }
 

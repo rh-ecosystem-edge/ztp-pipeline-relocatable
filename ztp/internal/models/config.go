@@ -16,5 +16,5 @@ package models
 
 type Config struct {
 	Properties map[string]string
-	Clusters   []Cluster
+	Clusters   []*Cluster
 }

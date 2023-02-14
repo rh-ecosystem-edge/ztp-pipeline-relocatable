@@ -160,7 +160,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 
 	// Delete the clusters:
 	for _, cluster := range c.config.Clusters {
-		err = c.delete(ctx, &cluster)
+		err = c.delete(ctx, cluster)
 		if err != nil {
 			fmt.Fprintf(
 				c.tool.Err(),

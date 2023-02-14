@@ -20,13 +20,13 @@ type Cluster struct {
 	ImageSet        string
 	Ingress         Ingress
 	Name            string
-	Nodes           []Node
+	Nodes           []*Node
 	PullSecret      []byte
 	SNO             bool
 	SSH             SSH
 	TPM             bool
-	ClusterNetworks []ClusterNetwork
-	MachineNetworks []MachineNetwork
-	ServiceNetworks []ServiceNetwork
+	ClusterNetworks []*ClusterNetwork
+	MachineNetworks []*MachineNetwork
+	ServiceNetworks []*ServiceNetwork
 	Kubeconfig      []byte
 }

@@ -193,10 +193,10 @@ func (l *ConfigLoader) loadClusters(content any, config *models.Config) error {
 	}
 	for _, item := range data {
 		for name, value := range item {
-			cluster := models.Cluster{
+			cluster := &models.Cluster{
 				Name: name,
 			}
-			err = l.loadCluster(value, &cluster)
+			err = l.loadCluster(value, cluster)
 			if err != nil {
 				return err
 			}
@@ -224,10 +224,10 @@ func (l *ConfigLoader) loadCluster(content any, cluster *models.Cluster) error {
 				return err
 			}
 		default:
-			node := models.Node{
+			node := &models.Node{
 				Name: name,
 			}
-			err = l.loadNode(value, &node)
+			err = l.loadNode(value, node)
 			if err != nil {
 				return err
 			}
