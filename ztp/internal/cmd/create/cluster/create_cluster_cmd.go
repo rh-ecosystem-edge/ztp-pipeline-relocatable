@@ -183,7 +183,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 
 	// Deploy the clusters:
 	for _, cluster := range c.config.Clusters {
-		err = c.deploy(ctx, &cluster)
+		err = c.deploy(ctx, cluster)
 		if err != nil {
 			fmt.Fprintf(
 				c.tool.Err(),
@@ -205,7 +205,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		ctx, cancel = context.WithTimeout(ctx, c.flags.wait)
 		defer cancel()
 		for _, cluster := range c.config.Clusters {
-			err = c.wait(ctx, &cluster)
+			err = c.wait(ctx, cluster)
 			if os.IsTimeout(err) {
 				fmt.Fprintf(
 					c.tool.Err(),

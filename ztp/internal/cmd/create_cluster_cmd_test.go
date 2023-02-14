@@ -59,7 +59,6 @@ var _ = Describe("Create cluster command", func() {
 	Context("Simple SNO cluster", Ordered, func() {
 		var (
 			tmp    string
-			env    map[string]string
 			client clnt.WithWatch
 		)
 
@@ -89,29 +88,17 @@ var _ = Describe("Create cluster command", func() {
 					      storage_disk:
 					      - /dev/vdb
 				`),
-				"pull.json",
-				Dedent(`{
-					"auths": {
-						"cloud.openshift.com": {
-							"auth": "bXktdXNlcjpteS1wYXNz",
-							"email": "mary@my-domain.com"
-						}
-					}
-				}`),
 			)
-
-			// Prepare the environment variables:
-			env = map[string]string{
-				"EDGECLUSTERS_FILE": filepath.Join(tmp, "config.yaml"),
-				"CLUSTERIMAGESET":   "my-image",
-			}
 
 			// Run the command:
 			tool, err := internal.NewTool().
 				SetLogger(logger).
-				AddArgs("ztp", "create", "cluster", "--wait=0").
+				SetArgs(
+					"ztp", "create", "cluster",
+					"--config", filepath.Join(tmp, "config.yaml"),
+					"--wait", "0",
+				).
 				AddCommand(createcmd.Cobra).
-				SetEnv(env).
 				SetIn(&bytes.Buffer{}).
 				SetOut(GinkgoWriter).
 				SetErr(GinkgoWriter).
@@ -284,9 +271,12 @@ var _ = Describe("Create cluster command", func() {
 			// Run the command again:
 			tool, err := internal.NewTool().
 				SetLogger(logger).
-				AddArgs("ztp", "create", "cluster", "--wait=0").
+				SetArgs(
+					"ztp", "create", "cluster",
+					"--config", filepath.Join(tmp, "config.yaml"),
+					"--wait", "0",
+				).
 				AddCommand(createcmd.Cobra).
-				SetEnv(env).
 				SetIn(&bytes.Buffer{}).
 				SetOut(GinkgoWriter).
 				SetErr(GinkgoWriter).

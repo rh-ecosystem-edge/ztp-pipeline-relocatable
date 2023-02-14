@@ -42,10 +42,9 @@ import (
 
 var _ = Describe("Enricher", Ordered, func() {
 	var (
-		ctx        context.Context
-		logger     logr.Logger
-		client     clnt.WithWatch
-		properties map[string]string
+		ctx    context.Context
+		logger logr.Logger
+		client clnt.WithWatch
 	)
 
 	BeforeAll(func() {
@@ -65,20 +64,6 @@ var _ = Describe("Enricher", Ordered, func() {
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
-	})
-
-	BeforeEach(func() {
-		// Create a context:
-		ctx = context.Background()
-
-		// Prepare the default properties. These are convenient in most tests because
-		// otherwise the enricher will try to fetch the `release.txt` file to determine the
-		// values, and that may fail due to network issues.
-		properties = map[string]string{
-			"OC_OCP_VERSION":   "4.10.38",
-			"OC_OCP_TAG":       "4.10.38-x86_64",
-			"OC_RHCOS_RELEASE": "410.84.202210130022-0",
-		}
 	})
 
 	Context("Creation", func() {
@@ -107,8 +92,8 @@ var _ = Describe("Enricher", Ordered, func() {
 
 	Context("Usage", func() {
 		var (
-			defaultImageSet string
-			enricher        *Enricher
+			enricher   *Enricher
+			properties map[string]string
 		)
 
 		BeforeEach(func() {
@@ -121,18 +106,28 @@ var _ = Describe("Enricher", Ordered, func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 
-			// Prepare the default image set:
-			defaultImageSet = "my-image-set"
+			// Prepare the default properties. These are convenient in most tests
+			// because otherwise the enricher will try to fetch the `release.txt` file
+			// to determine the values, and that may fail due to network issues.
+			properties = map[string]string{
+				"OC_OCP_VERSION":   "4.10.38",
+				"OC_OCP_TAG":       "4.10.38-x86_64",
+				"OC_RHCOS_RELEASE": "410.84.202210130022-0",
+				"clusterimageset":  "openshift-v4.10.38",
+			}
 
 			// Create the enricher:
 			enricher, err = NewEnricher().
 				SetLogger(logger).
 				SetClient(client).
-				SetEnv(map[string]string{
-					"CLUSTERIMAGESET": defaultImageSet,
-				}).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
+		})
+
+		BeforeEach(func() {
+			// Create a context:
+			ctx = context.Background()
+
 		})
 
 		It("Sets the SNO flag to true when there is only one control plane node", func() {
@@ -140,9 +135,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -164,9 +159,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node-0",
@@ -206,10 +201,10 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name:       name,
 					PullSecret: custom,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -231,9 +226,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -262,12 +257,12 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
 					DNS: models.DNS{
 						Domain: "example.net",
 					},
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -289,9 +284,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -421,9 +416,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -444,9 +439,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -466,9 +461,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-node",
@@ -488,9 +483,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-master-0",
@@ -561,9 +556,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-master-0",
@@ -604,7 +599,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
 					SSH: models.SSH{
 						PublicKey:  publicKey,
@@ -664,7 +659,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			// Enrich the cluster:
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
 				}},
 			}
@@ -727,9 +722,9 @@ var _ = Describe("Enricher", Ordered, func() {
 			// Enrich the cluster:
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
-					Nodes: []models.Node{
+					Nodes: []*models.Node{
 						{
 							Name: "master0",
 							ExternalNIC: models.NIC{
@@ -802,7 +797,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			// Enrich the cluster:
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name: name,
 				}},
 			}
@@ -819,7 +814,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			name := fmt.Sprintf("my-%s", uuid.NewString())
 			config := &models.Config{
 				Properties: properties,
-				Clusters: []models.Cluster{{
+				Clusters: []*models.Cluster{{
 					Name:       name,
 					Kubeconfig: []byte("your-kubeconfig"),
 				}},
@@ -830,6 +825,45 @@ var _ = Describe("Enricher", Ordered, func() {
 			// Verify external IP addresses:
 			cluster := config.Clusters[0]
 			Expect(string(cluster.Kubeconfig)).To(Equal("your-kubeconfig"))
+		})
+
+		It("Calculates the default cluster image set", func() {
+			delete(properties, "clusterimageset")
+			config := &models.Config{
+				Properties: properties,
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.Properties).To(HaveKeyWithValue("clusterimageset", "openshift-v4.10.38"))
+		})
+
+		It("Doesn't change the cluster image set if already set", func() {
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			config := &models.Config{
+				Properties: properties,
+				Clusters: []*models.Cluster{{
+					Name: name,
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			cluster := config.Clusters[0]
+			Expect(cluster.ImageSet).To(Equal("openshift-v4.10.38"))
+		})
+
+		It("Doesn't change the cluster image set if already set", func() {
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			config := &models.Config{
+				Properties: properties,
+				Clusters: []*models.Cluster{{
+					Name:     name,
+					ImageSet: "my-image-set",
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			cluster := config.Clusters[0]
+			Expect(cluster.ImageSet).To(Equal("my-image-set"))
 		})
 	})
 })
