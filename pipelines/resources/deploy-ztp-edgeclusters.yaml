@@ -42,6 +42,7 @@ spec:
   - name: deploy-edgeclusters
     taskRef:
       name: edgecluster-deploy-edgecluster
+    timeout: "2h30m0s"
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
@@ -209,6 +210,7 @@ spec:
   - name: mirror-olm-images
     taskRef:
       name: edgecluster-deploy-disconnected-registry-edgeclusters-olm
+    timeout: "2h30m0s"
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
