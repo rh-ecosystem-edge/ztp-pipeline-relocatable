@@ -6,6 +6,8 @@ storageConfig:
 mirror:
   platform:
     channels:
+      - name: candidate-${OC_OCP_VERSION_MIN}
+        minVersion: ${OC_OCP_VERSION_FULL}
       - name: stable-${OC_OCP_VERSION_MIN}
         minVersion: ${OC_OCP_VERSION_FULL}
   operators: # Operators we want to mirror
