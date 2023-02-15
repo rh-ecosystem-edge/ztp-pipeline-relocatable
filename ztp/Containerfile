@@ -12,36 +12,18 @@
 # License.
 #
 
-FROM registry.access.redhat.com/ubi9/ubi:9.1.0-1750 AS builder
-
-# Install the Go toolset:
-RUN \
-    curl --location --retry 5 --output /tmp/tarball https://go.dev/dl/go1.20.linux-amd64.tar.gz && \
-    echo 5a9ebcc65c1cce56e0d2dc616aff4c4cedcfbda8cc6f0288cc08cda3b18dcbf1 /tmp/tarball | sha256sum --check && \
-    tar --directory /usr/local --extract --file /tmp/tarball && \
-    rm /tmp/tarball
-
-# Create the builder user:
-RUN \
-    useradd builder
-USER \
-    builder
-ENV \
-    CGO_ENABLED="0" \
-    PATH="${PATH}:/usr/local/go/bin"
-WORKDIR \
-    /home/builder
+FROM registry.ci.openshift.org/openshift/release:golang-1.19 AS builder
 
 # Copy the source code into the container:
 COPY . .
 
 # Run the build:
-RUN go build
+RUN go build -mod=mod -o /ztp
 
 FROM scratch
 
 # Copy the binary from the builder image:
-COPY --from=builder /home/builder/ztp /ztp
+COPY --from=builder /ztp /ztp
 
 # Set the entry point:
 ENTRYPOINT ["/ztp"]

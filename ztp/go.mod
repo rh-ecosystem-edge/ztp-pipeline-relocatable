@@ -1,6 +1,6 @@
 module github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp
 
-go 1.20
+go 1.19
 
 require (
 	github.com/coreos/ignition/v2 v2.14.0
