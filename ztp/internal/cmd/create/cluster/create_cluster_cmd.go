@@ -360,16 +360,32 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 		return err
 	}
 	defer watch.Stop()
+	state := ""
 	for event := range watch.ResultChan() {
-		var status string
+		type Data struct {
+			State  string `json:"state"`
+			Status string `json:"status"`
+		}
+		var current Data
 		err = c.jq.Query(
-			`try .status.conditions[] | select(.type == "Completed") | .status`,
-			event.Object, &status,
+			`try {
+				"state": .status.debugInfo.state,
+				"status": .status.conditions[] | select(.type == "Completed") | .status
+			}`,
+			event.Object, &current,
 		)
 		if err != nil {
 			return err
 		}
-		if status == "True" {
+		if current.State != state {
+			fmt.Fprintf(
+				c.tool.Out(),
+				"Cluster '%s' moved to state '%s'\n",
+				cluster.Name, current.State,
+			)
+			state = current.State
+		}
+		if current.Status == "True" {
 			fmt.Fprintf(
 				c.tool.Out(),
 				"Cluster '%s' is installed\n",
