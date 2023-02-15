@@ -41,7 +41,6 @@ func Cobra() *cobra.Command {
 type Command struct {
 	logger logr.Logger
 	tool   *internal.Tool
-	env    map[string]string
 	client clnt.WithWatch
 }
 
@@ -59,13 +58,9 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	c.logger = internal.LoggerFromContext(ctx)
 	c.tool = internal.ToolFromContext(ctx)
 
-	// Get the environment:
-	c.env = c.tool.Env()
-
 	// Create the client for the API:
 	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
-		SetEnv(c.env).
 		Build()
 	if err != nil {
 		fmt.Fprintf(

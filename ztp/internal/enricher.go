@@ -30,7 +30,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -46,7 +45,6 @@ import (
 type EnricherBuilder struct {
 	logger logr.Logger
 	client clnt.Client
-	env    map[string]string
 }
 
 // Enricher knows how to add information to the description of a cluster. Don't create instances of
@@ -54,16 +52,13 @@ type EnricherBuilder struct {
 type Enricher struct {
 	logger logr.Logger
 	client clnt.Client
-	env    map[string]string
 	jq     *JQ
 }
 
 // NewEnricher creates a builder that can then be used to create an object that knows how to add
 // information to the description of a cluster.
 func NewEnricher() *EnricherBuilder {
-	return &EnricherBuilder{
-		env: map[string]string{},
-	}
+	return &EnricherBuilder{}
 }
 
 // SetLogger sets the logger that the enricher will use to write log messages. This is mandatory.
@@ -76,12 +71,6 @@ func (b *EnricherBuilder) SetLogger(value logr.Logger) *EnricherBuilder {
 // order to extract the additional information.
 func (b *EnricherBuilder) SetClient(value clnt.Client) *EnricherBuilder {
 	b.client = value
-	return b
-}
-
-// SetEnv sets the environment variables that will be used by the enricher.
-func (b *EnricherBuilder) SetEnv(value map[string]string) *EnricherBuilder {
-	b.env = value
 	return b
 }
 
@@ -111,7 +100,6 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 	result = &Enricher{
 		logger: b.logger,
 		client: b.client,
-		env:    maps.Clone(b.env),
 		jq:     jq,
 	}
 	return

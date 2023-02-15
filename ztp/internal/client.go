@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -38,7 +37,6 @@ import (
 // directly, use the NewClient function instead.
 type ClientBuilder struct {
 	logger     logr.Logger
-	env        map[string]string
 	kubeconfig any
 }
 
@@ -51,12 +49,6 @@ func NewClient() *ClientBuilder {
 // SetLogger sets the logger that the client will use to write to the log.
 func (b *ClientBuilder) SetLogger(value logr.Logger) *ClientBuilder {
 	b.logger = value
-	return b
-}
-
-// SetEnv sets the environment variables.
-func (b *ClientBuilder) SetEnv(value map[string]string) *ClientBuilder {
-	b.env = value
 	return b
 }
 
@@ -141,48 +133,9 @@ func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 // loadDefaultConfig loads the configuration from the typical default locations, the `KUBECONFIG`
 // environment variable and the ~/.kube/config` file.
 func (b *ClientBuilder) loadDefaultConfig() (result clientcmd.ClientConfig, err error) {
-	// Check if the `KUBECONFIG` environment variable is set:
-	kcEnv, kcEnvSet := b.env["KUBECONFIG"]
-
-	// Check if the `~/.kube/config` file exists:
-	var homeDir string
-	homeDir, err = os.UserHomeDir()
-	if err != nil {
-		return
-	}
-	kcFile := filepath.Join(homeDir, ".kube", "config")
-	var kcFileExists bool
-	_, err = os.Stat(kcFile)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			kcFileExists = false
-		} else {
-			return
-		}
-	} else {
-		kcFileExists = true
-	}
-
-	// Report an error if the environment variable isn't set and the file doesn't exist:
-	if !kcEnvSet && !kcFileExists {
-		err = fmt.Errorf(
-			"failed to load configuration because environment variable 'KUBECONFIG' "+
-				"isn't set and file '%s' doesn't exist",
-			kcFile,
-		)
-		return
-	}
-
-	// Try to read and parse the configuration file:
-	if kcEnvSet {
-		kcFile = kcEnv
-	}
-	kcData, err := os.ReadFile(kcFile)
-	if err != nil {
-		err = fmt.Errorf("failed to read configuration file '%s'", kcFile)
-		return
-	}
-	result, err = clientcmd.NewClientConfigFromBytes(kcData)
+	rules := clientcmd.NewDefaultClientConfigLoadingRules()
+	overrides := &clientcmd.ConfigOverrides{}
+	result = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
 	return
 }
 
