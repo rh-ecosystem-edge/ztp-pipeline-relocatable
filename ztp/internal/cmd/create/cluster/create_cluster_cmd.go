@@ -369,7 +369,7 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 		if err != nil {
 			return err
 		}
-		if status == "ready" {
+		if status == "True" {
 			fmt.Fprintf(
 				c.tool.Out(),
 				"Cluster '%s' is installed\n",
