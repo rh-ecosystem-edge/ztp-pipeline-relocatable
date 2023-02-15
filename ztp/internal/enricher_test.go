@@ -18,6 +18,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -29,6 +30,7 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/decorators"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
 	. "github.com/onsi/gomega/ghttp"
 	"golang.org/x/crypto/ssh"
 	corev1 "k8s.io/api/core/v1"
@@ -42,9 +44,10 @@ import (
 
 var _ = Describe("Enricher", Ordered, func() {
 	var (
-		ctx    context.Context
-		logger logr.Logger
-		client clnt.WithWatch
+		ctx      context.Context
+		logger   logr.Logger
+		client   clnt.WithWatch
+		registry *ghttp.Server
 	)
 
 	BeforeAll(func() {
@@ -59,11 +62,20 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		// Get the Kubernetes API client. Note that we create this only once and share it
 		// for all the tests because the initial discovery is quite expensive and noisy, and
-		// we don't really need to have a separate client for eacch test.
+		// we don't really need to have a separate client for each test.
 		client, err = NewClient().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
+
+		// Create a fake registry server. This will not serve any request, it will only be
+		// used to fetch the CA certificates.
+		registry = ghttp.NewTLSServer()
+	})
+
+	AfterAll(func() {
+		// Stop the fake registry server:
+		registry.Close()
 	})
 
 	Context("Creation", func() {
@@ -864,6 +876,57 @@ var _ = Describe("Enricher", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 			cluster := config.Clusters[0]
 			Expect(cluster.ImageSet).To(Equal("my-image-set"))
+		})
+
+		It("Doesn't change the registry if already set", func() {
+			properties["REGISTRY"] = registry.Addr()
+			config := &models.Config{
+				Properties: properties,
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.Properties).To(HaveKeyWithValue("REGISTRY", registry.Addr()))
+		})
+
+		It("Copies non default registry to the clusters", func() {
+			properties["REGISTRY"] = registry.Addr()
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			config := &models.Config{
+				Properties: properties,
+				Clusters: []*models.Cluster{{
+					Name: name,
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			cluster := config.Clusters[0]
+			Expect(cluster.Registry.URL).To(Equal(registry.Addr()))
+		})
+
+		It("Fetches the registry CA certificates", func() {
+			// Create the cluster with the custom registry:
+			properties["REGISTRY"] = registry.Addr()
+			name := fmt.Sprintf("my-%s", uuid.NewString())
+			config := &models.Config{
+				Properties: properties,
+				Clusters: []*models.Cluster{{
+					Name: name,
+				}},
+			}
+			err := enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Verify that the certificates can be used to connect to the regisry:
+			cluster := config.Clusters[0]
+			Expect(cluster.Registry.CA).ToNot(BeEmpty())
+			pool := x509.NewCertPool()
+			ok := pool.AppendCertsFromPEM(cluster.Registry.CA)
+			Expect(ok).To(BeTrue())
+			conn, err := tls.Dial("tcp", registry.Addr(), &tls.Config{
+				RootCAs: pool,
+			})
+			Expect(err).ToNot(HaveOccurred())
+			defer conn.Close()
 		})
 	})
 })

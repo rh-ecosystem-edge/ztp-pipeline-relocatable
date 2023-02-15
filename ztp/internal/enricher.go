@@ -15,9 +15,11 @@ License.
 package internal
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -284,6 +286,8 @@ func (e *Enricher) enrichCluster(ctx context.Context, config *models.Config,
 		e.setExternalIPs,
 		e.setKubeconfig,
 		e.setClusterImageSet,
+		e.setClusterRegistryURL,
+		e.setClusterRegistryCA,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, config, cluster)
@@ -601,6 +605,86 @@ func (e *Enricher) setClusterImageSet(ctx context.Context, config *models.Config
 	return nil
 }
 
+func (e *Enricher) setClusterRegistryURL(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	// Do nothing if it is already set:
+	if cluster.Registry.URL != "" {
+		return nil
+	}
+
+	// Do nothing if there isn't a custom registry in the configuration:
+	registry := config.Properties[models.RegistryProperty]
+	if registry == "" {
+		return nil
+	}
+
+	// Set the value:
+	cluster.Registry.URL = registry
+	e.logger.Info(
+		"Set cluster registry URL",
+		"value", registry,
+	)
+
+	return nil
+}
+
+func (e *Enricher) setClusterRegistryCA(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	// Do nothing if it is already set:
+	if cluster.Registry.CA != nil {
+		return nil
+	}
+
+	// Do nothing if the URL isn't set:
+	if cluster.Registry.URL == "" {
+		return nil
+	}
+
+	// Set the value:
+	ca, err := e.getCA(cluster.Registry.URL)
+	if err != nil {
+		return fmt.Errorf(
+			"failed to get registry CA certificates for registry '%s' of "+
+				"cluster '%s': %v",
+			cluster.Registry.URL, cluster.Name, err,
+		)
+	}
+	cluster.Registry.CA = ca
+	e.logger.Info(
+		"Set cluster registry CA",
+		"value", string(ca),
+	)
+
+	return nil
+}
+
+func (e *Enricher) getCA(address string) (result []byte, err error) {
+	// Connect to the server and do the TLS handshake to obtain the certificate chain:
+	conn, err := tls.Dial("tcp", address, &tls.Config{
+		InsecureSkipVerify: true,
+	})
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+	certs := conn.ConnectionState().PeerCertificates
+
+	// Serialize the certificates:
+	buffer := &bytes.Buffer{}
+	for _, cert := range certs {
+		err = pem.Encode(buffer, &pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: cert.Raw,
+		})
+		if err != nil {
+			return
+		}
+	}
+	result = buffer.Bytes()
+
+	return
+}
+
 // Hardcoded blocks of addresses used by the cluster, the machines and the services (assigned in the
 // init function below).
 var (
@@ -643,7 +727,7 @@ func init() {
 	enricherIngressVIP[len(enricherIngressVIP)-1] = 243
 }
 
-// enricherDefaultMirror is the debault base URL for downloading the `release.txt` files, used when
+// enricherDefaultMirror is the default base URL for downloading the `release.txt` files, used when
 // the `OC_OCP_MIRROR` property isn't set.
 const enricherDefaultMirror = "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
 
