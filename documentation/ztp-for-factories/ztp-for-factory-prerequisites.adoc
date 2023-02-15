@@ -32,8 +32,8 @@ Installer-provisioned installation of {product-title} requires:
 == Storage
 - We need some existing PVs on the HUB
     NOTE:: We cannot use `emptyDir` directive for runninng the pipeline, because between each step in the pipeline the contents will be removed and we require them to further progress.
-    . 3 PVs for ACM (the expected size will depend on how many edgeclusters will you deploy)
-    . 1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 900Gb on the Hub
+    . 3 PVs for MCE: 2 for Assisted Installer + 1 for MCE (the PV size depends on how many edgeclusters you plan to deploy)
+    . 1 for the Hub Internal Registry, the base installation (which includes MCE, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 900Gb on the Hub
     side (Maybe more if you have OCS/ODF deployed).
     . 1 for the HTTPD server, which will host the RHCOS images.
     . We need to meet the OpenShift Storage requirements for the Hub like (SSD/NVME).
