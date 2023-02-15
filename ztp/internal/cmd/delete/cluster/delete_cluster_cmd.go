@@ -56,7 +56,6 @@ type Command struct {
 		config string
 	}
 	logger  logr.Logger
-	env     map[string]string
 	tool    *internal.Tool
 	config  models.Config
 	client  clnt.WithWatch
@@ -79,9 +78,6 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	c.logger = internal.LoggerFromContext(ctx)
 	c.tool = internal.ToolFromContext(ctx)
 
-	// Get the environment:
-	c.env = c.tool.Env()
-
 	// Load the configuration:
 	err = c.loadConfiguration()
 	if err != nil {
@@ -91,7 +87,6 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Create the client for the API:
 	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
-		SetEnv(c.env).
 		Build()
 	if err != nil {
 		fmt.Fprintf(
@@ -105,7 +100,6 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Enrich the configuration:
 	enricher, err := internal.NewEnricher().
 		SetLogger(c.logger).
-		SetEnv(c.env).
 		SetClient(c.client).
 		Build()
 	if err != nil {
@@ -179,7 +173,7 @@ func (c *Command) loadConfiguration() error {
 	file := c.flags.config
 	if file == "" {
 		var ok bool
-		file, ok = c.env["EDGECLUSTERS_FILE"]
+		file, ok = os.LookupEnv("EDGECLUSTERS_FILE")
 		if !ok {
 			fmt.Fprintf(
 				c.tool.Out(),

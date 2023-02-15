@@ -17,15 +17,12 @@ package internal
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"runtime"
 	"runtime/debug"
-	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	"k8s.io/klog/v2"
 
@@ -37,7 +34,6 @@ import (
 type ToolBuilder struct {
 	logger logr.Logger
 	sub    []func() *cobra.Command
-	envs   []any
 	args   []string
 	in     io.Reader
 	out    io.Writer
@@ -51,7 +47,6 @@ type Tool struct {
 	loggerOwned bool
 	cmd         *cobra.Command
 	sub         []func() *cobra.Command
-	env         map[string]string
 	args        []string
 	in          io.Reader
 	out         io.Writer
@@ -81,13 +76,6 @@ func (b *ToolBuilder) AddCommand(value func() *cobra.Command) *ToolBuilder {
 // AddCommands adds a list of sub-commands.
 func (b *ToolBuilder) AddCommands(values ...func() *cobra.Command) *ToolBuilder {
 	b.sub = append(b.sub, values...)
-	return b
-}
-
-// SetEnv set the environment variables. The value can be a slice of strings or a map where both
-// keys and values are strings. If it is a slice then each item should be a `NAME=value` pair.
-func (b *ToolBuilder) SetEnv(value any) *ToolBuilder {
-	b.envs = append(b.envs, value)
 	return b
 }
 
@@ -149,58 +137,15 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 		err = errors.New("standard error output stream is mandatory")
 		return
 	}
-	for i, env := range b.envs {
-		switch env.(type) {
-		case []string, map[string]string:
-		default:
-			err = fmt.Errorf(
-				"environment %d should be a list of strings or a map where both "+
-					"keys and values are strings, but it is of type %T",
-				i, env,
-			)
-			return
-		}
-	}
-
-	// Create the environment variables:
-	env, err := b.createEnv()
-	if err != nil {
-		return
-	}
 
 	// Create and populate the object:
 	result = &Tool{
 		logger: b.logger,
 		sub:    slices.Clone(b.sub),
-		env:    env,
 		args:   slices.Clone(b.args),
 		in:     b.in,
 		out:    b.out,
 		err:    b.err,
-	}
-	return
-}
-
-func (b *ToolBuilder) createEnv() (result map[string]string, err error) {
-	result = map[string]string{}
-	for _, data := range b.envs {
-		switch typed := data.(type) {
-		case []string:
-			for _, item := range typed {
-				equals := strings.Index(item, "=")
-				var name, value string
-				if equals != -1 {
-					name = item[0:equals]
-					value = item[equals+1:]
-				} else {
-					name = item
-					value = ""
-				}
-				result[name] = value
-			}
-		case map[string]string:
-			result = maps.Clone(typed)
-		}
 	}
 	return
 }
@@ -344,18 +289,4 @@ func (t *Tool) Out() io.Writer {
 // Err returns the error output stream of the tool.
 func (t *Tool) Err() io.Writer {
 	return t.err
-}
-
-// Env returns the environment variables of the tool. Note that this returns a copy of the variables
-// used internally by the tool. If you are going to use only one variable it is cheaper to use the
-// LookupEnv method.
-func (t *Tool) Env() map[string]string {
-	return maps.Clone(t.env)
-}
-
-// LookupEnv returns the environment variable of the tool with the given name and a boolean flag
-// indicating if there is such environment variable.
-func (t *Tool) LookupEnv(name string) (value string, ok bool) {
-	value, ok = t.env[name]
-	return
 }
