@@ -1815,7 +1815,14 @@ task.tekton.dev/edgecluster-restore-hub-config configured</code></pre>
 <p>Start the hub cluster pipeline from the command line:</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight nowrap"><code class="language-terminal" data-lang="terminal">$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster.yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub</code></pre>
+<pre class="highlight nowrap"><code class="language-terminal" data-lang="terminal">$ tkn pipeline start \
+-n edgecluster-deployer \
+-p edgeclusters-config="$(cat /path-to-edgecluster.yaml/edgeclusters.yaml)" \
+-p kubeconfig=${KUBECONFIG} \
+-w name=ztp,claimName=ztp-pvc \
+--timeout 5h \
+--use-param-defaults \
+deploy-ztp-hub</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -2311,7 +2318,14 @@ edgeclusters:
 <p>Start the edge cluster pipeline from the command line:</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight nowrap"><code class="language-terminal" data-lang="terminal">$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster-yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-edgeclusters</code></pre>
+<pre class="highlight nowrap"><code class="language-terminal" data-lang="terminal">$ tkn pipeline start \
+-n edgecluster-deployer \
+-p edgeclusters-config="$(cat /path-to-edgecluster-yaml/edgeclusters.yaml)" \
+-p kubeconfig=${KUBECONFIG} \
+-w name=ztp,claimName=ztp-pvc \
+--timeout 5h \
+--use-param-defaults \
+deploy-ztp-edgeclusters</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -3431,7 +3445,7 @@ tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-02-15 01:02:55 UTC
+Last updated 2023-02-15 10:34:09 UTC
 </div>
 </div>
 </body>
