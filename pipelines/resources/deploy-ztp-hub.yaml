@@ -85,6 +85,7 @@ spec:
   - name: deploy-mirror-olm
     taskRef:
       name: hub-deploy-mirror-olm
+    timeout: "2h30m0s"
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
