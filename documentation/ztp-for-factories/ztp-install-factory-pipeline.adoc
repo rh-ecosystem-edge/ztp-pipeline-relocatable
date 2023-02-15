@@ -40,7 +40,14 @@ config:
 +
 [source,terminal]
 ----
-$ tkn pipeline start -n edgecluster-deployer edgeclusters-config="$(cat /path-to-edgecluster.yaml/edgeclusters.yaml)" -p kubeconfig=${KUBECONFIG} -w=ztp,claimName=ztp-pvc --timeout 5h --use-param-defaults deploy-ztp-hub
+$ tkn pipeline start \
+-n edgecluster-deployer \
+-p edgeclusters-config="$(cat /path-to-edgecluster.yaml/edgeclusters.yaml)" \
+-p kubeconfig=${KUBECONFIG} \
+-w name=ztp,claimName=ztp-pvc \
+--timeout 5h \
+--use-param-defaults \
+deploy-ztp-hub
 ----
 +
 [NOTE]
