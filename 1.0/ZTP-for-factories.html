@@ -760,10 +760,10 @@ The <code>eno5</code> network is the internal network. It is only to be accessib
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>3 PVs for ACM (the expected size will depend on how many edgeclusters will you deploy)</p>
+<p>3 PVs for MCE: 2 for Assisted Installer + 1 for MCE (the PV size depends on how many edgeclusters you plan to deploy)</p>
 </li>
 <li>
-<p>1 for the Hub Internal Registry, the base installation (which includes ACM, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 900Gb on the Hub
+<p>1 for the Hub Internal Registry, the base installation (which includes MCE, MetalLB, OCP version 4.X, NMState and some more images) we will need at least 900Gb on the Hub
 side (Maybe more if you have OCS/ODF deployed).</p>
 </li>
 <li>
@@ -3445,7 +3445,7 @@ tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-02-15 10:34:09 UTC
+Last updated 2023-02-15 14:36:40 UTC
 </div>
 </div>
 </body>
