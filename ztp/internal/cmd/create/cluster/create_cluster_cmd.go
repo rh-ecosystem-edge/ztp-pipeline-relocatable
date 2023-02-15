@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -42,16 +43,26 @@ func Cobra() *cobra.Command {
 		RunE:    c.Run,
 	}
 	flags := result.Flags()
-	flags.StringVar(
+	flags.StringVarP(
 		&c.flags.config,
 		"config",
+		"c",
 		"",
 		"Location of the configuration file. The default is to use the file specified "+
 			"in the 'EDGECLUSTERS_FILE' environment variable.",
 	)
-	flags.DurationVar(
+	flags.StringVarP(
+		&c.flags.output,
+		"output",
+		"o",
+		"",
+		"Base directory for output files, including the generated SSH keys. If not specified then "+
+			"no output files are generated.",
+	)
+	flags.DurationVarP(
 		&c.flags.wait,
 		"wait",
+		"w",
 		60*time.Minute,
 		"Time to wait till the clusters are ready. Set to zero to disable waiting.",
 	)
@@ -62,6 +73,7 @@ func Cobra() *cobra.Command {
 type Command struct {
 	flags struct {
 		config string
+		output string
 		wait   time.Duration
 	}
 	logger  logr.Logger
@@ -185,6 +197,21 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 				cluster.Name, err,
 			)
 			return exit.Error(1)
+		}
+	}
+
+	// Write the output files:
+	if c.flags.output != "" {
+		for _, cluster := range c.config.Clusters {
+			err = c.writeOutput(ctx, cluster)
+			if err != nil {
+				fmt.Fprintf(
+					c.tool.Out(),
+					"Failed to write output files for cluster '%s': %v\n",
+					cluster.Name, err,
+				)
+				return exit.Error(1)
+			}
 		}
 	}
 
@@ -394,5 +421,38 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 			break
 		}
 	}
+	return nil
+}
+
+func (c *Command) writeOutput(ctx context.Context, cluster *models.Cluster) error {
+	// Create the directory for the cluster files:
+	dir := filepath.Join(c.flags.output, cluster.Name)
+	err := os.MkdirAll(dir, 0700)
+	if err != nil {
+		return err
+	}
+
+	// Write the SSH sshKeyFile files:
+	sshKeyFile := filepath.Join(dir, cluster.Name+"-rsa.key")
+	err = os.WriteFile(sshKeyFile, cluster.SSH.PrivateKey, 0600)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(
+		c.tool.Out(),
+		"Wrote SSH private key for cluster '%s' to '%s'\n",
+		cluster.Name, sshKeyFile,
+	)
+	sshPubFile := filepath.Join(dir, cluster.Name+"-rsa.key.pub")
+	err = os.WriteFile(sshPubFile, cluster.SSH.PublicKey, 0600)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(
+		c.tool.Out(),
+		"Wrote SSH public key for cluster '%s' to '%s'\n",
+		cluster.Name, sshPubFile,
+	)
+
 	return nil
 }
