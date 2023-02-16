@@ -1,15 +1,15 @@
-{{ range .Cluster.Nodes }}
+{{ range .Cluster.ControlPlaneNodes }}
 ---
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
-  name: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}
+  name: ztpfw-{{ $.Cluster.Name }}-master-{{ .Index }}
   namespace: {{ $.Cluster.Name }}
   labels:
     infraenvs.agent-install.openshift.io: {{ $.Cluster.Name }}
   annotations:
     inspect.metal3.io: disabled
-    bmac.agent-install.openshift.io/hostname: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}
+    bmac.agent-install.openshift.io/hostname: ztpfw-{{ $.Cluster.Name }}-master-{{ .Index }}
     bmac.agent-install.openshift.io/ignition-config-overrides: {{ execute "files/cfg-override-bmh.json" . | json }}
 spec:
   online: false
@@ -19,5 +19,5 @@ spec:
   bmc:
     disableCertificateVerification: true
     address: {{ .BMC.URL }}
-    credentialsName: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}-bmc-secret
+    credentialsName: ztpfw-{{ $.Cluster.Name }}-master-{{ .Index }}-bmc-secret
 {{ end}}

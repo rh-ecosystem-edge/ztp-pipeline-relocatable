@@ -231,7 +231,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			object.SetGroupVersionKind(internal.NMStateConfigGVK)
 			key := clnt.ObjectKey{
 				Namespace: name,
-				Name:      fmt.Sprintf("ztpfw-%s-master-master0", name),
+				Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
 			}
 			err := client.Get(ctx, key, object)
 			Expect(err).ToNot(HaveOccurred())
@@ -241,7 +241,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			object := &corev1.Secret{}
 			key := clnt.ObjectKey{
 				Namespace: name,
-				Name:      fmt.Sprintf("ztpfw-%s-master-master0-bmc-secret", name),
+				Name:      fmt.Sprintf("ztpfw-%s-master-0-bmc-secret", name),
 			}
 			err := client.Get(ctx, key, object)
 			Expect(err).ToNot(HaveOccurred())
@@ -253,7 +253,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			object.SetGroupVersionKind(internal.BareMetalHostGVK)
 			key := clnt.ObjectKey{
 				Namespace: name,
-				Name:      fmt.Sprintf("ztpfw-%s-master-master0", name),
+				Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
 			}
 			err := client.Get(ctx, key, object)
 			Expect(err).ToNot(HaveOccurred())
@@ -392,7 +392,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 		bmhObject.SetGroupVersionKind(internal.BareMetalHostGVK)
 		bmhKey := clnt.ObjectKey{
 			Namespace: name,
-			Name:      fmt.Sprintf("ztpfw-%s-master-master0", name),
+			Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
 		}
 		Eventually(func() error {
 			return client.Get(ctx, bmhKey, bmhObject)
@@ -517,7 +517,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 		bmhObject.SetGroupVersionKind(internal.BareMetalHostGVK)
 		bmhKey := clnt.ObjectKey{
 			Namespace: name,
-			Name:      fmt.Sprintf("ztpfw-%s-master-master0", name),
+			Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
 		}
 		Eventually(func() error {
 			return client.Get(ctx, bmhKey, bmhObject)
