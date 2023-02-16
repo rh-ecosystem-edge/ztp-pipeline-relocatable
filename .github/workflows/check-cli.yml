@@ -71,18 +71,3 @@ jobs:
         working-directory: ztp
         version: v1.51.1
         args: --timeout 5m
-
-  image:
-    name: Build CLI image
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ztp
-
-    steps:
-    - name: Checkout the source
-      uses: actions/checkout@v3
-
-    - name: Build the image
-      run: |
-        podman build .
