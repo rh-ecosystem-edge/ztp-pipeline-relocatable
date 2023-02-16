@@ -31,3 +31,25 @@ type Cluster struct {
 	Kubeconfig      []byte
 	Registry        Registry
 }
+
+// ContorlPlaneNodes returns an slice containing only the control plane nodes of the cluster.
+func (c *Cluster) ControlPlaneNodes() []*Node {
+	var nodes []*Node
+	for _, node := range c.Nodes {
+		if node.Kind == NodeKindControlPlane {
+			nodes = append(nodes, node)
+		}
+	}
+	return nodes
+}
+
+// WorkerNodes returns an slice containing only the workr nodes of the cluster.
+func (c *Cluster) WorkerNodes() []*Node {
+	var nodes []*Node
+	for _, node := range c.Nodes {
+		if node.Kind == NodeKindWorker {
+			nodes = append(nodes, node)
+		}
+	}
+	return nodes
+}

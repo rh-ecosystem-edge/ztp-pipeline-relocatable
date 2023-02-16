@@ -1,10 +1,10 @@
-{{ range .Cluster.Nodes }}
+{{ range .Cluster.ControlPlaneNodes }}
 ---
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
 metadata:
  namespace: {{ $.Cluster.Name }}
- name: ztpfw-{{ $.Cluster.Name }}-master-{{ .Name }}
+ name: ztpfw-{{ $.Cluster.Name }}-master-{{ .Index }}
  labels:
    nmstate_config_cluster_name: {{ $.Cluster.Name }}
 spec:
