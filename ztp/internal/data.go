@@ -23,6 +23,7 @@ var DataFS embed.FS
 
 //go:generate -command get curl --silent --location --output
 //go:generate get data/dev/crds/0010_ingresscontroller.yaml   https://raw.githubusercontent.com/openshift/api/release-4.12/operator/v1/0000_50_ingress-operator_00-ingresscontroller.crd.yaml
+//go:generate get data/dev/crds/0011_icsp.yaml                https://raw.githubusercontent.com/openshift/api/release-4.12/operator/v1alpha1/0000_10_config-operator_01_imagecontentsourcepolicy.crd.yaml
 //go:generate get data/dev/crds/0015_agent.yaml               https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_agents.yaml
 //go:generate get data/dev/crds/0020_agentclusterinstall.yaml https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/extensions.hive.openshift.io_agentclusterinstalls.yaml
 //go:generate get data/dev/crds/0030_clusterdeployment.yaml   https://raw.githubusercontent.com/openshift/hive/master/config/crds/hive.openshift.io_clusterdeployments.yaml
@@ -30,3 +31,4 @@ var DataFS embed.FS
 //go:generate get data/dev/crds/0050_infraenv.yaml            https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_infraenvs.yaml
 //go:generate get data/dev/crds/0060_nmstateconfig.yaml       https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_nmstateconfigs.yaml
 //go:generate get data/dev/crds/0070_baremetalhost.yaml       https://raw.githubusercontent.com/metal3-io/baremetal-operator/v0.2.0/config/crd/bases/metal3.io_baremetalhosts.yaml
+//go:generate get data/dev/crds/0080_olm.yaml                 https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/v0.23.1/deploy/upstream/quickstart/crds.yaml
