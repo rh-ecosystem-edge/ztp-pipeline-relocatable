@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
+	"log"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -28,6 +29,10 @@ func TestLogging(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Logging")
 }
+
+var _ = BeforeSuite(func() {
+	log.SetOutput(GinkgoWriter)
+})
 
 // Parse parses a set of log lines into a slice of maps that is easier to analyze.
 func Parse(buffer io.Reader) []map[string]any {

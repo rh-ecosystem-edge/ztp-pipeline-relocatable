@@ -15,6 +15,7 @@ License.
 package templating
 
 import (
+	"log"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -25,3 +26,7 @@ func TestTemplating(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Templating")
 }
+
+var _ = BeforeSuite(func() {
+	log.SetOutput(GinkgoWriter)
+})
