@@ -35,7 +35,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
@@ -46,7 +45,7 @@ var _ = Describe("Enricher", Ordered, func() {
 	var (
 		ctx      context.Context
 		logger   logr.Logger
-		client   clnt.WithWatch
+		client   *Client
 		registry *ghttp.Server
 	)
 
@@ -74,8 +73,18 @@ var _ = Describe("Enricher", Ordered, func() {
 	})
 
 	AfterAll(func() {
-		// Stop the fake registry server:
-		registry.Close()
+		var err error
+
+		// Stop the client:
+		if client != nil {
+			err = client.Close()
+			Expect(err).ToNot(HaveOccurred())
+		}
+
+		// Stop the registry server:
+		if registry != nil {
+			registry.Close()
+		}
 	})
 
 	Context("Creation", func() {

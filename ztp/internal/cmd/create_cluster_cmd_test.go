@@ -44,7 +44,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	var (
 		ctx    context.Context
 		logger logr.Logger
-		client clnt.WithWatch
+		client *internal.Client
 	)
 
 	BeforeAll(func() {
@@ -63,6 +63,16 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
+	})
+
+	AfterAll(func() {
+		var err error
+
+		// Stop the client:
+		if client != nil {
+			err = client.Close()
+			Expect(err).ToNot(HaveOccurred())
+		}
 	})
 
 	BeforeEach(func() {

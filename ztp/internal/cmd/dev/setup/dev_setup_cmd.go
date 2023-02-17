@@ -17,9 +17,7 @@ package setup
 import (
 	"fmt"
 
-	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
@@ -40,9 +38,6 @@ func Cobra() *cobra.Command {
 
 // Command contains the data and logic needed to run the `dev setup` command.
 type Command struct {
-	logger logr.Logger
-	tool   *internal.Tool
-	client clnt.WithWatch
 }
 
 // NewCommand creates a new runner that knows how to execute the `dev setup` command.
@@ -56,39 +51,40 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	ctx := cmd.Context()
 
 	// Get the dependencies from the context:
-	c.logger = internal.LoggerFromContext(ctx)
-	c.tool = internal.ToolFromContext(ctx)
+	logger := internal.LoggerFromContext(ctx)
+	tool := internal.ToolFromContext(ctx)
 
 	// Create the client for the API:
-	c.client, err = internal.NewClient().
-		SetLogger(c.logger).
+	client, err := internal.NewClient().
+		SetLogger(logger).
 		Build()
 	if err != nil {
 		fmt.Fprintf(
-			c.tool.Err(),
+			tool.Err(),
 			"Failed to create client: %v\n",
 			err,
 		)
 		return exit.Error(1)
 	}
+	defer client.Close()
 
 	// Create the objects:
 	listener, err := internal.NewApplierListener().
-		SetLogger(c.logger).
-		SetOut(c.tool.Out()).
-		SetErr(c.tool.Err()).
+		SetLogger(logger).
+		SetOut(tool.Out()).
+		SetErr(tool.Err()).
 		Build()
 	if err != nil {
 		fmt.Fprintf(
-			c.tool.Err(),
+			tool.Err(),
 			"Failed to create listener: %v\n",
 			err,
 		)
 		return exit.Error(1)
 	}
 	applier, err := internal.NewApplier().
-		SetLogger(c.logger).
-		SetClient(c.client).
+		SetLogger(logger).
+		SetClient(client).
 		SetListener(listener.Func).
 		SetFS(internal.DataFS).
 		SetRoot("data/dev").
@@ -97,7 +93,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		Build()
 	if err != nil {
 		fmt.Fprintf(
-			c.tool.Err(),
+			tool.Err(),
 			"Failed to create applier: %v\n",
 			err,
 		)
@@ -106,7 +102,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	err = applier.Create(ctx, nil)
 	if err != nil {
 		fmt.Fprintf(
-			c.tool.Err(),
+			tool.Err(),
 			"Failed to create objects: %v\n",
 			err,
 		)

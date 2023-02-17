@@ -137,6 +137,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		)
 		return exit.Error(1)
 	}
+	defer client.Close()
 
 	// Create the objects:
 	listener, err := internal.NewApplierListener().

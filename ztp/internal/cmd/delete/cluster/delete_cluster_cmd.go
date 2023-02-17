@@ -21,7 +21,6 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
@@ -58,7 +57,7 @@ type Command struct {
 	logger  logr.Logger
 	tool    *internal.Tool
 	config  models.Config
-	client  clnt.WithWatch
+	client  *internal.Client
 	applier *internal.Applier
 }
 
@@ -96,6 +95,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		)
 		return exit.Error(1)
 	}
+	defer c.client.Close()
 
 	// Enrich the configuration:
 	enricher, err := internal.NewEnricher().
