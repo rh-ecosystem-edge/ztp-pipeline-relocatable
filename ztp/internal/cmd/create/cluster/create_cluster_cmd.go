@@ -16,7 +16,6 @@ package cluster
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -78,7 +77,7 @@ type Command struct {
 	}
 	logger  logr.Logger
 	jq      *internal.JQ
-	tool    *internal.Tool
+	console *internal.Console
 	config  models.Config
 	client  *internal.Client
 	applier *internal.Applier
@@ -98,16 +97,15 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 
 	// Get the dependencies from the context:
 	c.logger = internal.LoggerFromContext(ctx)
-	c.tool = internal.ToolFromContext(ctx)
+	c.console = internal.ConsoleFromContext(ctx)
 
 	// Create the JQ object:
 	c.jq, err = internal.NewJQ().
 		SetLogger(c.logger).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create JQ object: %v\n",
+		c.console.Error(
+			"Failed to create JQ object: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -124,9 +122,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		SetLogger(c.logger).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create client: %v\n",
+		c.console.Error(
+			"Failed to create client: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -139,18 +136,16 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		SetClient(c.client).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create enricher: %v\n",
+		c.console.Error(
+			"Failed to create enricher: %v",
 			err,
 		)
 		return exit.Error(1)
 	}
 	err = enricher.Enrich(ctx, &c.config)
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to enrich configuration: %v\n",
+		c.console.Error(
+			"Failed to enrich configuration: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -159,13 +154,11 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Create the applier:
 	listener, err := internal.NewApplierListener().
 		SetLogger(c.logger).
-		SetOut(c.tool.Out()).
-		SetErr(c.tool.Err()).
+		SetConsole(c.console).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create listener: %v\n",
+		c.console.Error(
+			"Failed to create listener: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -180,9 +173,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		AddLabel(labels.ZTPFW, "").
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create applier: %v\n",
+		c.console.Error(
+			"Failed to create applier: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -192,9 +184,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	for _, cluster := range c.config.Clusters {
 		err = c.deploy(ctx, cluster)
 		if err != nil {
-			fmt.Fprintf(
-				c.tool.Err(),
-				"Failed to deploy cluster '%s': %v\n",
+			c.console.Error(
+				"Failed to deploy cluster '%s': %v",
 				cluster.Name, err,
 			)
 			return exit.Error(1)
@@ -206,9 +197,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		for _, cluster := range c.config.Clusters {
 			err = c.writeOutput(ctx, cluster)
 			if err != nil {
-				fmt.Fprintf(
-					c.tool.Out(),
-					"Failed to write output files for cluster '%s': %v\n",
+				c.console.Error(
+					"Failed to write output files for cluster '%s': %v",
 					cluster.Name, err,
 				)
 				return exit.Error(1)
@@ -218,9 +208,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 
 	// Wait for clusters to be ready:
 	if c.flags.wait != 0 {
-		fmt.Fprintf(
-			c.tool.Out(),
-			"Waiting up to %s for clusters to be ready\n",
+		c.console.Info(
+			"Waiting up to %s for clusters to be ready",
 			c.flags.wait,
 		)
 		var cancel context.CancelFunc
@@ -229,9 +218,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		for _, cluster := range c.config.Clusters {
 			err = c.wait(ctx, cluster)
 			if os.IsTimeout(err) {
-				fmt.Fprintf(
-					c.tool.Err(),
-					"Clusters aren't ready after waiting for %s\n",
+				c.console.Error(
+					"Clusters aren't ready after waiting for %s",
 					c.flags.wait,
 				)
 				return exit.Error(1)
@@ -251,10 +239,9 @@ func (c *Command) loadConfiguration() error {
 		var ok bool
 		file, ok = os.LookupEnv("EDGECLUSTERS_FILE")
 		if !ok {
-			fmt.Fprintf(
-				c.tool.Out(),
-				"Can't load configuration because the '--config' flag is "+
-					"empty and the 'EDGECLUSTERS_FILE' environment "+
+			c.console.Info(
+				"Can't load configuration because the '--config' flag is " +
+					"empty and the 'EDGECLUSTERS_FILE' environment " +
 					"variable isn't set",
 			)
 			return exit.Error(1)
@@ -265,9 +252,8 @@ func (c *Command) loadConfiguration() error {
 	// way we can generate a nicer error message in most cases.
 	_, err := os.Stat(file)
 	if os.IsNotExist(err) {
-		fmt.Fprintf(
-			c.tool.Out(),
-			"Configuration file '%s' doesn't exist\n",
+		c.console.Error(
+			"Configuration file '%s' doesn't exist",
 			file,
 		)
 		return exit.Error(1)
@@ -279,9 +265,8 @@ func (c *Command) loadConfiguration() error {
 		SetSource(file).
 		Load()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Out(),
-			"Failed to load configuration file '%s': %v\n",
+		c.console.Error(
+			"Failed to load configuration file '%s': %v",
 			file, err,
 		)
 		return exit.Error(1)
@@ -311,9 +296,8 @@ func (c *Command) wait(ctx context.Context, cluster *models.Cluster) error {
 }
 
 func (c *Command) waitHosts(ctx context.Context, cluster *models.Cluster) error {
-	fmt.Fprintf(
-		c.tool.Out(),
-		"Waiting for hosts of cluster '%s' to be provisioned\n",
+	c.console.Info(
+		"Waiting for hosts of cluster '%s' to be provisioned",
 		cluster.Name,
 	)
 
@@ -352,9 +336,8 @@ func (c *Command) waitHosts(ctx context.Context, cluster *models.Cluster) error 
 		}
 		if state == "provisioned" {
 			name := object.GetName()
-			fmt.Fprintf(
-				c.tool.Out(),
-				"Host '%s' of cluster '%s' is provisioned\n",
+			c.console.Info(
+				"Host '%s' of cluster '%s' is provisioned",
 				name, cluster.Name,
 			)
 			delete(pending, name)
@@ -367,9 +350,8 @@ func (c *Command) waitHosts(ctx context.Context, cluster *models.Cluster) error 
 }
 
 func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) error {
-	fmt.Fprintf(
-		c.tool.Out(),
-		"Waiting for installation of cluster '%s' to be completed\n",
+	c.console.Info(
+		"Waiting for installation of cluster '%s' to be completed",
 		cluster.Name,
 	)
 
@@ -406,17 +388,15 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 			return err
 		}
 		if current.State != state {
-			fmt.Fprintf(
-				c.tool.Out(),
-				"Cluster '%s' moved to state '%s'\n",
+			c.console.Info(
+				"Cluster '%s' moved to state '%s'",
 				cluster.Name, current.State,
 			)
 			state = current.State
 		}
 		if current.Status == "True" {
-			fmt.Fprintf(
-				c.tool.Out(),
-				"Cluster '%s' is installed\n",
+			c.console.Info(
+				"Cluster '%s' is installed",
 				cluster.Name,
 			)
 			break
@@ -439,9 +419,8 @@ func (c *Command) writeOutput(ctx context.Context, cluster *models.Cluster) erro
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(
-		c.tool.Out(),
-		"Wrote SSH private key for cluster '%s' to '%s'\n",
+	c.console.Info(
+		"Wrote SSH private key for cluster '%s' to '%s'",
 		cluster.Name, sshKeyFile,
 	)
 	sshPubFile := filepath.Join(dir, cluster.Name+"-rsa.key.pub")
@@ -449,9 +428,8 @@ func (c *Command) writeOutput(ctx context.Context, cluster *models.Cluster) erro
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(
-		c.tool.Out(),
-		"Wrote SSH public key for cluster '%s' to '%s'\n",
+	c.console.Info(
+		"Wrote SSH public key for cluster '%s' to '%s'",
 		cluster.Name, sshPubFile,
 	)
 

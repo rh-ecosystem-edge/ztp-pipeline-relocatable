@@ -17,7 +17,6 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"unicode"
 
@@ -29,17 +28,15 @@ import (
 // ApplierListenerBuilder contains the data and logic needed to create an object that listens for
 // applier events and writes them to the console using a human friendly format.
 type ApplierListenerBuilder struct {
-	logger logr.Logger
-	out    io.Writer
-	err    io.Writer
+	logger  logr.Logger
+	console *Console
 }
 
 // ApplierListener knows how to write to the console human friendly representations of applier
 // events.
 type ApplierListener struct {
-	logger logr.Logger
-	out    io.Writer
-	err    io.Writer
+	logger  logr.Logger
+	console *Console
 }
 
 // NewApplierListener creates a builder that can then be used to create a listener.
@@ -53,15 +50,9 @@ func (b *ApplierListenerBuilder) SetLogger(value logr.Logger) *ApplierListenerBu
 	return b
 }
 
-// SetOut sets the standard output stream. This is mandatory.
-func (b *ApplierListenerBuilder) SetOut(value io.Writer) *ApplierListenerBuilder {
-	b.out = value
-	return b
-}
-
-// SetErr sets the standard error output stream. This is mandatory.
-func (b *ApplierListenerBuilder) SetErr(value io.Writer) *ApplierListenerBuilder {
-	b.err = value
+// SetConsole sets the console. This is mandatory.
+func (b *ApplierListenerBuilder) SetConsole(value *Console) *ApplierListenerBuilder {
+	b.console = value
 	return b
 }
 
@@ -72,20 +63,15 @@ func (b *ApplierListenerBuilder) Build() (result *ApplierListener, err error) {
 		err = errors.New("logger is mandatory")
 		return
 	}
-	if b.out == nil {
-		err = errors.New("output writer is mandatory")
-		return
-	}
-	if b.err == nil {
-		err = errors.New("error writer is mandatory")
+	if b.console == nil {
+		err = errors.New("console is mandatory")
 		return
 	}
 
 	// Create and populate the object:
 	result = &ApplierListener{
-		logger: b.logger,
-		out:    b.out,
-		err:    b.err,
+		logger:  b.logger,
+		console: b.console,
 	}
 	return
 }
@@ -104,57 +90,48 @@ func (l *ApplierListener) Func(event *ApplierEvent) {
 	// Print the message accroding to the event type:
 	switch event.Type {
 	case ApplierObjectCreated:
-		fmt.Fprintf(
-			l.out,
-			"Created %s '%s'\n",
+		l.console.Info(
+			"Created %s '%s'",
 			friendlyKind, friendlyName,
 		)
 	case ApplierObjectExist:
-		fmt.Fprintf(
-			l.out,
-			"%s '%s' already exists\n",
+		l.console.Warn(
+			"%s '%s' already exists",
 			capitalizedKind, friendlyName,
 		)
 	case ApplierObjectNotExist:
-		fmt.Fprintf(
-			l.out,
-			"%s '%s' doesn't exist\n",
+		l.console.Warn(
+			"%s '%s' doesn't exist",
 			capitalizedKind, friendlyName,
 		)
 	case ApplierCreateError:
-		fmt.Fprintf(
-			l.err,
-			"Failed to create %s '%s': %v\n",
+		l.console.Error(
+			"Failed to create %s '%s': %v",
 			friendlyKind, friendlyName, event.Error,
 		)
 	case ApplierDeleteError:
-		fmt.Fprintf(
-			l.err,
-			"Failed to delete %s '%s': %v\n",
+		l.console.Error(
+			"Failed to delete %s '%s': %v",
 			friendlyKind, friendlyName, event.Error,
 		)
 	case ApplierStatusUpdated:
-		fmt.Fprintf(
-			l.out,
-			"Updated status of %s '%s'\n",
+		l.console.Info(
+			"Updated status of %s '%s'",
 			friendlyKind, friendlyName,
 		)
 	case ApplierStatusError:
-		fmt.Fprintf(
-			l.err,
-			"Failed to update status of %s '%s': %v\n",
+		l.console.Error(
+			"Failed to update status of %s '%s': %v",
 			friendlyKind, friendlyName, event.Error,
 		)
 	case ApplierObjectDeleted:
-		fmt.Fprintf(
-			l.err,
-			"Deleted %s '%s'\n",
+		l.console.Info(
+			"Deleted %s '%s'",
 			friendlyKind, friendlyName,
 		)
 	case ApplierWaitingCRD:
-		fmt.Fprintf(
-			l.err,
-			"Waiting for CRD before creating %s '%s'\n",
+		l.console.Info(
+			"Waiting for CRD before creating %s '%s'",
 			friendlyKind, friendlyName,
 		)
 	default:

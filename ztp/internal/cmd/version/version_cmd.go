@@ -15,7 +15,6 @@ License.
 package version
 
 import (
-	"fmt"
 	"runtime/debug"
 
 	"github.com/spf13/cobra"
@@ -46,8 +45,11 @@ func NewCommand() *Command {
 
 // run executes the `version` command.
 func (c *Command) run(cmd *cobra.Command, argv []string) error {
-	// Get the tool:
-	tool := internal.ToolFromContext(cmd.Context())
+	// Get the context:
+	ctx := cmd.Context()
+
+	// Get the console:
+	console := internal.ConsoleFromContext(ctx)
 
 	// Calculate the values:
 	buildCommit := unknownSettingValue
@@ -65,9 +67,8 @@ func (c *Command) run(cmd *cobra.Command, argv []string) error {
 	}
 
 	// Print the values:
-	out := tool.Out()
-	fmt.Fprintf(out, "Build commit: %s\n", buildCommit)
-	fmt.Fprintf(out, "Build time: %s\n", buildTime)
+	console.Info("Build commit: %s", buildCommit)
+	console.Info("Build time: %s", buildTime)
 
 	return nil
 }

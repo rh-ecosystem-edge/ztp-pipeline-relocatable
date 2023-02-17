@@ -45,6 +45,7 @@ type ToolBuilder struct {
 type Tool struct {
 	logger      logr.Logger
 	loggerOwned bool
+	console     *Console
 	cmd         *cobra.Command
 	sub         []func() *cobra.Command
 	args        []string
@@ -198,10 +199,21 @@ func (t *Tool) run(cmd *cobra.Command, args []string) error {
 	}
 	klog.SetLogger(t.logger)
 
+	// Create the console:
+	t.console, err = NewConsole().
+		SetLogger(t.logger).
+		SetOut(t.out).
+		SetErr(t.err).
+		Build()
+	if err != nil {
+		return err
+	}
+
 	// Populate the context:
 	ctx := cmd.Context()
 	ctx = ToolIntoContext(ctx, t)
 	ctx = LoggerIntoContext(ctx, t.logger)
+	ctx = ConsoleIntoContext(ctx, t.console)
 	cmd.SetContext(ctx)
 
 	// Write build information:
@@ -274,6 +286,11 @@ func (t *Tool) writeBuildInfo() {
 
 	// Write the information:
 	t.logger.Info("Build information", logFields...)
+}
+
+// Console returns the console of the tool.
+func (t *Tool) Console() *Console {
+	return t.console
 }
 
 // In returns the input stream of the tool.

@@ -16,7 +16,6 @@ package cluster
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/go-logr/logr"
@@ -55,7 +54,7 @@ type Command struct {
 		config string
 	}
 	logger  logr.Logger
-	tool    *internal.Tool
+	console *internal.Console
 	config  models.Config
 	client  *internal.Client
 	applier *internal.Applier
@@ -75,7 +74,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 
 	// Get the dependencies from the context:
 	c.logger = internal.LoggerFromContext(ctx)
-	c.tool = internal.ToolFromContext(ctx)
+	c.console = internal.ConsoleFromContext(ctx)
 
 	// Load the configuration:
 	err = c.loadConfiguration()
@@ -88,9 +87,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		SetLogger(c.logger).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create client: %v\n",
+		c.console.Error(
+			"Failed to create client: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -103,18 +101,16 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		SetClient(c.client).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create enricher: %v\n",
+		c.console.Error(
+			"Failed to create enricher: %v",
 			err,
 		)
 		return exit.Error(1)
 	}
 	err = enricher.Enrich(ctx, &c.config)
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to enrich configuration: %v\n",
+		c.console.Error(
+			"Failed to enrich configuration: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -123,13 +119,11 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Create the applier:
 	listener, err := internal.NewApplierListener().
 		SetLogger(c.logger).
-		SetOut(c.tool.Out()).
-		SetErr(c.tool.Err()).
+		SetConsole(c.console).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create applier listener: %v\n",
+		c.console.Error(
+			"Failed to create applier listener: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -144,9 +138,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		AddLabel(labels.ZTPFW, "").
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Err(),
-			"Failed to create applier: %v\n",
+		c.console.Error(
+			"Failed to create applier: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -156,9 +149,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	for _, cluster := range c.config.Clusters {
 		err = c.delete(ctx, cluster)
 		if err != nil {
-			fmt.Fprintf(
-				c.tool.Err(),
-				"Failed to delete cluster '%s': %v\n",
+			c.console.Error(
+				"Failed to delete cluster '%s': %v",
 				cluster.Name, err,
 			)
 			return exit.Error(1)
@@ -175,10 +167,9 @@ func (c *Command) loadConfiguration() error {
 		var ok bool
 		file, ok = os.LookupEnv("EDGECLUSTERS_FILE")
 		if !ok {
-			fmt.Fprintf(
-				c.tool.Out(),
-				"Can't load configuration because the '--config' flag is "+
-					"empty and the 'EDGECLUSTERS_FILE' environment "+
+			c.console.Error(
+				"Can't load configuration because the '--config' flag is " +
+					"empty and the 'EDGECLUSTERS_FILE' environment " +
 					"variable isn't set",
 			)
 			return exit.Error(1)
@@ -189,9 +180,8 @@ func (c *Command) loadConfiguration() error {
 	// way we can generate a nicer error message in most cases.
 	_, err := os.Stat(file)
 	if os.IsNotExist(err) {
-		fmt.Fprintf(
-			c.tool.Out(),
-			"Configuration file '%s' doesn't exist\n",
+		c.console.Error(
+			"Configuration file '%s' doesn't exist",
 			file,
 		)
 		return exit.Error(1)
@@ -203,9 +193,8 @@ func (c *Command) loadConfiguration() error {
 		SetSource(file).
 		Load()
 	if err != nil {
-		fmt.Fprintf(
-			c.tool.Out(),
-			"Failed to load configuration file '%s': %v\n",
+		c.console.Error(
+			"Failed to load configuration file '%s': %v",
 			file, err,
 		)
 		return exit.Error(1)
