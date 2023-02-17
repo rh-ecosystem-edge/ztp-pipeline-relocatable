@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"math"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -34,7 +33,7 @@ var _ = Describe("Context", func() {
 		var err error
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetLevel(math.MaxInt).
+			SetLevel(2).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 	})
@@ -57,6 +56,38 @@ var _ = Describe("Context", func() {
 		ctx := context.Background()
 		Expect(func() {
 			ToolFromContext(ctx)
+		}).To(Panic())
+	})
+
+	It("Extracts logger from the context if previously added", func() {
+		ctx := LoggerIntoContext(context.Background(), logger)
+		extracted := LoggerFromContext(ctx)
+		Expect(extracted).To(BeIdenticalTo(logger))
+	})
+
+	It("Panics if logger wasn't added to the context", func() {
+		ctx := context.Background()
+		Expect(func() {
+			LoggerFromContext(ctx)
+		}).To(Panic())
+	})
+
+	It("Extracts console from the context if previously added", func() {
+		console, err := NewConsole().
+			SetLogger(logger).
+			SetOut(io.Discard).
+			SetErr(io.Discard).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		ctx := ConsoleIntoContext(context.Background(), console)
+		extracted := ConsoleFromContext(ctx)
+		Expect(extracted).To(BeIdenticalTo(console))
+	})
+
+	It("Panics if console wasn't added to the context", func() {
+		ctx := context.Background()
+		Expect(func() {
+			ConsoleFromContext(ctx)
 		}).To(Panic())
 	})
 })

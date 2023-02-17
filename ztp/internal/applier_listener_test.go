@@ -43,10 +43,15 @@ var _ = Describe("Applier listener", func() {
 		"Generates the expected messages",
 		func(event *ApplierEvent, msg string) {
 			buffer := &bytes.Buffer{}
-			listener, err := NewApplierListener().
+			console, err := NewConsole().
 				SetLogger(logger).
 				SetOut(buffer).
 				SetErr(buffer).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			listener, err := NewApplierListener().
+				SetLogger(logger).
+				SetConsole(console).
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			listener.Func(event)
@@ -65,7 +70,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Created namespace 'my-ns'\n",
+			"I: Created namespace 'my-ns'\n",
 		),
 		Entry(
 			"Namespace deleted",
@@ -80,7 +85,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Deleted namespace 'my-ns'\n",
+			"I: Deleted namespace 'my-ns'\n",
 		),
 		Entry(
 			"Namespace already exists",
@@ -95,7 +100,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Namespace 'my-ns' already exists\n",
+			"W: Namespace 'my-ns' already exists\n",
 		),
 		Entry(
 			"Object created",
@@ -111,7 +116,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Created secret 'my-ns/my-secret'\n",
+			"I: Created secret 'my-ns/my-secret'\n",
 		),
 		Entry(
 			"Object deleted",
@@ -127,7 +132,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Deleted secret 'my-ns/my-secret'\n",
+			"I: Deleted secret 'my-ns/my-secret'\n",
 		),
 		Entry(
 			"Object already exists",
@@ -143,7 +148,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Secret 'my-ns/my-secret' already exists\n",
+			"W: Secret 'my-ns/my-secret' already exists\n",
 		),
 		Entry(
 			"Object status updated",
@@ -159,7 +164,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Updated status of pod 'my-ns/my-pod'\n",
+			"I: Updated status of pod 'my-ns/my-pod'\n",
 		),
 		Entry(
 			"Object creation error",
@@ -176,7 +181,7 @@ var _ = Describe("Applier listener", func() {
 				},
 				Error: errors.New("my-error"),
 			},
-			"Failed to create pod 'my-ns/my-pod': my-error\n",
+			"E: Failed to create pod 'my-ns/my-pod': my-error\n",
 		),
 		Entry(
 			"Waiting for CRD",
@@ -192,7 +197,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Waiting for CRD before creating example 'my-ns/my-example'\n",
+			"I: Waiting for CRD before creating example 'my-ns/my-example'\n",
 		),
 		Entry(
 			"Exception in friendly name (CRD instead of custom resource definition)",
@@ -207,7 +212,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Created CRD 'examples.example.com'\n",
+			"I: Created CRD 'examples.example.com'\n",
 		),
 		Entry(
 			"CRD with multiple words",
@@ -222,7 +227,7 @@ var _ = Describe("Applier listener", func() {
 					},
 				},
 			},
-			"Created something with multiple words 'my-thing'\n",
+			"I: Created something with multiple words 'my-thing'\n",
 		),
 	)
 })

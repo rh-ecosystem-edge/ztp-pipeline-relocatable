@@ -26,6 +26,7 @@ type contextKey int
 const (
 	contextToolKey contextKey = iota
 	contextLoggerKey
+	contextConsoleKey
 )
 
 // ToolFromContext returns the tool from the context. It panics if the given context doesn't contain
@@ -56,4 +57,19 @@ func LoggerFromContext(ctx context.Context) logr.Logger {
 // LoggerIntoContext creates a new context that contains the given logger.
 func LoggerIntoContext(ctx context.Context, logger logr.Logger) context.Context {
 	return context.WithValue(ctx, contextLoggerKey, logger)
+}
+
+// ConsoleFromContext returns the console from the context. It panics if the given context doesn't
+// contain a console.
+func ConsoleFromContext(ctx context.Context) *Console {
+	console := ctx.Value(contextConsoleKey).(*Console)
+	if console == nil {
+		panic("failed to get console from context")
+	}
+	return console
+}
+
+// ConsoleIntoContext creates a new context that contains the given console.
+func ConsoleIntoContext(ctx context.Context, console *Console) context.Context {
+	return context.WithValue(ctx, contextConsoleKey, console)
 }

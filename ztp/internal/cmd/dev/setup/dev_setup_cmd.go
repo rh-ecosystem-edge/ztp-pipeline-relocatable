@@ -15,8 +15,6 @@ License.
 package setup
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
@@ -52,16 +50,15 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 
 	// Get the dependencies from the context:
 	logger := internal.LoggerFromContext(ctx)
-	tool := internal.ToolFromContext(ctx)
+	console := internal.ConsoleFromContext(ctx)
 
 	// Create the client for the API:
 	client, err := internal.NewClient().
 		SetLogger(logger).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create client: %v\n",
+		console.Error(
+			"Failed to create client: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -71,13 +68,11 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	// Create the objects:
 	listener, err := internal.NewApplierListener().
 		SetLogger(logger).
-		SetOut(tool.Out()).
-		SetErr(tool.Err()).
+		SetConsole(console).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create listener: %v\n",
+		console.Error(
+			"Failed to create listener: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -92,18 +87,16 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		AddLabel(labels.ZTPFW, "").
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create applier: %v\n",
+		console.Error(
+			"Failed to create applier: %v",
 			err,
 		)
 		return exit.Error(1)
 	}
 	err = applier.Create(ctx, nil)
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create objects: %v\n",
+		console.Error(
+			"Failed to create objects: %v",
 			err,
 		)
 		return exit.Error(1)

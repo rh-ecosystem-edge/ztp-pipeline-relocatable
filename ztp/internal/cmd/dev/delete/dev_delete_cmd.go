@@ -72,14 +72,14 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	// Get the dependencies from the context:
 	logger := internal.LoggerFromContext(ctx)
 	tool := internal.ToolFromContext(ctx)
+	console := internal.ConsoleFromContext(ctx)
 
 	// Create a temporary directory where we can copy all the input files to pass them to the
 	// applier:
 	tmp, err := os.MkdirTemp("", "*.ztp")
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create temporary directory: %v\n",
+		console.Error(
+			"Failed to create temporary directory: %v",
 			err,
 		)
 	}
@@ -93,9 +93,8 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 			name = fmt.Sprintf("%d.yaml", i)
 			data, err = io.ReadAll(tool.In())
 			if err != nil {
-				fmt.Fprintf(
-					tool.Err(),
-					"Failed to read standard input stream: %v\n",
+				console.Error(
+					"Failed to read standard input stream: %v",
 					err,
 				)
 				return exit.Error(1)
@@ -105,9 +104,8 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 			name = fmt.Sprintf("%d-%s", i, base)
 			data, err = os.ReadFile(file)
 			if err != nil {
-				fmt.Fprintf(
-					tool.Err(),
-					"Failed to read file '%s': %v\n",
+				console.Error(
+					"Failed to read file '%s': %v",
 					file, err,
 				)
 				return exit.Error(1)
@@ -116,9 +114,8 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		path := filepath.Join(tmp, name)
 		err = os.WriteFile(path, data, 0400)
 		if err != nil {
-			fmt.Fprintf(
-				tool.Err(),
-				"Failed to copy file '%s' to temporary directory: %v\n",
+			console.Error(
+				"Failed to copy file '%s' to temporary directory: %v",
 				file, err,
 			)
 			return exit.Error(1)
@@ -130,9 +127,8 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		SetLogger(logger).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create client: %v\n",
+		console.Error(
+			"Failed to create client: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -142,13 +138,11 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	// Create the objects:
 	listener, err := internal.NewApplierListener().
 		SetLogger(logger).
-		SetOut(tool.Out()).
-		SetErr(tool.Err()).
+		SetConsole(console).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create listener: %v\n",
+		console.Error(
+			"Failed to create listener: %v",
 			err,
 		)
 		return exit.Error(1)
@@ -160,18 +154,16 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		SetFS(os.DirFS(tmp)).
 		Build()
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to create applier: %v\n",
+		console.Error(
+			"Failed to create applier: %v",
 			err,
 		)
 		return exit.Error(1)
 	}
 	err = applier.Delete(ctx, nil)
 	if err != nil {
-		fmt.Fprintf(
-			tool.Err(),
-			"Failed to delete objects: %v\n",
+		console.Error(
+			"Failed to delete objects: %v",
 			err,
 		)
 		return exit.Error(1)
