@@ -80,7 +80,7 @@ type Command struct {
 	jq      *internal.JQ
 	tool    *internal.Tool
 	config  models.Config
-	client  clnt.WithWatch
+	client  *internal.Client
 	applier *internal.Applier
 }
 
@@ -131,6 +131,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		)
 		return exit.Error(1)
 	}
+	defer c.client.Close()
 
 	// Enrich the configuration:
 	enricher, err := internal.NewEnricher().

@@ -40,7 +40,7 @@ var _ = Describe("Applier", func() {
 	var (
 		ctx    context.Context
 		logger logr.Logger
-		client clnt.WithWatch
+		client *Client
 	)
 
 	BeforeEach(func() {
@@ -61,6 +61,14 @@ var _ = Describe("Applier", func() {
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
+	})
+
+	AfterEach(func() {
+		var err error
+		if client != nil {
+			err = client.Close()
+			Expect(err).ToNot(HaveOccurred())
+		}
 	})
 
 	Describe("Creation", func() {
