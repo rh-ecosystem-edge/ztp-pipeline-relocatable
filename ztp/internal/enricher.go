@@ -529,7 +529,7 @@ func (e *Enricher) setExternalIPs(ctx context.Context, config *models.Config,
 	}
 
 	// Find the IP address for each external interface:
-	for i, node := range cluster.Nodes {
+	for _, node := range cluster.Nodes {
 		if node.ExternalNIC.IP != nil {
 			continue
 		}
@@ -543,7 +543,10 @@ func (e *Enricher) setExternalIPs(ctx context.Context, config *models.Config,
 				"mac", mac,
 				"ip", ip,
 			)
-			cluster.Nodes[i].ExternalNIC.IP = net.ParseIP(ip)
+			node.ExternalNIC.IP, _, err = net.ParseCIDR(ip)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

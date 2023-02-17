@@ -712,7 +712,7 @@ var _ = Describe("Enricher", Ordered, func() {
 					    - flags: []
 					      macAddress: a2:87:c3:6d:61:d{{ . }}
 					      ipV4Addresses:
-					      - 192.168.150.10{{ . }}
+					      - 192.168.150.10{{ . }}/24
 					      ipV6Addresses: []
 					{{ end }}
 				`),
