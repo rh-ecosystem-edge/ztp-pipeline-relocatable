@@ -276,7 +276,7 @@ func (c *Command) loadConfiguration() error {
 }
 
 func (c *Command) deploy(ctx context.Context, cluster *models.Cluster) error {
-	return c.applier.Create(ctx, map[string]any{
+	return c.applier.Apply(ctx, map[string]any{
 		"Cluster": cluster,
 	})
 }

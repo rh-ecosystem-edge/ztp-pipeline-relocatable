@@ -26,13 +26,13 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
 )
 
-// Cobra creates and returns the `dev create` command.
+// Cobra creates and returns the `dev apply` command.
 func Cobra() *cobra.Command {
 	// Create the command:
 	c := NewCommand()
 	result := &cobra.Command{
-		Use:   "create -f FILENAME",
-		Short: "Creates objects",
+		Use:   "apply -f FILENAME",
+		Short: "Renders objects from templates and creates them",
 		Args:  cobra.NoArgs,
 		RunE:  c.run,
 	}
@@ -52,20 +52,20 @@ func Cobra() *cobra.Command {
 	return result
 }
 
-// Command contains the data and logic needed to run the `dev create` command.
+// Command contains the data and logic needed to run the `dev apply` command.
 type Command struct {
 	flags struct {
 		files []string
 	}
 }
 
-// NewCommand creates a new runner that knows how to execute the `dev create` command.
+// NewCommand creates a new runner that knows how to execute the `dev apply` command.
 func NewCommand() *Command {
 	return &Command{}
 }
 
-// run executes the `dev create` command.
-func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
+// run executes the `dev apply` command.
+func (c *Command) run(cmd *cobra.Command, argv []string) error {
 	// Get the context:
 	ctx := cmd.Context()
 
@@ -82,6 +82,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 			"Failed to create temporary directory: %v",
 			err,
 		)
+		return exit.Error(1)
 	}
 	defer os.RemoveAll(tmp)
 	for i, file := range c.flags.files {
@@ -160,7 +161,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		)
 		return exit.Error(1)
 	}
-	err = applier.Create(ctx, nil)
+	err = applier.Apply(ctx, nil)
 	if err != nil {
 		console.Error(
 			"Failed to create objects: %v",

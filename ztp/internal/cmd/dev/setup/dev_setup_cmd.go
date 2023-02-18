@@ -93,7 +93,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 		)
 		return exit.Error(1)
 	}
-	err = applier.Create(ctx, nil)
+	err = applier.Apply(ctx, nil)
 	if err != nil {
 		console.Error(
 			"Failed to create objects: %v",
