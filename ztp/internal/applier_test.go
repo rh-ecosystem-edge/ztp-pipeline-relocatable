@@ -347,7 +347,7 @@ var _ = Describe("Applier", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			// Create the objects:
-			err = applier.Create(ctx, data)
+			err = applier.Apply(ctx, data)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Delete the objects in a separate goroutine with a reasonable timeout.
@@ -466,7 +466,7 @@ var _ = Describe("Applier", func() {
 			}()
 			go func() {
 				defer GinkgoRecover()
-				err := objectApplier.Create(ctx, nil)
+				err := objectApplier.Apply(ctx, nil)
 				Expect(err).ToNot(HaveOccurred())
 			}()
 
@@ -484,7 +484,7 @@ var _ = Describe("Applier", func() {
 				err := crdApplier.Delete(ctx, nil)
 				Expect(err).ToNot(HaveOccurred())
 			}()
-			err = crdApplier.Create(ctx, nil)
+			err = crdApplier.Apply(ctx, nil)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Wait till the object has been created:

@@ -295,8 +295,8 @@ func (b *ApplierBuilder) findTemplates(fsys fs.FS) (results []string, err error)
 	return
 }
 
-// Create generates the objects passing the given data to the templates and then creates them.
-func (a *Applier) Create(ctx context.Context, data any) error {
+// Apply generates the objects passing the given data to the templates and then creates them.
+func (a *Applier) Apply(ctx context.Context, data any) error {
 	// Render the objects:
 	objects, err := a.Render(ctx, data)
 	if err != nil {
@@ -305,7 +305,7 @@ func (a *Applier) Create(ctx context.Context, data any) error {
 
 	// Namespaces and custom resource definitions need to be created first as other objects will
 	// depend on them, so first we need to classify the rendered objects.
-	namespaces, crds, others := a.classify(objects)
+	namespaces, crds, others := a.classifyObjects(objects)
 
 	// Create the namespaces:
 	err = a.applyNamespaces(ctx, namespaces)
@@ -346,7 +346,7 @@ func (a *Applier) Delete(ctx context.Context, data any) error {
 	// the objects may need to create new temporary objects inside the namespace, and that fails
 	// if the namespaces is marked for deletion. So we neeed to classify the object before
 	// starting.
-	namespaces, crds, others := a.classify(objects)
+	namespaces, crds, others := a.classifyObjects(objects)
 
 	// Delete the regular objects:
 	err = a.deleteObjects(ctx, others)
@@ -385,7 +385,7 @@ func (a *Applier) Render(ctx context.Context, data any) (results []*unstructured
 	return
 }
 
-func (a *Applier) classify(objects []*unstructured.Unstructured) (namespaces, crds,
+func (a *Applier) classifyObjects(objects []*unstructured.Unstructured) (namespaces, crds,
 	others []*unstructured.Unstructured) {
 	for _, object := range objects {
 		switch {

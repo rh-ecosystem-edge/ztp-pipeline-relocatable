@@ -32,7 +32,7 @@ func Cobra() *cobra.Command {
 	c := NewCommand()
 	result := &cobra.Command{
 		Use:   "delete -f FILENAME",
-		Short: "Deletes objects",
+		Short: "Renders objects from templates and deletes them",
 		Args:  cobra.NoArgs,
 		RunE:  c.run,
 	}
@@ -65,7 +65,7 @@ func NewCommand() *Command {
 }
 
 // run executes the `dev delete` command.
-func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
+func (c *Command) run(cmd *cobra.Command, argv []string) error {
 	// Get the context:
 	ctx := cmd.Context()
 
@@ -82,6 +82,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 			"Failed to create temporary directory: %v",
 			err,
 		)
+		return exit.Error(1)
 	}
 	defer os.RemoveAll(tmp)
 	for i, file := range c.flags.files {

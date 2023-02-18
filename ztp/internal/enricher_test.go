@@ -737,7 +737,7 @@ var _ = Describe("Enricher", Ordered, func() {
 				err := applier.Delete(ctx, data)
 				Expect(err).ToNot(HaveOccurred())
 			}()
-			err = applier.Create(ctx, data)
+			err = applier.Apply(ctx, data)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Enrich the cluster:
@@ -812,7 +812,7 @@ var _ = Describe("Enricher", Ordered, func() {
 				err := applier.Delete(ctx, data)
 				Expect(err).ToNot(HaveOccurred())
 			}()
-			err = applier.Create(ctx, data)
+			err = applier.Apply(ctx, data)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Enrich the cluster:

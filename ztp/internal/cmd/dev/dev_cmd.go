@@ -17,8 +17,8 @@ package dev
 import (
 	"github.com/spf13/cobra"
 
+	devapplycmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/apply"
 	devcleanupcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/cleanup"
-	devcreatecmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/create"
 	devdeletecmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/delete"
 	devsetupcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/setup"
 )
@@ -31,9 +31,9 @@ func Cobra() *cobra.Command {
 		Args:   cobra.NoArgs,
 		Hidden: true,
 	}
+	result.AddCommand(devapplycmd.Cobra())
 	result.AddCommand(devcleanupcmd.Cobra())
-	result.AddCommand(devsetupcmd.Cobra())
-	result.AddCommand(devcreatecmd.Cobra())
 	result.AddCommand(devdeletecmd.Cobra())
+	result.AddCommand(devsetupcmd.Cobra())
 	return result
 }
