@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package internal
+package jq
 
 import (
 	"encoding/json"
@@ -24,31 +24,31 @@ import (
 	"github.com/itchyny/gojq"
 )
 
-// JQBuilder contains the data needed to build an object that knows how to run JQ queries. Don't
-// create instances of this directly, use the NewJQ function instead.
-type JQBuilder struct {
+// ToolBuilder contains the data needed to build a tool that knows how to run JQ queries. Don't
+// create instances of this directly, use the NewTool function instead.
+type ToolBuilder struct {
 	logger logr.Logger
 }
 
-// JQ knows how to run JQ queries. Don't create instances of this directly, use the NewJQ function
-// instead.
-type JQ struct {
+// Tool knows how to run JQ queries. Don't create instances of this directly, use the NewTool
+// function instead.
+type Tool struct {
 	logger logr.Logger
 }
 
-// NewJQ creates a builder that can then be used to create a JQ object.
-func NewJQ() *JQBuilder {
-	return &JQBuilder{}
+// NewTool creates a builder that can then be used to create a JQ tool.
+func NewTool() *ToolBuilder {
+	return &ToolBuilder{}
 }
 
-// SetLogger sets the logger that the JQ object will use to write the log. This is mandatory.
-func (b *JQBuilder) SetLogger(value logr.Logger) *JQBuilder {
+// SetLogger sets the logger that the JQ tool will use to write the log. This is mandatory.
+func (b *ToolBuilder) SetLogger(value logr.Logger) *ToolBuilder {
 	b.logger = value
 	return b
 }
 
-// Build uses the information stored in the builder to create a new JQ object.
-func (b *JQBuilder) Build() (result *JQ, err error) {
+// Build uses the information stored in the builder to create a new JQ tool.
+func (b *ToolBuilder) Build() (result *Tool, err error) {
 	// Check parameters:
 	if b.logger.GetSink() == nil {
 		err = errors.New("logger is mandatory")
@@ -56,7 +56,7 @@ func (b *JQBuilder) Build() (result *JQ, err error) {
 	}
 
 	// Create and populate the object:
-	result = &JQ{
+	result = &Tool{
 		logger: b.logger,
 	}
 	return
@@ -65,7 +65,7 @@ func (b *JQBuilder) Build() (result *JQ, err error) {
 // Query the given query on the given input data and stores the result into the given output
 // variable. An error will be returned if the query can't be parsed or if the data doesn't fit into
 // the output variable.
-func (j *JQ) Query(query string, input any, output any) error {
+func (j *Tool) Query(query string, input any, output any) error {
 	inputBytes, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("failed to marshal input: %v", err)
@@ -74,13 +74,13 @@ func (j *JQ) Query(query string, input any, output any) error {
 }
 
 // QueryString is similar to Query, but it expects an input string containing JSON text.
-func (j *JQ) QueryString(query string, input string, output any) error {
+func (j *Tool) QueryString(query string, input string, output any) error {
 	return j.QueryBytes(query, []byte(input), output)
 }
 
 // QueryBytes is similar to Query, but it expects as input an array of bytes containing the JSON
 // text.
-func (j *JQ) QueryBytes(query string, input []byte, output any) error {
+func (j *Tool) QueryBytes(query string, input []byte, output any) error {
 	// Check that the output is a pointer:
 	outputValue := reflect.ValueOf(output)
 	if outputValue.Kind() != reflect.Pointer {

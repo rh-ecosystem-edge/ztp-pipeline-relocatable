@@ -35,6 +35,7 @@ import (
 	"k8s.io/client-go/util/retry"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/jq"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/templating"
 )
 
@@ -57,7 +58,7 @@ type Applier struct {
 	logger    logr.Logger
 	client    clnt.WithWatch
 	labels    map[string]string
-	jq        *JQ
+	jq        *jq.Tool
 	engine    *templating.Engine
 	templates []string
 	listeners []func(*ApplierEvent)
@@ -220,7 +221,7 @@ func (b *ApplierBuilder) Build() (result *Applier, err error) {
 	}
 
 	// Create the JQ object:
-	jq, err := NewJQ().
+	jq, err := jq.NewTool().
 		SetLogger(b.logger).
 		Build()
 	if err != nil {

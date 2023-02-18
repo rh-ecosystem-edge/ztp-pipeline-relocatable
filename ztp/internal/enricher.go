@@ -38,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/jq"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
 
@@ -54,7 +55,7 @@ type EnricherBuilder struct {
 type Enricher struct {
 	logger logr.Logger
 	client clnt.Client
-	jq     *JQ
+	jq     *jq.Tool
 }
 
 // NewEnricher creates a builder that can then be used to create an object that knows how to add
@@ -90,11 +91,11 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 	}
 
 	// Create the JQ object:
-	jq, err := NewJQ().
+	jq, err := jq.NewTool().
 		SetLogger(b.logger).
 		Build()
 	if err != nil {
-		err = fmt.Errorf("failed to create jq object: %v", err)
+		err = fmt.Errorf("failed to create jq tool: %v", err)
 		return
 	}
 

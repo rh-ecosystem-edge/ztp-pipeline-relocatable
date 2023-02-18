@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package internal
+package jq
 
 import (
 	"math"
@@ -24,7 +24,7 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
 
-var _ = Describe("JQ", func() {
+var _ = Describe("Tool", func() {
 	var logger logr.Logger
 
 	BeforeEach(func() {
@@ -38,31 +38,31 @@ var _ = Describe("JQ", func() {
 
 	It("Can't be created without a logger", func() {
 		// Create the template:
-		jq, err := NewJQ().Build()
+		tool, err := NewTool().Build()
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
 		Expect(msg).To(ContainSubstring("logger"))
 		Expect(msg).To(ContainSubstring("mandatory"))
-		Expect(jq).To(BeNil())
+		Expect(tool).To(BeNil())
 	})
 
 	It("Accepts primitive input", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Check that it accepts the input:
 		var x int
-		err = jq.Query(`.`, 42, &x)
+		err = tool.Query(`.`, 42, &x)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(x).To(Equal(42))
 	})
 
 	It("Accepts struct input", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -77,14 +77,14 @@ var _ = Describe("JQ", func() {
 			Y: 24,
 		}
 		var x int
-		err = jq.Query(`.x`, p, &x)
+		err = tool.Query(`.x`, p, &x)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(x).To(Equal(42))
 	})
 
 	It("Accepts map input", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -95,14 +95,14 @@ var _ = Describe("JQ", func() {
 			"y": 24,
 		}
 		var x int
-		err = jq.Query(`.x`, m, &x)
+		err = tool.Query(`.x`, m, &x)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(x).To(Equal(42))
 	})
 
 	It("Accepts slice input", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -110,14 +110,14 @@ var _ = Describe("JQ", func() {
 		// Check that it accepts the input:
 		s := []int{42, 24}
 		var x int
-		err = jq.Query(`.[0]`, s, &x)
+		err = tool.Query(`.[0]`, s, &x)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(x).To(Equal(42))
 	})
 
 	It("Gets all values if output is slice", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -125,14 +125,14 @@ var _ = Describe("JQ", func() {
 		// Check that it accepts the input:
 		s := []int{42, 24}
 		var t []int
-		err = jq.Query(`.[]`, s, &t)
+		err = tool.Query(`.[]`, s, &t)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(t).To(ConsistOf(42, 24))
 	})
 
 	It("Gets first value if there is only one and output is not slice", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -140,14 +140,14 @@ var _ = Describe("JQ", func() {
 		// Check that it accepts the input:
 		s := []int{42}
 		var x int
-		err = jq.Query(`.[]`, s, &x)
+		err = tool.Query(`.[]`, s, &x)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(x).To(Equal(42))
 	})
 
 	It("Gets first value if there is only one and output is slice", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -155,14 +155,14 @@ var _ = Describe("JQ", func() {
 		// Check that it accepts the input:
 		s := []int{42}
 		var t []int
-		err = jq.Query(`.[]`, s, &t)
+		err = tool.Query(`.[]`, s, &t)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(t).To(ConsistOf(42))
 	})
 
 	It("Fails if there are multiple results and output isn't slice", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -170,7 +170,7 @@ var _ = Describe("JQ", func() {
 		// Check that it fails:
 		s := []int{42, 24}
 		var x int
-		err = jq.Query(`.[]`, s, &x)
+		err = tool.Query(`.[]`, s, &x)
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
 		Expect(msg).To(ContainSubstring("cannot"))
@@ -180,14 +180,14 @@ var _ = Describe("JQ", func() {
 
 	It("Fails if output is not compatible with input", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Check that it fails:
 		var x int
-		err = jq.Query(`.`, "mytext", &x)
+		err = tool.Query(`.`, "mytext", &x)
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
 		Expect(msg).To(ContainSubstring("cannot"))
@@ -197,14 +197,14 @@ var _ = Describe("JQ", func() {
 
 	It("Rejects output that isn't a pointer", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Check that it rejects the ouptut:
 		var x int
-		err = jq.Query(`.`, 42, x)
+		err = tool.Query(`.`, 42, x)
 		Expect(err).To(HaveOccurred())
 		msg := err.Error()
 		Expect(msg).To(ContainSubstring("pointer"))
@@ -213,14 +213,14 @@ var _ = Describe("JQ", func() {
 
 	It("Can read from a string", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Check that it can read from a string:
 		var x int
-		err = jq.QueryString(
+		err = tool.QueryString(
 			`.x`,
 			`{
 				"x": 42,
@@ -234,14 +234,14 @@ var _ = Describe("JQ", func() {
 
 	It("Can read from an array of bytes", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
 		// Check that it can read from an array of bytes:
 		var x int
-		err = jq.QueryBytes(
+		err = tool.QueryBytes(
 			`.x`,
 			[]byte(`{
 				"x": 42,
@@ -255,7 +255,7 @@ var _ = Describe("JQ", func() {
 
 	It("Accepts struct output", func() {
 		// Create the instance:
-		jq, err := NewJQ().
+		tool, err := NewTool().
 			SetLogger(logger).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -266,7 +266,7 @@ var _ = Describe("JQ", func() {
 			Y int `json:"y"`
 		}
 		var p Point
-		err = jq.QueryString(
+		err = tool.QueryString(
 			`{
 				"x": .x,
 				"y": .y

@@ -26,7 +26,9 @@ import (
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/jq"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/labels"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
@@ -76,7 +78,7 @@ type Command struct {
 		wait   time.Duration
 	}
 	logger  logr.Logger
-	jq      *internal.JQ
+	jq      *jq.Tool
 	console *internal.Console
 	config  models.Config
 	client  *internal.Client
@@ -100,7 +102,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	c.console = internal.ConsoleFromContext(ctx)
 
 	// Create the JQ object:
-	c.jq, err = internal.NewJQ().
+	c.jq, err = jq.NewTool().
 		SetLogger(c.logger).
 		Build()
 	if err != nil {
@@ -260,7 +262,7 @@ func (c *Command) loadConfiguration() error {
 	}
 
 	// Load the configuration:
-	c.config, err = internal.NewConfigLoader().
+	c.config, err = config.NewLoader().
 		SetLogger(c.logger).
 		SetSource(file).
 		Load()

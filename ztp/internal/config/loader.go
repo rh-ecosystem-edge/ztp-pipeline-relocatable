@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package internal
+package config
 
 import (
 	"errors"
@@ -25,17 +25,19 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
+
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/jq"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
 
-// ConfigLoader contains the data and logic needed to load a configuration object. Don't create
-// instances of this type directly, use the NewConfigLoader function instead.
-type ConfigLoader struct {
+// Loader contains the data and logic needed to load a configuration object. Don't create instances
+// of this type directly, use the NewLoader function instead.
+type Loader struct {
 	logger logr.Logger
 	source any
-	jq     *JQ
+	jq     *jq.Tool
 }
 
 // configData is used internally to parse the data of a cluster.
@@ -57,13 +59,13 @@ type nodeData struct {
 	StorageDisk  []string `json:"storage_disk"`
 }
 
-// NewConfigLoader creates a builder that can then be used to create a new configuration object.
-func NewConfigLoader() *ConfigLoader {
-	return &ConfigLoader{}
+// NewLoader creates a builder that can then be used to create a new configuration object.
+func NewLoader() *Loader {
+	return &Loader{}
 }
 
 // SetLogger sets the logger that the loader will use to write to the log. This is mandatory.
-func (l *ConfigLoader) SetLogger(value logr.Logger) *ConfigLoader {
+func (l *Loader) SetLogger(value logr.Logger) *Loader {
 	l.logger = value
 	return l
 }
@@ -81,13 +83,13 @@ func (l *ConfigLoader) SetLogger(value logr.Logger) *ConfigLoader {
 // - A io.Reader providing the configuration text.
 //
 // This is mandatory.
-func (l *ConfigLoader) SetSource(value any) *ConfigLoader {
+func (l *Loader) SetSource(value any) *Loader {
 	l.source = value
 	return l
 }
 
 // Load uses the data stored in the loader to create and populate a configuration object.
-func (l *ConfigLoader) Load() (result models.Config, err error) {
+func (l *Loader) Load() (result models.Config, err error) {
 	// Check the parameters:
 	if l.logger.GetSink() == nil {
 		err = errors.New("logger is mandatory")
@@ -111,7 +113,7 @@ func (l *ConfigLoader) Load() (result models.Config, err error) {
 	}
 
 	// Create the JQ object:
-	l.jq, err = NewJQ().
+	l.jq, err = jq.NewTool().
 		SetLogger(l.logger).
 		Build()
 	if err != nil {
@@ -138,7 +140,7 @@ func (l *ConfigLoader) Load() (result models.Config, err error) {
 	return
 }
 
-func (l *ConfigLoader) loadSource() (result map[string]any, err error) {
+func (l *Loader) loadSource() (result map[string]any, err error) {
 	switch typed := l.source.(type) {
 	case string:
 		result, err = l.loadFromString(typed)
@@ -150,7 +152,7 @@ func (l *ConfigLoader) loadSource() (result map[string]any, err error) {
 	return
 }
 
-func (l *ConfigLoader) loadFromString(source string) (result map[string]any, err error) {
+func (l *Loader) loadFromString(source string) (result map[string]any, err error) {
 	ext := filepath.Ext(source)
 	switch strings.ToLower(ext) {
 	case ".yaml", ".yml":
@@ -161,7 +163,7 @@ func (l *ConfigLoader) loadFromString(source string) (result map[string]any, err
 	return
 }
 
-func (l *ConfigLoader) loadFromFile(file string) (result map[string]any, err error) {
+func (l *Loader) loadFromFile(file string) (result map[string]any, err error) {
 	reader, err := os.Open(file)
 	if err != nil {
 		return
@@ -170,22 +172,22 @@ func (l *ConfigLoader) loadFromFile(file string) (result map[string]any, err err
 	return
 }
 
-func (l *ConfigLoader) loadFromBytes(data []byte) (result map[string]any, err error) {
+func (l *Loader) loadFromBytes(data []byte) (result map[string]any, err error) {
 	err = yaml.Unmarshal(data, &result)
 	return
 }
 
-func (l *ConfigLoader) loadFromReader(reader io.Reader) (result map[string]any, err error) {
+func (l *Loader) loadFromReader(reader io.Reader) (result map[string]any, err error) {
 	decoder := yaml.NewDecoder(reader)
 	err = decoder.Decode(&result)
 	return
 }
 
-func (l *ConfigLoader) loadProperties(content any, config *models.Config) error {
+func (l *Loader) loadProperties(content any, config *models.Config) error {
 	return l.jq.Query(`.config`, content, &config.Properties)
 }
 
-func (l *ConfigLoader) loadClusters(content any, config *models.Config) error {
+func (l *Loader) loadClusters(content any, config *models.Config) error {
 	var data []map[string]any
 	err := l.jq.Query(`.edgeclusters`, content, &data)
 	if err != nil {
@@ -209,7 +211,7 @@ func (l *ConfigLoader) loadClusters(content any, config *models.Config) error {
 	return nil
 }
 
-func (l *ConfigLoader) loadCluster(content any, cluster *models.Cluster) error {
+func (l *Loader) loadCluster(content any, cluster *models.Cluster) error {
 	var data map[string]any
 	err := l.jq.Query(`.`, content, &data)
 	if err != nil {
@@ -240,7 +242,7 @@ func (l *ConfigLoader) loadCluster(content any, cluster *models.Cluster) error {
 	return nil
 }
 
-func (l *ConfigLoader) loadClusterConfig(content any, cluster *models.Cluster) error {
+func (l *Loader) loadClusterConfig(content any, cluster *models.Cluster) error {
 	var data configData
 	err := l.jq.Query(".", content, &data)
 	if err != nil {
@@ -255,7 +257,7 @@ func (l *ConfigLoader) loadClusterConfig(content any, cluster *models.Cluster) e
 	return nil
 }
 
-func (l *ConfigLoader) loadNode(content any, node *models.Node) error {
+func (l *Loader) loadNode(content any, node *models.Node) error {
 	var data nodeData
 	err := l.jq.Query(".", content, &data)
 	if err != nil {
