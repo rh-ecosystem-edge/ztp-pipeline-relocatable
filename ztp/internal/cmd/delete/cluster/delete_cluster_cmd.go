@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/labels"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
@@ -188,7 +189,7 @@ func (c *Command) loadConfiguration() error {
 	}
 
 	// Load the configuration:
-	c.config, err = internal.NewConfigLoader().
+	c.config, err = config.NewLoader().
 		SetLogger(c.logger).
 		SetSource(file).
 		Load()

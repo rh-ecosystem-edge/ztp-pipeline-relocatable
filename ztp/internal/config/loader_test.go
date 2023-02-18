@@ -12,7 +12,7 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package internal
+package config
 
 import (
 	"github.com/go-logr/logr"
@@ -24,7 +24,7 @@ import (
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
 )
 
-var _ = Describe("Config", func() {
+var _ = Describe("Loader", func() {
 	var logger logr.Logger
 
 	BeforeEach(func() {
@@ -38,7 +38,7 @@ var _ = Describe("Config", func() {
 
 	It("Loads cluster with single node", func() {
 		By("Load configuration")
-		config, err := NewConfigLoader().
+		config, err := NewLoader().
 			SetLogger(logger).
 			SetSource(Dedent(`
 				config:
@@ -92,7 +92,7 @@ var _ = Describe("Config", func() {
 
 	It("Loads cluster with multiple nodes", func() {
 		By("Load configuration")
-		config, err := NewConfigLoader().
+		config, err := NewLoader().
 			SetLogger(logger).
 			SetSource(Dedent(`
 				config:
@@ -209,7 +209,7 @@ var _ = Describe("Config", func() {
 
 	It("Loads cluster with multiple network interface cards", func() {
 		By("Load configuration")
-		config, err := NewConfigLoader().
+		config, err := NewLoader().
 			SetLogger(logger).
 			SetSource(Dedent(`
 				config:
@@ -347,7 +347,7 @@ var _ = Describe("Config", func() {
 
 	It("Loads multiple clusters", func() {
 		// Load the configuration:
-		config, err := NewConfigLoader().
+		config, err := NewLoader().
 			SetLogger(logger).
 			SetSource(Dedent(`
 				edgeclusters:
