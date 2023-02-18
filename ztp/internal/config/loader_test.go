@@ -15,9 +15,13 @@ License.
 package config
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/pflag"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
@@ -363,5 +367,64 @@ var _ = Describe("Loader", func() {
 		Expect(config.Clusters[0].Name).To(Equal("edgecluster0-cluster"))
 		Expect(config.Clusters[1].Name).To(Equal("edgecluster1-cluster"))
 		Expect(config.Clusters[2].Name).To(Equal("edgecluster2-cluster"))
+	})
+
+	It("Loads from --config FILE", func() {
+		// Create a temporary directory for the configuration file:
+		tmp, _ := TmpFS(
+			"my.yaml",
+			Dedent(`
+				edgeclusters:
+				- my: {}
+			`),
+		)
+		defer func() {
+			err := os.RemoveAll(tmp)
+			Expect(err).ToNot(HaveOccurred())
+		}()
+
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--config", filepath.Join(tmp, "my.yaml"),
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Load the configuration:
+		config, err := NewLoader().
+			SetLogger(logger).
+			SetFlags(flags).
+			Load()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check the configuration:
+		Expect(config.Clusters).To(HaveLen(1))
+		Expect(config.Clusters[0].Name).To(Equal("my"))
+	})
+
+	It("Loads from --config YAML", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--config",
+			Dedent(`
+				edgeclusters:
+				- my: {}
+			`),
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Load the configuration:
+		config, err := NewLoader().
+			SetLogger(logger).
+			SetFlags(flags).
+			Load()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check the configuration:
+		Expect(config.Clusters).To(HaveLen(1))
+		Expect(config.Clusters[0].Name).To(Equal("my"))
 	})
 })

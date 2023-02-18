@@ -90,7 +90,7 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 		return
 	}
 
-	// Create the JQ object:
+	// Create the jq tool:
 	jq, err := jq.NewTool().
 		SetLogger(b.logger).
 		Build()
