@@ -16,7 +16,6 @@ package cluster
 
 import (
 	"context"
-	"os"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
@@ -39,24 +38,15 @@ func Cobra() *cobra.Command {
 		RunE:    c.Run,
 	}
 	flags := result.Flags()
-	flags.StringVar(
-		&c.flags.config,
-		"config",
-		"",
-		"Location of the configuration file. The default is to use the file specified "+
-			"in the 'EDGECLUSTERS_FILE' environment variable.",
-	)
+	config.AddFlags(flags)
 	return result
 }
 
 // Command contains the data and logic needed to run the `delete cluster` command.
 type Command struct {
-	flags struct {
-		config string
-	}
 	logger  logr.Logger
 	console *internal.Console
-	config  models.Config
+	config  *models.Config
 	client  *internal.Client
 	applier *internal.Applier
 }
@@ -78,9 +68,16 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	c.console = internal.ConsoleFromContext(ctx)
 
 	// Load the configuration:
-	err = c.loadConfiguration()
+	c.config, err = config.NewLoader().
+		SetLogger(c.logger).
+		SetFlags(cmd.Flags()).
+		Load()
 	if err != nil {
-		return err
+		c.console.Error(
+			"Failed to load configuration: %v",
+			err,
+		)
+		return exit.Error(1)
 	}
 
 	// Create the client for the API:
@@ -108,7 +105,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		)
 		return exit.Error(1)
 	}
-	err = enricher.Enrich(ctx, &c.config)
+	err = enricher.Enrich(ctx, c.config)
 	if err != nil {
 		c.console.Error(
 			"Failed to enrich configuration: %v",
@@ -156,49 +153,6 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 			)
 			return exit.Error(1)
 		}
-	}
-
-	return nil
-}
-
-func (c *Command) loadConfiguration() error {
-	// Get the name of the configuration file:
-	file := c.flags.config
-	if file == "" {
-		var ok bool
-		file, ok = os.LookupEnv("EDGECLUSTERS_FILE")
-		if !ok {
-			c.console.Error(
-				"Can't load configuration because the '--config' flag is " +
-					"empty and the 'EDGECLUSTERS_FILE' environment " +
-					"variable isn't set",
-			)
-			return exit.Error(1)
-		}
-	}
-
-	// Check that the file exists. Note that this is also checked later by the loader, but this
-	// way we can generate a nicer error message in most cases.
-	_, err := os.Stat(file)
-	if os.IsNotExist(err) {
-		c.console.Error(
-			"Configuration file '%s' doesn't exist",
-			file,
-		)
-		return exit.Error(1)
-	}
-
-	// Load the configuration:
-	c.config, err = config.NewLoader().
-		SetLogger(c.logger).
-		SetSource(file).
-		Load()
-	if err != nil {
-		c.console.Error(
-			"Failed to load configuration file '%s': %v",
-			file, err,
-		)
-		return exit.Error(1)
 	}
 
 	return nil

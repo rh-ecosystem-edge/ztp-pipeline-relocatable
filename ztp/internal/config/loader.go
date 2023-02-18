@@ -15,6 +15,7 @@ License.
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -25,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
+	"github.com/spf13/pflag"
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
 
@@ -88,8 +90,20 @@ func (l *Loader) SetSource(value any) *Loader {
 	return l
 }
 
+// SetFlags sets the command line flags that that indicate how to load the configuration. This is
+// optional.
+func (b *Loader) SetFlags(flags *pflag.FlagSet) *Loader {
+	if flags.Changed(configFlagName) {
+		value, err := flags.GetString(configFlagName)
+		if err == nil {
+			b.source = value
+		}
+	}
+	return b
+}
+
 // Load uses the data stored in the loader to create and populate a configuration object.
-func (l *Loader) Load() (result models.Config, err error) {
+func (l *Loader) Load() (result *models.Config, err error) {
 	// Check the parameters:
 	if l.logger.GetSink() == nil {
 		err = errors.New("logger is mandatory")
@@ -112,31 +126,32 @@ func (l *Loader) Load() (result models.Config, err error) {
 		return
 	}
 
-	// Create the JQ object:
+	// Create the JQ tool:
 	l.jq, err = jq.NewTool().
 		SetLogger(l.logger).
 		Build()
 	if err != nil {
-		err = fmt.Errorf("failed to create JQ object: %v", err)
+		err = fmt.Errorf("failed to create jq tool: %v", err)
 		return
 	}
 
-	// Load and the source:
+	// Load the source:
 	data, err := l.loadSource()
 	if err != nil {
 		return
 	}
 
 	// Load the properties and the clusters:
-	err = l.loadProperties(data, &result)
+	config := &models.Config{}
+	err = l.loadProperties(data, config)
 	if err != nil {
 		return
 	}
-	err = l.loadClusters(data, &result)
+	err = l.loadClusters(data, config)
 	if err != nil {
 		return
 	}
-
+	result = config
 	return
 }
 
@@ -147,7 +162,7 @@ func (l *Loader) loadSource() (result map[string]any, err error) {
 	case []byte:
 		result, err = l.loadFromBytes(typed)
 	case io.Reader:
-		result, err = l.loadFromReader(typed)
+		result, err = l.loadFromReader(typed, "")
 	}
 	return
 }
@@ -165,21 +180,43 @@ func (l *Loader) loadFromString(source string) (result map[string]any, err error
 
 func (l *Loader) loadFromFile(file string) (result map[string]any, err error) {
 	reader, err := os.Open(file)
+	if errors.Is(err, os.ErrNotExist) {
+		err = fmt.Errorf("file '%s' doesn't exist", file)
+		return
+	}
+	if errors.Is(err, os.ErrPermission) {
+		err = fmt.Errorf("permission to read file '%s' denied", file)
+		return
+	}
 	if err != nil {
 		return
 	}
-	result, err = l.loadFromReader(reader)
+	result, err = l.loadFromReader(reader, file)
 	return
 }
 
 func (l *Loader) loadFromBytes(data []byte) (result map[string]any, err error) {
-	err = yaml.Unmarshal(data, &result)
+	result, err = l.loadFromReader(bytes.NewBuffer(data), "")
 	return
 }
 
-func (l *Loader) loadFromReader(reader io.Reader) (result map[string]any, err error) {
+func (l *Loader) loadFromReader(reader io.Reader, file string) (result map[string]any, err error) {
 	decoder := yaml.NewDecoder(reader)
 	err = decoder.Decode(&result)
+	if err != nil {
+		var prefix string
+		if file != "" {
+			prefix = fmt.Sprintf("failed to parse file '%s'", file)
+		} else {
+			prefix = "failed to parse YAML"
+		}
+		typeErr, ok := err.(*yaml.TypeError)
+		if ok {
+			err = fmt.Errorf("%s, %v", prefix, typeErr.Errors[0])
+		} else {
+			err = fmt.Errorf("%s: %v", prefix, err)
+		}
+	}
 	return
 }
 

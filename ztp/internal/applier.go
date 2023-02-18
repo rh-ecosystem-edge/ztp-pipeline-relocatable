@@ -220,12 +220,12 @@ func (b *ApplierBuilder) Build() (result *Applier, err error) {
 		return
 	}
 
-	// Create the JQ object:
+	// Create the jq tool:
 	jq, err := jq.NewTool().
 		SetLogger(b.logger).
 		Build()
 	if err != nil {
-		err = fmt.Errorf("failed to create JQ object: %v", err)
+		err = fmt.Errorf("failed to create jq tool: %v", err)
 		return
 	}
 

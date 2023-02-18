@@ -65,22 +65,22 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 // Query the given query on the given input data and stores the result into the given output
 // variable. An error will be returned if the query can't be parsed or if the data doesn't fit into
 // the output variable.
-func (j *Tool) Query(query string, input any, output any) error {
+func (t *Tool) Query(query string, input any, output any) error {
 	inputBytes, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("failed to marshal input: %v", err)
 	}
-	return j.QueryBytes(query, inputBytes, output)
+	return t.QueryBytes(query, inputBytes, output)
 }
 
 // QueryString is similar to Query, but it expects an input string containing JSON text.
-func (j *Tool) QueryString(query string, input string, output any) error {
-	return j.QueryBytes(query, []byte(input), output)
+func (t *Tool) QueryString(query string, input string, output any) error {
+	return t.QueryBytes(query, []byte(input), output)
 }
 
 // QueryBytes is similar to Query, but it expects as input an array of bytes containing the JSON
 // text.
-func (j *Tool) QueryBytes(query string, input []byte, output any) error {
+func (t *Tool) QueryBytes(query string, input []byte, output any) error {
 	// Check that the output is a pointer:
 	outputValue := reflect.ValueOf(output)
 	if outputValue.Kind() != reflect.Pointer {
