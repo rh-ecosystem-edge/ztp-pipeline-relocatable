@@ -357,7 +357,7 @@ var _ = Describe("Applier", func() {
 				defer GinkgoRecover()
 				ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 				defer cancel()
-				err = applier.Delete(ctx, data)
+				err := applier.Delete(ctx, data)
 				Expect(err).ToNot(HaveOccurred())
 			}()
 

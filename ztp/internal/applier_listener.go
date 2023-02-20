@@ -134,6 +134,11 @@ func (l *ApplierListener) Func(event *ApplierEvent) {
 			"Waiting for CRD before creating %s '%s'",
 			friendlyKind, friendlyName,
 		)
+	case ApplierWaitingDisappear:
+		l.console.Info(
+			"Waiting for %s '%s' to disappear before deleting namespace",
+			friendlyKind, friendlyName,
+		)
 	default:
 		l.logger.Info(
 			"Unknown applier event",
