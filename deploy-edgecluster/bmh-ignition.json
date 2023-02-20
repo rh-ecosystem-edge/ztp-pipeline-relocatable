@@ -1,0 +1,60 @@
+{
+  "ignition": {
+    "version": "3.2.0"
+  },
+  "systemd": {
+    "units": [
+      {
+        "name": "csr-approver.service",
+        "enabled": true,
+        "contents": "[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"
+      },
+      {
+        "name": "change-def-route.service",
+        "enabled": true,
+        "contents": "[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"
+      },
+      {
+        "name": "crio-wipe.service",
+        "mask": true
+      }
+    ]
+  },
+  "storage": {
+    "files": [
+      {
+        "path": "/opt/bin/csr-approver.sh",
+        "mode": 492,
+        "append": [
+          {
+            "source": "data:text/plain;base64,${IGN_CSR_APPROVER_SCRIPT}"
+          }
+        ]
+      },
+      {
+        "path": "/etc/systemd/system/crio.service.d/30-nodenet.conf",
+        "mode": 493,
+        "override": true,
+        "contents": {
+          "source": "data:text/plain;base64,${CRIO_NODENET}"
+        }
+      },
+      {
+        "path": "/etc/systemd/system/kubelet.service.d/30-nodenet.conf",
+        "mode": 493,
+        "override": true,
+        "contents": {
+          "source": "data:text/plain;base64,${KUBELET_NODENET}"
+        }
+      },
+      {
+        "path": "/etc/NetworkManager/dispatcher.d/pre-up.d/99-add-host-int-ip",
+        "mode": 493,
+        "override": true,
+        "contents": {
+          "source": "data:text/plain;base64,${STATIC_IP_SINGLE_NIC}"
+        }
+      }
+    ]
+  }
+}

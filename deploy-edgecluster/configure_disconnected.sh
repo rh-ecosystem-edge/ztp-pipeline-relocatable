@@ -29,20 +29,6 @@ function copy_files() {
     ${SCP_COMMAND} -i ${RSA_KEY_FILE} -r "${src_files[@]}" core@${dst_node}:${dst_folder}
 }
 
-function grab_master_ext_ips() {
-    edgecluster=${1}
-    edgeclusteritem=${2}
-
-    ## Grab 1 master and 1 IP
-    agent=$(oc --kubeconfig=${KUBECONFIG_HUB} get agents -n ${edgecluster} --no-headers -o name | head -1)
-    export EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${edgecluster} ${agent} -o jsonpath={.spec.hostname})
-    master=${EDGE_NODE_NAME##*-}
-    export MAC_EXT_DHCP=$(yq e ".edgeclusters[$edgeclusteritem].${edgecluster}.master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
-    ## HAY QUE PROBAR ESTO
-    EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get ${agent} -n ${edgecluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
-    export EDGE_NODE_IP=${EDGE_NODE_IP_RAW%%/*}
-}
-
 function check_connectivity() {
     IP=${1}
     echo ">> Checking connectivity against: ${IP}"
@@ -213,7 +199,7 @@ EOF
             # If not API
             if [[ -z ${RCAPI} ]]; then
                 # Grab EDGE IP
-                grab_master_ext_ips ${edgecluster} ${_index}
+		EDGE_NODE_IP=$(grab_node_ext_ips ${edgecluster} ${_index})
                 check_connectivity "${EDGE_NODE_IP}"
                 # Execute commands and Copy files
                 ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "mkdir -p ~/manifests/ ~/.kube"

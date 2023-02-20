@@ -171,21 +171,6 @@ function render_manifests() {
     echo
 }
 
-function grab_master_ext_ips() {
-    edgecluster=${1}
-    local edgeclusternumber=${2}
-
-    ## Grab 1 master and 1 IP
-    agent=$(oc get agents --kubeconfig=${KUBECONFIG_HUB} -n ${edgecluster} -o jsonpath='{.items[?(@.status.role=="master")].metadata.name}' | awk '{print $1}')
-
-    export EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${edgecluster} ${agent} -o jsonpath={.spec.hostname})
-    master=${EDGE_NODE_NAME##*-}
-    export MAC_EXT_DHCP=$(yq e ".edgeclusters[${edgeclusternumber}].${edgecluster}.master${master}.mac_ext_dhcp" ${EDGECLUSTERS_FILE})
-    ## HAY QUE PROBAR ESTO
-    EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${edgecluster} --no-headers -o jsonpath="{.status.inventory.interfaces[?(@.macAddress==\"${MAC_EXT_DHCP%%/*}\")].ipV4Addresses[0]}")
-    export EDGE_NODE_IP=${EDGE_NODE_IP_RAW%%/*}
-}
-
 function copy_files() {
     src_files=${1}
     dst_node=${2}
@@ -264,7 +249,7 @@ if ! ./verify.sh; then
         echo ">>>> Starting the MetalLB process for Edge-cluster: ${edgecluster} in position ${index}"
         echo ">> Extract Kubeconfig for ${edgecluster}"
         extract_kubeconfig ${edgecluster}
-        grab_master_ext_ips ${edgecluster} ${index}
+	export EDGE_NODE_IP=$(grab_node_ext_ips ${edgecluster} ${index})
         recover_edgecluster_rsa ${edgecluster}
         check_connectivity "${EDGE_NODE_IP}"
         render_manifests ${index}
@@ -332,6 +317,7 @@ if ! ./verify.sh; then
         verify_remote_resource ${edgecluster} "openshift-ingress" "service" "metallb-ingress" "."
 
         check_external_access ${edgecluster}
+	oc --kubeconfig=${EDGE_KUBECONFIG} patch network.operator/cluster --type merge -p '{"spec":{"defaultNetwork":{"ovnKubernetesConfig":{"gatewayConfig":{"routingViaHost":true}}}}}'
         echo ">>>> Edge-cluster ${edgecluster} finished!"
         let index++
     done

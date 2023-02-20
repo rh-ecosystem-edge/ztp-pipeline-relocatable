@@ -1,0 +1,41 @@
+{
+  "ignition": {
+    "version": "3.2.0"
+  },
+  "systemd": {
+    "units": [
+      {
+        "name": "crio-wipe.service",
+        "mask": true
+      }
+    ]
+  },
+  "storage": {
+    "files": [
+      {
+        "path": "/etc/systemd/system/crio.service.d/30-nodenet.conf",
+        "mode": 493,
+        "override": true,
+        "contents": {
+          "source": "data:text/plain;base64,${CRIO_NODENET}"
+        }
+      },
+      {
+        "path": "/etc/systemd/system/kubelet.service.d/30-nodenet.conf",
+        "mode": 493,
+        "override": true,
+        "contents": {
+          "source": "data:text/plain;base64,${KUBELET_NODENET}"
+        }
+      },
+      {
+        "path": "/etc/NetworkManager/dispatcher.d/pre-up.d/99-add-host-int-ip",
+        "mode": 493,
+        "override": true,
+        "contents": {
+          "source": "data:text/plain;base64,${STATIC_IP_SINGLE_NIC}"
+        }
+      }
+    ]
+  }
+}

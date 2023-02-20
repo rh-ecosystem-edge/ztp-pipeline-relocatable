@@ -28,7 +28,6 @@ create_worker_definitions() {
     for worker in $(seq 0 $((NUM_W - 1))); do
         export CHANGE_EDGE_WORKER_PUB_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_int_static" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
-        export CHANGE_EDGE_WORKER_PUB_INT_IP=192.168.7.13
         export EDGE_MASTER_0_INT_IP=192.168.7.10
         export CHANGE_EDGE_WORKER_PUB_INT_MAC=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.mac_int_static" ${EDGECLUSTERS_FILE})
         export CHANGE_EDGE_WORKER_BMC_USERNAME=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.bmc_user" ${EDGECLUSTERS_FILE} | base64)
@@ -38,12 +37,24 @@ create_worker_definitions() {
         export CHANGE_EDGE_WORKER_ROOT_DISK=$(yq eval ".edgeclusters[${edgeclusternumber}].[].worker${worker}.root_disk" ${EDGECLUSTERS_FILE})
 
         if [[ ${CHANGE_EDGE_WORKER_PUB_INT} == "null" ]]; then
-        	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_WORKER_MGMT_INT}.102" | base64 -w0)
-        else
-        	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_WORKER_PUB_INT}" | base64 -w0)
+            	export CHANGE_EDGE_WORKER_PUB_INT="${CHANGE_EDGE_WORKER_MGMT_INT}.0"
         fi
-        export IGN_CHANGE_DEF_ROUTE_SCRIPT=$(base64 change_def_route.sh -w0)
-    	export JSON_STRING_CFG_OVERRIDE_BMH='{"ignition":{"version":"3.2.0"},"systemd":{"units":[{"name":"change-def-route.service","enabled":true,"contents":"[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"},{"name":"crio-wipe.service","mask":true}]},"storage":{"files":[{"path":"/opt/bin/change_def_route.sh","mode":492,"append":[{"source":"data:text/plain;base64,'${IGN_CHANGE_DEF_ROUTE_SCRIPT}'"}]},{"path":"/var/lib/ovnk/iface_default_hint","mode":492,"override":true,"contents":{"source":"data:text/plain;base64,'${OVS_IFACE_HINT}'"}}]}}'
+
+	export STATIC_IP_INTERFACE=br-ex
+	export NODE_IP="192.168.7.2${worker}"
+        export CHANGE_EDGE_WORKER_PUB_INT_IP="$NODE_IP"
+        envsubst '$STATIC_IP_INTERFACE $NODE_IP' <99-add-host-int-ip.sh >${OUTPUTDIR}/99-add-host-int-ip-w$worker.sh
+        export STATIC_IP_SINGLE_NIC=$(base64 ${OUTPUTDIR}/99-add-host-int-ip-w$worker.sh -w0)
+
+        envsubst '$NODE_IP' <30-nodenet.conf >${OUTPUTDIR}/30-nodenet.conf.w$worker
+        export KUBELET_NODENET=$(base64 ${OUTPUTDIR}/30-nodenet.conf.w$worker -w0)
+
+        envsubst '$NODE_IP' <30-nodenet-crio.conf >${OUTPUTDIR}/30-nodenet-crio.conf.w$worker
+        export CRIO_NODENET=$(base64 ${OUTPUTDIR}/30-nodenet-crio.conf.w$worker -w0)
+
+
+        envsubst '$STATIC_IP_SINGLE_NIC $KUBELET_NODENET $CRIO_NODENET' <bmh-ignition.json >${OUTPUTDIR}/bmh-ignition.json.w$worker
+	export JSON_STRING_CFG_OVERRIDE_BMH=$(cat ${OUTPUTDIR}/bmh-ignition.json.w$worker)
 
         # Now, write the template to disk
         OUTPUT="${OUTPUTDIR}/${cluster}-worker${worker}.yaml"
@@ -76,24 +87,6 @@ spec:
          auto-routes: true
        mtu: 1500
        mac-address: '$CHANGE_EDGE_WORKER_MGMT_INT_MAC'
-EOF
-        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
-            cat <<EOF >>${OUTPUT}
-     - name: $CHANGE_EDGE_WORKER_MGMT_INT.102
-       type: vlan
-       state: up
-       vlan:
-         base-iface: $CHANGE_EDGE_WORKER_MGMT_INT
-         id: 102
-       ipv4:
-         enabled: true
-         address:
-           - ip: $CHANGE_EDGE_WORKER_PUB_INT_IP
-             prefix-length: $CHANGE_EDGE_WORKER_PUB_INT_MASK
-       mtu: 1500
-EOF
-        else
-            cat <<EOF >>${OUTPUT}
      - name: $CHANGE_EDGE_WORKER_PUB_INT
        type: ethernet
        state: up
@@ -107,24 +100,17 @@ EOF
            - ip: $CHANGE_EDGE_WORKER_PUB_INT_IP
              prefix-length: $CHANGE_EDGE_WORKER_PUB_INT_MASK
        mtu: 1500
-EOF
-        fi
-        cat <<EOF >>${OUTPUT}
    dns-resolver:
      config:
        server:
          - $EDGE_MASTER_0_INT_IP
+EOF
+        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} != "null" ]]; then
+            cat <<EOF >>${OUTPUT}
    routes:
      config:
        - destination: $CHANGE_EDGE_WORKER_PUB_INT_ROUTE_DEST
          next-hop-address: $CHANGE_EDGE_WORKER_PUB_INT_GW
-EOF
-        if [[ ${CHANGE_EDGE_WORKER_PUB_INT_MAC} == "null" ]]; then
-            cat <<EOF >>${OUTPUT}
-         next-hop-interface: $CHANGE_EDGE_WORKER_MGMT_INT.102
-EOF
-        else
-            cat <<EOF >>${OUTPUT}
          next-hop-interface: $CHANGE_EDGE_WORKER_PUB_INT
 EOF
         fi
