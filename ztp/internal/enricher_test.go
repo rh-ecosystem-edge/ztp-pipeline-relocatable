@@ -510,11 +510,11 @@ var _ = Describe("Enricher", Ordered, func() {
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-master-0",
-							InternalNIC: models.NIC{
+							InternalNIC: &models.NIC{
 								Name: "eth0",
 								MAC:  "17:c0:34:9c:f7:52",
 							},
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								Name: "eth1",
 								MAC:  "f6:aa:2c:d0:24:40",
 							},
@@ -522,11 +522,11 @@ var _ = Describe("Enricher", Ordered, func() {
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-master-1",
-							InternalNIC: models.NIC{
+							InternalNIC: &models.NIC{
 								Name: "eth0",
 								MAC:  "11:0f:8b:d9:ea:76",
 							},
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								Name: "eth1",
 								MAC:  "9c:bf:cd:0f:6a:c4",
 							},
@@ -534,11 +534,11 @@ var _ = Describe("Enricher", Ordered, func() {
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-master-2",
-							InternalNIC: models.NIC{
+							InternalNIC: &models.NIC{
 								Name: "eth0",
 								MAC:  "8e:a2:8c:a7:06:d6",
 							},
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								Name: "eth1",
 								MAC:  "24:23:0a:53:8a:16",
 							},
@@ -546,11 +546,11 @@ var _ = Describe("Enricher", Ordered, func() {
 						{
 							Kind: models.NodeKindWorker,
 							Name: "my-worker-0",
-							InternalNIC: models.NIC{
+							InternalNIC: &models.NIC{
 								Name: "eth0",
 								MAC:  "f2:d3:c4:b7:ab:0a",
 							},
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								Name: "eth1",
 								MAC:  "69:7e:09:78:33:45",
 							},
@@ -561,14 +561,10 @@ var _ = Describe("Enricher", Ordered, func() {
 			err := enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
 			cluster := config.Clusters[0]
-			Expect(cluster.Nodes[0].InternalNIC.IP.String()).To(Equal("192.168.7.10"))
-			Expect(cluster.Nodes[0].InternalNIC.Prefix).To(Equal(24))
-			Expect(cluster.Nodes[1].InternalNIC.IP.String()).To(Equal("192.168.7.11"))
-			Expect(cluster.Nodes[1].InternalNIC.Prefix).To(Equal(24))
-			Expect(cluster.Nodes[2].InternalNIC.IP.String()).To(Equal("192.168.7.12"))
-			Expect(cluster.Nodes[2].InternalNIC.Prefix).To(Equal(24))
-			Expect(cluster.Nodes[3].InternalNIC.IP.String()).To(Equal("192.168.7.13"))
-			Expect(cluster.Nodes[3].InternalNIC.Prefix).To(Equal(24))
+			Expect(cluster.Nodes[0].InternalIP.String()).To(Equal("192.168.7.10/24"))
+			Expect(cluster.Nodes[1].InternalIP.String()).To(Equal("192.168.7.11/24"))
+			Expect(cluster.Nodes[2].InternalIP.String()).To(Equal("192.168.7.12/24"))
+			Expect(cluster.Nodes[3].InternalIP.String()).To(Equal("192.168.7.13/24"))
 			Expect(cluster.API.VIP).To(Equal("192.168.7.242"))
 			Expect(cluster.Ingress.VIP).To(Equal("192.168.7.243"))
 		})
@@ -583,11 +579,11 @@ var _ = Describe("Enricher", Ordered, func() {
 						{
 							Kind: models.NodeKindControlPlane,
 							Name: "my-master-0",
-							InternalNIC: models.NIC{
+							InternalNIC: &models.NIC{
 								Name: "eth0",
 								MAC:  "17:c0:34:9c:f7:52",
 							},
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								Name: "eth1",
 								MAC:  "f6:aa:2c:d0:24:40",
 							},
@@ -598,8 +594,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			err := enricher.Enrich(ctx, config)
 			Expect(err).ToNot(HaveOccurred())
 			cluster := config.Clusters[0]
-			Expect(cluster.Nodes[0].InternalNIC.IP.String()).To(Equal("192.168.7.10"))
-			Expect(cluster.Nodes[0].InternalNIC.Prefix).To(Equal(24))
+			Expect(cluster.Nodes[0].InternalIP.String()).To(Equal("192.168.7.10/24"))
 			Expect(cluster.API.VIP).To(BeEmpty())
 			Expect(cluster.Ingress.VIP).To(BeEmpty())
 		})
@@ -747,20 +742,23 @@ var _ = Describe("Enricher", Ordered, func() {
 					Name: name,
 					Nodes: []*models.Node{
 						{
+							Kind: models.NodeKindControlPlane,
 							Name: "master0",
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								MAC: "a2:87:c3:6d:61:d0",
 							},
 						},
 						{
+							Kind: models.NodeKindControlPlane,
 							Name: "master1",
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								MAC: "a2:87:c3:6d:61:d1",
 							},
 						},
 						{
+							Kind: models.NodeKindControlPlane,
 							Name: "master2",
-							ExternalNIC: models.NIC{
+							ExternalNIC: &models.NIC{
 								MAC: "a2:87:c3:6d:61:d2",
 							},
 						},
@@ -772,9 +770,9 @@ var _ = Describe("Enricher", Ordered, func() {
 
 			// Verify external IP addresses:
 			cluster := config.Clusters[0]
-			Expect(cluster.Nodes[0].ExternalNIC.IP.String()).To(Equal("192.168.150.100"))
-			Expect(cluster.Nodes[1].ExternalNIC.IP.String()).To(Equal("192.168.150.101"))
-			Expect(cluster.Nodes[2].ExternalNIC.IP.String()).To(Equal("192.168.150.102"))
+			Expect(cluster.Nodes[0].ExternalIP.String()).To(Equal("192.168.150.100/24"))
+			Expect(cluster.Nodes[1].ExternalIP.String()).To(Equal("192.168.150.101/24"))
+			Expect(cluster.Nodes[2].ExternalIP.String()).To(Equal("192.168.150.102/24"))
 		})
 
 		It("Takes kubeconfig from secret", func() {

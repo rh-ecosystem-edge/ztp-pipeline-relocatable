@@ -10,11 +10,6 @@
         "contents": {{ execute "files/csr-approver.service" . | json }}
       },
       {
-        "name": "change-def-route.service",
-        "enabled": true,
-        "contents": {{ execute "files/change-def-route.service" . | json }}
-      },
-      {
         "name": "crio-wipe.service",
         "mask": true
       }
@@ -31,21 +26,30 @@
           }
         ]
       },
+      {{ if not .InternalNIC }}
       {
-        "path": "/opt/bin/change_def_route.sh",
-        "mode": 492,
-        "append": [
-          {
-            "source": "data:text/plain;base64,{{ execute "files/change_def_route.sh" . | base64 }}"
-          }
-        ]
-      },
-      {
-        "path": "/var/lib/ovnk/iface_default_hint",
-        "mode": 492,
+        "path": "/etc/NetworkManager/dispatcher.d/pre-up.d/99-add-internal-ip.sh",
+        "mode": 493,
         "overwrite": true,
         "contents": {
-          "source": "data:text/plain;base64,{{ execute "files/iface_default_hint" . | base64 }}"
+          "source": "data:text/plain;base64,{{ execute "files/add-internal-ip-bmh.sh" . | base64 }}"
+        }
+      },
+      {{ end }}
+      {
+        "path": "/etc/systemd/system/crio.service.d/30-nodenet.conf",
+        "mode": 493,
+        "overwrite": true,
+        "contents": {
+          "source": "data:text/plain;base64,{{ execute "files/nodenet-crio.conf" . | base64 }}"
+        }
+      },
+      {
+        "path": "/etc/systemd/system/kubelet.service.d/30-nodenet.conf",
+        "mode": 493,
+        "overwrite": true,
+        "contents": {
+          "source": "data:text/plain;base64,{{ execute "files/nodenet-kubelet.conf" . | base64 }}"
         }
       }
     ]

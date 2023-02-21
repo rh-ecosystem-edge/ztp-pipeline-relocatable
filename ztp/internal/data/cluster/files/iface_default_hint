@@ -1,5 +1,0 @@
-{{ if .InternalNIC.Name -}}
-{{ .InternalNIC.Name }}
-{{ else -}}
-{{ .ExternalNIC.Name }}.102
-{{ end -}}
