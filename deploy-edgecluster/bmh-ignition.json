@@ -10,11 +10,6 @@
         "contents": "[Unit]\nDescription=CSR Approver\nAfter=network.target\n\n[Service]\nUser=root\nType=oneshot\nExecStart=/bin/bash -c /opt/bin/csr-approver.sh\n\n[Install]\nWantedBy=multi-user.target"
       },
       {
-        "name": "change-def-route.service",
-        "enabled": true,
-        "contents": "[Unit]\nDescription=Change-Default-Route\nBefore=ovs-configuration.service\nWants=NetworkManager-wait-online.service\nAfter=NetworkManager-wait-online.service\n\n[Service]\nUser=root\nType=simple\nExecStart=/bin/bash -c \"/opt/bin/change_def_route.sh\"\n\n[Install]\nWantedBy=multi-user.target"
-      },
-      {
         "name": "crio-wipe.service",
         "mask": true
       }
