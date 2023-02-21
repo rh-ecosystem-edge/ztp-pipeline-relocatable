@@ -14,7 +14,9 @@ License.
 
 package models
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type NodeKind string
 
@@ -26,11 +28,14 @@ const (
 type Node struct {
 	Kind         NodeKind
 	Name         string
+	Hostname     string
 	BMC          BMC
 	RootDisk     string
 	StorageDisks []string
-	InternalNIC  NIC
-	ExternalNIC  NIC
+	InternalNIC  *NIC
+	InternalIP   *IP
+	ExternalNIC  *NIC
+	ExternalIP   *IP
 	IgnoredNICs  []string
 }
 

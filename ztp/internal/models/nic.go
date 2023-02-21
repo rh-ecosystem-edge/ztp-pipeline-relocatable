@@ -14,11 +14,7 @@ License.
 
 package models
 
-import "net"
-
 type NIC struct {
-	IP     net.IP
-	MAC    string
-	Prefix int
-	Name   string
+	Name string
+	MAC  string
 }

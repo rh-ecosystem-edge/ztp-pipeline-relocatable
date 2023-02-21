@@ -326,17 +326,23 @@ func (l *Loader) loadNode(content any, node *models.Node) error {
 
 	// Internal NIC:
 	if data.NICIntStatic != nil {
+		if node.InternalNIC == nil {
+			node.InternalNIC = &models.NIC{}
+		}
 		node.InternalNIC.Name = *data.NICIntStatic
 	}
-	if data.MACIntStatic != nil {
+	if node.InternalNIC != nil && data.MACIntStatic != nil {
 		node.InternalNIC.MAC = *data.MACIntStatic
 	}
 
 	// External NIC:
 	if data.NICExtDHCP != nil {
+		if node.ExternalNIC == nil {
+			node.ExternalNIC = &models.NIC{}
+		}
 		node.ExternalNIC.Name = *data.NICExtDHCP
 	}
-	if data.MACExtDHCP != nil {
+	if node.ExternalNIC != nil && data.MACExtDHCP != nil {
 		node.ExternalNIC.MAC = *data.MACExtDHCP
 	}
 

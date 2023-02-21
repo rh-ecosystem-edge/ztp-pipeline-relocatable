@@ -9,7 +9,7 @@ metadata:
     infraenvs.agent-install.openshift.io: {{ $.Cluster.Name }}
   annotations:
     inspect.metal3.io: disabled
-    bmac.agent-install.openshift.io/hostname: ztpfw-{{ $.Cluster.Name }}-master-{{ .Index }}
+    bmac.agent-install.openshift.io/hostname: {{ .Hostname }}
     bmac.agent-install.openshift.io/ignition-config-overrides: {{ execute "files/cfg-override-bmh.json" . | json }}
 spec:
   online: false

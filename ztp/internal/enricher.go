@@ -289,6 +289,7 @@ func (e *Enricher) enrichCluster(ctx context.Context, config *models.Config,
 		e.setClusterImageSet,
 		e.setClusterRegistryURL,
 		e.setClusterRegistryCA,
+		e.setHostnames,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, config, cluster)
@@ -478,17 +479,20 @@ func (e *Enricher) setInternalIPs(ctx context.Context, config *models.Config,
 
 func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.Node) error {
 	// Do nothing if the IP is already set:
-	if node.InternalNIC.IP != nil {
+	if node.InternalIP != nil {
 		return nil
 	}
 
 	// For nodes of the cluster we want to assign IP addresses within the machine network
 	// 192.168.7.0/24, starting with 192.168.7.10 for the first master node, 192.168.7.11 for
 	// the second one, and so on.
-	ip := slices.Clone(enricherMachineCIDR.IP)
-	ip[len(ip)-1] = byte(10 + index)
-	node.InternalNIC.IP = ip
-	node.InternalNIC.Prefix, _ = enricherMachineCIDR.Mask.Size()
+	address := slices.Clone(enricherMachineCIDR.IP)
+	address[len(address)-1] = byte(10 + index)
+	prefix, _ := enricherMachineCIDR.Mask.Size()
+	node.InternalIP = &models.IP{
+		Address: address,
+		Prefix:  prefix,
+	}
 
 	return nil
 }
@@ -529,9 +533,12 @@ func (e *Enricher) setExternalIPs(ctx context.Context, config *models.Config,
 		}
 	}
 
-	// Find the IP address for each external interface:
+	// Find the external IP addresses of the nodes:
 	for _, node := range cluster.Nodes {
-		if node.ExternalNIC.IP != nil {
+		if node.ExternalNIC == nil {
+			continue
+		}
+		if node.ExternalIP != nil {
 			continue
 		}
 		mac := node.ExternalNIC.MAC
@@ -544,7 +551,7 @@ func (e *Enricher) setExternalIPs(ctx context.Context, config *models.Config,
 				"mac", mac,
 				"ip", ip,
 			)
-			node.ExternalNIC.IP, _, err = net.ParseCIDR(ip)
+			node.ExternalIP, err = models.ParseIP(ip)
 			if err != nil {
 				return err
 			}
@@ -687,6 +694,39 @@ func (e *Enricher) getCA(address string) (result []byte, err error) {
 	result = buffer.Bytes()
 
 	return
+}
+
+func (e *Enricher) setHostnames(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	for _, node := range cluster.Nodes {
+		err := e.setHostname(ctx, config, cluster, node)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (e *Enricher) setHostname(ctx context.Context, config *models.Config,
+	cluster *models.Cluster, node *models.Node) error {
+	if node.Hostname != "" {
+		return nil
+	}
+	var kind string
+	switch node.Kind {
+	case models.NodeKindControlPlane:
+		kind = "master"
+	case models.NodeKindWorker:
+		kind = "worker"
+	default:
+		return fmt.Errorf(
+			"failed to set hostname for node '%s' of cluster '%s' because node "+
+				"kind '%s' is unknown",
+			node.Name, cluster.Name, node.Kind,
+		)
+	}
+	node.Hostname = fmt.Sprintf("ztpfw-%s-%s-%s", cluster.Name, kind, node.Index())
+	return nil
 }
 
 // Hardcoded blocks of addresses used by the cluster, the machines and the services (assigned in the
