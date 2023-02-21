@@ -324,7 +324,7 @@ function wipe_edge_disks() {
         recover_edgecluster_rsa ${cluster}
         echo ""
         echo ">>>> Wipe storage disks for Master ${master} Node"
-        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -ojsonpath='{.items[].metadata.name}'); do
+        for agent in $(oc --kubeconfig=${KUBECONFIG_HUB} get -n ${cluster} agent -ojsonpath='{range .items[?(.spec.role != "worker" )]}{.metadata.name}'); do
             NODE_IP=$(grab_node_ext_ips ${cluster} ${index} ${agent})
 
             if [[ -n ${NODE_IP} ]]; then
