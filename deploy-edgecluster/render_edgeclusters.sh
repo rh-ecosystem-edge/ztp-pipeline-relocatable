@@ -61,7 +61,6 @@ create_edgecluster_definitions() {
     export CHANGE_EDGE_MASTER_MGMT_INT_M0=$(yq eval ".edgeclusters[${edgeclusternumber}].${cluster}.master0.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
     export CHANGE_BASEDOMAIN=${HUB_BASEDOMAIN}
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_EDGE_API} ${EDGE_API_NAME}" | base64 -w0)
-    export IGN_CHANGE_DEF_ROUTE_SCRIPT=$(base64 change_def_route.sh -w0)
     
     if [[ ${CHANGE_EDGE_MASTER_PUB_INT_M0} == "null" ]]; then
     	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_MGMT_INT_M0}" | base64 -w0)
