@@ -77,8 +77,10 @@ if ! ./verify.sh; then
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         declare -a LVMOCRDS=("lvmclusters.lvm.topolvm.io" "lvmvolumegroupnodestatuses.lvm.topolvm.io" "lvmvolumegroups.lvm.topolvm.io")
         for crd in ${LVMOCRDS[@]}; do
-            check_resource "crd" "${crd}" "Established" "openshift-local-storage" "${EDGE_KUBECONFIG}"
+            check_resource "crd" "${crd}" "Established" "openshift-storage" "${EDGE_KUBECONFIG}"
         done
+
+	check_resource "deployment" "lvms-operator" "Available" "openshift-storage" "${EDGE_KUBECONFIG}"
 
         echo ">>>> Render and apply manifest to deploy LVMCluster"
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -102,7 +104,7 @@ if ! ./verify.sh; then
             exit 1
         fi
     done
-    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    oc --kubeconfig=${EDGE_KUBECONFIG} patch storageclass lvms-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
     index=$((index + 1))
 fi
 echo ">>>>EOF"

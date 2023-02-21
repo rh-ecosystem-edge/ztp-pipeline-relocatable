@@ -53,7 +53,7 @@ if ! ./verify_hub.sh; then
             exit 1
         fi
 
-    oc --kubeconfig=${KUBECONFIG_HUB} patch storageclass odf-lvm-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    oc --kubeconfig=${KUBECONFIG_HUB} patch storageclass lvms-vg1 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
     oc --kubeconfig=${KUBECONFIG_HUB} apply -f manifests/05-Hub-PVC.yaml
 fi
 echo ">>>>EOF"

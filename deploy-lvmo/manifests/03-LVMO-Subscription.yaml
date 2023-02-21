@@ -7,6 +7,6 @@ metadata:
 spec:
   channel: "stable-CHANGEME"
   installPlanApproval: Automatic
-  name: odf-lvm-operator
+  name: lvms-operator
   source: "CATALOG_SOURCE"
   sourceNamespace: openshift-marketplace

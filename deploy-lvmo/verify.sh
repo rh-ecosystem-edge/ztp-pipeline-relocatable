@@ -27,7 +27,7 @@ for edgecluster in ${ALLEDGECLUSTERS}; do
     fi
 
     echo "Check StorageClass..."
-    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc odf-lvm-vg1 --no-headers | wc -l) -ne 1 ]]; then
+    if [[ $(oc get --kubeconfig=${EDGE_KUBECONFIG} sc lvms-vg1 --no-headers | wc -l) -ne 1 ]]; then
         exit 1
     fi
 
