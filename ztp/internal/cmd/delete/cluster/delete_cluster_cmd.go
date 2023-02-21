@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
@@ -159,7 +160,24 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 }
 
 func (c *Command) delete(ctx context.Context, cluster *models.Cluster) error {
-	return c.applier.Delete(ctx, map[string]any{
+	// The cluster deployment can't be deleted directly because Hive will then delete the
+	// namespace, and with the namespace terminating it isn't possible to delete other objects
+	// that create things as part of the deletion process. In particular the process to delete
+	// bare metal hosts needs to create `preprovisioningimages` inside the namespace. To address
+	// that remove the cluster deployment from the list of objects to delete, and let Kubernetes
+	// delete it when the namespace is deleted.
+	objects, err := c.applier.Render(ctx, map[string]any{
 		"Cluster": cluster,
 	})
+	if err != nil {
+		return err
+	}
+	deleteable := make([]*unstructured.Unstructured, 0, len(objects)-1)
+	for _, object := range objects {
+		if object.GroupVersionKind() == internal.ClusterDeploymentGVK {
+			continue
+		}
+		deleteable = append(deleteable, object)
+	}
+	return c.applier.DeleteObjects(ctx, deleteable)
 }
