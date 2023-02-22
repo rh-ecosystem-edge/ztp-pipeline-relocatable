@@ -333,34 +333,52 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 	defer watch.Stop()
 	state := ""
 	for event := range watch.ResultChan() {
-		type Data struct {
-			State  string `json:"state"`
-			Status string `json:"status"`
+		var current struct {
+			state     string
+			completed string
+			failed    string
 		}
-		var current Data
 		err = c.jq.Query(
-			`try {
-				"state": .status.debugInfo.state,
-				"status": .status.conditions[] | select(.type == "Completed") | .status
-			}`,
-			event.Object, &current,
+			`.status.debugInfo.state`,
+			event.Object, &current.state,
 		)
 		if err != nil {
 			return err
 		}
-		if current.State != state {
+		err = c.jq.Query(
+			`.status.conditions[]? | select(.type == "Completed") | .status`,
+			event.Object, &current.completed,
+		)
+		if err != nil {
+			return err
+		}
+		err = c.jq.Query(
+			`.status.conditions[]? | select(.type == "Failed") | .status`,
+			event.Object, &current.failed,
+		)
+		if err != nil {
+			return err
+		}
+		if current.state != state {
 			c.console.Info(
 				"Cluster '%s' moved to state '%s'",
-				cluster.Name, current.State,
+				cluster.Name, current.state,
 			)
-			state = current.State
+			state = current.state
 		}
-		if current.Status == "True" {
+		if current.completed == "True" {
 			c.console.Info(
-				"Cluster '%s' is installed",
+				"Installation of cluster '%s' succeeded",
 				cluster.Name,
 			)
 			break
+		}
+		if current.failed == "True" {
+			c.console.Error(
+				"Installation of cluster '%s' failed",
+				cluster.Name,
+			)
+			return exit.Error(1)
 		}
 	}
 	return nil
