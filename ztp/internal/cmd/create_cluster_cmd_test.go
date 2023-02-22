@@ -43,8 +43,10 @@ import (
 var _ = Describe("Create cluster command", Ordered, func() {
 	var (
 		ctx    context.Context
+		name   string
 		logger logr.Logger
 		client *internal.Client
+		dns    *DNSServer
 	)
 
 	BeforeAll(func() {
@@ -53,9 +55,8 @@ var _ = Describe("Create cluster command", Ordered, func() {
 		// Create the logger:
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetLevel(2).
+			SetLevel(1).
 			Build()
-
 		Expect(err).ToNot(HaveOccurred())
 
 		// Create the client:
@@ -78,68 +79,72 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	BeforeEach(func() {
 		// Create the context:
 		ctx = context.Background()
+
+		// Generate a random cluster name:
+		name = fmt.Sprintf("my-%s", uuid.NewString())
+
+		// Prepare the DNS server:
+		dns = NewDNSServer()
+		DeferCleanup(dns.Close)
+		dns.AddZone("my-domain.com")
+		dns.AddHost(fmt.Sprintf("api.%s.my-domain.com", name), "192.168.150.100")
+		dns.AddHost(fmt.Sprintf("apps.%s.my-domain.com", name), "192.168.150.101")
 	})
 
-	Context("Simple SNO cluster", Ordered, func() {
-		var (
-			name   string
-			config string
+	It("Creates SNO cluster", func() {
+		// Prepare the configuration:
+		config := Template(
+			Dedent(`
+				config:
+				  OC_OCP_VERSION: '4.11.20'
+				  OC_ACM_VERSION: '2.6'
+				  OC_ODF_VERSION: '4.11'
+				edgeclusters:
+				- {{ .Name }}:
+				    config:
+				      tpm: false
+				    contrib:
+				      gpu-operator:
+				        version: "v1.10.1"
+				    master0:
+				      nic_ext_dhcp: enp1s0
+				      mac_ext_dhcp: "63:ed:8b:f1:15:4c"
+				      bmc_url: "redfish-virtualmedia+http://192.168.122.1:8000/redfish/v1/Systems/d5405874-a05e-44bd-a6e1-f7105d6ed932"
+				      bmc_user: "user0"
+				      bmc_pass: "pass0"
+				      root_disk: /dev/vda
+				      storage_disk:
+				      - /dev/vdb
+			`),
+			"Name", name,
 		)
 
-		BeforeAll(func() {
-			// Prepare the configuration:
-			name = fmt.Sprintf("my-%s", uuid.NewString())
-			config = Template(
-				Dedent(`
-					config:
-					  OC_OCP_VERSION: '4.11.20'
-					  OC_ACM_VERSION: '2.6'
-					  OC_ODF_VERSION: '4.11'
-					edgeclusters:
-					- {{ .Name }}:
-					    config:
-					      tpm: false
-					    contrib:
-					      gpu-operator:
-					        version: "v1.10.1"
-					    master0:
-					      nic_ext_dhcp: enp1s0
-					      mac_ext_dhcp: "63:ed:8b:f1:15:4c"
-					      bmc_url: "redfish-virtualmedia+http://192.168.122.1:8000/redfish/v1/Systems/d5405874-a05e-44bd-a6e1-f7105d6ed932"
-					      bmc_user: "user0"
-					      bmc_pass: "pass0"
-					      root_disk: /dev/vda
-					      storage_disk:
-					      - /dev/vdb
-				`),
-				"Name", name,
-			)
+		// Run the command:
+		tool, err := internal.NewTool().
+			SetLogger(logger).
+			SetArgs(
+				"ztp", "create", "cluster",
+				"--config", config,
+				"--resolver", dns.Address(),
+				"--wait", "0",
+			).
+			AddCommand(createcmd.Cobra).
+			SetIn(&bytes.Buffer{}).
+			SetOut(GinkgoWriter).
+			SetErr(GinkgoWriter).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		err = tool.Run(ctx)
+		Expect(err).ToNot(HaveOccurred())
 
-			// Run the command:
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "create", "cluster",
-					"--config", config,
-					"--wait", "0",
-				).
-				AddCommand(createcmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(GinkgoWriter).
-				SetErr(GinkgoWriter).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		AfterAll(func() {
-			// Run the command to delete the cluster:
+		// Remember to delete the cluster when the test finishes:
+		defer func() {
 			tool, err := internal.NewTool().
 				SetLogger(logger).
 				SetArgs(
 					"ztp", "delete", "cluster",
 					"--config", config,
+					"--resolver", dns.Address(),
 				).
 				AddCommand(deletecmd.Cobra).
 				SetIn(&bytes.Buffer{}).
@@ -149,9 +154,9 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 			err = tool.Run(ctx)
 			Expect(err).ToNot(HaveOccurred())
-		})
+		}()
 
-		It("Creates the namespace", func() {
+		By("Creating the namespace", func() {
 			object := &corev1.Namespace{}
 			key := clnt.ObjectKey{
 				Name: name,
@@ -160,7 +165,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the pull secret", func() {
+		By("Creating the pull secret", func() {
 			object := &corev1.Secret{}
 			key := clnt.ObjectKey{
 				Namespace: name,
@@ -170,7 +175,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the manifests override configmap", func() {
+		By("Creating the manifests override configmap", func() {
 			object := &corev1.ConfigMap{}
 			key := clnt.ObjectKey{
 				Namespace: name,
@@ -180,9 +185,9 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the agent cluster install", func() {
+		By("Creating the agent cluster install", func() {
 			object := &unstructured.Unstructured{}
-			object.SetGroupVersionKind(internal.AgentClusterIntallGVK)
+			object.SetGroupVersionKind(internal.AgentClusterInstallGVK)
 			key := clnt.ObjectKey{
 				Namespace: name,
 				Name:      name,
@@ -191,7 +196,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the cluster deployment", func() {
+		By("Creating the cluster deployment", func() {
 			object := &unstructured.Unstructured{}
 			object.SetGroupVersionKind(internal.ClusterDeploymentGVK)
 			key := clnt.ObjectKey{
@@ -202,7 +207,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the managed cluster", func() {
+		By("Creating the managed cluster", func() {
 			object := &unstructured.Unstructured{}
 			object.SetGroupVersionKind(internal.ManagedClusterGVK)
 			key := clnt.ObjectKey{
@@ -212,7 +217,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the infrastructure environment", func() {
+		By("Creating the infrastructure environment", func() {
 			By("Creating the object")
 			object := &unstructured.Unstructured{}
 			object.SetGroupVersionKind(internal.InfraEnvGKV)
@@ -236,7 +241,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(report.Entries).To(BeEmpty())
 		})
 
-		It("Creates the `nmstate` configuration environment", func() {
+		By("Creating the `nmstate` configuration", func() {
 			object := &unstructured.Unstructured{}
 			object.SetGroupVersionKind(internal.NMStateConfigGVK)
 			key := clnt.ObjectKey{
@@ -247,7 +252,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the BMC secret", func() {
+		By("Creating the BMC secret", func() {
 			object := &corev1.Secret{}
 			key := clnt.ObjectKey{
 				Namespace: name,
@@ -257,7 +262,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates the bare metal host", func() {
+		By("Creating the bare metal host", func() {
 			By("Creating the object")
 			object := &unstructured.Unstructured{}
 			object.SetGroupVersionKind(internal.BareMetalHostGVK)
@@ -278,7 +283,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(report.Entries).To(BeEmpty())
 		})
 
-		It("Creates the SSH secret", func() {
+		By("Creating the SSH secret", func() {
 			object := &corev1.Secret{}
 			key := clnt.ObjectKey{
 				Namespace: name,
@@ -288,7 +293,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Creates missing object", func() {
+		By("Creating missing object", func() {
 			// Delete one of the objects:
 			object := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -305,6 +310,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 				SetArgs(
 					"ztp", "create", "cluster",
 					"--config", config,
+					"--resolver", dns.Address(),
 					"--wait", "0",
 				).
 				AddCommand(createcmd.Cobra).
@@ -327,8 +333,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	})
 
 	It("Waits till the cluster is ready", func() {
-		// Create a temporary directory containing the configuration files:
-		name := fmt.Sprintf("my-%s", uuid.NewString())
+		// Prepare the configuration:
 		config := Template(
 			Dedent(`
 				config:
@@ -362,6 +367,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 				SetArgs(
 					"ztp", "delete", "cluster",
 					"--config", config,
+					"--resolver", dns.Address(),
 				).
 				AddCommand(deletecmd.Cobra).
 				SetIn(&bytes.Buffer{}).
@@ -384,6 +390,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 				SetArgs(
 					"ztp", "create", "cluster",
 					"--config", config,
+					"--resolver", dns.Address(),
 					"--wait", "1m",
 				).
 				AddCommand(createcmd.Cobra).
@@ -423,7 +430,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 
 		// Wait till the agent cluster install exists and set it status to completed:
 		aciObject := &unstructured.Unstructured{}
-		aciObject.SetGroupVersionKind(internal.AgentClusterIntallGVK)
+		aciObject.SetGroupVersionKind(internal.AgentClusterInstallGVK)
 		aciKey := clnt.ObjectKey{
 			Namespace: name,
 			Name:      name,
@@ -453,7 +460,6 @@ var _ = Describe("Create cluster command", Ordered, func() {
 
 	It("Writes the states as the installation progresses", func() {
 		// Create a temporary directory containing the configuration files:
-		name := fmt.Sprintf("my-%s", uuid.NewString())
 		config := Template(
 			Dedent(`
 				config:
@@ -487,6 +493,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 				SetArgs(
 					"ztp", "delete", "cluster",
 					"--config", config,
+					"--resolver", dns.Address(),
 				).
 				AddCommand(deletecmd.Cobra).
 				SetIn(&bytes.Buffer{}).
@@ -509,6 +516,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 				SetArgs(
 					"ztp", "create", "cluster",
 					"--config", config,
+					"--resolver", dns.Address(),
 					"--wait", "1m",
 				).
 				AddCommand(createcmd.Cobra).
@@ -548,7 +556,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 
 		// Wait till the agent cluster install exists:
 		aciObject := &unstructured.Unstructured{}
-		aciObject.SetGroupVersionKind(internal.AgentClusterIntallGVK)
+		aciObject.SetGroupVersionKind(internal.AgentClusterInstallGVK)
 		aciKey := clnt.ObjectKey{
 			Namespace: name,
 			Name:      name,

@@ -155,7 +155,24 @@ func (l *ApplierListener) friendlyKind(object *unstructured.Unstructured) string
 	if ok {
 		return result
 	}
-	return strings.ToLower(strcase.ToDelimited(kind, ' '))
+	result = strcase.ToDelimited(kind, ' ')
+	words := strings.Split(result, " ")
+	for i, word := range words {
+		if !l.isAcronym(word) {
+			words[i] = strings.ToLower(word)
+		}
+	}
+	result = strings.Join(words, " ")
+	return result
+}
+
+func (l *ApplierListener) isAcronym(word string) bool {
+	for _, r := range word {
+		if unicode.IsLower(r) {
+			return false
+		}
+	}
+	return true
 }
 
 func (l *ApplierListener) friendlyName(object *unstructured.Unstructured) string {
@@ -179,7 +196,11 @@ func (l *ApplierListener) capitalize(s string) string {
 var applierFriendlyKinds = map[string]string{
 	"ConfigMap":                "configmap",
 	"CustomResourceDefinition": "CRD",
+	"IPAddressPool":            "IP address pool",
 	"InfraEnv":                 "infrastructure environment",
+	"L2Advertisement":          "L2 advertisement",
+	"MetalLB":                  "metal load balancer",
 	"MultiClusterEngine":       "multicluster engine",
+	"NMState":                  "nmstate",
 	"NMStateConfig":            "nmstate configuration",
 }

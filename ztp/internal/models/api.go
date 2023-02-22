@@ -16,4 +16,5 @@ package models
 
 type API struct {
 	VIP string
+	IP  string
 }

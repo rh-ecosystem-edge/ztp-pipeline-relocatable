@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: openshift-kube-apiserver
+  name: metallb-api
+  annotations:
+    metallb.universe.tf/address-pool: api-public-ip
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: 6443
+    targetPort: 6443
+  selector:
+    app: openshift-kube-apiserver
+  type: LoadBalancer

@@ -29,8 +29,10 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
@@ -46,16 +48,18 @@ import (
 // information to the description of a cluster. Don't create instances of this type directly, use
 // the NewEnricher function instead.
 type EnricherBuilder struct {
-	logger logr.Logger
-	client clnt.Client
+	logger   logr.Logger
+	client   clnt.Client
+	resolver string
 }
 
 // Enricher knows how to add information to the description of a cluster. Don't create instances of
 // this type directly, use the NewEnricher function instead.
 type Enricher struct {
-	logger logr.Logger
-	client clnt.Client
-	jq     *jq.Tool
+	logger   logr.Logger
+	client   clnt.Client
+	jq       *jq.Tool
+	resolver *net.Resolver
 }
 
 // NewEnricher creates a builder that can then be used to create an object that knows how to add
@@ -74,6 +78,26 @@ func (b *EnricherBuilder) SetLogger(value logr.Logger) *EnricherBuilder {
 // order to extract the additional information.
 func (b *EnricherBuilder) SetClient(value clnt.Client) *EnricherBuilder {
 	b.client = value
+	return b
+}
+
+// SetResolver sets the IP address and port number of DNS server that the enricher will resolve
+// names, for example `127.0.0.1:53`. There is usually no need to change this, it is intended for
+// use in unit tests.
+func (b *EnricherBuilder) SetResolver(value string) *EnricherBuilder {
+	b.resolver = value
+	return b
+}
+
+// SetFlags sets the command line flags that that indicate how to configure the enricher. This is
+// optional.
+func (b *EnricherBuilder) SetFlags(flags *pflag.FlagSet) *EnricherBuilder {
+	if flags.Changed(enricherResolverFlagName) {
+		value, err := flags.GetString(enricherResolverFlagName)
+		if err == nil {
+			b.resolver = value
+		}
+	}
 	return b
 }
 
@@ -99,11 +123,37 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 		return
 	}
 
+	// Set the default resolver if needed:
+	var resolver *net.Resolver
+	if b.resolver != "" {
+		resolver, err = b.createResolver(b.resolver)
+		if err != nil {
+			err = fmt.Errorf("failed to create resolver: %v", err)
+			return
+		}
+	}
+
 	// Create and populate the object:
 	result = &Enricher{
-		logger: b.logger,
-		client: b.client,
-		jq:     jq,
+		logger:   b.logger,
+		client:   b.client,
+		jq:       jq,
+		resolver: resolver,
+	}
+	return
+}
+
+func (b *EnricherBuilder) createResolver(address string) (result *net.Resolver, err error) {
+	dialer := &net.Dialer{
+		Timeout: 5 * time.Second,
+	}
+	result = &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network string,
+			_ string) (conn net.Conn, err error) {
+			conn, err = dialer.DialContext(ctx, network, address)
+			return
+		},
 	}
 	return
 }
@@ -290,6 +340,8 @@ func (e *Enricher) enrichCluster(ctx context.Context, config *models.Config,
 		e.setClusterRegistryURL,
 		e.setClusterRegistryCA,
 		e.setHostnames,
+		e.setAPIIP,
+		e.setIngressIP,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, config, cluster)
@@ -665,6 +717,32 @@ func (e *Enricher) setClusterRegistryCA(ctx context.Context, config *models.Conf
 		"Set cluster registry CA",
 		"value", string(ca),
 	)
+	return nil
+}
+
+func (e *Enricher) setAPIIP(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	// Do nothing if the IP is already set:
+	if cluster.API.IP != "" {
+		return nil
+	}
+
+	// Check that the DNS domain is set:
+	if cluster.DNS.Domain == "" {
+		return fmt.Errorf("failed to set API IP because DNS domain isn't set")
+	}
+
+	// Try to find the IP address for the domain:
+	domain := fmt.Sprintf("api.%s.%s", cluster.Name, cluster.DNS.Domain)
+	address, err := e.resolveDomain(ctx, domain)
+	if err != nil {
+		return err
+	}
+	cluster.API.IP = address
+	e.logger.V(1).Info(
+		"Found API IP",
+		"value", address,
+	)
 
 	return nil
 }
@@ -727,6 +805,110 @@ func (e *Enricher) setHostname(ctx context.Context, config *models.Config,
 	}
 	node.Hostname = fmt.Sprintf("ztpfw-%s-%s-%s", cluster.Name, kind, node.Index())
 	return nil
+}
+
+func (e *Enricher) setIngressIP(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	// Do nothing if the IP is already set:
+	if cluster.Ingress.IP != "" {
+		return nil
+	}
+
+	// Check that the DNS domain is set:
+	if cluster.DNS.Domain == "" {
+		return fmt.Errorf("failed to set ingress IP because DNS domain isn't set")
+	}
+
+	// Try to find the IP address for the domain:
+	domain := fmt.Sprintf("apps.%s.%s", cluster.Name, cluster.DNS.Domain)
+	address, err := e.resolveDomain(ctx, domain)
+	if err != nil {
+		return err
+	}
+	cluster.Ingress.IP = address
+	e.logger.V(1).Info(
+		"Found ingress IP",
+		"value", address,
+	)
+
+	return nil
+}
+
+func (e *Enricher) resolveDomain(ctx context.Context, domain string) (result string, err error) {
+	// First try to use the default resolver:
+	resolver := e.resolver
+	if resolver == nil {
+		resolver = net.DefaultResolver
+	}
+	addresses, err := resolver.LookupHost(ctx, domain)
+	if err == nil {
+		result = addresses[0]
+		e.logger.V(1).Info(
+			"Default resolver succeeded",
+			"domain", domain,
+			"address", result,
+		)
+		return
+	}
+	e.logger.V(1).Info(
+		"Default resolver failed",
+		"domain", domain,
+		"error", err,
+	)
+
+	// Find the IP addresses of the nodes of the hub:
+	nodes := &corev1.NodeList{}
+	err = e.client.List(ctx, nodes)
+	if err != nil {
+		return
+	}
+	var servers []string
+	err = e.jq.Query(
+		`.items[].status.addresses[] | select(.type == "InternalIP") | .address`,
+		nodes, &servers,
+	)
+	if err != nil {
+		return
+	}
+
+	// Try with each of the IP addresses of the nodes of the hub:
+	dialer := &net.Dialer{}
+	for _, server := range servers {
+		resolver := &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network string,
+				address string) (conn net.Conn, err error) {
+				conn, err = dialer.DialContext(
+					ctx,
+					network,
+					net.JoinHostPort(server, "53"),
+				)
+				return
+			},
+		}
+		var addresses []string
+		addresses, err = resolver.LookupHost(ctx, domain)
+		if err == nil {
+			result = addresses[0]
+			e.logger.V(1).Info(
+				"Node resolver succeeded",
+				"server", server,
+				"domain", domain,
+				"address", result,
+			)
+			return
+		}
+		e.logger.V(1).Info(
+			"Node resolver failed",
+			"server", server,
+			"domain", domain,
+			"error", err,
+		)
+	}
+
+	// If we are here we failed to resolve:
+	err = fmt.Errorf("failed to resolve domain '%s'", domain)
+	return
 }
 
 // Hardcoded blocks of addresses used by the cluster, the machines and the services (assigned in the

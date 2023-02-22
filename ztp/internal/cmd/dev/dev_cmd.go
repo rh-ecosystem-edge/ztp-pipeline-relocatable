@@ -35,5 +35,6 @@ func Cobra() *cobra.Command {
 	result.AddCommand(devcleanupcmd.Cobra())
 	result.AddCommand(devdeletecmd.Cobra())
 	result.AddCommand(devsetupcmd.Cobra())
+	result.AddCommand(devdeletecmd.Cobra())
 	return result
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Red Hat Inc.
+Copyright 2023 Red Hat Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
 compliance with the License. You may obtain a copy of the License at
@@ -12,29 +12,28 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package cluster
+package metallb
 
 import (
 	"context"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
-	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/labels"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/jq"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
 
-// Cobra creates and returns the `delete cluster` command.
+// Cobra creates and returns the `create metallb` command.
 func Cobra() *cobra.Command {
 	c := NewCommand()
 	result := &cobra.Command{
-		Use:     "cluster",
-		Aliases: []string{"clusters"},
-		Short:   "Deletes clusters",
+		Use:     "metallb",
+		Aliases: []string{"metallbs"},
+		Short:   "Creates metal load balancers",
 		Args:    cobra.NoArgs,
 		RunE:    c.Run,
 	}
@@ -44,21 +43,21 @@ func Cobra() *cobra.Command {
 	return result
 }
 
-// Command contains the data and logic needed to run the `delete cluster` command.
+// Command contains the data and logic needed to run the `create metallb` command.
 type Command struct {
 	logger  logr.Logger
+	jq      *jq.Tool
 	console *internal.Console
 	config  *models.Config
 	client  *internal.Client
-	applier *internal.Applier
 }
 
-// NewCommand creates a new runner that knows how to execute the `delete cluster` command.
+// NewCommand creates a new runner that knows how to execute the `create metallb` command.
 func NewCommand() *Command {
 	return &Command{}
 }
 
-// Run runs the `delete cluster` command.
+// Run runs the `create metallb` command.
 func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	var err error
 
@@ -68,6 +67,18 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Get the dependencies from the context:
 	c.logger = internal.LoggerFromContext(ctx)
 	c.console = internal.ConsoleFromContext(ctx)
+
+	// Create the jq tool:
+	c.jq, err = jq.NewTool().
+		SetLogger(c.logger).
+		Build()
+	if err != nil {
+		c.console.Error(
+			"Failed to create jq tool: %v",
+			err,
+		)
+		return exit.Error(1)
+	}
 
 	// Load the configuration:
 	c.config, err = config.NewLoader().
@@ -93,7 +104,6 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		)
 		return exit.Error(1)
 	}
-	defer c.client.Close()
 
 	// Enrich the configuration:
 	enricher, err := internal.NewEnricher().
@@ -117,6 +127,74 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		return exit.Error(1)
 	}
 
+	// Create the load balancers:
+	for _, cluster := range c.config.Clusters {
+		err = c.create(ctx, cluster)
+		if err != nil {
+			c.console.Error(
+				"Failed to create load balancer for cluster '%s'",
+				cluster.Name,
+			)
+			return exit.Error(1)
+		}
+	}
+
+	return nil
+}
+
+func (c *Command) create(ctx context.Context, cluster *models.Cluster) error {
+	// Check that the Kubeconfig is available:
+	if cluster.Kubeconfig == nil {
+		c.console.Error(
+			"Kubeconfig for cluster '%s' isn't available",
+			cluster.Name,
+		)
+		return exit.Error(1)
+	}
+
+	// Check that the SSH key is available:
+	if cluster.SSH.PrivateKey == nil {
+		c.console.Error(
+			"SSH key for cluster '%s' isn't available",
+			cluster.Name,
+		)
+		return exit.Error(1)
+	}
+
+	// Find the first control plane node that has an external IP:
+	var sshIP *models.IP
+	for _, node := range cluster.ControlPlaneNodes() {
+		if node.ExternalIP != nil {
+			sshIP = node.ExternalIP
+			break
+		}
+	}
+	if sshIP == nil {
+		c.console.Error(
+			"Failed to find SSH host for cluster '%s' because there is no control "+
+				"plane node that has an external IP address",
+			cluster.Name,
+		)
+		return exit.Error(1)
+	}
+
+	// Create the client using a dialer that creates connections tunnelled via the SSH
+	// connection to the cluster:
+	client, err := internal.NewClient().
+		SetLogger(c.logger).
+		SetKubeconfig(cluster.Kubeconfig).
+		SetSSHServer(sshIP.Address.String()).
+		SetSSHUser("core").
+		SetSSHKey(cluster.SSH.PrivateKey).
+		Build()
+	if err != nil {
+		c.console.Error(
+			"Failed to create client: %v",
+			err,
+		)
+		return exit.Error(1)
+	}
+
 	// Create the applier:
 	listener, err := internal.NewApplierListener().
 		SetLogger(c.logger).
@@ -124,19 +202,18 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		Build()
 	if err != nil {
 		c.console.Error(
-			"Failed to create applier listener: %v",
+			"Failed to create listener: %v",
 			err,
 		)
 		return exit.Error(1)
 	}
-	c.applier, err = internal.NewApplier().
+	applier, err := internal.NewApplier().
 		SetLogger(c.logger).
 		SetListener(listener.Func).
-		SetClient(c.client).
+		SetClient(client).
 		SetFS(internal.DataFS).
-		SetRoot("data/cluster").
+		SetRoot("data/metallb").
 		SetDir("objects").
-		AddLabel(labels.ZTPFW, "").
 		Build()
 	if err != nil {
 		c.console.Error(
@@ -146,40 +223,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		return exit.Error(1)
 	}
 
-	// Delete the clusters:
-	for _, cluster := range c.config.Clusters {
-		err = c.delete(ctx, cluster)
-		if err != nil {
-			c.console.Error(
-				"Failed to delete cluster '%s': %v",
-				cluster.Name, err,
-			)
-			return exit.Error(1)
-		}
-	}
-
-	return nil
-}
-
-func (c *Command) delete(ctx context.Context, cluster *models.Cluster) error {
-	// The cluster deployment can't be deleted directly because Hive will then delete the
-	// namespace, and with the namespace terminating it isn't possible to delete other objects
-	// that create things as part of the deletion process. In particular the process to delete
-	// bare metal hosts needs to create `preprovisioningimages` inside the namespace. To address
-	// that remove the cluster deployment from the list of objects to delete, and let Kubernetes
-	// delete it when the namespace is deleted.
-	objects, err := c.applier.Render(ctx, map[string]any{
+	// Create the objects:
+	return applier.Apply(ctx, map[string]any{
 		"Cluster": cluster,
 	})
-	if err != nil {
-		return err
-	}
-	deleteable := make([]*unstructured.Unstructured, 0, len(objects)-1)
-	for _, object := range objects {
-		if object.GroupVersionKind() == internal.ClusterDeploymentGVK {
-			continue
-		}
-		deleteable = append(deleteable, object)
-	}
-	return c.applier.DeleteObjects(ctx, deleteable)
 }
