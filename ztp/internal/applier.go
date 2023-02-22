@@ -302,18 +302,21 @@ func (b *ApplierBuilder) findTemplates(fsys fs.FS) (results []string, err error)
 
 // Apply generates the objects passing the given data to the templates and then creates them.
 func (a *Applier) Apply(ctx context.Context, data any) error {
-	// Render the objects:
 	objects, err := a.Render(ctx, data)
 	if err != nil {
 		return err
 	}
+	return a.applyObjects(ctx, objects)
+}
 
+// ApplyObjects creates the given objects.
+func (a *Applier) ApplyObjects(ctx context.Context, objects []*unstructured.Unstructured) error {
 	// Namespaces and custom resource definitions need to be created first as other objects will
 	// depend on them, so first we need to classify the rendered objects.
 	namespaces, crds, others := a.classifyObjects(objects)
 
 	// Create the namespaces:
-	err = a.applyNamespaces(ctx, namespaces)
+	err := a.applyNamespaces(ctx, namespaces)
 	if err != nil {
 		return err
 	}
@@ -333,14 +336,17 @@ func (a *Applier) Apply(ctx context.Context, data any) error {
 	return nil
 }
 
-// Delete generates the objects passing the gien data to the templates and then deletes them.
+// Delete generates the objects passing the given data to the templates and then deletes them.
 func (a *Applier) Delete(ctx context.Context, data any) error {
-	// Render the objects:
 	objects, err := a.Render(ctx, data)
 	if err != nil {
 		return err
 	}
+	return a.DeleteObjects(ctx, objects)
+}
 
+// DeleteObjects deletes the given objects.
+func (a *Applier) DeleteObjects(ctx context.Context, objects []*unstructured.Unstructured) error {
 	// Templates are usually in a logical creation order and we want to use the reverse order
 	// for deletion:
 	for i, j := 0, len(objects)-1; i < j; i, j = i+1, j-1 {
@@ -354,7 +360,7 @@ func (a *Applier) Delete(ctx context.Context, data any) error {
 	namespaces, crds, others := a.classifyObjects(objects)
 
 	// Delete the regular objects:
-	err = a.deleteObjects(ctx, others)
+	err := a.deleteObjects(ctx, others)
 	if err != nil {
 		return err
 	}
