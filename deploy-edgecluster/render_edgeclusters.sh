@@ -63,9 +63,9 @@ create_edgecluster_definitions() {
     export IGN_OVERRIDE_API_HOSTS=$(echo -n "${CHANGE_EDGE_API} ${EDGE_API_NAME}" | base64 -w0)
     
     if [[ ${CHANGE_EDGE_MASTER_PUB_INT_M0} == "null" ]]; then
-    	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_MGMT_INT_M0}" | base64 -w0)
+    	export STATIC_IP_INTERFACE=$CHANGE_EDGE_MASTER_MGMT_INT_M0
     else
-    	export OVS_IFACE_HINT=$(echo "${CHANGE_EDGE_MASTER_PUB_INT_M0}" | base64 -w0)
+    	export STATIC_IP_INTERFACE=$CHANGE_EDGE_MASTER_PUB_INT_M0
     fi
 
     if [ "${NUM_M}" -eq "1" ];
@@ -73,7 +73,6 @@ create_edgecluster_definitions() {
         export NODE_IP="192.168.7.10"
     fi
 
-    export STATIC_IP_INTERFACE=$CHANGE_EDGE_MASTER_MGMT_INT_M0
     envsubst '$STATIC_IP_INTERFACE $NODE_IP' <99-add-host-int-ip.sh >${OUTPUTDIR}/99-add-host-int-ip.sh
     cat ${OUTPUTDIR}/99-add-host-int-ip.sh
     export STATIC_IP_SINGLE_NIC=$(base64 ${OUTPUTDIR}/99-add-host-int-ip.sh -w0)
