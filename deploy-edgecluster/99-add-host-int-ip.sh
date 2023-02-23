@@ -3,9 +3,17 @@
 
 
 DEV=${STATIC_IP_INTERFACE}
-NUM_INT_IP=$(ip -j -4 a s dev $1 | jq -r 'map(select(.addr_info[0].local | startswith("192.168.7"))) | length')
+NUM_INT_IP=$(ip -j -4 a s | jq -r 'map(select(.addr_info[0].local | startswith("192.168.7"))) | length')
+NUM_INT_IP_DEV=$(ip -j -4 a s dev $1 | jq -r 'map(select(.addr_info[0].local | startswith("192.168.7"))) | length')
 
-if [[ "$1" == "${DEV}"  ]] && [ $NUM_INT_IP -eq 0 ];
+if [[ $NUM_INT_IP -ne 0 ]] && [[ $NUM_INT_IP_DEV -eq 0 ]];
+then
+    echo "The host already has an IP on the internal subnet: Skipping IP assignment on iface ${DEV}"
+    ip -4 a s
+    exit 0
+fi
+
+if [[ "$1" == "${DEV}"  ]] && [ $NUM_INT_IP_DEV -eq 0 ];
 then
     if [[ "${NODE_IP}" == "" ]];
     then
