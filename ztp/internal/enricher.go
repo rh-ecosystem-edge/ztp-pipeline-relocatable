@@ -331,17 +331,18 @@ func (e *Enricher) enrichCluster(ctx context.Context, config *models.Config,
 		e.setPullSecret,
 		e.setSSHKeys,
 		e.setDNSDomain,
-		e.setVIPs,
+		e.setInternalAPIIP,
+		e.setInternalIngressIP,
 		e.setNetworks,
-		e.setInternalIPs,
-		e.setExternalIPs,
+		e.setInternalNodeIPs,
+		e.setExternalNodeIPs,
 		e.setKubeconfig,
 		e.setClusterImageSet,
 		e.setClusterRegistryURL,
 		e.setClusterRegistryCA,
 		e.setHostnames,
-		e.setAPIIP,
-		e.setIngressIP,
+		e.setExternalAPIIP,
+		e.setExternalIngressIP,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, config, cluster)
@@ -489,17 +490,29 @@ func (e *Enricher) getDNSDomain(ctx context.Context) (result string, err error) 
 	return
 }
 
-func (e *Enricher) setVIPs(ctx context.Context, config *models.Config,
+func (e *Enricher) setInternalAPIIP(ctx context.Context, config *models.Config,
 	cluster *models.Cluster) error {
-	if cluster.SNO {
+	if cluster.API.InternalIP != nil {
 		return nil
 	}
-	if cluster.API.VIP == "" {
-		cluster.API.VIP = enricherAPIVIP.String()
+	cluster.API.InternalIP = enricherInternalAPIIP
+	e.logger.V(1).Info(
+		"Found internal API IP",
+		"value", cluster.API.InternalIP,
+	)
+	return nil
+}
+
+func (e *Enricher) setInternalIngressIP(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	if cluster.Ingress.InternalIP != nil {
+		return nil
 	}
-	if cluster.Ingress.VIP == "" {
-		cluster.Ingress.VIP = enricherIngressVIP.String()
-	}
+	cluster.Ingress.InternalIP = enricherInternalIngressIP
+	e.logger.V(1).Info(
+		"Found internal ingress IP",
+		"value", cluster.Ingress.InternalIP,
+	)
 	return nil
 }
 
@@ -518,10 +531,10 @@ func (e *Enricher) setNetworks(ctx context.Context, config *models.Config,
 	return nil
 }
 
-func (e *Enricher) setInternalIPs(ctx context.Context, config *models.Config,
+func (e *Enricher) setInternalNodeIPs(ctx context.Context, config *models.Config,
 	cluster *models.Cluster) error {
 	for i, node := range cluster.Nodes {
-		err := e.setInternalIP(ctx, i, node)
+		err := e.setInternalNodeIP(ctx, i, node)
 		if err != nil {
 			return err
 		}
@@ -529,7 +542,7 @@ func (e *Enricher) setInternalIPs(ctx context.Context, config *models.Config,
 	return nil
 }
 
-func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.Node) error {
+func (e *Enricher) setInternalNodeIP(ctx context.Context, index int, node *models.Node) error {
 	// Do nothing if the IP is already set:
 	if node.InternalIP != nil {
 		return nil
@@ -549,7 +562,7 @@ func (e *Enricher) setInternalIP(ctx context.Context, index int, node *models.No
 	return nil
 }
 
-func (e *Enricher) setExternalIPs(ctx context.Context, config *models.Config,
+func (e *Enricher) setExternalNodeIPs(ctx context.Context, config *models.Config,
 	cluster *models.Cluster) error {
 	// Fetch the agents for the nodes of the cluster:
 	agents := &unstructured.UnstructuredList{}
@@ -720,16 +733,16 @@ func (e *Enricher) setClusterRegistryCA(ctx context.Context, config *models.Conf
 	return nil
 }
 
-func (e *Enricher) setAPIIP(ctx context.Context, config *models.Config,
+func (e *Enricher) setExternalAPIIP(ctx context.Context, config *models.Config,
 	cluster *models.Cluster) error {
 	// Do nothing if the IP is already set:
-	if cluster.API.IP != "" {
+	if cluster.API.ExternalIP != nil {
 		return nil
 	}
 
 	// Check that the DNS domain is set:
 	if cluster.DNS.Domain == "" {
-		return fmt.Errorf("failed to set API IP because DNS domain isn't set")
+		return fmt.Errorf("failed to set external API IP because DNS domain isn't set")
 	}
 
 	// Try to find the IP address for the domain:
@@ -738,10 +751,37 @@ func (e *Enricher) setAPIIP(ctx context.Context, config *models.Config,
 	if err != nil {
 		return err
 	}
-	cluster.API.IP = address
+	cluster.API.ExternalIP = net.ParseIP(address)
 	e.logger.V(1).Info(
-		"Found API IP",
-		"value", address,
+		"Found external API IP",
+		"value", cluster.API.ExternalIP,
+	)
+
+	return nil
+}
+
+func (e *Enricher) setExternalIngressIP(ctx context.Context, config *models.Config,
+	cluster *models.Cluster) error {
+	// Do nothing if the IP is already set:
+	if cluster.Ingress.ExternalIP != nil {
+		return nil
+	}
+
+	// Check that the DNS domain is set:
+	if cluster.DNS.Domain == "" {
+		return fmt.Errorf("failed to set external ingress IP because DNS domain isn't set")
+	}
+
+	// Try to find the IP address for the domain:
+	domain := fmt.Sprintf("apps.%s.%s", cluster.Name, cluster.DNS.Domain)
+	address, err := e.resolveDomain(ctx, domain)
+	if err != nil {
+		return err
+	}
+	cluster.Ingress.ExternalIP = net.ParseIP(address)
+	e.logger.V(1).Info(
+		"Found external ingress IP",
+		"value", cluster.Ingress.ExternalIP,
 	)
 
 	return nil
@@ -804,33 +844,6 @@ func (e *Enricher) setHostname(ctx context.Context, config *models.Config,
 		)
 	}
 	node.Hostname = fmt.Sprintf("ztpfw-%s-%s-%s", cluster.Name, kind, node.Index())
-	return nil
-}
-
-func (e *Enricher) setIngressIP(ctx context.Context, config *models.Config,
-	cluster *models.Cluster) error {
-	// Do nothing if the IP is already set:
-	if cluster.Ingress.IP != "" {
-		return nil
-	}
-
-	// Check that the DNS domain is set:
-	if cluster.DNS.Domain == "" {
-		return fmt.Errorf("failed to set ingress IP because DNS domain isn't set")
-	}
-
-	// Try to find the IP address for the domain:
-	domain := fmt.Sprintf("apps.%s.%s", cluster.Name, cluster.DNS.Domain)
-	address, err := e.resolveDomain(ctx, domain)
-	if err != nil {
-		return err
-	}
-	cluster.Ingress.IP = address
-	e.logger.V(1).Info(
-		"Found ingress IP",
-		"value", address,
-	)
-
 	return nil
 }
 
@@ -919,10 +932,10 @@ var (
 	enricherServiceCIDR *net.IPNet
 )
 
-// Hardcoded virtual IP addresses (assigned in the init function below).
+// Hardcoded internal API and ingress IP addresses (assigned in the init function below).
 var (
-	enricherAPIVIP     net.IP
-	enricherIngressVIP net.IP
+	enricherInternalAPIIP     net.IP
+	enricherInternalIngressIP net.IP
 )
 
 // Harccoded prefix for the block of addressed assigned to the hosts of the cluster.
@@ -945,12 +958,12 @@ func init() {
 		panic(err)
 	}
 
-	// Assign the virtual IP addresses, 192.168.7.242 for the API and 192.168.7.243 for the
-	// ingress.
-	enricherAPIVIP = slices.Clone(enricherMachineCIDR.IP)
-	enricherAPIVIP[len(enricherAPIVIP)-1] = 242
-	enricherIngressVIP = slices.Clone(enricherMachineCIDR.IP)
-	enricherIngressVIP[len(enricherIngressVIP)-1] = 243
+	// Assign the internal IP addresses, 192.168.7.242 for the ingress and 192.168.7.243 for the
+	// API.
+	enricherInternalIngressIP = slices.Clone(enricherMachineCIDR.IP)
+	enricherInternalIngressIP[len(enricherInternalIngressIP)-1] = 242
+	enricherInternalAPIIP = slices.Clone(enricherMachineCIDR.IP)
+	enricherInternalAPIIP[len(enricherInternalAPIIP)-1] = 243
 }
 
 // enricherDefaultMirror is the default base URL for downloading the `release.txt` files, used when

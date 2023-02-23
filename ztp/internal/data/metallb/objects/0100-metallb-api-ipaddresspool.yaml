@@ -6,4 +6,4 @@ metadata:
 spec:
   autoAssign: false
   addresses:
-  - {{ .Cluster.API.IP }}/32
+  - {{ .Cluster.API.ExternalIP }}/32

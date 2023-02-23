@@ -19,8 +19,8 @@ spec:
   {{ end}}
 
   {{ if not .Cluster.SNO }}
-  apiVIP: {{ .Cluster.API.VIP }}
-  ingressVIP: {{ .Cluster.Ingress.VIP }}
+  apiVIP: {{ .Cluster.API.InternalIP }}
+  ingressVIP: {{ .Cluster.Ingress.InternalIP }}
   networking:
     networkType: OVNKubernetes
     clusterNetwork:

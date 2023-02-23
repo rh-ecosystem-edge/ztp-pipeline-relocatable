@@ -6,4 +6,4 @@ metadata:
 spec:
   autoAssign: false
   addresses:
-  - {{ .Cluster.Ingress.IP }}/32
+  - {{ .Cluster.Ingress.ExternalIP }}/32

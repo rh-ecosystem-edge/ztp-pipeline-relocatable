@@ -14,7 +14,9 @@ License.
 
 package models
 
+import "net"
+
 type Ingress struct {
-	VIP string
-	IP  string
+	InternalIP net.IP
+	ExternalIP net.IP
 }
