@@ -84,6 +84,7 @@ spec:
   - name: deploy-metallb
     taskRef:
       name: edgecluster-deploy-metallb
+    timeout: "0h30m0s"
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
