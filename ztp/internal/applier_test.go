@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -353,12 +354,16 @@ var _ = Describe("Applier", func() {
 			// Delete the objects in a separate goroutine with a reasonable timeout.
 			// This is needed because the applier will wait till the object is
 			// completely deleted, and it won't be till we remove the finalizer.
+			waitGroup := &sync.WaitGroup{}
+			waitGroup.Add(1)
+			defer waitGroup.Wait()
 			go func() {
 				defer GinkgoRecover()
 				ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 				defer cancel()
 				err := applier.Delete(ctx, data)
 				Expect(err).ToNot(HaveOccurred())
+				waitGroup.Done()
 			}()
 
 			// Wait till the applier has sent the request to delete the object, so that
@@ -404,22 +409,25 @@ var _ = Describe("Applier", func() {
 		})
 
 		It("Waits for CRD before creating object", func() {
-			// Try to create the object in a separate goroutine, as it should block
-			// waiting for the CRD:
+			// Create the object in a separate goroutine, as it will block waiting for
+			// the CRD:
+			data := map[string]any{
+				"Group": fmt.Sprintf("example-%s.com", uuid.NewString()),
+			}
 			objectTmp, objectFsys := TmpFS(
 				"object.yaml",
 				Dedent(`
-					apiVersion: example.com/v1
+					apiVersion: {{ .Group }}/v1
 					kind: Example
 					metadata:
 					  name: example
 				`),
 			)
 			defer os.RemoveAll(objectTmp)
-			waitingFlag := &atomic.Bool{}
+			waitFlag := &atomic.Bool{}
 			objectListener := func(event *ApplierEvent) {
 				if event.Type == ApplierWaitingCRD {
-					waitingFlag.Store(true)
+					waitFlag.Store(true)
 				}
 			}
 			objectApplier, err := NewApplier().
@@ -430,17 +438,21 @@ var _ = Describe("Applier", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			defer func() {
-				err := objectApplier.Delete(ctx, nil)
+				err := objectApplier.Delete(ctx, data)
 				Expect(err).ToNot(HaveOccurred())
 			}()
+			waitGroup := &sync.WaitGroup{}
+			waitGroup.Add(1)
+			defer waitGroup.Wait()
 			go func() {
 				defer GinkgoRecover()
-				err := objectApplier.Apply(ctx, nil)
+				err := objectApplier.Apply(ctx, data)
 				Expect(err).ToNot(HaveOccurred())
+				waitGroup.Done()
 			}()
 
 			// Wait till the object applier is waiting for the CRD:
-			Eventually(waitingFlag.Load).Should(BeTrue())
+			Eventually(waitFlag.Load).Should(BeTrue())
 
 			// Create the CRD:
 			crdTmp, crdFsys := TmpFS(
@@ -449,9 +461,9 @@ var _ = Describe("Applier", func() {
 					apiVersion: apiextensions.k8s.io/v1
 					kind: CustomResourceDefinition
 					metadata:
-					  name: examples.example.com
+					  name: examples.{{ .Group }}
 					spec:
-					  group: example.com
+					  group: {{ .Group }}
 					  names:
 					    kind: Example
 					    listKind: ExampleList
@@ -460,6 +472,13 @@ var _ = Describe("Applier", func() {
 					  scope: Cluster
 					  versions:
 					  - name: v1
+					    served: true
+					    storage: false
+					    schema:
+					      openAPIV3Schema:
+					        type: object
+					        x-kubernetes-preserve-unknown-fields: true
+					  - name: v2
 					    served: true
 					    storage: true
 					    schema:
@@ -476,10 +495,10 @@ var _ = Describe("Applier", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			defer func() {
-				err := crdApplier.Delete(ctx, nil)
+				err := crdApplier.Delete(ctx, data)
 				Expect(err).ToNot(HaveOccurred())
 			}()
-			err = crdApplier.Apply(ctx, nil)
+			err = crdApplier.Apply(ctx, data)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Wait till the object has been created:
@@ -495,6 +514,9 @@ var _ = Describe("Applier", func() {
 			Eventually(func() bool {
 				return client.Get(ctx, objectKey, objectMeta) != nil
 			}).Should(BeTrue())
+
+			// Wait for the applier goroutine to finish:
+			waitGroup.Wait()
 		})
 	})
 })

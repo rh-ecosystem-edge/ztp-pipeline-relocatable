@@ -23,6 +23,7 @@ import (
 	"io/fs"
 	"sort"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -447,11 +448,11 @@ func (a *Applier) applyCRDs(ctx context.Context, crds []*unstructured.Unstructur
 	// Wait till all the CRDs have been established, as otherwise creating objects of the
 	// corresponding kind will fail:
 	if len(crds) > 0 {
-		gks := make([]schema.GroupKind, len(crds))
+		gvks := make([]schema.GroupVersionKind, len(crds))
 		for i, crd := range crds {
-			gks[i] = crd.GroupVersionKind().GroupKind()
+			gvks[i] = crd.GroupVersionKind()
 		}
-		err = a.waitGKs(ctx, gks...)
+		err = a.waitCRDs(ctx, gvks...)
 		if err != nil {
 			return err
 		}
@@ -460,10 +461,10 @@ func (a *Applier) applyCRDs(ctx context.Context, crds []*unstructured.Unstructur
 	return nil
 }
 
-func (a *Applier) waitGKs(ctx context.Context, gks ...schema.GroupKind) error {
-	pending := map[schema.GroupKind]bool{}
-	for _, gk := range gks {
-		pending[gk] = true
+func (a *Applier) waitCRDs(ctx context.Context, gvks ...schema.GroupVersionKind) error {
+	pending := map[schema.GroupVersionKind]bool{}
+	for _, gvk := range gvks {
+		pending[gvk] = true
 	}
 	list := &unstructured.UnstructuredList{}
 	list.SetGroupVersionKind(CustomResourceDefinitionGVK)
@@ -477,30 +478,32 @@ func (a *Applier) waitGKs(ctx context.Context, gks ...schema.GroupKind) error {
 		if !ok {
 			continue
 		}
-		var gk schema.GroupKind
+		var gvks []schema.GroupVersionKind
 		err = a.jq.Query(
-			`.spec | { "Group": .group, "Kind": .names.kind }`,
-			object.Object, &gk,
+			`.spec | [{
+				"Group": .group,
+				"Version": .versions[].name,
+				"Kind": .names.kind
+			}]`,
+			object.Object, &gvks,
 		)
 		if err != nil {
 			return err
 		}
-		_, ok = pending[gk]
-		if !ok {
-			continue
-		}
-		var status string
+		var established string
 		err = a.jq.Query(
 			`.status.conditions[]? | select(.type == "Established") | .status`,
-			object.Object, &status,
+			object.Object, &established,
 		)
 		if err != nil {
 			return err
 		}
-		if status != "True" {
+		if established != "True" {
 			continue
 		}
-		delete(pending, gk)
+		for _, gvk := range gvks {
+			delete(pending, gvk)
+		}
 		if len(pending) == 0 {
 			return nil
 		}
@@ -514,9 +517,15 @@ func (a *Applier) waitGKs(ctx context.Context, gks ...schema.GroupKind) error {
 		}
 		sort.Strings(kinds)
 		if len(kinds) == 1 {
-			return fmt.Errorf("timed out while waiting for CRD '%s'", kinds[0])
+			return fmt.Errorf(
+				"timed out while waiting for CRD '%s' to be established",
+				kinds[0],
+			)
 		} else {
-			return fmt.Errorf("timed out while waiting for CRDs %s", logging.All(kinds))
+			return fmt.Errorf(
+				"timed out while waiting for CRDs %s to be establised",
+				logging.All(kinds),
+			)
 		}
 	}
 	return nil
@@ -584,36 +593,63 @@ func (a *Applier) applyObject(ctx context.Context, object *unstructured.Unstruct
 }
 
 func (a *Applier) createObject(ctx context.Context, object *unstructured.Unstructured) error {
-	// We may need to try the creation twice, because the kind of the object may correspond to a
-	// CRD that hasn't been created yet. This function does the basic object creation, without
-	// that logic, so that we can reuse it.
+	// We may need to try the creation multiple times, because the kind of the object may
+	// correspond to a CRD that hasn't been created yet. This function does the basic object
+	// creation, without that logic, so that we can reuse it.
 	createObject := func() error {
 		err := a.client.Create(ctx, object)
+		if err == nil {
+			a.fireInfo(ApplierObjectCreated, object)
+			return nil
+		}
 		if apierrors.IsAlreadyExists(err) {
 			a.fireInfo(ApplierObjectExist, object)
 			return nil
 		}
-		if err != nil {
-			return err
-		}
-		a.fireInfo(ApplierObjectCreated, object)
-		return nil
+		return err
 	}
 
-	// If the creation fails because there is no maching kind, chances are that it is because
-	// the corresponding CRD is created by an operator that haven't created it yet. So we wait
-	// for the CRD to be available and then we try again.
-	err := createObject()
-	kindErr, ok := err.(*meta.NoKindMatchError)
-	if ok {
-		a.fireInfo(ApplierWaitingCRD, object)
-		err = a.waitGKs(ctx, kindErr.GroupKind)
-		if err != nil {
-			return err
+	// This function checks if the given error is the one returned by the server when the CRD
+	// doesn't exist:
+	isNoCRD := func(err error) bool {
+		_, isNoKind := err.(*meta.NoKindMatchError)
+		if isNoKind {
+			return true
 		}
-		return createObject()
+		return apierrors.IsNotFound(err)
 	}
-	return err
+
+	// If the creation fails because the CRD doesn't exist, chances are that it is because the
+	// corresponding CRD is created by an operator that haven't created it yet. So we wait for
+	// the CRD to be available.
+	err := createObject()
+	if err == nil {
+		return nil
+	}
+	if !isNoCRD(err) {
+		return err
+	}
+	a.fireInfo(ApplierWaitingCRD, object)
+	err = a.waitCRDs(ctx, object.GroupVersionKind())
+	if err != nil {
+		return err
+	}
+
+	// Even after the CRD is established the API server will take some time to actually allow
+	// creation of objects of that type. There is no good way to wait for that to happen, the
+	// only alternative is to repeatedly try to create the object.
+	config := backoff.NewExponentialBackOff()
+	operation := func() error {
+		err := createObject()
+		if err == nil {
+			return nil
+		}
+		if !isNoCRD(err) {
+			return backoff.Permanent(err)
+		}
+		return err
+	}
+	return backoff.Retry(operation, backoff.WithContext(config, ctx))
 }
 
 func (a *Applier) deleteObjects(ctx context.Context, objects []*unstructured.Unstructured) error {
