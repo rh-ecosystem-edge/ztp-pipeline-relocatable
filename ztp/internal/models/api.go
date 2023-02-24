@@ -14,7 +14,9 @@ License.
 
 package models
 
+import "net"
+
 type API struct {
-	VIP string
-	IP  string
+	InternalIP net.IP
+	ExternalIP net.IP
 }

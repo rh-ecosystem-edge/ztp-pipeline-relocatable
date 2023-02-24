@@ -563,8 +563,8 @@ var _ = Describe("Enricher", Ordered, func() {
 			Expect(cluster.Nodes[1].InternalIP.String()).To(Equal("192.168.7.11/24"))
 			Expect(cluster.Nodes[2].InternalIP.String()).To(Equal("192.168.7.12/24"))
 			Expect(cluster.Nodes[3].InternalIP.String()).To(Equal("192.168.7.13/24"))
-			Expect(cluster.API.VIP).To(Equal("192.168.7.242"))
-			Expect(cluster.Ingress.VIP).To(Equal("192.168.7.243"))
+			Expect(cluster.Ingress.InternalIP.String()).To(Equal("192.168.7.242"))
+			Expect(cluster.API.InternalIP.String()).To(Equal("192.168.7.243"))
 		})
 
 		It("Sets the hardcoded internal IP addresses for SNO", func() {
@@ -592,8 +592,8 @@ var _ = Describe("Enricher", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 			cluster := config.Clusters[0]
 			Expect(cluster.Nodes[0].InternalIP.String()).To(Equal("192.168.7.10/24"))
-			Expect(cluster.API.VIP).To(BeEmpty())
-			Expect(cluster.Ingress.VIP).To(BeEmpty())
+			Expect(cluster.Ingress.InternalIP.String()).To(Equal("192.168.7.242"))
+			Expect(cluster.API.InternalIP.String()).To(Equal("192.168.7.243"))
 		})
 
 		It("Doesn't change the SSH keys if already set", func() {
@@ -922,8 +922,8 @@ var _ = Describe("Enricher", Ordered, func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 			defer conn.Close()
-			Expect(cluster.API.IP).To(Equal("192.168.150.100"))
-			Expect(cluster.Ingress.IP).To(Equal("192.168.150.101"))
+			Expect(cluster.API.ExternalIP.String()).To(Equal("192.168.150.100"))
+			Expect(cluster.Ingress.ExternalIP.String()).To(Equal("192.168.150.101"))
 		})
 	})
 })
