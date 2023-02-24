@@ -1188,7 +1188,7 @@ spec:
 </div>
 <h4 id="_networking_prerequisites" class="discrete">Networking prerequisites</h4>
 <div class="paragraph">
-<p>The hub cluster requires internet connectivity and should be installed on a private network with customer configured DNS and DHCP services. Configure DNS for the API on the ingress of the hub to reach some routes on the hub cluster. Configure enough DNS entries for the number of edge clusters you intend to deploy in parallel.</p>
+<p>The hub cluster requires internet connectivity and should be installed on a private network with customer configured DNS and DHCP services. Configure DNS to properly resolve all the nodes, the api, api-int and ingress of the hub cluster. In addition, configure DNS entries for all the edge clusters you intend to deploy.</p>
 </div>
 <div class="paragraph">
 <p>You need enough DHCP addresses to host the number of edge clusters you intend to deploy. Each OpenShift Container Platform node in the cluster must have access to an NTP server. OpenShift Container Platform nodes use NTP to synchronize their clocks. For example, cluster nodes use SSL certificates that require validation, which might fail if the date and time between the nodes are not in sync.</p>
@@ -3445,7 +3445,7 @@ tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-02-24 01:03:00 UTC
+Last updated 2023-02-24 06:44:50 UTC
 </div>
 </div>
 </body>
