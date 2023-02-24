@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"sort"
 
 	"github.com/go-logr/logr"
 	"golang.org/x/exp/maps"
@@ -36,6 +37,7 @@ import (
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/jq"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/templating"
 )
 
@@ -458,9 +460,9 @@ func (a *Applier) applyCRDs(ctx context.Context, crds []*unstructured.Unstructur
 	return nil
 }
 
-func (a *Applier) waitGKs(ctx context.Context, gk ...schema.GroupKind) error {
+func (a *Applier) waitGKs(ctx context.Context, gks ...schema.GroupKind) error {
 	pending := map[schema.GroupKind]bool{}
-	for _, gk := range gk {
+	for _, gk := range gks {
 		pending[gk] = true
 	}
 	list := &unstructured.UnstructuredList{}
@@ -471,19 +473,26 @@ func (a *Applier) waitGKs(ctx context.Context, gk ...schema.GroupKind) error {
 	}
 	defer watch.Stop()
 	for event := range watch.ResultChan() {
-		update, ok := event.Object.(*unstructured.Unstructured)
+		object, ok := event.Object.(*unstructured.Unstructured)
 		if !ok {
 			continue
 		}
-		gk := update.GroupVersionKind().GroupKind()
+		var gk schema.GroupKind
+		err = a.jq.Query(
+			`.spec | { "Group": .group, "Kind": .names.kind }`,
+			object.Object, &gk,
+		)
+		if err != nil {
+			return err
+		}
 		_, ok = pending[gk]
 		if !ok {
 			continue
 		}
 		var status string
 		err = a.jq.Query(
-			`try .status.conditions[] | select(.type == "Established") | .status`,
-			update.Object, &status,
+			`.status.conditions[]? | select(.type == "Established") | .status`,
+			object.Object, &status,
 		)
 		if err != nil {
 			return err
@@ -493,7 +502,21 @@ func (a *Applier) waitGKs(ctx context.Context, gk ...schema.GroupKind) error {
 		}
 		delete(pending, gk)
 		if len(pending) == 0 {
-			break
+			return nil
+		}
+	}
+	if len(pending) > 0 {
+		kinds := make([]string, len(pending))
+		i := 0
+		for gk := range pending {
+			kinds[i] = gk.Kind
+			i++
+		}
+		sort.Strings(kinds)
+		if len(kinds) == 1 {
+			return fmt.Errorf("timed out while waiting for CRD '%s'", kinds[0])
+		} else {
+			return fmt.Errorf("timed out while waiting for CRDs %s", logging.All(kinds))
 		}
 	}
 	return nil

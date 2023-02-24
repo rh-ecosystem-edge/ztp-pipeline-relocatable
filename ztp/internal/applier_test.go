@@ -52,7 +52,7 @@ var _ = Describe("Applier", func() {
 		// Create the logger:
 		logger, err = logging.NewLogger().
 			SetWriter(GinkgoWriter).
-			SetLevel(2).
+			SetLevel(1).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -404,7 +404,45 @@ var _ = Describe("Applier", func() {
 		})
 
 		It("Waits for CRD before creating object", func() {
-			// Prepare the template for the CRD:
+			// Try to create the object in a separate goroutine, as it should block
+			// waiting for the CRD:
+			objectTmp, objectFsys := TmpFS(
+				"object.yaml",
+				Dedent(`
+					apiVersion: example.com/v1
+					kind: Example
+					metadata:
+					  name: example
+				`),
+			)
+			defer os.RemoveAll(objectTmp)
+			waitingFlag := &atomic.Bool{}
+			objectListener := func(event *ApplierEvent) {
+				if event.Type == ApplierWaitingCRD {
+					waitingFlag.Store(true)
+				}
+			}
+			objectApplier, err := NewApplier().
+				SetLogger(logger).
+				SetClient(client).
+				SetFS(objectFsys).
+				SetListener(objectListener).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := objectApplier.Delete(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			go func() {
+				defer GinkgoRecover()
+				err := objectApplier.Apply(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			// Wait till the object applier is waiting for the CRD:
+			Eventually(waitingFlag.Load).Should(BeTrue())
+
+			// Create the CRD:
 			crdTmp, crdFsys := TmpFS(
 				"crd.yaml",
 				Dedent(`
@@ -428,52 +466,9 @@ var _ = Describe("Applier", func() {
 					      openAPIV3Schema:
 					        type: object
 					        x-kubernetes-preserve-unknown-fields: true
-
 				`),
 			)
 			defer os.RemoveAll(crdTmp)
-
-			// Prepare the template for the object:
-			objectTmp, objectFsys := TmpFS(
-				"object.yaml",
-				Dedent(`
-					apiVersion: example.com/v1
-					kind: Example
-					metadata:
-					  name: example
-				`),
-			)
-			defer os.RemoveAll(objectTmp)
-
-			// Try to create the object in a separate goroutine, as it should block
-			// waiting for the CRD:
-			waitingFlag := &atomic.Bool{}
-			applierListener := func(event *ApplierEvent) {
-				if event.Type == ApplierWaitingCRD {
-					waitingFlag.Store(true)
-				}
-			}
-			objectApplier, err := NewApplier().
-				SetLogger(logger).
-				SetClient(client).
-				SetFS(objectFsys).
-				SetListener(applierListener).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			defer func() {
-				err := objectApplier.Delete(ctx, nil)
-				Expect(err).ToNot(HaveOccurred())
-			}()
-			go func() {
-				defer GinkgoRecover()
-				err := objectApplier.Apply(ctx, nil)
-				Expect(err).ToNot(HaveOccurred())
-			}()
-
-			// Wait till the object applier is waiting for the CRD:
-			Eventually(waitingFlag.Load).Should(BeTrue())
-
-			// Create the CRD:
 			crdApplier, err := NewApplier().
 				SetLogger(logger).
 				SetClient(client).
@@ -497,9 +492,8 @@ var _ = Describe("Applier", func() {
 			objectKey := clnt.ObjectKey{
 				Name: "example",
 			}
-			Eventually(func(g Gomega) bool {
-				err := client.Get(ctx, objectKey, objectMeta)
-				return err != nil
+			Eventually(func() bool {
+				return client.Get(ctx, objectKey, objectMeta) != nil
 			}).Should(BeTrue())
 		})
 	})
