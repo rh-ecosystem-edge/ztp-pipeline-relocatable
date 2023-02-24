@@ -7,3 +7,4 @@ metadata:
     manifests-directory: manifests
 data:
   node-ip-config.yml: {{ execute "files/node-ip-config.yaml" . | json }}
+  cluster-network-03-config.yml: {{ execute "files/cluster-network-03-config.yml" . | json }}
