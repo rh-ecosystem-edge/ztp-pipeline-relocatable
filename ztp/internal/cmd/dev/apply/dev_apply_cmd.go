@@ -74,6 +74,9 @@ func (c *Command) run(cmd *cobra.Command, argv []string) error {
 	tool := internal.ToolFromContext(ctx)
 	console := internal.ConsoleFromContext(ctx)
 
+	// Get the flags:
+	flags := cmd.Flags()
+
 	// Create a temporary directory where we can copy all the input files to pass them to the
 	// applier:
 	tmp, err := os.MkdirTemp("", "*.ztp")
@@ -126,6 +129,7 @@ func (c *Command) run(cmd *cobra.Command, argv []string) error {
 	// Create the client for the API:
 	client, err := internal.NewClient().
 		SetLogger(logger).
+		SetFlags(flags).
 		Build()
 	if err != nil {
 		console.Error(

@@ -51,12 +51,25 @@ func AddFlags(set *pflag.FlagSet) {
 			"this doesn't allow values containing commas, use the '--log-field' "+
 			"option if you need that.",
 	)
+	_ = set.Bool(
+		headersFlagName,
+		false,
+		"Include HTTP headers in log messages.",
+	)
+	_ = set.Bool(
+		bodiesFlagName,
+		false,
+		"Include details of HTTP request and response bodies in log messages. Note "+
+			"that currently only the size is written, not the complete body.",
+	)
 }
 
 // Names of the flags:
 const (
-	levelFlagName  = "log-level"
-	fileFlagName   = "log-file"
-	fieldFlagName  = "log-field"
-	fieldsFlagName = "log-fields"
+	levelFlagName   = "log-level"
+	fileFlagName    = "log-file"
+	fieldFlagName   = "log-field"
+	fieldsFlagName  = "log-fields"
+	headersFlagName = "log-headers"
+	bodiesFlagName  = "log-bodies"
 )

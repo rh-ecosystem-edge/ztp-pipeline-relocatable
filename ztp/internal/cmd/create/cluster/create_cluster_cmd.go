@@ -22,6 +22,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -46,17 +47,15 @@ func Cobra() *cobra.Command {
 	flags := result.Flags()
 	config.AddFlags(flags)
 	internal.AddEnricherFlags(flags)
-	flags.StringVarP(
-		&c.flags.output,
-		"output",
+	_ = flags.StringP(
+		outputFlagName,
 		"o",
 		"",
 		"Base directory for output files, including the generated SSH keys. If not specified then "+
 			"no output files are generated.",
 	)
-	flags.DurationVarP(
-		&c.flags.wait,
-		"wait",
+	_ = flags.DurationP(
+		waitFlagName,
 		"w",
 		60*time.Minute,
 		"Time to wait till the clusters are ready. Set to zero to disable waiting.",
@@ -66,12 +65,8 @@ func Cobra() *cobra.Command {
 
 // Command contains the data and logic needed to run the `create cluster` command.
 type Command struct {
-	flags struct {
-		config string
-		output string
-		wait   time.Duration
-	}
 	logger  logr.Logger
+	flags   *pflag.FlagSet
 	jq      *jq.Tool
 	console *internal.Console
 	config  *models.Config
@@ -95,6 +90,9 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	c.logger = internal.LoggerFromContext(ctx)
 	c.console = internal.ConsoleFromContext(ctx)
 
+	// Save the flags:
+	c.flags = cmd.Flags()
+
 	// Create the jq tool:
 	c.jq, err = jq.NewTool().
 		SetLogger(c.logger).
@@ -110,7 +108,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Load the configuration:
 	c.config, err = config.NewLoader().
 		SetLogger(c.logger).
-		SetFlags(cmd.Flags()).
+		SetFlags(c.flags).
 		Load()
 	if err != nil {
 		c.console.Error(
@@ -123,6 +121,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Create the client for the API:
 	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
+		SetFlags(c.flags).
 		Build()
 	if err != nil {
 		c.console.Error(
@@ -197,9 +196,17 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	}
 
 	// Write the output files:
-	if c.flags.output != "" {
+	output, err := c.flags.GetString(outputFlagName)
+	if err != nil {
+		c.console.Error(
+			"Failed to get value of flag '--%s': %v",
+			outputFlagName, err,
+		)
+		return exit.Error(1)
+	}
+	if output != "" {
 		for _, cluster := range c.config.Clusters {
-			err = c.writeOutput(ctx, cluster)
+			err = c.writeOutput(ctx, cluster, output)
 			if err != nil {
 				c.console.Error(
 					"Failed to write output files for cluster '%s': %v",
@@ -211,20 +218,28 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	}
 
 	// Wait for clusters to be ready:
-	if c.flags.wait != 0 {
+	wait, err := c.flags.GetDuration(waitFlagName)
+	if err != nil {
+		c.console.Error(
+			"Failed to get value of flag '--%s': %v",
+			waitFlagName, err,
+		)
+		return exit.Error(1)
+	}
+	if wait != 0 {
 		c.console.Info(
 			"Waiting up to %s for clusters to be ready",
-			c.flags.wait,
+			wait,
 		)
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, c.flags.wait)
+		ctx, cancel = context.WithTimeout(ctx, wait)
 		defer cancel()
 		for _, cluster := range c.config.Clusters {
 			err = c.wait(ctx, cluster)
 			if os.IsTimeout(err) {
 				c.console.Error(
 					"Clusters aren't ready after waiting for %s",
-					c.flags.wait,
+					wait,
 				)
 				return exit.Error(1)
 			}
@@ -384,9 +399,9 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 	return nil
 }
 
-func (c *Command) writeOutput(ctx context.Context, cluster *models.Cluster) error {
+func (c *Command) writeOutput(ctx context.Context, cluster *models.Cluster, output string) error {
 	// Create the directory for the cluster files:
-	dir := filepath.Join(c.flags.output, cluster.Name)
+	dir := filepath.Join(output, cluster.Name)
 	err := os.MkdirAll(dir, 0700)
 	if err != nil {
 		return err
@@ -414,3 +429,9 @@ func (c *Command) writeOutput(ctx context.Context, cluster *models.Cluster) erro
 
 	return nil
 }
+
+// Names of the command line flags:
+const (
+	outputFlagName = "output"
+	waitFlagName   = "wait"
+)

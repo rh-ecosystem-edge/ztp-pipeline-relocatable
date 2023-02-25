@@ -113,24 +113,17 @@ var _ = Describe("Client", func() {
 		}
 		var message Message
 
-		// The first message should contain the details of the request header:
+		// The first message should contain the details of the request:
 		err = json.Unmarshal([]byte(lines[0]), &message)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(message.Msg).To(Equal("Sending request header"))
+		Expect(message.Msg).To(Equal("Sending request"))
 		Expect(message.Method).To(Equal("GET"))
 		Expect(message.URL).To(MatchRegexp("^https://.*/api/v1/pods$"))
 
-		// The second message should contain the details of the response header:
+		// The second message should contain the details of the response:
 		err = json.Unmarshal([]byte(lines[1]), &message)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(message.Msg).To(Equal("Received response header"))
+		Expect(message.Msg).To(Equal("Received response"))
 		Expect(message.Code).To(Equal(200))
-
-		// The third message should contain the details of the response body:
-		err = json.Unmarshal([]byte(lines[2]), &message)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(message.Msg).To(Equal("Received response body"))
-		Expect(message.Code).To(Equal(200))
-		Expect(message.N).To(BeNumerically(">", 0))
 	})
 })
