@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/fs"
 	"sort"
+	"time"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
@@ -610,13 +611,15 @@ func (a *Applier) createObject(ctx context.Context, object *unstructured.Unstruc
 	}
 
 	// This function checks if the given error is the one returned by the server when the CRD
-	// doesn't exist:
+	// doesn't exist. Note that the server will return a no found error when the CRD is already
+	// established but it isn't yet usable, and an internal server error when the webhooks
+	// aren't yet ready.
 	isNoCRD := func(err error) bool {
 		_, isNoKind := err.(*meta.NoKindMatchError)
 		if isNoKind {
 			return true
 		}
-		return apierrors.IsNotFound(err)
+		return apierrors.IsNotFound(err) || apierrors.IsInternalError(err)
 	}
 
 	// If the creation fails because the CRD doesn't exist, chances are that it is because the
@@ -638,8 +641,10 @@ func (a *Applier) createObject(ctx context.Context, object *unstructured.Unstruc
 	// Even after the CRD is established the API server will take some time to actually allow
 	// creation of objects of that type. There is no good way to wait for that to happen, the
 	// only alternative is to repeatedly try to create the object.
-	config := backoff.NewExponentialBackOff()
-	operation := func() error {
+	backOff := backoff.NewExponentialBackOff()
+	backOff.MaxInterval = time.Minute
+	backOff.MaxElapsedTime = 0
+	backOffOperation := func() error {
 		err := createObject()
 		if err == nil {
 			return nil
@@ -649,7 +654,18 @@ func (a *Applier) createObject(ctx context.Context, object *unstructured.Unstruc
 		}
 		return err
 	}
-	return backoff.Retry(operation, backoff.WithContext(config, ctx))
+	backOffNotify := func(err error, delay time.Duration) {
+		a.logger.Info(
+			"Failed to create object because of missing CRD, will try again",
+			"error", err,
+			"delay", delay,
+		)
+	}
+	return backoff.RetryNotify(
+		backOffOperation,
+		backoff.WithContext(backOff, ctx),
+		backOffNotify,
+	)
 }
 
 func (a *Applier) deleteObjects(ctx context.Context, objects []*unstructured.Unstructured) error {
