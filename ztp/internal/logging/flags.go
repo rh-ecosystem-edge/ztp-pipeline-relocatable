@@ -30,13 +30,33 @@ func AddFlags(set *pflag.FlagSet) {
 		"",
 		"Log file. The default is to write to a 'ztp.log' file inside the user cache "+
 			"directory. The value can also be 'stdout' or 'stderr' and then the "+
-			"log will be written to the standard output or error streams of the "+
+			"log will be written to the standard output or error stream of the "+
 			"process.",
+	)
+	_ = set.StringArray(
+		fieldFlagName,
+		[]string{},
+		"Feld to add to all log messages. The value can be a percent sign followed by "+
+			"one of the letters that indicate a special value, or a field name "+
+			"followed by an equals sign and the field value. For example '%p' "+
+			"results in a field named 'pid' containing the identifier of the "+
+			"process, and 'my-field=my-value' results in adding a field named "+
+			"'my-field' with value 'my-value'.",
+	)
+	_ = set.StringSlice(
+		fieldsFlagName,
+		[]string{},
+		"Comma separated list of fields to add to all log messages. See the "+
+			"'--log-field' option for details of allowed values. Note that "+
+			"this doesn't allow values containing commas, use the '--log-field' "+
+			"option if you need that.",
 	)
 }
 
 // Names of the flags:
 const (
-	levelFlagName = "log-level"
-	fileFlagName  = "log-file"
+	levelFlagName  = "log-level"
+	fileFlagName   = "log-file"
+	fieldFlagName  = "log-field"
+	fieldsFlagName = "log-fields"
 )
