@@ -122,30 +122,32 @@ func (b *LoggerBuilder) SetFile(value string) *LoggerBuilder {
 // SetFlags sets the command line flags that should be used to configure the logger. This is
 // optional.
 func (b *LoggerBuilder) SetFlags(flags *pflag.FlagSet) *LoggerBuilder {
-	if flags.Changed(levelFlagName) {
-		value, err := flags.GetInt(levelFlagName)
-		if err == nil {
-			b.SetLevel(value)
+	if flags != nil {
+		if flags.Changed(levelFlagName) {
+			value, err := flags.GetInt(levelFlagName)
+			if err == nil {
+				b.SetLevel(value)
+			}
 		}
-	}
-	if flags.Changed(fileFlagName) {
-		value, err := flags.GetString(fileFlagName)
-		if err == nil {
-			b.SetFile(value)
+		if flags.Changed(fileFlagName) {
+			value, err := flags.GetString(fileFlagName)
+			if err == nil {
+				b.SetFile(value)
+			}
 		}
-	}
-	if flags.Changed(fieldFlagName) {
-		values, err := flags.GetStringArray(fieldFlagName)
-		if err == nil {
-			fields := b.parseFieldItems(values)
-			b.AddFields(fields)
+		if flags.Changed(fieldFlagName) {
+			values, err := flags.GetStringArray(fieldFlagName)
+			if err == nil {
+				fields := b.parseFieldItems(values)
+				b.AddFields(fields)
+			}
 		}
-	}
-	if flags.Changed(fieldsFlagName) {
-		values, err := flags.GetStringSlice(fieldsFlagName)
-		if err == nil {
-			fields := b.parseFieldItems(values)
-			b.AddFields(fields)
+		if flags.Changed(fieldsFlagName) {
+			values, err := flags.GetStringSlice(fieldsFlagName)
+			if err == nil {
+				fields := b.parseFieldItems(values)
+				b.AddFields(fields)
+			}
 		}
 	}
 	return b

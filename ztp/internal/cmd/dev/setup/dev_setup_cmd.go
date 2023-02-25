@@ -52,9 +52,13 @@ func (c *Command) run(cmd *cobra.Command, argv []string) (err error) {
 	logger := internal.LoggerFromContext(ctx)
 	console := internal.ConsoleFromContext(ctx)
 
+	// Get the flags:
+	flags := cmd.Flags()
+
 	// Create the client for the API:
 	client, err := internal.NewClient().
 		SetLogger(logger).
+		SetFlags(flags).
 		Build()
 	if err != nil {
 		console.Error(

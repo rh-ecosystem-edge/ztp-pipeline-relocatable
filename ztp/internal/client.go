@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -46,6 +47,7 @@ type ClientBuilder struct {
 	sshServers []string
 	sshUser    string
 	sshKey     []byte
+	flags      *pflag.FlagSet
 }
 
 // Client is an implementtion of the controller-runtime WithWatch interface with additional
@@ -122,6 +124,13 @@ func (b *ClientBuilder) SetSSHUser(value string) *ClientBuilder {
 // be a PEM encoded private key.
 func (b *ClientBuilder) SetSSHKey(value []byte) *ClientBuilder {
 	b.sshKey = value
+	return b
+}
+
+// SetFlags sets the command line flags that should be used to configure the client. This is
+// optional.
+func (b *ClientBuilder) SetFlags(flags *pflag.FlagSet) *ClientBuilder {
+	b.flags = flags
 	return b
 }
 
@@ -206,6 +215,7 @@ func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 	// the log:
 	loggingWrapper, err := logging.NewTransportWrapper().
 		SetLogger(b.logger).
+		SetFlags(b.flags).
 		Build()
 	if err != nil {
 		return

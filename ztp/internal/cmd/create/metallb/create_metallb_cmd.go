@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
@@ -46,6 +47,7 @@ func Cobra() *cobra.Command {
 // Command contains the data and logic needed to run the `create metallb` command.
 type Command struct {
 	logger  logr.Logger
+	flags   *pflag.FlagSet
 	jq      *jq.Tool
 	console *internal.Console
 	config  *models.Config
@@ -68,6 +70,9 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	c.logger = internal.LoggerFromContext(ctx)
 	c.console = internal.ConsoleFromContext(ctx)
 
+	// Save the flags:
+	c.flags = cmd.Flags()
+
 	// Create the jq tool:
 	c.jq, err = jq.NewTool().
 		SetLogger(c.logger).
@@ -83,7 +88,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Load the configuration:
 	c.config, err = config.NewLoader().
 		SetLogger(c.logger).
-		SetFlags(cmd.Flags()).
+		SetFlags(c.flags).
 		Load()
 	if err != nil {
 		c.console.Error(
@@ -96,6 +101,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Create the client for the API:
 	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
+		SetFlags(c.flags).
 		Build()
 	if err != nil {
 		c.console.Error(
@@ -109,7 +115,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	enricher, err := internal.NewEnricher().
 		SetLogger(c.logger).
 		SetClient(c.client).
-		SetFlags(cmd.Flags()).
+		SetFlags(c.flags).
 		Build()
 	if err != nil {
 		c.console.Error(
@@ -132,8 +138,8 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		err = c.create(ctx, cluster)
 		if err != nil {
 			c.console.Error(
-				"Failed to create load balancer for cluster '%s'",
-				cluster.Name,
+				"Failed to create load balancer for cluster '%s': %v",
+				cluster.Name, err,
 			)
 			return exit.Error(1)
 		}
@@ -182,6 +188,7 @@ func (c *Command) create(ctx context.Context, cluster *models.Cluster) error {
 	// connection to the cluster:
 	client, err := internal.NewClient().
 		SetLogger(c.logger).
+		SetFlags(c.flags).
 		SetKubeconfig(cluster.Kubeconfig).
 		SetSSHServer(sshIP.Address.String()).
 		SetSSHUser("core").

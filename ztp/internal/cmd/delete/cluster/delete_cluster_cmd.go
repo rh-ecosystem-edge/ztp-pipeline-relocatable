@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
@@ -47,6 +48,7 @@ func Cobra() *cobra.Command {
 // Command contains the data and logic needed to run the `delete cluster` command.
 type Command struct {
 	logger  logr.Logger
+	flags   *pflag.FlagSet
 	console *internal.Console
 	config  *models.Config
 	client  *internal.Client
@@ -69,6 +71,9 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	c.logger = internal.LoggerFromContext(ctx)
 	c.console = internal.ConsoleFromContext(ctx)
 
+	// Save the flags:
+	c.flags = cmd.Flags()
+
 	// Load the configuration:
 	c.config, err = config.NewLoader().
 		SetLogger(c.logger).
@@ -85,6 +90,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Create the client for the API:
 	c.client, err = internal.NewClient().
 		SetLogger(c.logger).
+		SetFlags(c.flags).
 		Build()
 	if err != nil {
 		c.console.Error(
