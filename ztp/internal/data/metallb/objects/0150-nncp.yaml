@@ -3,11 +3,11 @@
 apiVersion: nmstate.io/v1
 kind: NodeNetworkConfigurationPolicy
 metadata:
-  name: {{ .Name }}-nncp
+  name: {{ .Hostname }}-nncp
 spec:
   parallel: true
   nodeSelector:
-    kubernetes.io/hostname: {{ .Name }}
+    kubernetes.io/hostname: {{ .Hostname }}
   desiredState:
     interfaces:
     - ipv4:
