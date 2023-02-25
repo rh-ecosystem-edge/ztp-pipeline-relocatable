@@ -537,7 +537,53 @@ var _ = Describe("Logger", func() {
 		Expect(info.Mode() & 0111).To(BeZero())
 	})
 
-	It("Honors flags", func() {
+	It("Adds custom field", func() {
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			AddField("my-field", "my-value").
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField string `json:"my-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value"))
+	})
+
+	It("Adds pid field", func() {
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			AddField("pid", "%p").
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the pid field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			Pid int `json:"pid"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.Pid).To(Equal(os.Getpid()))
+	})
+
+	It("Honors log file flags", func() {
 		// Create a temporary directory for the log file:
 		tmp, err := os.MkdirTemp("", "*.test")
 		Expect(err).ToNot(HaveOccurred())
@@ -578,5 +624,268 @@ var _ = Describe("Logger", func() {
 		text := string(data)
 		Expect(text).To(ContainSubstring("good message"))
 		Expect(text).ToNot(ContainSubstring("bad message"))
+	})
+
+	It("Honors one field flag", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-field", "my-field=my-value",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField string `json:"my-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value"))
+	})
+
+	It("Honors multiple field flags", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-field", "my-field=my-value",
+			"--log-field", "your-field=your-value",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField   string `json:"my-field"`
+			YourField string `json:"your-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value"))
+		Expect(msg.YourField).To(Equal("your-value"))
+	})
+
+	It("Honors one fields flag", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-fields", "my-field=my-value,your-field=your-value",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField   string `json:"my-field"`
+			YourField string `json:"your-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value"))
+		Expect(msg.YourField).To(Equal("your-value"))
+	})
+
+	It("Honors multiple fields flag", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-fields", "my-field=my-value,your-field=your-value",
+			"--log-fields", "our-field=our-value,their-field=their-value",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField    string `json:"my-field"`
+			YourField  string `json:"your-field"`
+			OurField   string `json:"our-field"`
+			TheirField string `json:"their-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value"))
+		Expect(msg.YourField).To(Equal("your-value"))
+		Expect(msg.OurField).To(Equal("our-value"))
+		Expect(msg.TheirField).To(Equal("their-value"))
+	})
+
+	It("Honors mixed field and fields flag", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-field", "my-field=my-value",
+			"--log-fields", "your-field=your-value",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField   string `json:"my-field"`
+			YourField string `json:"your-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value"))
+		Expect(msg.YourField).To(Equal("your-value"))
+	})
+
+	It("Allows comma inside field flag", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-field", "my-field=my-value,your-value",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField string `json:"my-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value,your-value"))
+	})
+
+	It("Allows %p inside field", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-field", "%p",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			Pid int `json:"pid"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.Pid).To(Equal(os.Getpid()))
+	})
+
+	It("Allows %p inside field value", func() {
+		// Prepare the flags:
+		flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+		AddFlags(flags)
+		err := flags.Parse([]string{
+			"--log-field", "my-pid=%p",
+		})
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(buffer).
+			SetFlags(flags).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info("my message")
+
+		// Check that the custom field has been added:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			Pid int `json:"my-pid"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.Pid).To(Equal(os.Getpid()))
 	})
 })

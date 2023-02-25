@@ -22,6 +22,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
+	"github.com/spf13/pflag"
 )
 
 // TransportWrapperBuilder contains the data and logic needed to build a transport wrapper that
@@ -89,6 +90,12 @@ func (b *TransportWrapperBuilder) SetHeaderLevel(value int) *TransportWrapperBui
 // Default is two.
 func (b *TransportWrapperBuilder) SetBodyLevel(value int) *TransportWrapperBuilder {
 	b.bodyLevel = value
+	return b
+}
+
+// SetFlags sets the command line flags that should be used to configure the logger. This is
+// optional.
+func (b *TransportWrapperBuilder) SetFlags(flags *pflag.FlagSet) *TransportWrapperBuilder {
 	return b
 }
 

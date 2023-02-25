@@ -20,6 +20,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -27,6 +29,7 @@ import (
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"golang.org/x/exp/maps"
 )
 
 // LoggerBuilder contains the data and logic needed to create a logger. Don't create instances of
@@ -37,6 +40,7 @@ type LoggerBuilder struct {
 	err    io.Writer
 	level  int
 	file   string
+	fields map[string]any
 }
 
 // NewLogger creates a builder that can then be used to configure and create a logger.
@@ -66,21 +70,36 @@ func (b *LoggerBuilder) SetErr(value io.Writer) *LoggerBuilder {
 	return b
 }
 
-// SetFlags sets the command line flags that should be used to configure the logger. This is
-// optional.
-func (b *LoggerBuilder) SetFlags(flags *pflag.FlagSet) *LoggerBuilder {
-	if flags.Changed(levelFlagName) {
-		value, err := flags.GetInt(levelFlagName)
-		if err == nil {
-			b.level = value
-		}
+// AddField adds a field that will be added to all the log messages. The following field values have
+// special meanings:
+//
+// - %p: Is replaced by the process identifier.
+//
+// Any other field value is added without change.
+func (b *LoggerBuilder) AddField(name string, value any) *LoggerBuilder {
+	if b.fields == nil {
+		b.fields = map[string]any{}
 	}
-	if flags.Changed(fileFlagName) {
-		value, err := flags.GetString(fileFlagName)
-		if err == nil {
-			b.file = value
-		}
+	b.fields[name] = value
+	return b
+}
+
+// AddFields adds a set of fields that will be added to all the log messages. See the AddField
+// method for the meanings of values.
+func (b *LoggerBuilder) AddFields(values map[string]any) *LoggerBuilder {
+	if b.fields == nil {
+		b.fields = maps.Clone(values)
+	} else {
+		maps.Copy(b.fields, values)
 	}
+	return b
+}
+
+// SetFields sets the fields tht will be added to all the log messages. See the AddField method for
+// the meanings of values. Note that this replaces any previously configured fields. If you want to
+// preserve them use the AddFields method.
+func (b *LoggerBuilder) SetFields(values map[string]any) *LoggerBuilder {
+	b.fields = maps.Clone(values)
 	return b
 }
 
@@ -98,6 +117,66 @@ func (b *LoggerBuilder) SetLevel(value int) *LoggerBuilder {
 func (b *LoggerBuilder) SetFile(value string) *LoggerBuilder {
 	b.file = value
 	return b
+}
+
+// SetFlags sets the command line flags that should be used to configure the logger. This is
+// optional.
+func (b *LoggerBuilder) SetFlags(flags *pflag.FlagSet) *LoggerBuilder {
+	if flags.Changed(levelFlagName) {
+		value, err := flags.GetInt(levelFlagName)
+		if err == nil {
+			b.SetLevel(value)
+		}
+	}
+	if flags.Changed(fileFlagName) {
+		value, err := flags.GetString(fileFlagName)
+		if err == nil {
+			b.SetFile(value)
+		}
+	}
+	if flags.Changed(fieldFlagName) {
+		values, err := flags.GetStringArray(fieldFlagName)
+		if err == nil {
+			fields := b.parseFieldItems(values)
+			b.AddFields(fields)
+		}
+	}
+	if flags.Changed(fieldsFlagName) {
+		values, err := flags.GetStringSlice(fieldsFlagName)
+		if err == nil {
+			fields := b.parseFieldItems(values)
+			b.AddFields(fields)
+		}
+	}
+	return b
+}
+
+func (b *LoggerBuilder) parseFieldItems(items []string) map[string]any {
+	fields := map[string]any{}
+	for _, item := range items {
+		name, value := b.parseFieldItem(item)
+		fields[name] = value
+	}
+	return fields
+}
+
+func (b *LoggerBuilder) parseFieldItem(item string) (name string, value any) {
+	switch item {
+	case pidLogFieldValue:
+		name = pidLogFieldName
+		value = pidLogFieldValue
+	default:
+		equals := strings.Index(item, "=")
+		if equals != -1 {
+			name = item[0:equals]
+			value = item[equals+1:]
+		} else {
+			name = item
+			value = ""
+		}
+		name = strings.TrimSpace(name)
+	}
+	return
 }
 
 // Build uses the data stored in the buider to create a new logger.
@@ -138,12 +217,17 @@ func (b *LoggerBuilder) Build() (result logr.Logger, err error) {
 	core := zapcore.NewCore(encoder, sink, level)
 	logger := zap.New(core)
 
+	// Caculate the custom fields:
+	fields, err := b.customFields()
+	if err != nil {
+		return
+	}
+
 	// Create the logr logger:
 	result = zapr.NewLoggerWithOptions(logger, zapr.LogInfoLevel("v"))
-
-	// Add the the PID so that it will be easy to identify the process when there are multiple
-	// processes writing to the same log file:
-	result = result.WithValues("pid", os.Getpid())
+	if len(fields) > 0 {
+		result = result.WithValues(fields...)
+	}
 
 	return
 }
@@ -193,6 +277,32 @@ func (b *LoggerBuilder) openFile(file string) (result io.Writer, err error) {
 	return
 }
 
+func (b *LoggerBuilder) customFields() (result []any, err error) {
+	names := maps.Keys(b.fields)
+	sort.Strings(names)
+	fields := make([]any, 2*len(names))
+	for i, name := range names {
+		value := b.fields[name]
+		fields[2*i] = name
+		fields[2*i+1], err = b.customField(name, value)
+		if err != nil {
+			return
+		}
+	}
+	result = fields
+	return
+}
+
+func (b *LoggerBuilder) customField(name string, value any) (result any, err error) {
+	switch value {
+	case pidLogFieldValue:
+		result = os.Getpid()
+	default:
+		result = value
+	}
+	return
+}
+
 // loggerTimeEncoder converts the time to UTC and uses the RFC3339 format.
 func loggerTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	zapcore.RFC3339TimeEncoder(t.UTC(), enc)
@@ -216,3 +326,10 @@ func loggerLevelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(zap.DebugLevel.String())
 	}
 }
+
+// Values of log fields with special meanings. For example '%p' will be replaced with the identifier
+// of the process.
+const (
+	pidLogFieldName  = "pid"
+	pidLogFieldValue = "%p"
+)
