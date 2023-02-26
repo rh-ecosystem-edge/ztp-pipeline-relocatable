@@ -233,7 +233,7 @@ func (b *ApplierBuilder) Build() (result *Applier, err error) {
 		SetLogger(b.logger).
 		Build()
 	if err != nil {
-		err = fmt.Errorf("failed to create jq tool: %v", err)
+		err = fmt.Errorf("failed to create jq tool: %w", err)
 		return
 	}
 
@@ -249,12 +249,12 @@ func (b *ApplierBuilder) Build() (result *Applier, err error) {
 	// Create the templating engine:
 	engine, err := b.createEngine(fsys)
 	if err != nil {
-		err = fmt.Errorf("failed to create templating engine: %v", err)
+		err = fmt.Errorf("failed to create templating engine: %w", err)
 		return
 	}
 	templates, err := b.findTemplates(fsys)
 	if err != nil {
-		err = fmt.Errorf("failed to find templates: %v", err)
+		err = fmt.Errorf("failed to find templates: %w", err)
 		return
 	}
 
@@ -816,7 +816,7 @@ func (a *Applier) renderObjects(ctx context.Context, data any,
 	results, err = a.decodeObjects(buffer)
 	if err != nil {
 		err = fmt.Errorf(
-			"failed to decode YAML generated from template '%s': %v",
+			"failed to decode YAML generated from template '%s': %w",
 			template, err,
 		)
 		return

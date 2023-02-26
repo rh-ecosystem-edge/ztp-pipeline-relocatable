@@ -131,7 +131,7 @@ func (l *Loader) Load() (result *models.Config, err error) {
 		SetLogger(l.logger).
 		Build()
 	if err != nil {
-		err = fmt.Errorf("failed to create jq tool: %v", err)
+		err = fmt.Errorf("failed to create jq tool: %w", err)
 		return
 	}
 
@@ -212,9 +212,9 @@ func (l *Loader) loadFromReader(reader io.Reader, file string) (result map[strin
 		}
 		typeErr, ok := err.(*yaml.TypeError)
 		if ok {
-			err = fmt.Errorf("%s, %v", prefix, typeErr.Errors[0])
+			err = fmt.Errorf("%s, %s", prefix, typeErr.Errors[0])
 		} else {
-			err = fmt.Errorf("%s: %v", prefix, err)
+			err = fmt.Errorf("%s: %w", prefix, err)
 		}
 	}
 	return
