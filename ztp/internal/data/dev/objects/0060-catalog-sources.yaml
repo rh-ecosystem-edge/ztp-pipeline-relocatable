@@ -1,0 +1,18 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  namespace: openshift-marketplace
+  name: certified-operators
+spec:
+  image: registry.redhat.io/redhat/certified-operator-index:v4.11
+  sourceType: grpc
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  namespace: openshift-marketplace
+  name: redhat-operators
+spec:
+  image: registry.redhat.io/redhat/redhat-operator-index:v4.11
+  sourceType: grpc

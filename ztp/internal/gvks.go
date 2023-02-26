@@ -40,6 +40,13 @@ var (
 	}
 	BareMetalHostListGVK = listGVK(BareMetalHostGVK)
 
+	CatalogSourceGVK = schema.GroupVersionKind{
+		Group:   "operators.coreos.com",
+		Version: "v1alpha1",
+		Kind:    "CatalogSource",
+	}
+	CatalogSourceListGVK = listGVK(CatalogSourceGVK)
+
 	ClusterDeploymentGVK = schema.GroupVersionKind{
 		Group:   "hive.openshift.io",
 		Version: "v1",
