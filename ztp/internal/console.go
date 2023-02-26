@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
+	"github.com/spf13/pflag"
 	"golang.org/x/term"
 )
 
@@ -29,6 +30,7 @@ import (
 // create instances of this directly, use the NewConsole function instead.
 type ConsoleBuilder struct {
 	logger logr.Logger
+	color  bool
 	out    io.Writer
 	err    io.Writer
 }
@@ -38,7 +40,6 @@ type ConsoleBuilder struct {
 type Console struct {
 	logger   logr.Logger
 	lock     *sync.Mutex
-	terminal bool
 	prefixes consolePrefixes
 	out      io.Writer
 	err      io.Writer
@@ -46,7 +47,9 @@ type Console struct {
 
 // NewConsole creates a builder that can then be used to configure and create a console.
 func NewConsole() *ConsoleBuilder {
-	return &ConsoleBuilder{}
+	return &ConsoleBuilder{
+		color: true,
+	}
 }
 
 // SetLogger sets the logger that the console will use to write messages to the log. This is
@@ -65,6 +68,18 @@ func (b *ConsoleBuilder) SetOut(value io.Writer) *ConsoleBuilder {
 // SetErr sets the standard error stream. This is mandatory.
 func (b *ConsoleBuilder) SetErr(value io.Writer) *ConsoleBuilder {
 	b.err = value
+	return b
+}
+
+// SetFlags sets the command line flags that that indicate how to configure the console. This is
+// optional.
+func (b *ConsoleBuilder) SetFlags(flags *pflag.FlagSet) *ConsoleBuilder {
+	if flags.Changed(consoleColorFlag) {
+		value, err := flags.GetBool(consoleColorFlag)
+		if err == nil {
+			b.color = value
+		}
+	}
 	return b
 }
 
@@ -87,9 +102,9 @@ func (b *ConsoleBuilder) Build() (result *Console, err error) {
 	// Check if the ouptput is a terminal:
 	terminal := b.isTerminal(b.out) && b.isTerminal(b.err)
 
-	// Select the color prefixes if the output is a terminal:
+	// Select the color prefixes:
 	prefixes := consoleMonoPrefixes
-	if terminal {
+	if b.color && terminal {
 		prefixes = consoleColorPrefixes
 	}
 
@@ -97,7 +112,6 @@ func (b *ConsoleBuilder) Build() (result *Console, err error) {
 	result = &Console{
 		logger:   b.logger,
 		lock:     &sync.Mutex{},
-		terminal: terminal,
 		prefixes: prefixes,
 		out:      b.out,
 		err:      b.err,
@@ -150,9 +164,9 @@ type consolePrefixes struct {
 // consoleColorPrefixes contains the prefixes that use ANSI sequences to set colors when the output
 // is a terminal that supports color.
 var consoleColorPrefixes = consolePrefixes{
-	info:  "\033[0;32mI:\033[m ",
-	warn:  "\033[0;33mW:\033[m ",
-	error: "\033[0;31mE:\033[m ",
+	info:  "\033[32;1mI:\033[0m ",
+	warn:  "\033[33;1mW:\033[0m ",
+	error: "\033[31;1mE:\033[0m ",
 }
 
 // consoleMonoPrefixes contains the monochrome prefixes that are used when the output isn't a
