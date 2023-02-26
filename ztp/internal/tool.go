@@ -202,6 +202,7 @@ func (t *Tool) run(cmd *cobra.Command, args []string) error {
 	// Create the console:
 	t.console, err = NewConsole().
 		SetLogger(t.logger).
+		SetFlags(cmd.Flags()).
 		SetOut(t.out).
 		SetErr(t.err).
 		Build()
@@ -235,6 +236,7 @@ func (t *Tool) createCommand() error {
 	// Add flags that apply to all the commands:
 	flags := t.cmd.PersistentFlags()
 	logging.AddFlags(flags)
+	AddConsoleFlags(flags)
 
 	// Add sub-commands:
 	for _, sub := range t.sub {
