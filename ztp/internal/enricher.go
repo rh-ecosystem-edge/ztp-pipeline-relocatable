@@ -119,7 +119,7 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 		SetLogger(b.logger).
 		Build()
 	if err != nil {
-		err = fmt.Errorf("failed to create jq tool: %v", err)
+		err = fmt.Errorf("failed to create jq tool: %w", err)
 		return
 	}
 
@@ -128,7 +128,7 @@ func (b *EnricherBuilder) Build() (result *Enricher, err error) {
 	if b.resolver != "" {
 		resolver, err = b.createResolver(b.resolver)
 		if err != nil {
-			err = fmt.Errorf("failed to create resolver: %v", err)
+			err = fmt.Errorf("failed to create resolver: %w", err)
 			return
 		}
 	}
@@ -377,7 +377,7 @@ func (e *Enricher) setPullSecret(ctx context.Context, config *models.Config,
 	}
 	err := e.client.Get(ctx, key, secret)
 	if err != nil {
-		return fmt.Errorf("failed to get pull secret: %v", err)
+		return fmt.Errorf("failed to get pull secret: %w", err)
 	}
 	data, ok := secret.Data[".dockerconfigjson"]
 	if !ok {
@@ -448,7 +448,7 @@ func (e *Enricher) setDNSDomain(ctx context.Context, config *models.Config,
 	}
 	domain, err := e.getDNSDomain(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get DNS domain: %v", err)
+		return fmt.Errorf("failed to get DNS domain: %w", err)
 	}
 	e.logger.V(1).Info(
 		"Found DNS domain",
@@ -721,7 +721,7 @@ func (e *Enricher) setClusterRegistryCA(ctx context.Context, config *models.Conf
 	if err != nil {
 		return fmt.Errorf(
 			"failed to get registry CA certificates for registry '%s' of "+
-				"cluster '%s': %v",
+				"cluster '%s': %w",
 			cluster.Registry.URL, cluster.Name, err,
 		)
 	}

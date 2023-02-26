@@ -68,7 +68,7 @@ func (b *ToolBuilder) Build() (result *Tool, err error) {
 func (t *Tool) Query(query string, input any, output any) error {
 	inputBytes, err := json.Marshal(input)
 	if err != nil {
-		return fmt.Errorf("failed to marshal input: %v", err)
+		return fmt.Errorf("failed to marshal input: %w", err)
 	}
 	return t.QueryBytes(query, inputBytes, output)
 }
@@ -90,14 +90,14 @@ func (t *Tool) QueryBytes(query string, input []byte, output any) error {
 	// Parse the query:
 	parsed, err := gojq.Parse(query)
 	if err != nil {
-		return fmt.Errorf("failed to parse query '%s': %v", query, err)
+		return fmt.Errorf("failed to parse query '%s': %w", query, err)
 	}
 
 	// Deserialize the input to ensure that we have a type that the JQ library supports.
 	var inputObj any
 	err = json.Unmarshal(input, &inputObj)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal input: %v", err)
+		return fmt.Errorf("failed to unmarshal input: %w", err)
 	}
 
 	// Run the query collecting the output. Note one of the outputs can be an error, and in that
