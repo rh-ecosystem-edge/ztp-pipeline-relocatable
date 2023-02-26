@@ -21,7 +21,11 @@ import (
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
+	. "github.com/onsi/ginkgo/v2/dsl/table"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 )
@@ -166,5 +170,78 @@ var _ = Describe("Console", func() {
 			Expect(msg.Msg).To(Equal("Console error"))
 			Expect(msg.Text).To(Equal("Hello!"))
 		})
+
+		DescribeTable(
+			"Replaces args",
+			func(expected string, format string, args ...any) {
+				// Create a logger:
+				logger, err := logging.NewLogger().
+					SetWriter(io.Discard).
+					Build()
+				Expect(err).ToNot(HaveOccurred())
+
+				// Create the console:
+				buffer := &bytes.Buffer{}
+				multi := io.MultiWriter(buffer, GinkgoWriter)
+				console, err := NewConsole().
+					SetLogger(logger).
+					SetColor(false).
+					SetOut(multi).
+					SetErr(multi).
+					Build()
+				Expect(err).ToNot(HaveOccurred())
+
+				// Check the result:
+				console.Info(format, args...)
+				Expect(buffer.String()).To(Equal(expected))
+
+			},
+			Entry(
+				"Namespace",
+				"I: Namespace 'my-ns' is cool\n",
+				"Namespace '%s' is cool",
+				&corev1.Namespace{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "my-ns",
+					},
+				},
+			),
+			Entry(
+				"Typed object",
+				"I: Object 'my-ns/my-config' doesn't exist\n",
+				"Object '%s' doesn't exist",
+				&corev1.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "my-ns",
+						Name:      "my-config",
+					},
+				},
+			),
+			Entry(
+				"Object with namespace",
+				"I: Namespaced object 'my-ns/my-name' exists\n",
+				"Namespaced object '%s' exists",
+				&unstructured.Unstructured{
+					Object: map[string]any{
+						"metadata": map[string]any{
+							"namespace": "my-ns",
+							"name":      "my-name",
+						},
+					},
+				},
+			),
+			Entry(
+				"Object without namespace",
+				"I: Global object 'my-name' exists\n",
+				"Global object '%s' exists",
+				&unstructured.Unstructured{
+					Object: map[string]any{
+						"metadata": map[string]any{
+							"name": "my-name",
+						},
+					},
+				},
+			),
+		)
 	})
 })
