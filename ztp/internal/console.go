@@ -24,6 +24,8 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
 	"golang.org/x/term"
+
+	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // ConsoleBuilder contains the data and logic needed to create an instance of the console. Don't
@@ -59,6 +61,12 @@ func (b *ConsoleBuilder) SetLogger(value logr.Logger) *ConsoleBuilder {
 	return b
 }
 
+// SetColor enables or disables use of color in the console. By default color is enabled if the console is a terminal and disabled otherwise.
+func (b *ConsoleBuilder) SetColor(value bool) *ConsoleBuilder {
+	b.color = value
+	return b
+}
+
 // SetOut sets the standard output stream. This is mandatory.
 func (b *ConsoleBuilder) SetOut(value io.Writer) *ConsoleBuilder {
 	b.out = value
@@ -77,7 +85,7 @@ func (b *ConsoleBuilder) SetFlags(flags *pflag.FlagSet) *ConsoleBuilder {
 	if flags.Changed(consoleColorFlag) {
 		value, err := flags.GetBool(consoleColorFlag)
 		if err == nil {
-			b.color = value
+			b.SetColor(value)
 		}
 	}
 	return b
@@ -131,7 +139,7 @@ func (c *ConsoleBuilder) isTerminal(w io.Writer) bool {
 func (c *Console) Info(format string, args ...any) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	text := fmt.Sprintf(format, args...)
+	text := fmt.Sprintf(format, c.replaceArgs(args)...)
 	fmt.Fprintf(c.out, "%s%s\n", c.prefixes.info, text)
 	c.logger.Info("Console info", "text", text)
 }
@@ -140,7 +148,7 @@ func (c *Console) Info(format string, args ...any) {
 func (c *Console) Warn(format string, args ...any) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	text := fmt.Sprintf(format, args...)
+	text := fmt.Sprintf(format, c.replaceArgs(args)...)
 	fmt.Fprintf(c.out, "%s%s\n", c.prefixes.warn, text)
 	c.logger.Info("Console warn", "text", text)
 }
@@ -149,9 +157,32 @@ func (c *Console) Warn(format string, args ...any) {
 func (c *Console) Error(format string, args ...any) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	text := fmt.Sprintf(format, args...)
+	text := fmt.Sprintf(format, c.replaceArgs(args)...)
 	fmt.Fprintf(c.err, "%s%s\n", c.prefixes.error, text)
 	c.logger.Info("Console error", "text", text)
+}
+
+func (c *Console) replaceArgs(args []any) []any {
+	result := make([]any, len(args))
+	for i, arg := range args {
+		result[i] = c.replaceArg(arg)
+	}
+	return result
+}
+
+func (c *Console) replaceArg(arg any) any {
+	switch value := arg.(type) {
+	case clnt.Object:
+		namespace := value.GetNamespace()
+		name := value.GetName()
+		if namespace != "" {
+			return fmt.Sprintf("%s/%s", namespace, name)
+		} else {
+			return name
+		}
+	default:
+		return value
+	}
 }
 
 // consolePrefixes stores the prefixes used for messages.
