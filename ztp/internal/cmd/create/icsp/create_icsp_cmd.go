@@ -17,12 +17,10 @@ package icsp
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
@@ -30,6 +28,7 @@ import (
 	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -195,6 +194,20 @@ func (t *Task) Run(ctx context.Context) error {
 		)
 	}
 
+	// Check that the registry URI and CA are available:
+	if t.cluster.Registry.URL == "" {
+		return fmt.Errorf(
+			"registry URL for cluster '%s' isn't available",
+			t.cluster.Name,
+		)
+	}
+	if t.cluster.Registry.CA == nil {
+		return fmt.Errorf(
+			"registry CA for cluster '%s' ins't available",
+			t.cluster.Name,
+		)
+	}
+
 	// Find the first control plane node that has an external IP:
 	var sshIP *models.IP
 	for _, node := range t.cluster.ControlPlaneNodes() {
@@ -225,12 +238,6 @@ func (t *Task) Run(ctx context.Context) error {
 		return err
 	}
 
-	// Find the URI of the registry of the hub:
-	registry, err := t.getRegistryURI(ctx)
-	if err != nil {
-		return err
-	}
-
 	// Get the list of catalogs of the hub:
 	catalogs := &unstructured.UnstructuredList{}
 	catalogs.SetGroupVersionKind(internal.CatalogSourceListGVK)
@@ -239,9 +246,15 @@ func (t *Task) Run(ctx context.Context) error {
 		return err
 	}
 
+	// Configure the cluster so that it trusts the registry:
+	err = t.trustRegistry(ctx, t.cluster.Registry.URL, t.cluster.Registry.CA)
+	if err != nil {
+		return err
+	}
+
 	// Create the image content source policies:
 	for _, catalog := range catalogs.Items {
-		err = t.createCatalogICSP(ctx, &catalog, registry)
+		err = t.createCatalogICSP(ctx, &catalog, t.cluster.Registry.URL)
 		if err != nil {
 			return err
 		}
@@ -250,31 +263,64 @@ func (t *Task) Run(ctx context.Context) error {
 	return nil
 }
 
-func (t *Task) getRegistryURI(ctx context.Context) (result string, err error) {
-	config := &corev1.ConfigMap{}
-	key := clnt.ObjectKey{
-		Namespace: "ztpfw-registry",
-		Name:      "ztpfw-config",
+func (t *Task) trustRegistry(ctx context.Context, registryURI string, registryCA []byte) error {
+	// Create the configmap containing the additional trusted CA certificates:
+	trustedCAConfig := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "openshift-config",
+			Name:      "ztpfwregistry",
+		},
+		Data: map[string]string{
+			registryURI: string(registryCA),
+		},
 	}
-	err = t.parent.client.Get(ctx, key, config)
-	if err != nil {
-		return
-	}
-	data, ok := config.Data["uri"]
-	if !ok {
-		err = fmt.Errorf(
-			"failed to find registry URI because configmap '%s/%s' doesn't have the "+
-				"'uri' key",
-			config.Namespace, config.Name,
+	err := t.client.Create(ctx, trustedCAConfig)
+	switch {
+	case err == nil:
+		t.console.Info(
+			"Created additional trusted CA '%s' for registry '%s' in cluster '%s'",
+			trustedCAConfig, registryURI, t.cluster.Name,
 		)
-		return
+	case apierrors.IsAlreadyExists(err):
+		t.console.Warn(
+			"Additional trusted CA '%s' for registry '%s' already exists in "+
+				"cluster '%s'",
+			trustedCAConfig, registryURI, t.cluster.Name,
+		)
+	default:
+		return err
 	}
-	value, err := base64.StdEncoding.DecodeString(data)
+
+	// Update the cluster configuration to trust the CA certificates:
+	imageConfig := &unstructured.Unstructured{}
+	imageConfig.SetGroupVersionKind(internal.ImageConfigGVK)
+	imageKey := clnt.ObjectKey{
+		Namespace: "openshift-config",
+		Name:      "cluster",
+	}
+	err = t.client.Get(ctx, imageKey, imageConfig)
 	if err != nil {
-		return
+		return err
 	}
-	result = strings.TrimSpace(string(value))
-	return
+	imageUpdate := imageConfig.DeepCopy()
+	err = unstructured.SetNestedField(
+		imageUpdate.Object,
+		trustedCAConfig.Name,
+		"spec", "additionalTrustedCA", "name",
+	)
+	if err != nil {
+		return err
+	}
+	err = t.client.Patch(ctx, imageUpdate, clnt.MergeFrom(imageConfig))
+	if err != nil {
+		return err
+	}
+	t.console.Info(
+		"Updated image pull configuration of cluster '%s' to trust registry '%s'",
+		t.cluster.Name, registryURI,
+	)
+
+	return nil
 }
 
 func (t *Task) createCatalogICSP(ctx context.Context, catalog *unstructured.Unstructured,
@@ -289,7 +335,7 @@ func (t *Task) createCatalogICSP(ctx context.Context, catalog *unstructured.Unst
 	}
 	err = t.client.Create(ctx, icsp)
 	if apierrors.IsAlreadyExists(err) {
-		t.console.Info(
+		t.console.Warn(
 			"ICSP '%s' for catalog '%s' of cluster '%s' already exists",
 			icsp, catalog, t.cluster.Name,
 		)

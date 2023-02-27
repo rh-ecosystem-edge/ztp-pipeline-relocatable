@@ -20,6 +20,7 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"net/http"
@@ -30,11 +31,12 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/decorators"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/ghttp"
 	. "github.com/onsi/gomega/ghttp"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/exp/maps"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
@@ -45,7 +47,7 @@ var _ = Describe("Enricher", Ordered, func() {
 	var (
 		logger   logr.Logger
 		client   *Client
-		registry *ghttp.Server
+		registry *Server
 	)
 
 	BeforeAll(func() {
@@ -68,7 +70,7 @@ var _ = Describe("Enricher", Ordered, func() {
 
 		// Create a fake registry server. This will not serve any request, it will only be
 		// used to fetch the CA certificates.
-		registry = ghttp.NewTLSServer()
+		registry = NewTLSServer()
 	})
 
 	AfterAll(func() {
@@ -136,6 +138,7 @@ var _ = Describe("Enricher", Ordered, func() {
 				"OC_OCP_TAG":       "4.10.38-x86_64",
 				"OC_RHCOS_RELEASE": "410.84.202210130022-0",
 				"clusterimageset":  "openshift-v4.10.38",
+				"REGISTRY":         registry.Addr(),
 			}
 
 			// Prepare the DNS server:
@@ -875,7 +878,42 @@ var _ = Describe("Enricher", Ordered, func() {
 			Expect(cluster.ImageSet).To(Equal("my-image-set"))
 		})
 
+		It("Sets the default registry", func() {
+			// By default the registry URI is taken from the `ztpfw-config` config map
+			// created by the `dev setup` command. But that always contains `quay.io`,
+			// and we don't want to depend on external connectivity for this test, so we
+			// need to update that config with the address of our registry, and undo the
+			// change when finished.
+			object := &corev1.ConfigMap{}
+			key := clnt.ObjectKey{
+				Namespace: "ztpfw-registry",
+				Name:      "ztpfw-config",
+			}
+			err := client.Get(ctx, key, object)
+			Expect(err).ToNot(HaveOccurred())
+			data := maps.Clone(object.Data)
+			object.Data["uri"] = base64.StdEncoding.EncodeToString([]byte(registry.Addr()))
+			err = client.Update(ctx, object)
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				object.Data = data
+				err := client.Update(ctx, object)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+
+			// Clear the property and try to enrich the cluster:
+			delete(properties, models.RegistryProperty)
+			config := &models.Config{
+				Properties: properties,
+			}
+			err = enricher.Enrich(ctx, config)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.Properties).To(HaveKeyWithValue("REGISTRY", registry.Addr()))
+		})
+
 		It("Doesn't change the registry if already set", func() {
+			registry := NewTLSServer()
+			defer registry.Close()
 			properties["REGISTRY"] = registry.Addr()
 			config := &models.Config{
 				Properties: properties,
@@ -886,6 +924,8 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Copies non default registry to the clusters", func() {
+			registry := NewTLSServer()
+			defer registry.Close()
 			properties["REGISTRY"] = registry.Addr()
 			config := &models.Config{
 				Properties: properties,
@@ -900,8 +940,7 @@ var _ = Describe("Enricher", Ordered, func() {
 		})
 
 		It("Fetches the registry CA certificates", func() {
-			// Create the cluster with the custom registry:
-			properties["REGISTRY"] = registry.Addr()
+			// Create the cluster:
 			config := &models.Config{
 				Properties: properties,
 				Clusters: []*models.Cluster{{
