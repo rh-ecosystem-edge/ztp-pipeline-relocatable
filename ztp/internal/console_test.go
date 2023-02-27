@@ -23,6 +23,7 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/table"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -241,6 +242,74 @@ var _ = Describe("Console", func() {
 						},
 					},
 				},
+			),
+		)
+
+		It("Doesn't write when muted", func() {
+			// Create the console:
+			stdout := &bytes.Buffer{}
+			stderr := &bytes.Buffer{}
+			console, err := NewConsole().
+				SetLogger(logger).
+				SetOut(stdout).
+				SetErr(stderr).
+				SetMute(true).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+
+			// Verify that it doesn't write the messages:
+			console.Info("Hello info!")
+			console.Warn("Hello warn!")
+			console.Error("Hello error!")
+			Expect(stdout.String()).To(BeEmpty())
+			Expect(stderr.String()).To(BeEmpty())
+		})
+
+		DescribeTable(
+			"Honors the --mute flag",
+			func(write bool, args ...string) {
+				// Prepare the flags:
+				flags := pflag.NewFlagSet("", pflag.ContinueOnError)
+				AddConsoleFlags(flags)
+				err := flags.Parse(args)
+				Expect(err).ToNot(HaveOccurred())
+
+				// Create the console:
+				buffer := &bytes.Buffer{}
+				console, err := NewConsole().
+					SetLogger(logger).
+					SetFlags(flags).
+					SetOut(buffer).
+					SetErr(buffer).
+					Build()
+				Expect(err).ToNot(HaveOccurred())
+
+				// Verify that it honors the flag:
+				console.Info("Hello!")
+				if write {
+					Expect(buffer.String()).ToNot(BeEmpty())
+				} else {
+					Expect(buffer.String()).To(BeEmpty())
+				}
+			},
+			Entry(
+				"No flags",
+				true,
+			),
+			Entry(
+				"Flag without value",
+				false,
+				"--mute",
+			),
+			Entry(
+				"Flag with explicit true",
+				false,
+				"--mute=true",
+			),
+			Entry(
+				"Flag with explicit false",
+				true,
+				"--mute=false",
 			),
 		)
 	})

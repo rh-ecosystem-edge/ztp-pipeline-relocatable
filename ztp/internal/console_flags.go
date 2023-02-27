@@ -26,9 +26,15 @@ func AddConsoleFlags(set *pflag.FlagSet) {
 		"Enables or disables use of color in the console. By default color is used when "+
 			"the console is a terminal and disabled otherwise.",
 	)
+	_ = set.Bool(
+		consoleMuteFlag,
+		true,
+		"Enables or disables writing to the console.",
+	)
 }
 
 // Names of the flags:
 const (
 	consoleColorFlag = "color"
+	consoleMuteFlag  = "mute"
 )
