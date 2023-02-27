@@ -100,6 +100,7 @@ func (b *EngineBuilder) Build() (result *Engine, err error) {
 	// Register the functions:
 	e.template.Funcs(tmpl.FuncMap{
 		"base64":  e.base64Func,
+		"data":    e.dataFunc,
 		"execute": e.executeFunc,
 		"json":    e.jsonFunc,
 		"uuid":    e.uuidFunc,
@@ -260,4 +261,49 @@ func (e *Engine) jsonFunc(data any) (result string, err error) {
 // uuidFunc is a template function that generates a random UUID.
 func (e *Engine) uuidFunc() string {
 	return uuid.NewString()
+}
+
+// dataFunc is a template function that creates a map with the keys and values passed as parameters.
+// The parameters should be a set of name/value pairs: values witn even indexes should be the names
+// and values with odd indexes the values. For example, the following template:
+//
+//	{{ range $name, $value := data "X" 123 "Y 456 }}
+//	{{ $name }}: {{ $value }}
+//	{{ end }}
+//
+// Generates the following text:
+//
+//	X: 123
+//	Y: 456
+//
+// This is specially useful to pass multiple named parameters to other templates. For example, a
+// template that two values named `Name` and `Age` can be executed like this:
+//
+//	{{ execute "my-template.yaml" (data "Name" "Joe" "Age" 52) }}
+//
+// If the number of arguments isn't even, or if any of the names isn't a string an error will be
+// returned.
+func (e *Engine) dataFunc(args ...any) (result map[string]any, err error) {
+	if len(args)%2 != 0 {
+		err = fmt.Errorf(
+			"number of arguments should be even, but it is %d",
+			len(args),
+		)
+		return
+	}
+	result = map[string]any{}
+	for i := 0; i < len(args)/2; i++ {
+		key := args[2*i]
+		name, ok := key.(string)
+		if !ok {
+			err = fmt.Errorf(
+				"argument %d should be a string, but it is of type %T",
+				i, key,
+			)
+			return
+		}
+		value := args[2*i+1]
+		result[name] = value
+	}
+	return
 }
