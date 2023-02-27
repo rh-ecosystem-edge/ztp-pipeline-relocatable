@@ -3,7 +3,7 @@
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost
 metadata:
-  name: ztpfw-{{ $.Cluster.Name }}-master-{{ .Index }}
+  name: {{ .Hostname }}
   namespace: {{ $.Cluster.Name }}
   labels:
     infraenvs.agent-install.openshift.io: {{ $.Cluster.Name }}
@@ -19,5 +19,5 @@ spec:
   bmc:
     disableCertificateVerification: true
     address: {{ .BMC.URL }}
-    credentialsName: ztpfw-{{ $.Cluster.Name }}-master-{{ .Index }}-bmc-secret
+    credentialsName: {{ .Hostname }}-bmc-secret
 {{ end}}
