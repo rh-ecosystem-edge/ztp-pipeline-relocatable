@@ -81,14 +81,24 @@ func Dedent(text string) string {
 		lines[i] = line[length:]
 	}
 
-	// Join the lines:
-	buffer := &bytes.Buffer{}
+	// Join the lines, but taking into account that if the original text had an ending line
+	// break we want to preserve it:
+	size := len(lines)
 	for _, line := range lines {
-		buffer.WriteString(line)
-		buffer.WriteString("\n")
+		size += len(line)
 	}
-
-	return buffer.String()
+	builder := &strings.Builder{}
+	builder.Grow(size)
+	for i, line := range lines {
+		if i > 0 {
+			builder.WriteString("\n")
+		}
+		builder.WriteString(line)
+	}
+	if strings.HasSuffix(text, "\n") {
+		builder.WriteString("\n")
+	}
+	return builder.String()
 }
 
 // Templates generates a string from the given templlate source and name value pairs.
