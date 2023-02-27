@@ -61,6 +61,13 @@ var (
 	}
 	CustomResourceDefinitionListGVK = listGVK(CustomResourceDefinitionGVK)
 
+	ImageConfigGVK = schema.GroupVersionKind{
+		Group:   "config.openshift.io",
+		Version: "v1",
+		Kind:    "Image",
+	}
+	ImageConfigListGVK = listGVK(ImageConfigGVK)
+
 	InfraEnvGKV = schema.GroupVersionKind{
 		Group:   "agent-install.openshift.io",
 		Version: "v1beta1",

@@ -21,6 +21,7 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -179,6 +180,7 @@ func (e *Enricher) enrichConfig(ctx context.Context, config *models.Config) erro
 		e.setOCPTag,
 		e.setRHCOSRelease,
 		e.setConfigImageSet,
+		e.setConfigRegistry,
 	}
 	for _, setter := range setters {
 		err := setter(ctx, config)
@@ -302,7 +304,7 @@ func (e *Enricher) setConfigImageSet(ctx context.Context, config *models.Config)
 		return nil
 	}
 
-	// Check that the OCM version is set:
+	// Check that the OCP version is set:
 	ocpVersion := config.Properties[models.OCPVersionProperty]
 	if ocpVersion == "" {
 		return fmt.Errorf(
@@ -319,6 +321,54 @@ func (e *Enricher) setConfigImageSet(ctx context.Context, config *models.Config)
 		"Set image set property",
 		"name", models.ClusterImageSetProperty,
 		"value", imageSet,
+	)
+
+	return nil
+}
+
+func (e *Enricher) setConfigRegistry(ctx context.Context, config *models.Config) error {
+	// Do nothing if it is already set:
+	registry := config.Properties[models.RegistryProperty]
+	if registry != "" {
+		return nil
+	}
+
+	// Get the default registry URL from the configuration of the registry:
+	registryConfig := &corev1.ConfigMap{}
+	registryKey := clnt.ObjectKey{
+		Namespace: "ztpfw-registry",
+		Name:      "ztpfw-config",
+	}
+	err := e.client.Get(ctx, registryKey, registryConfig)
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	uriData, ok := registryConfig.Data["uri"]
+	if !ok {
+		return fmt.Errorf(
+			"failed to find registry URI because configmap '%s/%s' doesn't have the "+
+				"'uri' key",
+			registryConfig.Namespace, registryConfig.Name,
+		)
+	}
+	uriBytes, err := base64.StdEncoding.DecodeString(uriData)
+	if err != nil {
+		return fmt.Errorf(
+			"failed to decode registry URI '%s': %w",
+			string(uriBytes), err,
+		)
+	}
+	uriText := strings.TrimSpace(string(uriBytes))
+
+	// Save the value:
+	config.Properties[models.RegistryProperty] = uriText
+	e.logger.Info(
+		"Set registry property",
+		"name", models.RegistryProperty,
+		"value", uriText,
 	)
 
 	return nil
@@ -719,13 +769,21 @@ func (e *Enricher) setClusterRegistryCA(ctx context.Context, config *models.Conf
 		return nil
 	}
 
+	// The registry URL may not contain a port number, but it is required to connect with TLS
+	// and obtain the CA certificates, so we need to add a default:
+	uri := cluster.Registry.URL
+	colon := strings.LastIndex(uri, ":")
+	if colon == -1 {
+		uri = fmt.Sprintf("%s:443", uri)
+	}
+
 	// Set the value:
-	ca, err := e.getCA(cluster.Registry.URL)
+	ca, err := e.getCA(uri)
 	if err != nil {
 		return fmt.Errorf(
 			"failed to get registry CA certificates for registry '%s' of "+
 				"cluster '%s': %w",
-			cluster.Registry.URL, cluster.Name, err,
+			uri, cluster.Name, err,
 		)
 	}
 	cluster.Registry.CA = ca
