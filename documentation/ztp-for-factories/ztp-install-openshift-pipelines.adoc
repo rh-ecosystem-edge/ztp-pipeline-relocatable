@@ -28,7 +28,7 @@ $ export KUBECONFIG=<path_to_kubeconfig>/kubeconfig
 +
 [source,terminal]
 ----
-$ curl -sLK https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
+$ curl -sL https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s -- ${KUBECONFIG}
 ----
 +
 This script:
