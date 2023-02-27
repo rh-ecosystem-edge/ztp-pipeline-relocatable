@@ -5,11 +5,11 @@
   "storage": {
     "files": [
       {
-        "path": "/etc/NetworkManager/dispatcher.d/pre-up.d/99-add-internal-ip.sh",
+        "path": "/etc/NetworkManager/dispatcher.d/pre-up.d/99-add-host-int-ip.sh",
         "mode": 493,
         "overwrite": true,
         "contents": {
-          "source": "data:text/plain;base64,{{ execute "files/add-internal-ip-infraenv.sh" . | base64 }}"
+          "source": "data:text/plain;base64,{{ execute "files/99-add-host-int-ip.sh" . | base64 }}"
         }
       },
       {

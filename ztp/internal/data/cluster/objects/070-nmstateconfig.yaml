@@ -40,6 +40,21 @@ spec:
           prefix-length: {{ .InternalIP.Prefix }}
       ipv6:
         enabled: false
+    {{ else }}
+    - name: {{ .ExternalNIC.Name }}.0
+      type: ethernet
+      state: up
+      mac-address: {{ .ExternalNIC.MAC }}
+      mtu: 1500
+      ethernet:
+        auto-negotiation: true
+      ipv4:
+        enabled: true
+        address:
+        - ip: {{ .InternalIP.Address }}
+          prefix-length: {{ .InternalIP.Prefix }}
+      ipv6:
+        enabled: false
     {{ end }}
     {{ range .IgnoredNICs }}
     - name: {{ . }}

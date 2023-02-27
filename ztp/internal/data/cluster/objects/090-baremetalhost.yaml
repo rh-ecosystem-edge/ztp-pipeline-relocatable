@@ -10,7 +10,7 @@ metadata:
   annotations:
     inspect.metal3.io: disabled
     bmac.agent-install.openshift.io/hostname: {{ .Hostname }}
-    bmac.agent-install.openshift.io/ignition-config-overrides: {{ execute "files/cfg-override-bmh.json" . | json }}
+    bmac.agent-install.openshift.io/ignition-config-overrides: {{ execute "files/cfg-override-bmh.json" (data "Cluster" $.Cluster "Node" .) | json }}
 spec:
   online: false
   bootMACAddress: {{ .ExternalNIC.MAC }}
