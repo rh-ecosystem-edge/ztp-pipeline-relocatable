@@ -38,6 +38,7 @@ import (
 // of this type directly, use the NewLoader function instead.
 type Loader struct {
 	logger logr.Logger
+	flags  *pflag.FlagSet
 	source any
 	jq     *jq.Tool
 }
@@ -93,10 +94,11 @@ func (l *Loader) SetSource(value any) *Loader {
 // SetFlags sets the command line flags that that indicate how to load the configuration. This is
 // optional.
 func (b *Loader) SetFlags(flags *pflag.FlagSet) *Loader {
+	b.flags = flags
 	if flags.Changed(configFlagName) {
 		value, err := flags.GetString(configFlagName)
 		if err == nil {
-			b.source = value
+			b.SetSource(value)
 		}
 	}
 	return b
@@ -110,7 +112,11 @@ func (l *Loader) Load() (result *models.Config, err error) {
 		return
 	}
 	if l.source == nil {
-		err = fmt.Errorf("source is mandatory")
+		if l.flags != nil && !l.flags.Changed(configFlagName) {
+			err = fmt.Errorf("flag '--%s' is mandatory", configFlagName)
+		} else {
+			err = fmt.Errorf("source is mandatory")
+		}
 		return
 	}
 	switch l.source.(type) {
