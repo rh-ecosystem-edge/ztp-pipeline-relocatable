@@ -32,13 +32,13 @@ mirror:
     - name: lvms-operator
       channels:
       - name: stable-${OC_ODF_VERSION}
-    - name: nfd
-      channels:
-      - name: stable
-  - catalog: ${CERTIFIED_OPERATORS_INDEX}:v${OC_OCP_VERSION_MIN}
-    packages:
-    - name: gpu-operator-certified
-      #channels:
-      #- name: stable
+        #- name: nfd
+        #  channels:
+        #  - name: stable
+        #- catalog: ${CERTIFIED_OPERATORS_INDEX}:v${OC_OCP_VERSION_MIN}
+        #  packages:
+        #  - name: gpu-operator-certified
+        #    #channels:
+        #    #- name: stable
   additionalImages:
     - name: quay.io/ztpfw/ui:latest 
