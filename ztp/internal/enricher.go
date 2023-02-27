@@ -472,6 +472,9 @@ func (e *Enricher) getDNSDomain(ctx context.Context) (result string, err error) 
 	}
 	var domain string
 	err = e.jq.Query(`.status.domain`, object, &domain)
+	if err != nil {
+		return
+	}
 
 	// The domain name used by the ingress controller will be something like
 	// `apps.my-cluster.my-domain.com` and we want to use only `my-domain.com` as the base
