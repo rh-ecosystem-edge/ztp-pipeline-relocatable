@@ -41,11 +41,14 @@ type LoggerBuilder struct {
 	level  int
 	file   string
 	fields map[string]any
+	redact bool
 }
 
 // NewLogger creates a builder that can then be used to configure and create a logger.
 func NewLogger() *LoggerBuilder {
-	return &LoggerBuilder{}
+	return &LoggerBuilder{
+		redact: true,
+	}
 }
 
 // SetWriter sets the writer that the logger will write to. This is optional, and if not specified
@@ -119,6 +122,32 @@ func (b *LoggerBuilder) SetFile(value string) *LoggerBuilder {
 	return b
 }
 
+// Set redact sets the flag that indicates if security sensitive data should be removed from the
+// log. These fields are indicated by adding an exlamation mark in front of the field name. For
+// example, to write a message with a `public` field that isn't sensitive and another `private`
+// field that is:
+//
+//	logger.Info(
+//		"SSH keys",
+//		"public", publicKey,
+//		"!public", privateKey,
+//	)
+//
+// When redacting is enabled the value of the sensitive field will be replaced be `***`, so in the
+// example above the resulting message will be like this:
+//
+//	{
+//		"msg": "SSHKeys",
+//		"public": "ssh-rsa AAA...",
+//		"private": "***"
+//	}
+//
+// The exclamation mark will be always removed from the field name.
+func (b *LoggerBuilder) SetRedact(value bool) *LoggerBuilder {
+	b.redact = value
+	return b
+}
+
 // SetFlags sets the command line flags that should be used to configure the logger. This is
 // optional.
 func (b *LoggerBuilder) SetFlags(flags *pflag.FlagSet) *LoggerBuilder {
@@ -147,6 +176,12 @@ func (b *LoggerBuilder) SetFlags(flags *pflag.FlagSet) *LoggerBuilder {
 			if err == nil {
 				fields := b.parseFieldItems(values)
 				b.AddFields(fields)
+			}
+		}
+		if flags.Changed(redactFlagName) {
+			value, err := flags.GetBool(redactFlagName)
+			if err == nil {
+				b.SetRedact(value)
 			}
 		}
 	}
@@ -211,12 +246,12 @@ func (b *LoggerBuilder) Build() (result logr.Logger, err error) {
 	}
 
 	// Create the zap logger:
-	sink := zapcore.AddSync(writer)
+	syncer := zapcore.AddSync(writer)
 	config := zap.NewProductionEncoderConfig()
 	config.EncodeTime = loggerTimeEncoder
 	config.EncodeLevel = loggerLevelEncoder
 	encoder := zapcore.NewJSONEncoder(config)
-	core := zapcore.NewCore(encoder, sink, level)
+	core := zapcore.NewCore(encoder, syncer, level)
 	logger := zap.New(core)
 
 	// Caculate the custom fields:
@@ -227,6 +262,12 @@ func (b *LoggerBuilder) Build() (result logr.Logger, err error) {
 
 	// Create the logr logger:
 	result = zapr.NewLoggerWithOptions(logger, zapr.LogInfoLevel("v"))
+	result = result.WithSink(&sink{
+		settings: &sinkSettings{
+			redact: b.redact,
+		},
+		delegate: result.GetSink(),
+	})
 	if len(fields) > 0 {
 		result = result.WithValues(fields...)
 	}
