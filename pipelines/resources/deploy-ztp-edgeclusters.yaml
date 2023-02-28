@@ -18,9 +18,6 @@ spec:
     - name: ztp-log-level
       type: string
       default: "0"
-    - name: ztp-log-level
-      type: string
-      default: "0"
   workspaces:
     - name: ztp
   tasks:
