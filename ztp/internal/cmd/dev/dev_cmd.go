@@ -21,6 +21,7 @@ import (
 	devcleanupcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/cleanup"
 	devdeletecmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/delete"
 	devsetupcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/setup"
+	devsshcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/dev/ssh"
 )
 
 // Cobra creates and returns the `dev` command.
@@ -36,5 +37,6 @@ func Cobra() *cobra.Command {
 	result.AddCommand(devdeletecmd.Cobra())
 	result.AddCommand(devsetupcmd.Cobra())
 	result.AddCommand(devdeletecmd.Cobra())
+	result.AddCommand(devsshcmd.Cobra())
 	return result
 }

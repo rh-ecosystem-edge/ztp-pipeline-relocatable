@@ -18,3 +18,22 @@ type Config struct {
 	Properties map[string]string
 	Clusters   []*Cluster
 }
+
+// LookupCluster returns the cluser with the given name, or nil if no such cluster exists.
+func (c *Config) LookupCluster(name string) *Cluster {
+	for _, cluster := range c.Clusters {
+		if cluster.Name == name {
+			return cluster
+		}
+	}
+	return nil
+}
+
+// ClusterNames returns a slice containing the names of the cluster.
+func (c *Config) ClusterNames() []string {
+	names := make([]string, len(c.Clusters))
+	for i, cluster := range c.Clusters {
+		names[i] = cluster.Name
+	}
+	return names
+}
