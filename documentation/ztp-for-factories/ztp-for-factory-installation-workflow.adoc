@@ -19,7 +19,7 @@ NOTE:: This bootstrap script will require at least these binaries: oc, yq, tkn
 
 ```sh
 export KUBECONFIG=/root/.kcli/clusters/test-ci/auth/kubeconfig
-curl -sLk https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s
+curl -sL https://raw.githubusercontent.com/rh-ecosystem-edge/ztp-pipeline-relocatable/main/pipelines/bootstrap.sh | bash -s
 ```
 
 - An  output similar to this one, will be shown:
