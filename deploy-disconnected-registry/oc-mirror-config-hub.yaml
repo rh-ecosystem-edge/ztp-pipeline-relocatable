@@ -28,24 +28,22 @@ mirror:
       - name: stable
     - name: odf-operator
       channels:
-      - name: stable-4.10
       - name: stable-${OC_ODF_VERSION}
-    - name: odf-lvm-operator
+    - name: lvms-operator
       channels:
-      - name: stable-4.10
       - name: stable-${OC_ODF_VERSION}
     - name: multicluster-engine
       channels:
       - name: stable-2.1
       - name: stable-2.2
-    - name: nfd
-      channels:
-      - name: stable
-  - catalog: ${CERTIFIED_OPERATORS_INDEX}:v${OC_OCP_VERSION_MIN}
-    packages:
-    - name: gpu-operator-certified
-      #channels:
-      #- name: stable
+        #- name: nfd
+        #  channels:
+        #  - name: stable
+        #- catalog: ${CERTIFIED_OPERATORS_INDEX}:v${OC_OCP_VERSION_MIN}
+        #  packages:
+        #  - name: gpu-operator-certified
+        #    #channels:
+        #    #- name: stable
   additionalImages:
     - name: quay.io/ztpfw/ui:latest 
     - name: registry.access.redhat.com/rhscl/httpd-24-rhel7:latest

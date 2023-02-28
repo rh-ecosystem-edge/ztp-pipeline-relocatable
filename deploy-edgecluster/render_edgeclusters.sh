@@ -102,32 +102,7 @@ metadata:
   namespace: $CHANGE_EDGE_NAME
   annotations:
     manifests-directory: manifests
-data:
-  node-ip-config.yml: |
-    apiVersion: machineconfiguration.openshift.io/v1
-    kind: MachineConfig
-    metadata:
-      labels:
-        machineconfiguration.openshift.io/role: master
-      name: 10-masters-node-ip-hint
-    spec:
-      config:
-        ignition:
-          config: {}
-          security:
-            tls: {}
-          timeouts: {}
-          version: 2.2.0
-        networkd: {}
-        passwd: {}
-        storage:
-          files:
-          - contents:
-              source: data:text/plain;charset=utf-8;base64,S1VCRUxFVF9OT0RFSVBfSElOVD0xOTIuMTY4LjcuMA==
-              verification: {}
-            filesystem: root
-            mode: 420
-            path: /etc/default/nodeip-configuration
+data: {}
 ---
 apiVersion: extensions.hive.openshift.io/v1beta1
 kind: AgentClusterInstall

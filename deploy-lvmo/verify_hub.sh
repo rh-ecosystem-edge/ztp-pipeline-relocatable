@@ -16,7 +16,7 @@ exit 1
 fi
 
 echo "Check StorageClass..."
-if [[ $(oc get --kubeconfig=${KUBECONFIG_HUB} sc odf-lvm-vg1 --no-headers | wc -l) -ne 1 ]]; then
+if [[ $(oc get --kubeconfig=${KUBECONFIG_HUB} sc lvms-vg1 --no-headers | wc -l) -ne 1 ]]; then
 exit 1
 fi
 

@@ -89,7 +89,7 @@ if [ "${OC_DEPLOY_METAL}" = "yes" ]; then
             		-P ctlplanes=${NUMMASTERS} 
             		-P memory=${MEMORY} 
             		-P version="${VERSION}" 
-            		-P tag="${t}" ${EXTRAARGS} 
+            		-P tag="${ocp_version}" ${EXTRAARGS} 
             		"${OC_CLUSTER_NAME}"
             """
             kcli create cluster openshift --force --paramfile=hub-install.yml -P ctlplanes=${NUMMASTERS} -P memory=${MEMORY} -P version="${VERSION}" -P tag="${t}" ${EXTRAARGS} "${OC_CLUSTER_NAME}" -P tpm="${TPM}"

@@ -10,7 +10,7 @@ metadata:
   namespace: openshift-storage
 spec:
   multiCloudGateway:
-    dbStorageClassName: odf-lvm-vg1
+    dbStorageClassName: lvms-vg1
     reconcileStrategy: standalone
   resources:
     noobaa-core:

@@ -4,6 +4,7 @@ parameters:
   nodes: 1
   clusters: 2
   singlenic: true
+  boot_legacy: true
 {% for i in range(0, clusters) %}
 {% for j in range(0, nodes) %}
 {{cluster_name}}{{ i }}-cluster-m{{ j }}:
