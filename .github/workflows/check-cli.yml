@@ -18,11 +18,13 @@ on:
   pull_request:
     branches:
     - main
+    paths:
+    - 'ztp/**'
 
 jobs:
 
   test:
-    name: Test CLI
+    name: Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -54,7 +56,7 @@ jobs:
         ginkgo run -r
 
   lint:
-    name: Lint CLI
+    name: Lint
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the source
