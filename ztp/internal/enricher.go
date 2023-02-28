@@ -212,7 +212,7 @@ func (e *Enricher) setOCPTag(ctx context.Context, config *models.Config) error {
 
 	// Update the properties:
 	config.Properties[models.OCPTagProperty] = ocpTag
-	e.logger.V(2).Info(
+	e.logger.Info(
 		"Set OCP tag property",
 		"name", models.OCPTagProperty,
 		"value", ocpTag,
@@ -289,10 +289,13 @@ func (e *Enricher) downloadReleaseTXT(ctx context.Context, config *models.Config
 		return
 	}
 	result = string(data)
-	e.logger.V(2).Info(
-		"Downloaded 'release.txt' file",
+	e.logger.Info(
+		"Downloaded release file",
 		"url", url,
-		"text", result,
+	)
+	e.logger.V(2).Info(
+		"Release file content",
+		"content", string(result),
 	)
 	return
 }
@@ -433,11 +436,12 @@ func (e *Enricher) setPullSecret(ctx context.Context, config *models.Config,
 	if !ok {
 		return fmt.Errorf("pull secret doesn't contain the '.dockerconfigjson' key")
 	}
-	e.logger.V(1).Info(
-		"Loaded pull secret",
-		"secret", string(data),
-	)
 	cluster.PullSecret = data
+	e.logger.Info("Loaded pull secret")
+	e.logger.V(3).Info(
+		"Pull secret content",
+		"content", string(cluster.PullSecret),
+	)
 	return nil
 }
 
@@ -459,18 +463,23 @@ func (e *Enricher) setSSHKeys(ctx context.Context, config *models.Config,
 	case err == nil:
 		cluster.SSH.PublicKey = secret.Data["id_rsa.pub"]
 		cluster.SSH.PrivateKey = secret.Data["id_rsa.key"]
-		e.logger.V(1).Info(
-			"Found SSH keys",
+		e.logger.Info(
+			"Loaded SSH keys",
 			"cluster", cluster.Name,
 			"secret", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),
 		)
 	case apierrors.IsNotFound(err):
 		cluster.SSH.PublicKey, cluster.SSH.PrivateKey, err = e.generateSSHKeys()
-		e.logger.V(1).Info(
+		e.logger.Info(
 			"Generated SSH keys",
 			"cluster", cluster.Name,
 		)
 	}
+	e.logger.V(3).Info(
+		"SSH keys",
+		"public", string(cluster.SSH.PublicKey),
+		"private", string(cluster.SSH.PrivateKey),
+	)
 	return err
 }
 
@@ -500,7 +509,7 @@ func (e *Enricher) setDNSDomain(ctx context.Context, config *models.Config,
 	if err != nil {
 		return fmt.Errorf("failed to get DNS domain: %w", err)
 	}
-	e.logger.V(1).Info(
+	e.logger.Info(
 		"Found DNS domain",
 		"domain", domain,
 	)
@@ -549,7 +558,7 @@ func (e *Enricher) setInternalAPIIP(ctx context.Context, config *models.Config,
 		return nil
 	}
 	cluster.API.InternalIP = enricherInternalAPIIP
-	e.logger.V(1).Info(
+	e.logger.Info(
 		"Found internal API IP",
 		"value", cluster.API.InternalIP,
 	)
@@ -562,7 +571,7 @@ func (e *Enricher) setInternalIngressIP(ctx context.Context, config *models.Conf
 		return nil
 	}
 	cluster.Ingress.InternalIP = enricherInternalIngressIP
-	e.logger.V(1).Info(
+	e.logger.Info(
 		"Found internal ingress IP",
 		"value", cluster.Ingress.InternalIP,
 	)
@@ -662,7 +671,7 @@ func (e *Enricher) setExternalNodeIPs(ctx context.Context, config *models.Config
 		mac := node.ExternalNIC.MAC
 		ip, ok := index[strings.ToLower(mac)]
 		if ok {
-			e.logger.V(1).Info(
+			e.logger.Info(
 				"Found external IP address for node",
 				"cluster", cluster.Name,
 				"node", node.Name,
@@ -699,9 +708,13 @@ func (e *Enricher) setKubeconfig(ctx context.Context, config *models.Config,
 	data, ok := secret.Data["kubeconfig"]
 	if ok {
 		cluster.Kubeconfig = data
-		e.logger.V(1).Info(
-			"Found kubeconfig",
+		e.logger.Info(
+			"Loaded kubeconfig",
 			"cluster", cluster.Name,
+		)
+		e.logger.V(3).Info(
+			"Kubeconfig content",
+			"content", cluster.Kubeconfig,
 		)
 	}
 	return nil
@@ -787,9 +800,10 @@ func (e *Enricher) setClusterRegistryCA(ctx context.Context, config *models.Conf
 		)
 	}
 	cluster.Registry.CA = ca
-	e.logger.Info(
-		"Set cluster registry CA",
-		"value", string(ca),
+	e.logger.Info("Found cluster registry CA")
+	e.logger.V(2).Info(
+		"Cluster registry CA content",
+		"content", string(cluster.Registry.CA),
 	)
 	return nil
 }
@@ -813,7 +827,7 @@ func (e *Enricher) setExternalAPIIP(ctx context.Context, config *models.Config,
 		return err
 	}
 	cluster.API.ExternalIP = net.ParseIP(address)
-	e.logger.V(1).Info(
+	e.logger.Info(
 		"Found external API IP",
 		"value", cluster.API.ExternalIP,
 	)
@@ -840,7 +854,7 @@ func (e *Enricher) setExternalIngressIP(ctx context.Context, config *models.Conf
 		return err
 	}
 	cluster.Ingress.ExternalIP = net.ParseIP(address)
-	e.logger.V(1).Info(
+	e.logger.Info(
 		"Found external ingress IP",
 		"value", cluster.Ingress.ExternalIP,
 	)
