@@ -53,3 +53,22 @@ func (c *Cluster) WorkerNodes() []*Node {
 	}
 	return nodes
 }
+
+// LookupNode returns an node with the given name, or nil if there is no such node.
+func (c *Cluster) LookupNode(name string) *Node {
+	for _, node := range c.Nodes {
+		if node.Name == name {
+			return node
+		}
+	}
+	return nil
+}
+
+// NodeNames returns a slice containing the names of the nodes.
+func (c *Cluster) NodeNames() []string {
+	names := make([]string, len(c.Nodes))
+	for i, node := range c.Nodes {
+		names[i] = node.Name
+	}
+	return names
+}
