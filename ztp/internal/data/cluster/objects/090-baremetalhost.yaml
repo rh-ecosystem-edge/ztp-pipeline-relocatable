@@ -1,4 +1,4 @@
-{{ range .Cluster.ControlPlaneNodes }}
+{{ range .Cluster.Nodes }}
 ---
 apiVersion: metal3.io/v1alpha1
 kind: BareMetalHost

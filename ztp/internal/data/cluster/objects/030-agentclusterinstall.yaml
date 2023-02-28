@@ -33,7 +33,8 @@ spec:
     - {{ .CIDR }}
     {{ end }}
   provisionRequirements:
-    controlPlaneAgents: 3
+    controlPlaneAgents: {{len .Cluster.ControlPlaneNodes}}
+    workerAgents: {{len .Cluster.WorkerNodes}}
   {{ else }}
   networking:
     clusterNetwork:
