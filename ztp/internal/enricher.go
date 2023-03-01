@@ -437,10 +437,10 @@ func (e *Enricher) setPullSecret(ctx context.Context, config *models.Config,
 		return fmt.Errorf("pull secret doesn't contain the '.dockerconfigjson' key")
 	}
 	cluster.PullSecret = data
-	e.logger.Info("Loaded pull secret")
-	e.logger.V(3).Info(
-		"Pull secret content",
-		"content", string(cluster.PullSecret),
+	e.logger.Info(
+		"Loaded pull secret",
+		"secret", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),
+		"!content", string(cluster.PullSecret),
 	)
 	return nil
 }
@@ -467,19 +467,18 @@ func (e *Enricher) setSSHKeys(ctx context.Context, config *models.Config,
 			"Loaded SSH keys",
 			"cluster", cluster.Name,
 			"secret", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),
+			"public", string(cluster.SSH.PublicKey),
+			"!private", string(cluster.SSH.PrivateKey),
 		)
 	case apierrors.IsNotFound(err):
 		cluster.SSH.PublicKey, cluster.SSH.PrivateKey, err = e.generateSSHKeys()
 		e.logger.Info(
 			"Generated SSH keys",
 			"cluster", cluster.Name,
+			"public", string(cluster.SSH.PublicKey),
+			"!private", string(cluster.SSH.PrivateKey),
 		)
 	}
-	e.logger.V(3).Info(
-		"SSH keys",
-		"public", string(cluster.SSH.PublicKey),
-		"private", string(cluster.SSH.PrivateKey),
-	)
 	return err
 }
 
@@ -644,8 +643,7 @@ func (e *Enricher) setExternalNodeIPs(ctx context.Context, config *models.Config
 		var pairs []Pair
 		err = e.jq.Query(
 			`
-				try
-				.status.inventory.interfaces[] |
+				.status.inventory.interfaces[]? |
 				{ "mac": .macAddress, "ip": .ipV4Addresses[0] }
 			`,
 			agent.Object, &pairs,
@@ -711,10 +709,8 @@ func (e *Enricher) setKubeconfig(ctx context.Context, config *models.Config,
 		e.logger.Info(
 			"Loaded kubeconfig",
 			"cluster", cluster.Name,
-		)
-		e.logger.V(3).Info(
-			"Kubeconfig content",
-			"content", cluster.Kubeconfig,
+			"secret", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name),
+			"!content", string(cluster.Kubeconfig),
 		)
 	}
 	return nil

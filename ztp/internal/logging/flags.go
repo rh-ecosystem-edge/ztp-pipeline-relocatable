@@ -62,6 +62,11 @@ func AddFlags(set *pflag.FlagSet) {
 		"Include details of HTTP request and response bodies in log messages. Note "+
 			"that currently only the size is written, not the complete body.",
 	)
+	_ = set.Bool(
+		redactFlagName,
+		true,
+		"Enables or disables redactiong security sensitive data from the log.",
+	)
 }
 
 // Names of the flags:
@@ -72,4 +77,5 @@ const (
 	fieldsFlagName  = "log-fields"
 	headersFlagName = "log-headers"
 	bodiesFlagName  = "log-bodies"
+	redactFlagName  = "log-redact"
 )

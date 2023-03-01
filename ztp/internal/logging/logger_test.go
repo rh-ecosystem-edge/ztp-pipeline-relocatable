@@ -36,7 +36,7 @@ var _ = Describe("Logger", func() {
 	It("Rejects negative level", func() {
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetLevel(-1).
 			Build()
 		Expect(err).To(HaveOccurred())
@@ -638,7 +638,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -670,7 +670,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -703,7 +703,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -737,7 +737,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -775,7 +775,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -808,7 +808,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -839,7 +839,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -870,7 +870,7 @@ var _ = Describe("Logger", func() {
 		// Create the logger:
 		buffer := &bytes.Buffer{}
 		logger, err := NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetFlags(flags).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -887,5 +887,112 @@ var _ = Describe("Logger", func() {
 		err = json.Unmarshal([]byte(lines[0]), &msg)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(msg.Pid).To(Equal(os.Getpid()))
+	})
+
+	It("Redacts sensitive fields by default", func() {
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info(
+			"my message",
+			"!my-field", "my-value",
+		)
+
+		// Check that the field has been redacted:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField string `json:"my-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("***"))
+	})
+
+	It("Doesn't redact sensitive fields if disabled", func() {
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
+			SetRedact(false).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Write a message:
+		logger.Info(
+			"my message",
+			"!my-field", "my-value",
+		)
+
+		// Check that the field has been redacted:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField string `json:"my-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("my-value"))
+	})
+
+	It("Logger with fields redacts sensitive fields like parent", func() {
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		logger = logger.WithValues(
+			"!my-field", "my-value",
+		)
+
+		// Write a message:
+		logger.Info(
+			"your message",
+			"!your-field", "your-value",
+		)
+
+		// Check that the field has been redacted:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			MyField   string `json:"my-field"`
+			YourField string `json:"your-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.MyField).To(Equal("***"))
+		Expect(msg.YourField).To(Equal("***"))
+	})
+
+	It("Logger with name redacts sensitive fields like parent", func() {
+		// Create the logger:
+		buffer := &bytes.Buffer{}
+		logger, err := NewLogger().
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		logger = logger.WithName("my-name")
+
+		// Write a message:
+		logger.Info(
+			"your message",
+			"!your-field", "your-value",
+		)
+
+		// Check that the field has been redacted:
+		lines := strings.Split(buffer.String(), "\n")
+		Expect(lines).To(HaveLen(2))
+		var msg struct {
+			YourField string `json:"your-field"`
+		}
+		err = json.Unmarshal([]byte(lines[0]), &msg)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(msg.YourField).To(Equal("***"))
 	})
 })
