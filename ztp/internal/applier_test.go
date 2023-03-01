@@ -26,6 +26,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
+	. "github.com/onsi/ginkgo/v2/dsl/decorators"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -519,5 +520,57 @@ var _ = Describe("Applier", func() {
 			// Wait for the applier goroutine to finish:
 			waitGroup.Wait()
 		})
+
+		It("Doesn't wait for ever after creating CRD", func(ctx SpecContext) {
+			// Create the CRD:
+			data := map[string]any{
+				"Group": fmt.Sprintf("example-%s.com", uuid.NewString()),
+			}
+			crdTmp, crdFsys := TmpFS(
+				"crd.yaml",
+				text.Dedent(`
+					apiVersion: apiextensions.k8s.io/v1
+					kind: CustomResourceDefinition
+					metadata:
+					  name: examples.{{ .Group }}
+					spec:
+					  group: {{ .Group }}
+					  names:
+					    kind: Example
+					    listKind: ExampleList
+					    plural: examples
+					    singular: example
+					  scope: Cluster
+					  versions:
+					  - name: v1
+					    served: true
+					    storage: false
+					    schema:
+					      openAPIV3Schema:
+					        type: object
+					        x-kubernetes-preserve-unknown-fields: true
+					  - name: v2
+					    served: true
+					    storage: true
+					    schema:
+					      openAPIV3Schema:
+					        type: object
+					        x-kubernetes-preserve-unknown-fields: true
+				`),
+			)
+			defer os.RemoveAll(crdTmp)
+			crdApplier, err := NewApplier().
+				SetLogger(logger).
+				SetClient(client).
+				SetFS(crdFsys).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := crdApplier.Delete(ctx, data)
+				Expect(err).ToNot(HaveOccurred())
+			}()
+			err = crdApplier.Apply(ctx, data)
+			Expect(err).ToNot(HaveOccurred())
+		}, NodeTimeout(10*time.Second))
 	})
 })
