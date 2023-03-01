@@ -27,6 +27,7 @@ import (
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/text"
 )
 
 var _ = Describe("Engine", func() {
@@ -476,7 +477,7 @@ var _ = Describe("Engine", func() {
 			// Create the file system:
 			tmp, fsys := TmpFS(
 				"myfile.txt",
-				Dedent(`
+				text.Dedent(`
 					{{ range $name, $age := (data "Joe" 52 "Mary" 53) -}}
 					{{ $name }}: {{ $age }}
 					{{ end -}}
@@ -495,7 +496,7 @@ var _ = Describe("Engine", func() {
 			buffer := &bytes.Buffer{}
 			err = engine.Execute(buffer, "myfile.txt", nil)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(buffer.String()).To(Equal(Dedent(`
+			Expect(buffer.String()).To(Equal(text.Dedent(`
 				Joe: 52
 				Mary: 53
 			`)))

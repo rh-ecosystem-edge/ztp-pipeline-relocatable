@@ -26,6 +26,7 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/text"
 )
 
 var _ = Describe("Loader", func() {
@@ -44,7 +45,7 @@ var _ = Describe("Loader", func() {
 		By("Load configuration")
 		config, err := NewLoader().
 			SetLogger(logger).
-			SetSource(Dedent(`
+			SetSource(text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
 				  OC_ACM_VERSION: '2.6'
@@ -98,7 +99,7 @@ var _ = Describe("Loader", func() {
 		By("Load configuration")
 		config, err := NewLoader().
 			SetLogger(logger).
-			SetSource(Dedent(`
+			SetSource(text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
 				  OC_ACM_VERSION: '2.6'
@@ -215,7 +216,7 @@ var _ = Describe("Loader", func() {
 		By("Load configuration")
 		config, err := NewLoader().
 			SetLogger(logger).
-			SetSource(Dedent(`
+			SetSource(text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
 				  OC_ACM_VERSION: '2.6'
@@ -353,7 +354,7 @@ var _ = Describe("Loader", func() {
 		// Load the configuration:
 		config, err := NewLoader().
 			SetLogger(logger).
-			SetSource(Dedent(`
+			SetSource(text.Dedent(`
 				edgeclusters:
 				- edgecluster0-cluster: {}
 				- edgecluster1-cluster: {}
@@ -373,7 +374,7 @@ var _ = Describe("Loader", func() {
 		// Create a temporary directory for the configuration file:
 		tmp, _ := TmpFS(
 			"my.yaml",
-			Dedent(`
+			text.Dedent(`
 				edgeclusters:
 				- my: {}
 			`),
@@ -409,7 +410,7 @@ var _ = Describe("Loader", func() {
 		AddFlags(flags)
 		err := flags.Parse([]string{
 			"--config",
-			Dedent(`
+			text.Dedent(`
 				edgeclusters:
 				- my: {}
 			`),

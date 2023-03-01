@@ -38,6 +38,7 @@ import (
 	deletecmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/delete"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/text"
 )
 
 var _ = Describe("Create cluster command", Ordered, func() {
@@ -94,7 +95,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	It("Creates SNO cluster", func() {
 		// Prepare the configuration:
 		config := Template(
-			Dedent(`
+			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
 				  OC_ACM_VERSION: '2.6'
@@ -335,7 +336,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	It("Waits till the cluster is ready", func() {
 		// Prepare the configuration:
 		config := Template(
-			Dedent(`
+			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
 				  OC_ACM_VERSION: '2.6'
@@ -464,7 +465,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	It("Writes the states as the installation progresses", func() {
 		// Create a temporary directory containing the configuration files:
 		config := Template(
-			Dedent(`
+			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
 				  OC_ACM_VERSION: '2.6'
@@ -605,7 +606,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	It("Stops if the cluster installation fails", func() {
 		// Prepare the configuration:
 		config := Template(
-			Dedent(`
+			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
 				  OC_ACM_VERSION: '2.6'
