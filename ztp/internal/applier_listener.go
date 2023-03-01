@@ -203,4 +203,5 @@ var applierFriendlyKinds = map[string]string{
 	"MultiClusterEngine":       "multicluster engine",
 	"NMState":                  "nmstate",
 	"NMStateConfig":            "nmstate configuration",
+	"OAuthClient":              "OAuth client",
 }

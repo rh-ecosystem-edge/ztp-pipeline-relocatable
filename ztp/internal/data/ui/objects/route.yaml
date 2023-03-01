@@ -1,0 +1,19 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: ztpfw-ui
+  name: ztpfw-ui
+  namespace: {{ .Namespace }}
+spec:
+  host: {{ .Host }}
+  port:
+    targetPort: https
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt
+  to:
+    kind: Service
+    name: ztpfw-ui
+  wildcardPolicy: None
