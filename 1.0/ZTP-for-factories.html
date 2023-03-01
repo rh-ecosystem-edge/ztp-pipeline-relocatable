@@ -2057,10 +2057,10 @@ edgeclusters:
 <div class="title">Prerequisites</div>
 <ul>
 <li>
-<p>Enough DHCP IPs in the external network to hold the edge cluster.</p>
+<p>The external network&#8217;s DHCP range should have enough IPs for the edge cluster.</p>
 </li>
 <li>
-<p>The following API, API-INT and ingress entries are available:</p>
+<p>The following API, API-INT and ingress DNS entries are resolvable:</p>
 <div class="ulist">
 <ul>
 <li>
@@ -2097,10 +2097,10 @@ edgeclusters:
 <p>Clean disks for the OpenShift Data Foundation Storage cluster.</p>
 </li>
 <li>
-<p>DNS Resolution between the edge and the hub API and ingress entries.</p>
+<p>An OpenShift Container Platform hub cluster.</p>
 </li>
 <li>
-<p>An OpenShift Container Platform hub cluster.</p>
+<p>DNS Resolution between the edge and the hub API and ingress entries.</p>
 </li>
 <li>
 <p>Log in as a user with <code>cluster-admin</code> privileges.</p>
@@ -3445,7 +3445,7 @@ tkn pipeline start -n edgecluster-deployer -p ztp-container-image="quay.io/ztpfw
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-03-01 01:10:09 UTC
+Last updated 2023-03-01 07:59:32 UTC
 </div>
 </div>
 </body>
