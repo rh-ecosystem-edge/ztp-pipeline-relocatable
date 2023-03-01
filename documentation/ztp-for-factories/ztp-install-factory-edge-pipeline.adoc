@@ -10,8 +10,8 @@ Follow the steps in this section to run the edge factory install pipeline.
 
 .Prerequisites
 
-* Enough DHCP IPs in the external network to hold the edge cluster.
-* The following API, API-INT and ingress entries are available:
+* The external network's DHCP range should have enough IPs for the edge cluster.
+* The following API, API-INT and ingress DNS entries are resolvable:
 ** `api.<edge-cluster-name>.<network-domain>`
 ** `api-int.<edge-cluster-name>.<network-domain>`
 ** `*.apps.<edge-cluster-name>.<network-domain>`
@@ -22,8 +22,8 @@ When deploying a single-node OpenShift cluster, the `api.<edge-cluster-name>.<ba
 ====
 
 * Clean disks for the OpenShift Data Foundation Storage cluster.
-* DNS Resolution between the edge and the hub API and ingress entries.
 * An {product-title} hub cluster.
+* DNS Resolution between the edge and the hub API and ingress entries.
 * Log in as a user with `cluster-admin` privileges.
 
 .Procedure
