@@ -82,6 +82,13 @@ var (
 	}
 	IngressControllerListGVK = listGVK(IngressControllerGVK)
 
+	LocalVolumeGVK = schema.GroupVersionKind{
+		Group:   "local.storage.openshift.io",
+		Version: "v1",
+		Kind:    "LocalVolume",
+	}
+	LocalVolumeListGVK = listGVK(LocalVolumeGVK)
+
 	ManagedClusterGVK = schema.GroupVersionKind{
 		Group:   "cluster.open-cluster-management.io",
 		Version: "v1",
