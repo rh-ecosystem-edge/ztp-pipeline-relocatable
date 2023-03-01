@@ -36,7 +36,7 @@ func AddFlags(set *pflag.FlagSet) {
 	_ = set.StringArray(
 		fieldFlagName,
 		[]string{},
-		"Feld to add to all log messages. The value can be a percent sign followed by "+
+		"Field to add to all log messages. The value can be a percent sign followed by "+
 			"one of the letters that indicate a special value, or a field name "+
 			"followed by an equals sign and the field value. For example '%p' "+
 			"results in a field named 'pid' containing the identifier of the "+

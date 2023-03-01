@@ -35,6 +35,7 @@ import (
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/text"
 )
 
 var _ = Describe("Applier", func() {
@@ -126,7 +127,7 @@ var _ = Describe("Applier", func() {
 			// Create the templates filesystem:
 			tmp, fsys := TmpFS(
 				"objects/my-object.yaml",
-				Dedent(`
+				text.Dedent(`
 					apiVersion: v1
 					kind: Namespace
 					metadata:
@@ -167,7 +168,7 @@ var _ = Describe("Applier", func() {
 			// Create the templates filesystem:
 			tmp, fsys := TmpFS(
 				"objects/my-objects.yaml",
-				Dedent(`
+				text.Dedent(`
 					apiVersion: v1
 					kind: Namespace
 					metadata:
@@ -250,7 +251,7 @@ var _ = Describe("Applier", func() {
 			// Create the templates filesystem:
 			tmp, fsys := TmpFS(
 				"objects/my-object.yaml",
-				Dedent(`
+				text.Dedent(`
 					apiVersion: v1
 					kind: ConfigMap
 					metadata:
@@ -319,7 +320,7 @@ var _ = Describe("Applier", func() {
 			}
 			tmp, fsys := TmpFS(
 				"objects.yaml",
-				Dedent(`
+				text.Dedent(`
 					apiVersion: v1
 					kind: Namespace
 					metadata: 
@@ -416,7 +417,7 @@ var _ = Describe("Applier", func() {
 			}
 			objectTmp, objectFsys := TmpFS(
 				"object.yaml",
-				Dedent(`
+				text.Dedent(`
 					apiVersion: {{ .Group }}/v1
 					kind: Example
 					metadata:
@@ -457,7 +458,7 @@ var _ = Describe("Applier", func() {
 			// Create the CRD:
 			crdTmp, crdFsys := TmpFS(
 				"crd.yaml",
-				Dedent(`
+				text.Dedent(`
 					apiVersion: apiextensions.k8s.io/v1
 					kind: CustomResourceDefinition
 					metadata:
