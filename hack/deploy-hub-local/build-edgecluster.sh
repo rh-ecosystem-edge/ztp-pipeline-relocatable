@@ -137,9 +137,9 @@ for edgecluster in $(seq 0 $((CLUSTERS - 1))); do
   - ${_CLUSTER_NAME}${edgecluster}-cluster:
       config:
         tpm: ${TPM}
-      contrib:
-        gpu-operator:
-          version: "v1.10.1"
+      #contrib:
+      #  gpu-operator:
+      #    version: "v1.10.1"
 EOF
     for master in $(seq 0 $((MASTERS - 1))); do
         # Stanza generation for each master
