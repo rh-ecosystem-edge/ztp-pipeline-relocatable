@@ -17,89 +17,9 @@ package testing
 import (
 	"bytes"
 	"html/template"
-	"sort"
-	"strings"
-	"unicode"
 
 	. "github.com/onsi/gomega"
 )
-
-// Dedent removes from the given string all the whitespace that is common to all the lines.
-func Dedent(text string) string {
-	// Normalize blank lines replacing them with empty strings:
-	lines := strings.Split(text, "\n")
-	for i, line := range lines {
-		if strings.TrimSpace(line) == "" {
-			lines[i] = ""
-		}
-	}
-
-	// Calculate the set of white space prefixes for all the non blank lines:
-	set := map[string]bool{}
-	for _, line := range lines {
-		length := strings.IndexFunc(line, func(r rune) bool {
-			return !unicode.IsSpace(r)
-		})
-		if length == -1 {
-			continue
-		}
-		set[line[0:length]] = true
-	}
-
-	// Sort the prefixes by length, from longest to shortest:
-	list := make([]string, len(set))
-	i := 0
-	for prefix := range set {
-		list[i] = prefix
-		i++
-	}
-	sort.Slice(list, func(i, j int) bool {
-		return len(list[i]) > len(list[j])
-	})
-
-	// Find the length prefix that is a prefix of all the lines:
-	var length int
-	for _, prefix := range list {
-		i := 0
-		for _, line := range lines {
-			if line != "" && !strings.HasPrefix(line, prefix) {
-				break
-			}
-			i++
-		}
-		if i == len(lines) {
-			length = len(prefix)
-			break
-		}
-	}
-
-	// Remove the prefix from all the lines:
-	for i, line := range lines {
-		if line == "" {
-			continue
-		}
-		lines[i] = line[length:]
-	}
-
-	// Join the lines, but taking into account that if the original text had an ending line
-	// break we want to preserve it:
-	size := len(lines)
-	for _, line := range lines {
-		size += len(line)
-	}
-	builder := &strings.Builder{}
-	builder.Grow(size)
-	for i, line := range lines {
-		if i > 0 {
-			builder.WriteString("\n")
-		}
-		builder.WriteString(line)
-	}
-	if strings.HasSuffix(text, "\n") {
-		builder.WriteString("\n")
-	}
-	return builder.String()
-}
 
 // Templates generates a string from the given templlate source and name value pairs.
 func Template(source string, args ...any) string {

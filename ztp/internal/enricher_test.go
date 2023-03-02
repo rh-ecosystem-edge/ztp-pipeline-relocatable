@@ -41,6 +41,7 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/text"
 )
 
 var _ = Describe("Enricher", Ordered, func() {
@@ -373,7 +374,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			defer server.Close()
 			server.AppendHandlers(RespondWith(
 				http.StatusOK,
-				Dedent(`
+				text.Dedent(`
 					Component Versions:
 					  kubernetes 1.23.12               
 					  machine-os my-release Red Hat Enterprise Linux CoreOS
@@ -694,7 +695,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			}
 			tmp, fsys := TmpFS(
 				"objects.yaml",
-				Dedent(`
+				text.Dedent(`
 					---
 					apiVersion: v1
 					kind: Namespace
@@ -779,7 +780,7 @@ var _ = Describe("Enricher", Ordered, func() {
 			}
 			tmp, fsys := TmpFS(
 				"objects.yaml",
-				Dedent(`
+				text.Dedent(`
 					---
 					apiVersion: v1
 					kind: Namespace

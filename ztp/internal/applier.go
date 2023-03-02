@@ -310,7 +310,7 @@ func (a *Applier) Apply(ctx context.Context, data any) error {
 	if err != nil {
 		return err
 	}
-	return a.applyObjects(ctx, objects)
+	return a.ApplyObjects(ctx, objects)
 }
 
 // ApplyObjects creates the given objects.
@@ -449,11 +449,15 @@ func (a *Applier) applyCRDs(ctx context.Context, crds []*unstructured.Unstructur
 	// Wait till all the CRDs have been established, as otherwise creating objects of the
 	// corresponding kind will fail:
 	if len(crds) > 0 {
-		gvks := make([]schema.GroupVersionKind, len(crds))
-		for i, crd := range crds {
-			gvks[i] = crd.GroupVersionKind()
+		var all []schema.GroupVersionKind
+		for _, crd := range crds {
+			gvks, err := a.getCRDGVKs(ctx, crd)
+			if err != nil {
+				return err
+			}
+			all = append(all, gvks...)
 		}
-		err = a.waitCRDs(ctx, gvks...)
+		err = a.waitCRDs(ctx, all...)
 		if err != nil {
 			return err
 		}
@@ -475,26 +479,18 @@ func (a *Applier) waitCRDs(ctx context.Context, gvks ...schema.GroupVersionKind)
 	}
 	defer watch.Stop()
 	for event := range watch.ResultChan() {
-		object, ok := event.Object.(*unstructured.Unstructured)
+		crd, ok := event.Object.(*unstructured.Unstructured)
 		if !ok {
 			continue
 		}
-		var gvks []schema.GroupVersionKind
-		err = a.jq.Query(
-			`.spec | [{
-				"Group": .group,
-				"Version": .versions[].name,
-				"Kind": .names.kind
-			}]`,
-			object.Object, &gvks,
-		)
+		gvks, err := a.getCRDGVKs(ctx, crd)
 		if err != nil {
 			return err
 		}
 		var established string
 		err = a.jq.Query(
 			`.status.conditions[]? | select(.type == "Established") | .status`,
-			object.Object, &established,
+			crd.Object, &established,
 		)
 		if err != nil {
 			return err
@@ -530,6 +526,19 @@ func (a *Applier) waitCRDs(ctx context.Context, gvks ...schema.GroupVersionKind)
 		}
 	}
 	return nil
+}
+
+func (a *Applier) getCRDGVKs(ctx context.Context,
+	crd *unstructured.Unstructured) (result []schema.GroupVersionKind, err error) {
+	err = a.jq.Query(
+		`.spec | {
+			"Group": .group,
+			"Version": .versions[].name,
+			"Kind": .names.kind
+		}`,
+		crd.Object, &result,
+	)
+	return
 }
 
 func (a *Applier) applyObjects(ctx context.Context, objects []*unstructured.Unstructured) error {
