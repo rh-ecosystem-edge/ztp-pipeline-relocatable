@@ -27,13 +27,13 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
 
-// Cobra creates and returns the `create metallb` command.
+// Cobra creates and returns the `delete metallb` command.
 func Cobra() *cobra.Command {
 	c := NewCommand()
 	result := &cobra.Command{
 		Use:     "metallb",
 		Aliases: []string{"metallbs"},
-		Short:   "Creates metal load balancers",
+		Short:   "Deletes metal load balancers",
 		Args:    cobra.NoArgs,
 		RunE:    c.Run,
 	}
@@ -43,7 +43,7 @@ func Cobra() *cobra.Command {
 	return result
 }
 
-// Command contains the data and logic needed to run the `create metallb` command.
+// Command contains the data and logic needed to run the `delete metallb` command.
 type Command struct {
 	logger  logr.Logger
 	flags   *pflag.FlagSet
@@ -52,12 +52,12 @@ type Command struct {
 	client  *internal.Client
 }
 
-// NewCommand creates a new runner that knows how to execute the `create metallb` command.
+// NewCommand creates a new runner that knows how to execute the `delete metallb` command.
 func NewCommand() *Command {
 	return &Command{}
 }
 
-// Run runs the `create metallb` command.
+// Run runs the `delete metallb` command.
 func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	var err error
 
@@ -74,7 +74,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	// Load the configuration:
 	c.config, err = config.NewLoader().
 		SetLogger(c.logger).
-		SetFlags(c.flags).
+		SetFlags(cmd.Flags()).
 		Load()
 	if err != nil {
 		c.console.Error(
@@ -96,12 +96,13 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		)
 		return exit.Error(1)
 	}
+	defer c.client.Close()
 
 	// Enrich the configuration:
 	enricher, err := internal.NewEnricher().
 		SetLogger(c.logger).
 		SetClient(c.client).
-		SetFlags(c.flags).
+		SetFlags(cmd.Flags()).
 		Build()
 	if err != nil {
 		c.console.Error(
@@ -119,12 +120,12 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		return exit.Error(1)
 	}
 
-	// Create the load balancers:
+	// Delete the load balancers:
 	for _, cluster := range c.config.Clusters {
-		err = c.createLB(ctx, cluster)
+		err = c.deleteLB(ctx, cluster)
 		if err != nil {
 			c.console.Error(
-				"Failed to create load balancer for cluster '%s': %v",
+				"Failed to delete load balancer for cluster '%s': %v",
 				cluster.Name, err,
 			)
 			return exit.Error(1)
@@ -134,7 +135,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	return nil
 }
 
-func (c *Command) createLB(ctx context.Context, cluster *models.Cluster) error {
+func (c *Command) deleteLB(ctx context.Context, cluster *models.Cluster) error {
 	// Check that the Kubeconfig is available:
 	if cluster.Kubeconfig == nil {
 		c.console.Error(
@@ -216,8 +217,8 @@ func (c *Command) createLB(ctx context.Context, cluster *models.Cluster) error {
 		return exit.Error(1)
 	}
 
-	// Create the objects:
-	return applier.Apply(ctx, map[string]any{
+	// Delete the objects:
+	return applier.Delete(ctx, map[string]any{
 		"Cluster": cluster,
 	})
 }
