@@ -1,0 +1,12 @@
+
+apiVersion: oauth.openshift.io/v1
+grantMethod: auto
+kind: OAuthClient
+metadata:
+  labels:
+    app: ztpfw-ui
+  name: ztpfwoauth
+  namespace: {{ .Namespace }}
+redirectURIs:
+- https://{{ .Host }}/login/callback
+secret: ztpfwoauthsecret
