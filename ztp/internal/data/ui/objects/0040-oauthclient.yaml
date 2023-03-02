@@ -6,7 +6,7 @@ metadata:
   labels:
     app: ztpfw-ui
   name: ztpfwoauth
-  namespace: {{ .Namespace }}
+  namespace: ztpfw-ui
 redirectURIs:
 - https://{{ .Host }}/login/callback
 secret: ztpfwoauthsecret

@@ -29,13 +29,13 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
 )
 
-// Cobra creates and returns the `create ui` command.
+// Cobra creates and returns the `delete ui` command.
 func Cobra() *cobra.Command {
 	c := NewCommand()
 	result := &cobra.Command{
 		Use:     "ui",
 		Aliases: []string{"uis"},
-		Short:   "Deploys the user interface componnets",
+		Short:   "Deletes the user interface componnets",
 		Args:    cobra.NoArgs,
 		RunE:    c.Run,
 	}
@@ -45,7 +45,7 @@ func Cobra() *cobra.Command {
 	return result
 }
 
-// Command contains the data and logic needed to run the `create ui` command.
+// Command contains the data and logic needed to run the `delete ui` command.
 type Command struct {
 	logger  logr.Logger
 	flags   *pflag.FlagSet
@@ -66,12 +66,12 @@ type Task struct {
 	client  *internal.Client
 }
 
-// NewCommand creates a new runner that knows how to execute the `create ui` command.
+// NewCommand creates a new runner that knows how to execute the `delete ui` command.
 func NewCommand() *Command {
 	return &Command{}
 }
 
-// Run runs the `create ui` command.
+// Run runs the `delete ui` command.
 func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 	var err error
 
@@ -145,7 +145,7 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		err = task.Run(ctx)
 		if err != nil {
 			c.console.Error(
-				"Failed to create UI components for cluster '%s': %v",
+				"Failed to delete UI components for cluster '%s': %v",
 				cluster.Name, err,
 			)
 		}
@@ -203,7 +203,7 @@ func (t *Task) Run(ctx context.Context) error {
 	)
 
 	// Create the objects:
-	return applier.Apply(ctx, map[string]any{
+	return applier.Delete(ctx, map[string]any{
 		"Host": host,
 	})
 }

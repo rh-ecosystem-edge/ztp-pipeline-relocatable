@@ -4,7 +4,7 @@ metadata:
   labels:
     app: ztpfw-ui
   name: ztpfw-ui
-  namespace: {{ .Namespace }}
+  namespace: ztpfw-ui
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: ztpfw-ui
-        image: {{ .Image }}
+        image: quay.io/ztpfw/ui:latest
         imagePullPolicy: Always
         ports:
         - name: ui
