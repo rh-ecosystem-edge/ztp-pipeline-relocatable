@@ -27,6 +27,7 @@ import (
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
@@ -368,6 +369,56 @@ func (c *Client) Scheme() *runtime.Scheme {
 func (c *Client) Watch(ctx context.Context, obj clnt.ObjectList,
 	opts ...clnt.ListOption) (watch.Interface, error) {
 	return c.delegate.Watch(ctx, obj, opts...)
+}
+
+// DeleteCRDGroup deletes all the custom resource definitions in the given group. Returns the number
+// of CRDs actually deleted.
+func (c *Client) DeleteCRDGroup(ctx context.Context, group string) (n int, err error) {
+	all := &unstructured.UnstructuredList{}
+	all.SetGroupVersionKind(CustomResourceDefinitionListGVK)
+	err = c.delegate.List(ctx, all)
+	if err != nil {
+		return
+	}
+	var matching []*unstructured.Unstructured
+	for _, item := range all.Items {
+		var (
+			key string
+			ok  bool
+		)
+		key, ok, err = unstructured.NestedString(item.Object, "spec", "group")
+		if err != nil {
+			return
+		}
+		if !ok || key != group {
+			continue
+		}
+		crd := &unstructured.Unstructured{}
+		crd.SetGroupVersionKind(item.GroupVersionKind())
+		crd.SetName(item.GetName())
+		matching = append(matching, crd)
+	}
+	c.logger.V(1).Info(
+		"CRDs to delete",
+		"group", group,
+		"count", len(matching),
+	)
+	if len(matching) == 0 {
+		return
+	}
+	for _, crd := range matching {
+		err = c.Delete(ctx, crd)
+		if err != nil {
+			return
+		}
+		n++
+		c.logger.V(1).Info(
+			"Deleted CRD",
+			"group", group,
+			"name", crd.GetName(),
+		)
+	}
+	return
 }
 
 // Close closes the client and releases all the resources it is using. It is specially important to
