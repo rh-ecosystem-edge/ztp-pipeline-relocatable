@@ -18,6 +18,7 @@ import (
 	"github.com/spf13/cobra"
 
 	deleteclustercmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/delete/cluster"
+	deletemetallbcmd "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/delete/metallb"
 )
 
 // Cobra creates and returns the `delete` command.
@@ -28,5 +29,6 @@ func Cobra() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 	result.AddCommand(deleteclustercmd.Cobra())
+	result.AddCommand(deletemetallbcmd.Cobra())
 	return result
 }
