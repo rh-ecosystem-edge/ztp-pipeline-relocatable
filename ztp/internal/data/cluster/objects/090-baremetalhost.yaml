@@ -10,6 +10,9 @@ metadata:
   annotations:
     inspect.metal3.io: disabled
     bmac.agent-install.openshift.io/hostname: {{ .Hostname }}
+    {{ if eq .Kind "Worker" }}
+    bmac.agent-install.openshift.io/role: worker
+    {{ end }}
     bmac.agent-install.openshift.io/ignition-config-overrides: {{ execute "files/cfg-override-bmh.json" . | json }}
 spec:
   online: false
