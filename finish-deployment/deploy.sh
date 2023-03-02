@@ -76,7 +76,10 @@ function generate_edgecluster_csr-approver_kubeconfig() {
     # Then, create the ClusterRoleBinding and final kubeconfig
     oc --kubeconfig=${EDGE_KUBECONFIG} apply -f ${EDGE_CSR_RESOURCES}
     oc --kubeconfig=${EDGE_KUBECONFIG} adm policy add-cluster-role-to-user ztpfw-csr-approver -z ztpfw-csr-approver -n openshift-infra
-    oc --kubeconfig=${EDGE_KUBECONFIG} serviceaccounts create-kubeconfig ztpfw-csr-approver -n openshift-infra >${EDGE_CSR_KUBECONFIG}
+    TOKEN=$(oc --kubeconfig=${EDGE_KUBECONFIG} create token -n openshift-infra ztpfw-csr-approver  --duration=600s)
+
+    API_URL=$(oc --kubeconfig=${EDGE_KUBECONFIG} get infrastructures.config.openshift.io  cluster --template={{.status.apiServerURL}})
+    oc --insecure-skip-tls-verify login --server="${API_URL}" --token=$TOKEN --kubeconfig=${EDGE_CSR_KUBECONFIG}
 }
 
 function save_files() {
