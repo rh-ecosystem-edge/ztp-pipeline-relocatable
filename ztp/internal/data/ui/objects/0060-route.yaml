@@ -4,7 +4,7 @@ metadata:
   labels:
     app: ztpfw-ui
   name: ztpfw-ui
-  namespace: {{ .Namespace }}
+  namespace: ztpfw-ui
 spec:
   host: {{ .Host }}
   port:

@@ -4,7 +4,7 @@ metadata:
   labels:
     app: ztpfw-ui
   name: ztpfw-ui
-  namespace: {{ .Namespace }}
+  namespace: ztpfw-ui
   annotations:
     service.beta.openshift.io/serving-cert-secret-name: ztpfw-ui-tls
 spec:

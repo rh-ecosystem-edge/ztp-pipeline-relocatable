@@ -13,4 +13,4 @@ subjects:
 - kind: ServiceAccount
   # name: system:serviceaccount:ztpfw-ui:default
   name: default
-  namespace: {{ .Namespace }}
+  namespace: ztpfw-ui
