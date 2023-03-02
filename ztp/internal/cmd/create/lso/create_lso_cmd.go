@@ -276,7 +276,7 @@ func (t *Task) Run(ctx context.Context) error {
 		t.console.Warn(
 			"Will not wipe the disks of cluster '%s', to enable it add "+
 				" the '--%s=true' flag",
-			wipeFlagName,
+			t.cluster.Name, wipeFlagName,
 		)
 	}
 
