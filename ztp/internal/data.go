@@ -38,3 +38,4 @@ var DataFS embed.FS
 //go:generate get data/dev/crds/0110_l2adverisements.yaml     https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_l2advertisements.yaml
 //go:generate get data/dev/crds/0120_nmstate.yaml             https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nmstates.yaml
 //go:generate get data/dev/crds/0130_ncnp.yaml                https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nodenetworkconfigurationpolicies.yaml
+//go:generate get data/dev/crds/0160_localvolume.yaml         https://raw.githubusercontent.com/openshift/local-storage-operator/release-4.12/config/crd/bases/local.storage.openshift.io_localvolumes.yaml

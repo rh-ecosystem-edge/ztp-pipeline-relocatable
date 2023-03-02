@@ -553,7 +553,8 @@ func (a *Applier) applyObjects(ctx context.Context, objects []*unstructured.Unst
 
 func (a *Applier) applyObject(ctx context.Context, object *unstructured.Unstructured) error {
 	// Create a copy of the object so that we don't alter the original:
-	copy, err := a.copyObject(object)
+	copy := &unstructured.Unstructured{}
+	err := a.deepCopy(object.Object, &copy.Object)
 	if err != nil {
 		a.fireError(ApplierCreateError, object, err)
 		return err
@@ -567,13 +568,6 @@ func (a *Applier) applyObject(ctx context.Context, object *unstructured.Unstruct
 	maps.Copy(labels, a.labels)
 	copy.SetLabels(labels)
 
-	// The object may have a status, but the create API ignores it, so we need to extract it and
-	// apply it separately after the object has been created.
-	status, ok := copy.Object["status"]
-	if ok {
-		delete(copy.Object, "status")
-	}
-
 	// Create the object:
 	err = a.createObject(ctx, copy)
 	if err != nil {
@@ -581,24 +575,47 @@ func (a *Applier) applyObject(ctx context.Context, object *unstructured.Unstruct
 	}
 
 	// Update the status:
-	if status != nil {
-		key := clnt.ObjectKeyFromObject(copy)
-		err = retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			err := a.client.Get(ctx, key, copy)
-			if err != nil {
-				a.fireError(ApplierStatusError, object, err)
-				return err
-			}
-			copy.Object["status"] = status
-			return a.client.Status().Update(ctx, copy)
-		})
-		if err != nil {
-			a.fireError(ApplierStatusError, object, err)
-			return err
-		}
-		a.fireInfo(ApplierStatusUpdated, object)
+	err = a.applyStatus(ctx, object)
+	if err != nil {
+		return err
 	}
 
+	return nil
+}
+
+func (a *Applier) applyStatus(ctx context.Context, object *unstructured.Unstructured) error {
+	// Do nothing if there is no status:
+	status, ok := object.Object["status"]
+	if !ok {
+		return nil
+	}
+
+	// Save the new status:
+	gvk := object.GroupVersionKind()
+	key := clnt.ObjectKeyFromObject(object)
+	err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		object := &unstructured.Unstructured{}
+		object.SetGroupVersionKind(gvk)
+		err := a.client.Get(ctx, key, object)
+		if err != nil {
+			return err
+		}
+		var copy any
+		err = a.deepCopy(status, &copy)
+		if err != nil {
+			return err
+		}
+		object.Object["status"] = copy
+		if err != nil {
+			return err
+		}
+		return a.client.Status().Update(ctx, object)
+	})
+	if err != nil {
+		a.fireError(ApplierStatusError, object, err)
+		return err
+	}
+	a.fireInfo(ApplierStatusUpdated, object)
 	return nil
 }
 
@@ -857,18 +874,15 @@ func (a *Applier) decodeObjects(reader io.Reader) (results []*unstructured.Unstr
 	return
 }
 
-func (a *Applier) copyObject(object *unstructured.Unstructured) (result *unstructured.Unstructured,
-	err error) {
-	if object == nil {
-		return
+func (a *Applier) deepCopy(src, dst any) error {
+	if src == nil {
+		return nil
 	}
-	data, err := yaml.Marshal(object.Object)
+	data, err := yaml.Marshal(src)
 	if err != nil {
-		return
+		return err
 	}
-	result = &unstructured.Unstructured{}
-	err = yaml.Unmarshal(data, &result.Object)
-	return
+	return yaml.Unmarshal(data, dst)
 }
 
 func (a *Applier) fireInfo(typ ApplierEventType, object *unstructured.Unstructured) {

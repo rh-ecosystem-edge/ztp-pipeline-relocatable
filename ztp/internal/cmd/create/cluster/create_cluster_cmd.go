@@ -348,6 +348,10 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 	defer watch.Stop()
 	state := ""
 	for event := range watch.ResultChan() {
+		object, ok := event.Object.(*unstructured.Unstructured)
+		if !ok {
+			continue
+		}
 		var current struct {
 			state     string
 			completed string
@@ -355,21 +359,21 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 		}
 		err = c.jq.Query(
 			`.status.debugInfo.state`,
-			event.Object, &current.state,
+			object.Object, &current.state,
 		)
 		if err != nil {
 			return err
 		}
 		err = c.jq.Query(
 			`.status.conditions[]? | select(.type == "Completed") | .status`,
-			event.Object, &current.completed,
+			object.Object, &current.completed,
 		)
 		if err != nil {
 			return err
 		}
 		err = c.jq.Query(
 			`.status.conditions[]? | select(.type == "Failed") | .status`,
-			event.Object, &current.failed,
+			object.Object, &current.failed,
 		)
 		if err != nil {
 			return err
