@@ -346,53 +346,57 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 		return err
 	}
 	defer watch.Stop()
-	state := ""
 	for event := range watch.ResultChan() {
 		object, ok := event.Object.(*unstructured.Unstructured)
 		if !ok {
 			continue
 		}
-		var current struct {
-			state     string
-			completed string
-			failed    string
-		}
+		var state string
 		err = c.jq.Query(
 			`.status.debugInfo.state`,
-			object.Object, &current.state,
+			object, &state,
 		)
 		if err != nil {
 			return err
 		}
-		err = c.jq.Query(
-			`.status.conditions[]? | select(.type == "Completed") | .status`,
-			object.Object, &current.completed,
-		)
-		if err != nil {
-			return err
-		}
-		err = c.jq.Query(
-			`.status.conditions[]? | select(.type == "Failed") | .status`,
-			object.Object, &current.failed,
-		)
-		if err != nil {
-			return err
-		}
-		if current.state != state {
+		if state != "" {
 			c.console.Info(
 				"Cluster '%s' moved to state '%s'",
-				cluster.Name, current.state,
+				cluster.Name, state,
 			)
-			state = current.state
 		}
-		if current.completed == "True" {
+		if state == "error" {
+			c.console.Error(
+				"Installation of cluster '%s' failed because it moved to "+
+					"the '%s' state",
+				cluster.Name, state,
+			)
+			return exit.Error(1)
+		}
+		var completed string
+		err = c.jq.Query(
+			`.status.conditions[]? | select(.type == "Completed") | .status`,
+			object, &completed,
+		)
+		if err != nil {
+			return err
+		}
+		if completed == "True" {
 			c.console.Info(
 				"Installation of cluster '%s' succeeded",
 				cluster.Name,
 			)
 			break
 		}
-		if current.failed == "True" {
+		var failed string
+		err = c.jq.Query(
+			`.status.conditions[]? | select(.type == "Failed") | .status`,
+			object, &failed,
+		)
+		if err != nil {
+			return err
+		}
+		if failed == "True" {
 			c.console.Error(
 				"Installation of cluster '%s' failed",
 				cluster.Name,
@@ -400,7 +404,7 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 			return exit.Error(1)
 		}
 	}
-	return nil
+	return ctx.Err()
 }
 
 func (c *Command) writeOutput(ctx context.Context, cluster *models.Cluster, output string) error {
