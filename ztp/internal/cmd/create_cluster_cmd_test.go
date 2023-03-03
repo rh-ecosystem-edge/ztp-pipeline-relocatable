@@ -603,7 +603,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 		Expect(buffer.String()).To(ContainSubstring("Cluster '%s' moved to state 'my-state'", name))
 	})
 
-	It("Stops if the cluster installation fails", func() {
+	It("Fails when the 'Failed' condition is true", func() {
 		// Prepare the configuration:
 		config := Template(
 			text.Dedent(`
@@ -729,6 +729,214 @@ var _ = Describe("Create cluster command", Ordered, func() {
 		Expect(buffer.String()).To(ContainSubstring(
 			"Installation of cluster '%s' failed",
 			name,
+		))
+	})
+
+	It("Fails when the cluster moves to the 'error' state", func() {
+		// Prepare the configuration:
+		config := Template(
+			text.Dedent(`
+				config:
+				  OC_OCP_VERSION: '4.11.20'
+				  OC_ACM_VERSION: '2.6'
+				  OC_ODF_VERSION: '4.11'
+				edgeclusters:
+				- {{ .Name }}:
+				    config:
+				      tpm: false
+				    contrib:
+				      gpu-operator:
+				        version: "v1.10.1"
+				    master0:
+				      nic_ext_dhcp: enp1s0
+				      mac_ext_dhcp: "63:ed:8b:f1:15:4c"
+				      bmc_url: "redfish-virtualmedia+http://192.168.122.1:8000/redfish/v1/Systems/d5405874-a05e-44bd-a6e1-f7105d6ed932"
+				      bmc_user: "user0"
+				      bmc_pass: "pass0"
+				      root_disk: /dev/vda
+				      storage_disk:
+				      - /dev/vdb
+			`),
+			"Name", name,
+		)
+
+		// Remember to delete the cluster when done:
+		defer func() {
+			tool, err := internal.NewTool().
+				SetLogger(logger).
+				SetArgs(
+					"ztp", "delete", "cluster",
+					"--config", config,
+					"--resolver", dns.Address(),
+				).
+				AddCommand(deletecmd.Cobra).
+				SetIn(&bytes.Buffer{}).
+				SetOut(GinkgoWriter).
+				SetErr(GinkgoWriter).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			err = tool.Run(ctx)
+			Expect(err).ToNot(HaveOccurred())
+		}()
+
+		// Run the command to create the cluster in a separate goroutine:
+		buffer := &bytes.Buffer{}
+		multi := io.MultiWriter(buffer, GinkgoWriter)
+		finished := &atomic.Bool{}
+		go func() {
+			defer GinkgoRecover()
+			tool, err := internal.NewTool().
+				SetLogger(logger).
+				SetArgs(
+					"ztp", "create", "cluster",
+					"--config", config,
+					"--resolver", dns.Address(),
+					"--wait", "1m",
+				).
+				AddCommand(createcmd.Cobra).
+				SetIn(&bytes.Buffer{}).
+				SetOut(multi).
+				SetErr(multi).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			err = tool.Run(ctx)
+			Expect(err).To(HaveOccurred())
+			finished.Store(true)
+		}()
+
+		// Wait till the bare metal host exists, and then set the state to provisioned:
+		bmhObject := &unstructured.Unstructured{}
+		bmhObject.SetGroupVersionKind(internal.BareMetalHostGVK)
+		bmhKey := clnt.ObjectKey{
+			Namespace: name,
+			Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
+		}
+		Eventually(func() error {
+			return client.Get(ctx, bmhKey, bmhObject)
+		}, time.Minute).Should(Succeed())
+		bmhUpdate := bmhObject.DeepCopy()
+		bmhUpdate.Object["status"] = map[string]any{
+			"provisioning": map[string]any{
+				"ID":    uuid.NewString(),
+				"state": "provisioned",
+			},
+			"errorMessage":      "my-error",
+			"hardwareProfile":   "my-profile",
+			"operationalStatus": "OK",
+			"poweredOn":         true,
+		}
+		err := client.Status().Patch(ctx, bmhUpdate, clnt.MergeFrom(bmhObject))
+		Expect(err).ToNot(HaveOccurred())
+
+		// Wait till the agent cluster install exists and set state to error:
+		aciObject := &unstructured.Unstructured{}
+		aciObject.SetGroupVersionKind(internal.AgentClusterInstallGVK)
+		aciKey := clnt.ObjectKey{
+			Namespace: name,
+			Name:      name,
+		}
+		Eventually(func() error {
+			return client.Get(ctx, aciKey, aciObject)
+		}, time.Minute).Should(Succeed())
+		aciUpdate := aciObject.DeepCopy()
+		aciUpdate.Object["status"] = map[string]any{
+			"debugInfo": map[string]any{
+				"state": "error",
+			},
+		}
+		err = client.Status().Patch(ctx, aciUpdate, clnt.MergeFrom(aciObject))
+		Expect(err).ToNot(HaveOccurred())
+
+		// Wait till the tool finishes:
+		Eventually(finished.Load, time.Minute).Should(BeTrue())
+
+		// Check that the tool has written the message that indicates that the cluster
+		// installation failed:
+		Expect(buffer.String()).To(ContainSubstring(
+			"Installation of cluster '%s' failed because it moved to the 'error' state",
+			name,
+		))
+	})
+
+	It("Fails when the timeout expires", func() {
+		// Prepare the configuration:
+		config := Template(
+			text.Dedent(`
+				config:
+				  OC_OCP_VERSION: '4.11.20'
+				  OC_ACM_VERSION: '2.6'
+				  OC_ODF_VERSION: '4.11'
+				edgeclusters:
+				- {{ .Name }}:
+				    config:
+				      tpm: false
+				    contrib:
+				      gpu-operator:
+				        version: "v1.10.1"
+				    master0:
+				      nic_ext_dhcp: enp1s0
+				      mac_ext_dhcp: "63:ed:8b:f1:15:4c"
+				      bmc_url: "redfish-virtualmedia+http://192.168.122.1:8000/redfish/v1/Systems/d5405874-a05e-44bd-a6e1-f7105d6ed932"
+				      bmc_user: "user0"
+				      bmc_pass: "pass0"
+				      root_disk: /dev/vda
+				      storage_disk:
+				      - /dev/vdb
+			`),
+			"Name", name,
+		)
+
+		// Remember to delete the cluster when done:
+		defer func() {
+			tool, err := internal.NewTool().
+				SetLogger(logger).
+				SetArgs(
+					"ztp", "delete", "cluster",
+					"--config", config,
+					"--resolver", dns.Address(),
+				).
+				AddCommand(deletecmd.Cobra).
+				SetIn(&bytes.Buffer{}).
+				SetOut(GinkgoWriter).
+				SetErr(GinkgoWriter).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			err = tool.Run(ctx)
+			Expect(err).ToNot(HaveOccurred())
+		}()
+
+		// Run the command to create the cluster in a separate goroutine:
+		buffer := &bytes.Buffer{}
+		multi := io.MultiWriter(buffer, GinkgoWriter)
+		finished := &atomic.Bool{}
+		go func() {
+			defer GinkgoRecover()
+			tool, err := internal.NewTool().
+				SetLogger(logger).
+				SetArgs(
+					"ztp", "create", "cluster",
+					"--config", config,
+					"--resolver", dns.Address(),
+					"--wait", "1s",
+				).
+				AddCommand(createcmd.Cobra).
+				SetIn(&bytes.Buffer{}).
+				SetOut(multi).
+				SetErr(multi).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			err = tool.Run(ctx)
+			Expect(err).To(HaveOccurred())
+			finished.Store(true)
+		}()
+
+		// Wait till the tool finishes:
+		Eventually(finished.Load, time.Minute).Should(BeTrue())
+
+		// Check that the tool has written the message that indicates that the cluster
+		// installation failed:
+		Expect(buffer.String()).To(ContainSubstring(
+			"Clusters aren't ready after waiting",
 		))
 	})
 })
