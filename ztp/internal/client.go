@@ -74,7 +74,7 @@ func (b *ClientBuilder) SetLogger(value logr.Logger) *ClientBuilder {
 
 // SetKubeconfig sets the bytes of the kubeconfig file that will be used to create the client. The
 // value can be an array of bytes containing the configuration data or a string containing the name
-// of a file. This is optionaln, and if not specified then the configuration will be loaded from the
+// of a file. This is optional, and if not specified then the configuration will be loaded from the
 // typical default locations: the `~/.kube/config` file, the `KUBECONFIG` environment variable, etc.
 func (b *ClientBuilder) SetKubeconfig(value any) *ClientBuilder {
 	b.kubeconfig = value

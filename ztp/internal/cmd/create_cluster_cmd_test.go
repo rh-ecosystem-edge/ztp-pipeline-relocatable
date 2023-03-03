@@ -19,12 +19,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sync/atomic"
-	"time"
 
 	ignitionconfig "github.com/coreos/ignition/v2/config"
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
+	"github.com/imdario/mergo"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/ginkgo/v2/dsl/decorators"
 	. "github.com/onsi/gomega"
@@ -43,11 +42,13 @@ import (
 
 var _ = Describe("Create cluster command", Ordered, func() {
 	var (
-		ctx    context.Context
-		name   string
-		logger logr.Logger
-		client *internal.Client
-		dns    *DNSServer
+		ctx     context.Context
+		name    string
+		config  string
+		logger  logr.Logger
+		client  *internal.Client
+		manager *Manager
+		dns     *DNSServer
 	)
 
 	BeforeAll(func() {
@@ -90,11 +91,63 @@ var _ = Describe("Create cluster command", Ordered, func() {
 		dns.AddZone("my-domain.com")
 		dns.AddHost(fmt.Sprintf("api.%s.my-domain.com", name), "192.168.150.100")
 		dns.AddHost(fmt.Sprintf("apps.%s.my-domain.com", name), "192.168.150.101")
+
+		// Create the controller manager:
+		manager = NewManager().
+			SetLogger(logger).
+			AddGVK(internal.BareMetalHostGVK).
+			AddGVK(internal.AgentClusterInstallGVK).
+			Build()
+
+		// Add a reconciler that moves bare metal hosts to the provisioned state:
+		manager.AddReconciler(
+			internal.BareMetalHostGVK,
+			func(ctx context.Context, object *unstructured.Unstructured) {
+				update := object.DeepCopy()
+				err := mergo.Map(&update.Object, map[string]any{
+					"status": map[string]any{
+						"provisioning": map[string]any{
+							"ID":    uuid.NewString(),
+							"state": "provisioned",
+						},
+						"errorMessage":      "my-error",
+						"hardwareProfile":   "my-profile",
+						"operationalStatus": "OK",
+						"poweredOn":         true,
+					},
+				})
+				Expect(err).ToNot(HaveOccurred())
+				err = client.Status().Patch(ctx, update, clnt.MergeFrom(object))
+				Expect(err).ToNot(HaveOccurred())
+			},
+		)
+	})
+
+	AfterEach(func() {
+		// Delete the cluster:
+		tool, err := internal.NewTool().
+			SetLogger(logger).
+			SetArgs(
+				"ztp", "delete", "cluster",
+				"--config", config,
+				"--resolver", dns.Address(),
+			).
+			AddCommand(deletecmd.Cobra).
+			SetIn(&bytes.Buffer{}).
+			SetOut(GinkgoWriter).
+			SetErr(GinkgoWriter).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		err = tool.Run(ctx)
+		Expect(err).ToNot(HaveOccurred())
+
+		// Stop the controller manager:
+		manager.Close()
 	})
 
 	It("Creates SNO cluster", func() {
 		// Prepare the configuration:
-		config := Template(
+		config = Template(
 			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
@@ -137,25 +190,6 @@ var _ = Describe("Create cluster command", Ordered, func() {
 		Expect(err).ToNot(HaveOccurred())
 		err = tool.Run(ctx)
 		Expect(err).ToNot(HaveOccurred())
-
-		// Remember to delete the cluster when the test finishes:
-		defer func() {
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "delete", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-				).
-				AddCommand(deletecmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(GinkgoWriter).
-				SetErr(GinkgoWriter).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-		}()
 
 		By("Creating the namespace", func() {
 			object := &corev1.Namespace{}
@@ -334,8 +368,29 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	})
 
 	It("Waits till the cluster is ready", func() {
+		// Add a reconciler that marks agent cluster installations as completed:
+		manager.AddReconciler(
+			internal.AgentClusterInstallGVK,
+			func(ctx context.Context, object *unstructured.Unstructured) {
+				update := object.DeepCopy()
+				err := mergo.Map(&update.Object, map[string]any{
+					"status": map[string]any{
+						"conditions": []any{
+							map[string]any{
+								"type":   "Completed",
+								"status": "True",
+							},
+						},
+					},
+				})
+				Expect(err).ToNot(HaveOccurred())
+				err = client.Status().Patch(ctx, update, clnt.MergeFrom(object))
+				Expect(err).ToNot(HaveOccurred())
+			},
+		)
+
 		// Prepare the configuration:
-		config := Template(
+		config = Template(
 			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
@@ -361,98 +416,25 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			"Name", name,
 		)
 
-		// Remember to delete the cluster when done:
-		defer func() {
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "delete", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-				).
-				AddCommand(deletecmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(GinkgoWriter).
-				SetErr(GinkgoWriter).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-		}()
-
-		// Run the command to create the cluster in a separate goroutine:
+		// Run the command to create the cluster:
 		buffer := &bytes.Buffer{}
 		multi := io.MultiWriter(buffer, GinkgoWriter)
-		finished := &atomic.Bool{}
-		go func() {
-			defer GinkgoRecover()
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "create", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-					"--wait", "1m",
-				).
-				AddCommand(createcmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(multi).
-				SetErr(multi).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-			finished.Store(true)
-		}()
-
-		// Wait till the bare metal host exists, and then set the state to provisioned:
-		bmhObject := &unstructured.Unstructured{}
-		bmhObject.SetGroupVersionKind(internal.BareMetalHostGVK)
-		bmhKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
-		}
-		Eventually(func() error {
-			return client.Get(ctx, bmhKey, bmhObject)
-		}, time.Minute).Should(Succeed())
-		bmhUpdate := bmhObject.DeepCopy()
-		bmhUpdate.Object["status"] = map[string]any{
-			"provisioning": map[string]any{
-				"ID":    uuid.NewString(),
-				"state": "provisioned",
-			},
-			"errorMessage":      "my-error",
-			"hardwareProfile":   "my-profile",
-			"operationalStatus": "OK",
-			"poweredOn":         true,
-		}
-		err := client.Status().Patch(ctx, bmhUpdate, clnt.MergeFrom(bmhObject))
+		tool, err := internal.NewTool().
+			SetLogger(logger).
+			SetArgs(
+				"ztp", "create", "cluster",
+				"--config", config,
+				"--resolver", dns.Address(),
+				"--wait", "1m",
+			).
+			AddCommand(createcmd.Cobra).
+			SetIn(&bytes.Buffer{}).
+			SetOut(multi).
+			SetErr(multi).
+			Build()
 		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the agent cluster install exists and set it status to completed:
-		aciObject := &unstructured.Unstructured{}
-		aciObject.SetGroupVersionKind(internal.AgentClusterInstallGVK)
-		aciKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      name,
-		}
-		Eventually(func() error {
-			return client.Get(ctx, aciKey, aciObject)
-		}, time.Minute).Should(Succeed())
-		aciUpdate := aciObject.DeepCopy()
-		aciUpdate.Object["status"] = map[string]any{
-			"conditions": []any{
-				map[string]any{
-					"type":   "Completed",
-					"status": "True",
-				},
-			},
-		}
-		err = client.Status().Patch(ctx, aciUpdate, clnt.MergeFrom(aciObject))
+		err = tool.Run(ctx)
 		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the tool finishes:
-		Eventually(finished.Load, time.Minute).Should(BeTrue())
 
 		// Check that the tool has written the message that indicates that the cluster
 		// completed the installation:
@@ -463,8 +445,33 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	})
 
 	It("Writes the states as the installation progresses", func() {
-		// Create a temporary directory containing the configuration files:
-		config := Template(
+		// Add a reconciler that moves the cluster to a custom state and marks it
+		// as completed:
+		manager.AddReconciler(
+			internal.AgentClusterInstallGVK,
+			func(ctx context.Context, object *unstructured.Unstructured) {
+				update := object.DeepCopy()
+				err := mergo.Map(&update.Object, map[string]any{
+					"status": map[string]any{
+						"debugInfo": map[string]any{
+							"state": "my-state",
+						},
+						"conditions": []any{
+							map[string]any{
+								"type":   "Completed",
+								"status": "True",
+							},
+						},
+					},
+				})
+				Expect(err).ToNot(HaveOccurred())
+				err = client.Status().Patch(ctx, update, clnt.MergeFrom(object))
+				Expect(err).ToNot(HaveOccurred())
+			},
+		)
+
+		// Prepare the configuration:
+		config = Template(
 			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
@@ -490,122 +497,60 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			"Name", name,
 		)
 
-		// Remember to delete the cluster when done:
-		defer func() {
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "delete", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-				).
-				AddCommand(deletecmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(GinkgoWriter).
-				SetErr(GinkgoWriter).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-		}()
-
-		// Run the command to create the cluster in a separate goroutine:
+		// Run the command to create the cluster:
 		buffer := &bytes.Buffer{}
 		multi := io.MultiWriter(buffer, GinkgoWriter)
-		finished := &atomic.Bool{}
-		go func() {
-			defer GinkgoRecover()
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "create", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-					"--wait", "1m",
-				).
-				AddCommand(createcmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(multi).
-				SetErr(multi).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-			finished.Store(true)
-		}()
-
-		// Wait till the bare metal host exists, and then set the state to provisioned:
-		bmhObject := &unstructured.Unstructured{}
-		bmhObject.SetGroupVersionKind(internal.BareMetalHostGVK)
-		bmhKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
-		}
-		Eventually(func() error {
-			return client.Get(ctx, bmhKey, bmhObject)
-		}, time.Minute).Should(Succeed())
-		bmhUpdate := bmhObject.DeepCopy()
-		bmhUpdate.Object["status"] = map[string]any{
-			"provisioning": map[string]any{
-				"ID":    uuid.NewString(),
-				"state": "provisioned",
-			},
-			"errorMessage":      "my-error",
-			"hardwareProfile":   "my-profile",
-			"operationalStatus": "OK",
-			"poweredOn":         true,
-		}
-		err := client.Status().Patch(ctx, bmhUpdate, clnt.MergeFrom(bmhObject))
+		tool, err := internal.NewTool().
+			SetLogger(logger).
+			SetArgs(
+				"ztp", "create", "cluster",
+				"--config", config,
+				"--resolver", dns.Address(),
+				"--wait", "1m",
+			).
+			AddCommand(createcmd.Cobra).
+			SetIn(&bytes.Buffer{}).
+			SetOut(multi).
+			SetErr(multi).
+			Build()
 		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the agent cluster install exists:
-		aciObject := &unstructured.Unstructured{}
-		aciObject.SetGroupVersionKind(internal.AgentClusterInstallGVK)
-		aciKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      name,
-		}
-		Eventually(func() error {
-			return client.Get(ctx, aciKey, aciObject)
-		}, time.Minute).Should(Succeed())
-
-		// Wait a bit before the next update, otherwise the API server will coalesce the
-		// events and the tool will only see the second update:
-		time.Sleep(time.Second)
-
-		// Update the state to `my-state`:
-		aciUpdate := aciObject.DeepCopy()
-		aciUpdate.Object["status"] = map[string]any{
-			"debugInfo": map[string]any{
-				"state": "my-state",
-			},
-		}
-		err = client.Status().Patch(ctx, aciUpdate, clnt.MergeFrom(aciObject))
+		err = tool.Run(ctx)
 		Expect(err).ToNot(HaveOccurred())
-
-		// Update the status to completed:
-		aciUpdate = aciObject.DeepCopy()
-		aciUpdate.Object["status"] = map[string]any{
-			"conditions": []any{
-				map[string]any{
-					"type":   "Completed",
-					"status": "True",
-				},
-			},
-		}
-		err = client.Status().Patch(ctx, aciUpdate, clnt.MergeFrom(aciObject))
-		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the tool finishes:
-		Eventually(finished.Load, time.Minute).Should(BeTrue())
 
 		// Check that the tool has written the message that indicate the changes of state:
-		Expect(buffer.String()).To(ContainSubstring("Cluster '%s' moved to state 'my-state'", name))
+		Expect(buffer.String()).To(ContainSubstring(
+			"Cluster '%s' moved to state 'my-state'",
+			name,
+		))
 	})
 
 	It("Fails when the 'Failed' condition is true", func() {
+		// Add a reconciler that marks the cluster as failed:
+		manager.AddReconciler(
+			internal.AgentClusterInstallGVK,
+			func(ctx context.Context, object *unstructured.Unstructured) {
+				update := object.DeepCopy()
+				err := mergo.Map(&update.Object, map[string]any{
+					"status": map[string]any{
+						"debugInfo": map[string]any{
+							"state": "my-state",
+						},
+						"conditions": []any{
+							map[string]any{
+								"type":   "Failed",
+								"status": "True",
+							},
+						},
+					},
+				})
+				Expect(err).ToNot(HaveOccurred())
+				err = client.Status().Patch(ctx, update, clnt.MergeFrom(object))
+				Expect(err).ToNot(HaveOccurred())
+			},
+		)
+
 		// Prepare the configuration:
-		config := Template(
+		config = Template(
 			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
@@ -631,98 +576,25 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			"Name", name,
 		)
 
-		// Remember to delete the cluster when done:
-		defer func() {
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "delete", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-				).
-				AddCommand(deletecmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(GinkgoWriter).
-				SetErr(GinkgoWriter).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-		}()
-
-		// Run the command to create the cluster in a separate goroutine:
+		// Run the command to create the cluster:
 		buffer := &bytes.Buffer{}
 		multi := io.MultiWriter(buffer, GinkgoWriter)
-		finished := &atomic.Bool{}
-		go func() {
-			defer GinkgoRecover()
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "create", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-					"--wait", "1m",
-				).
-				AddCommand(createcmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(multi).
-				SetErr(multi).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).To(HaveOccurred())
-			finished.Store(true)
-		}()
-
-		// Wait till the bare metal host exists, and then set the state to provisioned:
-		bmhObject := &unstructured.Unstructured{}
-		bmhObject.SetGroupVersionKind(internal.BareMetalHostGVK)
-		bmhKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
-		}
-		Eventually(func() error {
-			return client.Get(ctx, bmhKey, bmhObject)
-		}, time.Minute).Should(Succeed())
-		bmhUpdate := bmhObject.DeepCopy()
-		bmhUpdate.Object["status"] = map[string]any{
-			"provisioning": map[string]any{
-				"ID":    uuid.NewString(),
-				"state": "provisioned",
-			},
-			"errorMessage":      "my-error",
-			"hardwareProfile":   "my-profile",
-			"operationalStatus": "OK",
-			"poweredOn":         true,
-		}
-		err := client.Status().Patch(ctx, bmhUpdate, clnt.MergeFrom(bmhObject))
+		tool, err := internal.NewTool().
+			SetLogger(logger).
+			SetArgs(
+				"ztp", "create", "cluster",
+				"--config", config,
+				"--resolver", dns.Address(),
+				"--wait", "1m",
+			).
+			AddCommand(createcmd.Cobra).
+			SetIn(&bytes.Buffer{}).
+			SetOut(multi).
+			SetErr(multi).
+			Build()
 		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the agent cluster install exists and set it status to failed:
-		aciObject := &unstructured.Unstructured{}
-		aciObject.SetGroupVersionKind(internal.AgentClusterInstallGVK)
-		aciKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      name,
-		}
-		Eventually(func() error {
-			return client.Get(ctx, aciKey, aciObject)
-		}, time.Minute).Should(Succeed())
-		aciUpdate := aciObject.DeepCopy()
-		aciUpdate.Object["status"] = map[string]any{
-			"conditions": []any{
-				map[string]any{
-					"type":   "Failed",
-					"status": "True",
-				},
-			},
-		}
-		err = client.Status().Patch(ctx, aciUpdate, clnt.MergeFrom(aciObject))
-		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the tool finishes:
-		Eventually(finished.Load, time.Minute).Should(BeTrue())
+		err = tool.Run(ctx)
+		Expect(err).To(HaveOccurred())
 
 		// Check that the tool has written the message that indicates that the cluster
 		// installation failed:
@@ -733,8 +605,26 @@ var _ = Describe("Create cluster command", Ordered, func() {
 	})
 
 	It("Fails when the cluster moves to the 'error' state", func() {
+		// Add a reconciler that marks the cluster as failed:
+		manager.AddReconciler(
+			internal.AgentClusterInstallGVK,
+			func(ctx context.Context, object *unstructured.Unstructured) {
+				update := object.DeepCopy()
+				err := mergo.Map(&update.Object, map[string]any{
+					"status": map[string]any{
+						"debugInfo": map[string]any{
+							"state": "error",
+						},
+					},
+				})
+				Expect(err).ToNot(HaveOccurred())
+				err = client.Status().Patch(ctx, update, clnt.MergeFrom(object))
+				Expect(err).ToNot(HaveOccurred())
+			},
+		)
+
 		// Prepare the configuration:
-		config := Template(
+		config = Template(
 			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
@@ -760,95 +650,25 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			"Name", name,
 		)
 
-		// Remember to delete the cluster when done:
-		defer func() {
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "delete", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-				).
-				AddCommand(deletecmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(GinkgoWriter).
-				SetErr(GinkgoWriter).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-		}()
-
-		// Run the command to create the cluster in a separate goroutine:
+		// Run the command to create the cluster:
 		buffer := &bytes.Buffer{}
 		multi := io.MultiWriter(buffer, GinkgoWriter)
-		finished := &atomic.Bool{}
-		go func() {
-			defer GinkgoRecover()
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "create", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-					"--wait", "1m",
-				).
-				AddCommand(createcmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(multi).
-				SetErr(multi).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).To(HaveOccurred())
-			finished.Store(true)
-		}()
-
-		// Wait till the bare metal host exists, and then set the state to provisioned:
-		bmhObject := &unstructured.Unstructured{}
-		bmhObject.SetGroupVersionKind(internal.BareMetalHostGVK)
-		bmhKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      fmt.Sprintf("ztpfw-%s-master-0", name),
-		}
-		Eventually(func() error {
-			return client.Get(ctx, bmhKey, bmhObject)
-		}, time.Minute).Should(Succeed())
-		bmhUpdate := bmhObject.DeepCopy()
-		bmhUpdate.Object["status"] = map[string]any{
-			"provisioning": map[string]any{
-				"ID":    uuid.NewString(),
-				"state": "provisioned",
-			},
-			"errorMessage":      "my-error",
-			"hardwareProfile":   "my-profile",
-			"operationalStatus": "OK",
-			"poweredOn":         true,
-		}
-		err := client.Status().Patch(ctx, bmhUpdate, clnt.MergeFrom(bmhObject))
+		tool, err := internal.NewTool().
+			SetLogger(logger).
+			SetArgs(
+				"ztp", "create", "cluster",
+				"--config", config,
+				"--resolver", dns.Address(),
+				"--wait", "1m",
+			).
+			AddCommand(createcmd.Cobra).
+			SetIn(&bytes.Buffer{}).
+			SetOut(multi).
+			SetErr(multi).
+			Build()
 		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the agent cluster install exists and set state to error:
-		aciObject := &unstructured.Unstructured{}
-		aciObject.SetGroupVersionKind(internal.AgentClusterInstallGVK)
-		aciKey := clnt.ObjectKey{
-			Namespace: name,
-			Name:      name,
-		}
-		Eventually(func() error {
-			return client.Get(ctx, aciKey, aciObject)
-		}, time.Minute).Should(Succeed())
-		aciUpdate := aciObject.DeepCopy()
-		aciUpdate.Object["status"] = map[string]any{
-			"debugInfo": map[string]any{
-				"state": "error",
-			},
-		}
-		err = client.Status().Patch(ctx, aciUpdate, clnt.MergeFrom(aciObject))
-		Expect(err).ToNot(HaveOccurred())
-
-		// Wait till the tool finishes:
-		Eventually(finished.Load, time.Minute).Should(BeTrue())
+		err = tool.Run(ctx)
+		Expect(err).To(HaveOccurred())
 
 		// Check that the tool has written the message that indicates that the cluster
 		// installation failed:
@@ -860,7 +680,7 @@ var _ = Describe("Create cluster command", Ordered, func() {
 
 	It("Fails when the timeout expires", func() {
 		// Prepare the configuration:
-		config := Template(
+		config = Template(
 			text.Dedent(`
 				config:
 				  OC_OCP_VERSION: '4.11.20'
@@ -886,52 +706,25 @@ var _ = Describe("Create cluster command", Ordered, func() {
 			"Name", name,
 		)
 
-		// Remember to delete the cluster when done:
-		defer func() {
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "delete", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-				).
-				AddCommand(deletecmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(GinkgoWriter).
-				SetErr(GinkgoWriter).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).ToNot(HaveOccurred())
-		}()
-
-		// Run the command to create the cluster in a separate goroutine:
+		// Run the command to create the:
 		buffer := &bytes.Buffer{}
 		multi := io.MultiWriter(buffer, GinkgoWriter)
-		finished := &atomic.Bool{}
-		go func() {
-			defer GinkgoRecover()
-			tool, err := internal.NewTool().
-				SetLogger(logger).
-				SetArgs(
-					"ztp", "create", "cluster",
-					"--config", config,
-					"--resolver", dns.Address(),
-					"--wait", "1s",
-				).
-				AddCommand(createcmd.Cobra).
-				SetIn(&bytes.Buffer{}).
-				SetOut(multi).
-				SetErr(multi).
-				Build()
-			Expect(err).ToNot(HaveOccurred())
-			err = tool.Run(ctx)
-			Expect(err).To(HaveOccurred())
-			finished.Store(true)
-		}()
-
-		// Wait till the tool finishes:
-		Eventually(finished.Load, time.Minute).Should(BeTrue())
+		tool, err := internal.NewTool().
+			SetLogger(logger).
+			SetArgs(
+				"ztp", "create", "cluster",
+				"--config", config,
+				"--resolver", dns.Address(),
+				"--wait", "1s",
+			).
+			AddCommand(createcmd.Cobra).
+			SetIn(&bytes.Buffer{}).
+			SetOut(multi).
+			SetErr(multi).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		err = tool.Run(ctx)
+		Expect(err).To(HaveOccurred())
 
 		// Check that the tool has written the message that indicates that the cluster
 		// installation failed:
