@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
+	"net/http"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -26,6 +28,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
+	. "github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/testing"
 )
 
 var _ = Describe("Client", func() {
@@ -76,7 +79,7 @@ var _ = Describe("Client", func() {
 		// that is the level used for the detail of HTTP requests and responses:
 		buffer := &bytes.Buffer{}
 		logger, err := logging.NewLogger().
-			SetWriter(buffer).
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
 			SetLevel(3).
 			Build()
 		Expect(err).ToNot(HaveOccurred())
@@ -125,5 +128,104 @@ var _ = Describe("Client", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(message.Msg).To(Equal("Received response"))
 		Expect(message.Code).To(Equal(200))
+	})
+
+	It("Processes requests in the order", func() {
+		// The first wrapper marks the request:
+		first := RequestTransformer(func(request *http.Request) *http.Request {
+			defer GinkgoRecover()
+			request.Header.Set("X-My-Mark", "my-value")
+			return request
+		})
+
+		// The second wrapper checks that the mark is present:
+		second := RequestTransformer(func(request *http.Request) *http.Request {
+			defer GinkgoRecover()
+			Expect(request.Header.Get("X-My-Mark")).To(Equal("my-value"))
+			return request
+		})
+
+		// Create the client:
+		client, err := NewClient().
+			SetLogger(logger).
+			AddWrapper(first).
+			AddWrapper(second).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(client).ToNot(BeNil())
+
+		// Retrieve the list of pods:
+		list := &corev1.PodList{}
+		err = client.List(ctx, list)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("Processes responses in the reversed order", func() {
+		// The first wrapper checks that the mark is present:
+		first := ResponseTransformer(func(r *http.Response, e error) (*http.Response, error) {
+			defer GinkgoRecover()
+			Expect(r.Header.Get("X-My-Mark")).To(Equal("my-value"))
+			return r, e
+		})
+
+		// The second wrapper marks the response:
+		second := ResponseTransformer(func(r *http.Response, e error) (*http.Response, error) {
+			defer GinkgoRecover()
+			r.Header.Set("X-My-Mark", "my-value")
+			return r, e
+		})
+
+		// Create the client:
+		client, err := NewClient().
+			SetLogger(logger).
+			AddWrapper(first).
+			AddWrapper(second).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(client).ToNot(BeNil())
+
+		// Retrieve the list of pods:
+		list := &corev1.PodList{}
+		err = client.List(ctx, list)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
+	It("Writes to the log afer wrappers process request", func() {
+		// Create a logger that writes to a memory buffer and with the level 3 enabled, as
+		// that is the level used for the detail of HTTP requests and responses:
+		buffer := &bytes.Buffer{}
+		logger, err := logging.NewLogger().
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
+			SetLevel(3).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create a logging wrapper configured to write request headers:
+		wrapper, err := logging.NewTransportWrapper().
+			SetLogger(logger).
+			SetHeaders(true).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the client with a wrapper that adds a request header:
+		client, err := NewClient().
+			SetLogger(logger).
+			SetLoggingWrapper(wrapper).
+			AddWrapper(RequestTransformer(func(r *http.Request) *http.Request {
+				r.Header.Set("X-My-Mark", "my-value")
+				return r
+			})).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Make sure that at least one request is sent:
+		list := &corev1.PodList{}
+		err = client.List(ctx, list)
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check that the header has been written to the log:
+		text := buffer.String()
+		Expect(text).To(ContainSubstring("X-My-Mark"))
+		Expect(text).To(ContainSubstring("my-value"))
 	})
 })

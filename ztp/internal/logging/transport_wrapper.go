@@ -33,10 +33,9 @@ type TransportWrapperBuilder struct {
 	flags   *pflag.FlagSet
 }
 
-// TransportWrapper is a transport wrapper that creates round trippers that dump the details of the
-// request and the responses to the log. Don't create instances of this type directly, ue the
-// NewLoggingTransportWrapper function instead.
-type TransportWrapper struct {
+// transportWrapperObject contains the data needed by the transport wrapper, like the logger and
+// settings. The wrapper functoin returned to the user is the `do` method of this object.
+type transportWrapperObject struct {
 	logger  logr.Logger
 	headers bool
 	bodies  bool
@@ -110,7 +109,8 @@ func (b *TransportWrapperBuilder) SetFlags(flags *pflag.FlagSet) *TransportWrapp
 
 // Build uses the data stored in the builder to create and configure a new logging transport
 // wrapper.
-func (b *TransportWrapperBuilder) Build() (result *TransportWrapper, err error) {
+func (b *TransportWrapperBuilder) Build() (result func(http.RoundTripper) http.RoundTripper,
+	err error) {
 	// Check parameters:
 	if b.logger.GetSink() == nil {
 		err = errors.New("logger is mandatory")
@@ -118,18 +118,18 @@ func (b *TransportWrapperBuilder) Build() (result *TransportWrapper, err error) 
 	}
 
 	// Create and populate the object:
-	result = &TransportWrapper{
+	object := &transportWrapperObject{
 		logger:  b.logger,
 		headers: b.headers,
 		bodies:  b.bodies,
 	}
-
+	result = object.do
 	return
 }
 
-// Wrap creates a round tripper on top of the given one that writes to the log the details of
-// requests and responses.
-func (w *TransportWrapper) Wrap(transport http.RoundTripper) http.RoundTripper {
+// do is the wrapper function that will be returned to the user; it creates a round tripper on top
+// of the given one that writes to the log the details of requests and responses.
+func (w *transportWrapperObject) do(transport http.RoundTripper) http.RoundTripper {
 	return &roundTripper{
 		logger:  w.logger,
 		headers: w.headers,

@@ -77,7 +77,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -107,7 +107,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -137,7 +137,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -174,7 +174,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -203,7 +203,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -233,7 +233,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -270,7 +270,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -298,7 +298,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -328,7 +328,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -365,7 +365,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -393,7 +393,7 @@ var _ = Describe("Transport wrapper", func() {
 				Build()
 			Expect(err).ToNot(HaveOccurred())
 			client := &http.Client{
-				Transport: wrapper.Wrap(http.DefaultTransport),
+				Transport: wrapper(http.DefaultTransport),
 			}
 
 			// Send the request:
@@ -429,7 +429,7 @@ var _ = Describe("Transport wrapper", func() {
 					Build()
 				Expect(err).ToNot(HaveOccurred())
 				client := &http.Client{
-					Transport: wrapper.Wrap(http.DefaultTransport),
+					Transport: wrapper(http.DefaultTransport),
 				}
 
 				// Send the request:
@@ -477,7 +477,7 @@ var _ = Describe("Transport wrapper", func() {
 					Build()
 				Expect(err).ToNot(HaveOccurred())
 				client := &http.Client{
-					Transport: wrapper.Wrap(http.DefaultTransport),
+					Transport: wrapper(http.DefaultTransport),
 				}
 
 				// Send the request:

@@ -172,7 +172,7 @@ func (b *ManagerBuilder) loadConfig() *rest.Config {
 		SetLogger(b.logger).
 		Build()
 	Expect(err).ToNot(HaveOccurred())
-	result.WrapTransport = wrapper.Wrap
+	result.Wrap(wrapper)
 
 	return result
 }

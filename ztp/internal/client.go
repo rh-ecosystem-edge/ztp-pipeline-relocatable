@@ -19,21 +19,25 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/watch"
+	apiwatch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/utils/strings/slices"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/logging"
@@ -43,12 +47,14 @@ import (
 // implements the controller-runtime WithWatch interface. Don't create instances of this type
 // directly, use the NewClient function instead.
 type ClientBuilder struct {
-	logger     logr.Logger
-	kubeconfig any
-	sshServers []string
-	sshUser    string
-	sshKey     []byte
-	flags      *pflag.FlagSet
+	logger         logr.Logger
+	kubeconfig     any
+	wrappers       []func(http.RoundTripper) http.RoundTripper
+	loggingWrapper func(http.RoundTripper) http.RoundTripper
+	sshServers     []string
+	sshUser        string
+	sshKey         []byte
+	flags          *pflag.FlagSet
 }
 
 // Client is an implementtion of the controller-runtime WithWatch interface with additional
@@ -69,6 +75,40 @@ func NewClient() *ClientBuilder {
 // SetLogger sets the logger that the client will use to write to the log.
 func (b *ClientBuilder) SetLogger(value logr.Logger) *ClientBuilder {
 	b.logger = value
+	return b
+}
+
+// AddWrapper adds a function that will be called to wrap the HTTP transport. When multiple wrappers
+// are added they will be called in the the reverse order, so that the request processing logic of
+// those wrappers will be executed in the right order. For example, example if you want to add a
+// wrapper that adds a `X-My` to the request header, and then another wrapper that reads that header
+// you should add them in this order:
+//
+//	client, err := NewClient().
+//		SetLogger(logger).
+//		AddTransportWrapper(addMyHeader).
+//		AddTransportWrapper(readMyHeader).
+//		Build()
+//	if err != nil {
+//		...
+//	}
+//
+// The opposite happens with response processing logic: it happens in the same order that the
+// wrappers were added.
+//
+// The logging wrapper should not be added with this method, but with the SetLoggingWrapper methods,
+// otherwise a default logging wrapper will be automatically added.
+func (b *ClientBuilder) AddWrapper(value func(http.RoundTripper) http.RoundTripper) *ClientBuilder {
+	b.wrappers = append(b.wrappers, value)
+	return b
+}
+
+// SetLoggingWrapper sets the logging transport wrapper. If this isn't set then a default one will
+// be created. Note that this wrapper, either the one explicitly set or the default, will always be
+// the last to process requests and the first to process responses.
+func (b *ClientBuilder) SetLoggingWrapper(
+	value func(http.RoundTripper) http.RoundTripper) *ClientBuilder {
+	b.loggingWrapper = value
 	return b
 }
 
@@ -212,16 +252,24 @@ func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 		return
 	}
 
-	// Wrap the REST transport so that the details of the requests and responses are written to
-	// the log:
-	loggingWrapper, err := logging.NewTransportWrapper().
-		SetLogger(b.logger).
-		SetFlags(b.flags).
-		Build()
-	if err != nil {
-		return
+	// Add the logging wrapper:
+	loggingWrapper := b.loggingWrapper
+	if loggingWrapper == nil {
+		loggingWrapper, err = logging.NewTransportWrapper().
+			SetLogger(b.logger).
+			SetFlags(b.flags).
+			Build()
+		if err != nil {
+			return
+		}
 	}
-	restCfg.WrapTransport = loggingWrapper.Wrap
+	restCfg.Wrap(loggingWrapper)
+
+	// Add the transport wrappers in reverse order, so that the request processing logic will
+	// happen in the right order:
+	for i := len(b.wrappers) - 1; i >= 0; i-- {
+		restCfg.Wrap(b.wrappers[i])
+	}
 
 	// Return the resulting REST config:
 	result = restCfg
@@ -366,9 +414,28 @@ func (c *Client) Scheme() *runtime.Scheme {
 	return c.delegate.Scheme()
 }
 
-func (c *Client) Watch(ctx context.Context, obj clnt.ObjectList,
-	opts ...clnt.ListOption) (watch.Interface, error) {
-	return c.delegate.Watch(ctx, obj, opts...)
+func (c *Client) Watch(ctx context.Context, list clnt.ObjectList,
+	options ...clnt.ListOption) (result apiwatch.Interface, err error) {
+	gvk := list.GetObjectKind().GroupVersionKind()
+	underlying := &restartableWatch{
+		logger: c.logger.WithValues(
+			"group", gvk.Group,
+			"kind", gvk.Kind,
+		),
+		context: ctx,
+		object:  list,
+		options: options,
+		client:  c,
+		stop:    make(chan struct{}),
+		events:  make(chan apiwatch.Event),
+	}
+	err = underlying.createUnderlying()
+	if err != nil {
+		return
+	}
+	go underlying.forward()
+	result = underlying
+	return
 }
 
 // DeleteCRDGroup deletes all the custom resource definitions in the given group. Returns the number
@@ -429,4 +496,127 @@ func (c *Client) Close() error {
 		return c.tunnel.Close()
 	}
 	return nil
+}
+
+// restartableWatch is a wrapper for watch.Interface objects that restarts the underlying watch when
+// it is closed without any error.
+type restartableWatch struct {
+	logger     logr.Logger
+	client     *Client
+	underlying apiwatch.Interface
+	context    context.Context
+	object     clnt.ObjectList
+	options    []clnt.ListOption
+	version    string
+	stop       chan struct{}
+	events     chan apiwatch.Event
+}
+
+func (w *restartableWatch) ResultChan() <-chan apiwatch.Event {
+	return w.events
+}
+
+// forward forwards events from the underlying watch, and restarts it when it is closed by the
+// server.
+func (w *restartableWatch) forward() {
+	for {
+		err := w.forwardUnderlying()
+		if os.IsTimeout(err) {
+			w.logger.V(2).Info(
+				"Watch finished with timeout",
+				"error", err,
+			)
+			return
+		}
+		if err == os.ErrClosed {
+			w.logger.V(2).Info(
+				"Watch explicitly closed",
+				"error", err,
+			)
+			return
+		}
+		if err != nil {
+			w.logger.Error(
+				err,
+				"Watch finished with unexpected error",
+			)
+			return
+		}
+		w.logger.V(1).Info("Watch finished without error, will restart it")
+		backOff := backoff.NewExponentialBackOff()
+		backOff.MaxInterval = time.Minute
+		backOff.MaxElapsedTime = 0
+		err = backoff.RetryNotify(
+			w.createUnderlying,
+			backoff.WithContext(backOff, w.context),
+			func(err error, delay time.Duration) {
+				w.logger.V(1).Info(
+					"Failed to create watch, will try again",
+					"error", err,
+					"delay", delay,
+				)
+			},
+		)
+		if err != nil {
+			w.logger.Error(err, "Failed to create watch")
+			return
+		}
+		w.logger.V(2).Info("Created watch")
+	}
+}
+
+// forwardUnderlying forwards events from the underlying watch to our events channel till the
+// underlying watch has been closed by the server, till it has been explicitly stopped or till the
+// context has expired, whatever happens first.
+func (w *restartableWatch) forwardUnderlying() error {
+	for {
+		select {
+		case event, ok := <-w.underlying.ResultChan():
+			if !ok {
+				return nil
+			}
+			switch object := event.Object.(type) {
+			case clnt.Object:
+				w.version = object.GetResourceVersion()
+				w.logger.V(2).Info(
+					"Received event",
+					"type", event.Type,
+					"version", w.version,
+				)
+			default:
+				w.logger.V(2).Info(
+					"Received event with unknown object type",
+					"event_type", event.Type,
+					"object_type", fmt.Sprintf("%T", object),
+				)
+			}
+			w.events <- event
+		case <-w.stop:
+			w.underlying.Stop()
+			close(w.events)
+			return os.ErrClosed
+		case <-w.context.Done():
+			w.underlying.Stop()
+			close(w.events)
+			return w.context.Err()
+		}
+	}
+}
+
+func (w *restartableWatch) createUnderlying() error {
+	var err error
+	options := &client.ListOptions{}
+	options.ApplyOptions(w.options)
+	if w.version != "" {
+		if options.Raw == nil {
+			options.Raw = &metav1.ListOptions{}
+		}
+		options.Raw.ResourceVersion = w.version
+	}
+	w.underlying, err = w.client.delegate.Watch(w.context, w.object, options)
+	return err
+}
+
+func (w *restartableWatch) Stop() {
+	close(w.stop)
 }
