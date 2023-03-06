@@ -17,7 +17,6 @@ package ui
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
@@ -192,18 +191,6 @@ func (t *Task) Run(ctx context.Context) error {
 		return err
 	}
 
-	// Calculate the variables:
-	host := fmt.Sprintf(
-		"edge-cluster-setup.apps.%s.%s",
-		t.cluster.Name, t.cluster.DNS.Domain,
-	)
-	t.logger.Info(
-		"Calculated UI details",
-		"host", host,
-	)
-
-	// Create the objects:
-	return applier.Delete(ctx, map[string]any{
-		"Host": host,
-	})
+	// Delete the objects:
+	return applier.Delete(ctx, nil)
 }
