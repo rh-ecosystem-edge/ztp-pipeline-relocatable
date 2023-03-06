@@ -20,6 +20,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"strings"
 
 	"github.com/go-logr/logr"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
@@ -505,5 +506,135 @@ var _ = Describe("Transport wrapper", func() {
 			Entry("Explicitly enabled with value", true, "--log-bodies=true"),
 			Entry("Explicitly disabled with value", false, "--log-bodies=false"),
 		)
+
+		It("Honors exclude function", func() {
+			// Prepare the server:
+			server.AppendHandlers(
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+			)
+
+			// Create the client:
+			wrapper, err := NewTransportWrapper().
+				SetLogger(logger).
+				SetExcludeFunc(func(request *http.Request) bool {
+					return strings.Contains(request.URL.Path, "excluded")
+				}).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			client := &http.Client{
+				Transport: wrapper(http.DefaultTransport),
+			}
+
+			// Send the request:
+			get := func(path string) {
+				url := fmt.Sprintf("%s/%s", server.URL(), path)
+				response, err := client.Get(url)
+				Expect(err).ToNot(HaveOccurred())
+				defer response.Body.Close()
+				_, err = io.Copy(io.Discard, response.Body)
+				Expect(err).ToNot(HaveOccurred())
+			}
+			get("excluded")
+			get("excluded/my-path")
+			get("included")
+			get("included/my-path")
+
+			// Verify that details aren't written:
+			messages := Find(Parse(buffer), "Sending request")
+			Expect(messages).To(HaveLen(2))
+			Expect(messages[0]).To(HaveKeyWithValue(
+				"url", fmt.Sprintf("%s/included", server.URL()),
+			))
+			Expect(messages[1]).To(HaveKeyWithValue(
+				"url", fmt.Sprintf("%s/included/my-path", server.URL()),
+			))
+
+			// Verify that details aren't written:
+			Expect(buffer.String()).To(BeEmpty())
+		})
+
+		It("Honors exclude pattern", func() {
+			// Prepare the server:
+			server.AppendHandlers(
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+			)
+
+			// Create the client:
+			wrapper, err := NewTransportWrapper().
+				SetLogger(logger).
+				SetExclude("^/excluded(/.*)?$").
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			client := &http.Client{
+				Transport: wrapper(http.DefaultTransport),
+			}
+
+			// Send the requests:
+			get := func(path string) {
+				url := fmt.Sprintf("%s/%s", server.URL(), path)
+				response, err := client.Get(url)
+				Expect(err).ToNot(HaveOccurred())
+				defer response.Body.Close()
+				_, err = io.Copy(io.Discard, response.Body)
+				Expect(err).ToNot(HaveOccurred())
+			}
+			get("excluded")
+			get("excluded/my-path")
+			get("included")
+			get("included/my-path")
+
+			// Verify that details aren't written:
+			messages := Find(Parse(buffer), "Sending request")
+			Expect(messages).To(HaveLen(2))
+			Expect(messages[0]).To(HaveKeyWithValue(
+				"url", fmt.Sprintf("%s/included", server.URL()),
+			))
+			Expect(messages[1]).To(HaveKeyWithValue(
+				"url", fmt.Sprintf("%s/included/my-path", server.URL()),
+			))
+		})
+
+		It("Honors multiple patterns", func() {
+			// Prepare the server:
+			server.AppendHandlers(
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+				RespondWith(http.StatusOK, nil),
+			)
+
+			// Create the client:
+			wrapper, err := NewTransportWrapper().
+				SetLogger(logger).
+				AddExclude("^/excluded1$").
+				AddExclude("^/excluded2$").
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+			client := &http.Client{
+				Transport: wrapper(http.DefaultTransport),
+			}
+
+			// Send the requests:
+			get := func(path string) {
+				url := fmt.Sprintf("%s/%s", server.URL(), path)
+				response, err := client.Get(url)
+				Expect(err).ToNot(HaveOccurred())
+				defer response.Body.Close()
+				_, err = io.Copy(io.Discard, response.Body)
+				Expect(err).ToNot(HaveOccurred())
+			}
+			get("excluded1")
+			get("excluded2")
+
+			// Verify that details aren't written:
+			messages := Find(Parse(buffer), "Sending request")
+			Expect(messages).To(BeEmpty())
+		})
 	})
 })
