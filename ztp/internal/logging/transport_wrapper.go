@@ -16,8 +16,10 @@ package logging
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
@@ -27,27 +29,30 @@ import (
 // dumps to the log the details of HTTP requests and responses. Don't create instances of this type
 // directly, use the NewLoggingTransportWrapper function instead.
 type TransportWrapperBuilder struct {
-	logger  logr.Logger
-	headers bool
-	bodies  bool
-	flags   *pflag.FlagSet
+	logger       logr.Logger
+	headers      bool
+	bodies       bool
+	excludeSpecs []any
+	flags        *pflag.FlagSet
 }
 
 // transportWrapperObject contains the data needed by the transport wrapper, like the logger and
 // settings. The wrapper functoin returned to the user is the `do` method of this object.
 type transportWrapperObject struct {
-	logger  logr.Logger
-	headers bool
-	bodies  bool
+	logger      logr.Logger
+	headers     bool
+	bodies      bool
+	excludeFunc func(*http.Request) bool
 }
 
 // roundTripper is an implementation of the http.RoundTripper interface that writes to the log the
 // details of the requests and responses.
 type roundTripper struct {
-	logger  logr.Logger
-	headers bool
-	bodies  bool
-	wrapped http.RoundTripper
+	logger      logr.Logger
+	headers     bool
+	bodies      bool
+	excludeFunc func(*http.Request) bool
+	wrapped     http.RoundTripper
 }
 
 type requestReader struct {
@@ -86,6 +91,41 @@ func (b *TransportWrapperBuilder) SetBodies(value bool) *TransportWrapperBuilder
 	return b
 }
 
+// AddExcludeFunc adds a function that will be called to decide if requests should excluded. If the
+// function returns `true` then the request will not be written to the log. If multiple functions
+// are added then the request will be excluded if any of the functions returns true. If no functions
+// are added then no request will be excluded.
+func (b *TransportWrapperBuilder) AddExcludeFunc(
+	value func(*http.Request) bool) *TransportWrapperBuilder {
+	b.excludeSpecs = append(b.excludeSpecs, value)
+	return b
+}
+
+// SetExcludeFunc sets a function that will be called to decide if requests should excluded. If the
+// function returns `true` then the request will not be written to the log. This removes any exclude
+// function previously added with the AddExcludeFunc method.
+func (b *TransportWrapperBuilder) SetExcludeFunc(
+	value func(*http.Request) bool) *TransportWrapperBuilder {
+	b.excludeSpecs = []any{value}
+	return b
+}
+
+// AddExclude adds a regular expression that will be used to decide if a request should be excluded.
+// Note that this is equivalent to creating a function that checks the regular expression and then
+// adding it with the AddExcludedFunc method.
+func (b *TransportWrapperBuilder) AddExclude(value string) *TransportWrapperBuilder {
+	b.excludeSpecs = append(b.excludeSpecs, value)
+	return b
+}
+
+// SetExclude sets a regular expression that will be used to decide if a request should be excluded.
+// Note that this is equivalent to creating a function that checks the regular expression and then
+// setting it with the SetExcluede method.
+func (b *TransportWrapperBuilder) SetExclude(value string) *TransportWrapperBuilder {
+	b.excludeSpecs = []any{value}
+	return b
+}
+
 // SetFlags sets the command line flags that should be used to configure the logger. This is
 // optional.
 func (b *TransportWrapperBuilder) SetFlags(flags *pflag.FlagSet) *TransportWrapperBuilder {
@@ -117,13 +157,58 @@ func (b *TransportWrapperBuilder) Build() (result func(http.RoundTripper) http.R
 		return
 	}
 
+	// Create the functions that check if request should be excluded:
+	excludeFunc, err := b.createExcludeFunc()
+	if err != nil {
+		return
+	}
+
 	// Create and populate the object:
 	object := &transportWrapperObject{
-		logger:  b.logger,
-		headers: b.headers,
-		bodies:  b.bodies,
+		logger:      b.logger,
+		headers:     b.headers,
+		bodies:      b.bodies,
+		excludeFunc: excludeFunc,
 	}
 	result = object.do
+	return
+}
+
+func (b *TransportWrapperBuilder) createExcludeFunc() (result func(*http.Request) bool, err error) {
+	excludeFuncs := make([]func(*http.Request) bool, len(b.excludeSpecs))
+	for i, excludeSpec := range b.excludeSpecs {
+		switch typed := excludeSpec.(type) {
+		case string:
+			var excludeRE *regexp.Regexp
+			excludeRE, err = regexp.Compile(typed)
+			if err != nil {
+				err = fmt.Errorf(
+					"failed to compile exclude regular expression '%s': %v",
+					typed, err,
+				)
+				return
+			}
+			excludeFuncs[i] = func(request *http.Request) bool {
+				return excludeRE.MatchString(request.URL.Path)
+			}
+		case func(*http.Request) bool:
+			excludeFuncs[i] = typed
+		default:
+			err = fmt.Errorf(
+				"expected regular expression or function but found %T",
+				typed,
+			)
+			return
+		}
+	}
+	result = func(request *http.Request) bool {
+		for _, excludeFunc := range excludeFuncs {
+			if excludeFunc(request) {
+				return true
+			}
+		}
+		return false
+	}
 	return
 }
 
@@ -131,10 +216,11 @@ func (b *TransportWrapperBuilder) Build() (result func(http.RoundTripper) http.R
 // of the given one that writes to the log the details of requests and responses.
 func (w *transportWrapperObject) do(transport http.RoundTripper) http.RoundTripper {
 	return &roundTripper{
-		logger:  w.logger,
-		headers: w.headers,
-		bodies:  w.bodies,
-		wrapped: transport,
+		logger:      w.logger,
+		headers:     w.headers,
+		bodies:      w.bodies,
+		excludeFunc: w.excludeFunc,
+		wrapped:     transport,
 	}
 }
 
@@ -143,6 +229,12 @@ var _ http.RoundTripper = (*roundTripper)(nil)
 
 // RoundTrip is he implementation of the http.RoundTripper interface.
 func (t *roundTripper) RoundTrip(request *http.Request) (response *http.Response, err error) {
+	// Call the wrapped transport and return inmediately if the request should be excluded:
+	if t.excludeFunc(request) {
+		response, err = t.wrapped.RoundTrip(request)
+		return
+	}
+
 	// Write the details of the request:
 	t.dumpRequest(request)
 

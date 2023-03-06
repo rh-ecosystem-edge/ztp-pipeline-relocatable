@@ -228,4 +228,32 @@ var _ = Describe("Client", func() {
 		Expect(text).To(ContainSubstring("X-My-Mark"))
 		Expect(text).To(ContainSubstring("my-value"))
 	})
+
+	It("Doesn't write to the log the initial metadata requests", func() {
+		// Create a logger that writes to a memory buffer and with the level 3 enabled, as
+		// that is the level used for the detail of HTTP requests and responses:
+		buffer := &bytes.Buffer{}
+		logger, err := logging.NewLogger().
+			SetWriter(io.MultiWriter(buffer, GinkgoWriter)).
+			SetLevel(3).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Create the client with a wrapper that adds a request header:
+		client, err := NewClient().
+			SetLogger(logger).
+			Build()
+		Expect(err).ToNot(HaveOccurred())
+
+		// Send a request:
+		list := &corev1.PodList{}
+		err = client.List(ctx, list)
+		Expect(err).ToNot(HaveOccurred())
+
+		// Check that the details have been written to the log:
+		text := buffer.String()
+		Expect(text).ToNot(ContainSubstring("/api?"))
+		Expect(text).ToNot(ContainSubstring("/api/v1?"))
+		Expect(text).ToNot(ContainSubstring("/apis?"))
+	})
 })

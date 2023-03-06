@@ -258,6 +258,8 @@ func (b *ClientBuilder) loadConfig() (result *rest.Config, err error) {
 		loggingWrapper, err = logging.NewTransportWrapper().
 			SetLogger(b.logger).
 			SetFlags(b.flags).
+			AddExclude("^/api(/v1)?$").
+			AddExclude("^/apis(/.*)?$").
 			Build()
 		if err != nil {
 			return
