@@ -346,33 +346,39 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 		return err
 	}
 	defer watch.Stop()
+	previousState := ""
 	for event := range watch.ResultChan() {
 		object, ok := event.Object.(*unstructured.Unstructured)
 		if !ok {
 			continue
 		}
-		var state string
+
+		// Check the status:
+		var currentState string
 		err = c.jq.Query(
 			`.status.debugInfo.state`,
-			object, &state,
+			object, &currentState,
 		)
 		if err != nil {
 			return err
 		}
-		if state != "" {
+		if currentState != previousState {
 			c.console.Info(
 				"Cluster '%s' moved to state '%s'",
-				cluster.Name, state,
+				cluster.Name, currentState,
 			)
 		}
-		if state == "error" {
+		if currentState == "error" {
 			c.console.Error(
 				"Installation of cluster '%s' failed because it moved to "+
 					"the '%s' state",
-				cluster.Name, state,
+				cluster.Name, currentState,
 			)
 			return exit.Error(1)
 		}
+		previousState = currentState
+
+		// Check if the installation has completed:
 		var completed string
 		err = c.jq.Query(
 			`.status.conditions[]? | select(.type == "Completed") | .status`,
@@ -388,6 +394,8 @@ func (c *Command) waitInstall(ctx context.Context, cluster *models.Cluster) erro
 			)
 			break
 		}
+
+		// Check if the installation has failed:
 		var failed string
 		err = c.jq.Query(
 			`.status.conditions[]? | select(.type == "Failed") | .status`,
