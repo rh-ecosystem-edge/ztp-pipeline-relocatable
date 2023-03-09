@@ -130,7 +130,7 @@ func (c *SSHCommand) run(cmd *cobra.Command, argv []string) (err error) {
 	// Remove all non selected clusters and nodes from the configuration and enrich the rest.
 	// This will retrieve the SSH key and the IP address of the node.
 	c.console.Info(
-		"Collectiong information for cluster '%s' and node '%s'",
+		"Collecting information for cluster '%s' and node '%s'",
 		c.cluster.Name, c.node.Name,
 	)
 	c.cluster.Nodes = []*models.Node{c.node}
@@ -188,9 +188,11 @@ func (c *SSHCommand) selectCluster() error {
 	} else {
 		if len(c.config.Clusters) > 1 {
 			return fmt.Errorf(
-				"there are %d clusters in the configuration, use the '--cluster' "+
+				"there are %d clusters in the configuration, use the '--%s' "+
 					"option to select %s",
-				len(c.config.Clusters), logging.Any(c.config.ClusterNames()),
+				len(c.config.Clusters),
+				sshClusterFlagName,
+				logging.Any(c.config.ClusterNames()),
 			)
 		}
 		c.cluster = c.config.Clusters[0]
@@ -225,7 +227,7 @@ func (c *SSHCommand) selectNode() error {
 }
 
 func (c *SSHCommand) runSSH() error {
-	// Check that the SSH keyBytes is available:
+	// Check that the SSH key is available:
 	keyBytes := c.cluster.SSH.PrivateKey
 	if keyBytes == nil {
 		return fmt.Errorf(

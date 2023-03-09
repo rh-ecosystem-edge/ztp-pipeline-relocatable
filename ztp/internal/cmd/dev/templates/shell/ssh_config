@@ -1,0 +1,18 @@
+# Use a temporary known hosts file to avoid altering the file of the user with mostly useless
+# entries:
+UserKnownHostsFile {{ .Tmp }}/.ssh/known_hosts
+
+# Use the private key of the cluster:
+{{ if .Cluster.SSH.PrivateKey }}
+IdentityFile {{ .Tmp }}/.ssh/id_rsa
+{{ end }}
+
+# Create a host entry for each node of the cluter that has a known external IP address:
+{{ range .Cluster.Nodes }}
+{{ if .ExternalIP }}
+Host {{ .Name }}
+  HostName {{ .ExternalIP.Address }}
+  User core
+  StrictHostKeyChecking no
+{{ end }}
+{{ end }}

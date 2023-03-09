@@ -33,5 +33,6 @@ func Dev() *cobra.Command {
 	result.AddCommand(dev.Delete())
 	result.AddCommand(dev.SSH())
 	result.AddCommand(dev.Setup())
+	result.AddCommand(dev.Shell())
 	return result
 }

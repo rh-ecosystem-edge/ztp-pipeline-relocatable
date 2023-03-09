@@ -22,20 +22,20 @@ import (
 var templatesFS embed.FS
 
 //go:generate -command get curl --silent --location --output
-//go:generate get templates/crds/0010_ingresscontroller.yaml   https://raw.githubusercontent.com/openshift/api/release-4.12/operator/v1/0000_50_ingress-operator_00-ingresscontroller.crd.yaml
-//go:generate get templates/crds/0011_icsp.yaml                https://raw.githubusercontent.com/openshift/api/release-4.12/operator/v1alpha1/0000_10_config-operator_01_imagecontentsourcepolicy.crd.yaml
-//go:generate get templates/crds/0012_image.yaml               https://raw.githubusercontent.com/openshift/api/release-4.12/config/v1/0000_10_config-operator_01_image.crd.yaml
-//go:generate get templates/crds/0015_agent.yaml               https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_agents.yaml
-//go:generate get templates/crds/0020_agentclusterinstall.yaml https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/extensions.hive.openshift.io_agentclusterinstalls.yaml
-//go:generate get templates/crds/0030_clusterdeployment.yaml   https://raw.githubusercontent.com/openshift/hive/master/config/crds/hive.openshift.io_clusterdeployments.yaml
-//go:generate get templates/crds/0040_managedcluster.yaml      https://raw.githubusercontent.com/open-cluster-management-io/api/v0.9.0/cluster/v1/0000_00_clusters.open-cluster-management.io_managedclusters.crd.yaml
-//go:generate get templates/crds/0050_infraenv.yaml            https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_infraenvs.yaml
-//go:generate get templates/crds/0060_nmstateconfig.yaml       https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_nmstateconfigs.yaml
-//go:generate get templates/crds/0070_baremetalhost.yaml       https://raw.githubusercontent.com/metal3-io/baremetal-operator/v0.2.0/config/crd/bases/metal3.io_baremetalhosts.yaml
-//go:generate get templates/crds/0080_olm.yaml                 https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/v0.23.1/deploy/upstream/quickstart/crds.yaml
-//go:generate get templates/crds/0090_metallb.yaml             https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_metallbs.yaml
-//go:generate get templates/crds/0100_ipaddresspool.yaml       https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_ipaddresspools.yaml
-//go:generate get templates/crds/0110_l2adverisements.yaml     https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_l2advertisements.yaml
-//go:generate get templates/crds/0120_nmstate.yaml             https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nmstates.yaml
-//go:generate get templates/crds/0130_ncnp.yaml                https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nodenetworkconfigurationpolicies.yaml
-//go:generate get templates/crds/0160_localvolume.yaml         https://raw.githubusercontent.com/openshift/local-storage-operator/release-4.12/config/crd/bases/local.storage.openshift.io_localvolumes.yaml
+//go:generate get templates/setup/crds/0010_ingresscontroller.yaml   https://raw.githubusercontent.com/openshift/api/release-4.12/operator/v1/0000_50_ingress-operator_00-ingresscontroller.crd.yaml
+//go:generate get templates/setup/crds/0011_icsp.yaml                https://raw.githubusercontent.com/openshift/api/release-4.12/operator/v1alpha1/0000_10_config-operator_01_imagecontentsourcepolicy.crd.yaml
+//go:generate get templates/setup/crds/0012_image.yaml               https://raw.githubusercontent.com/openshift/api/release-4.12/config/v1/0000_10_config-operator_01_image.crd.yaml
+//go:generate get templates/setup/crds/0015_agent.yaml               https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_agents.yaml
+//go:generate get templates/setup/crds/0020_agentclusterinstall.yaml https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/extensions.hive.openshift.io_agentclusterinstalls.yaml
+//go:generate get templates/setup/crds/0030_clusterdeployment.yaml   https://raw.githubusercontent.com/openshift/hive/master/config/crds/hive.openshift.io_clusterdeployments.yaml
+//go:generate get templates/setup/crds/0040_managedcluster.yaml      https://raw.githubusercontent.com/open-cluster-management-io/api/v0.9.0/cluster/v1/0000_00_clusters.open-cluster-management.io_managedclusters.crd.yaml
+//go:generate get templates/setup/crds/0050_infraenv.yaml            https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_infraenvs.yaml
+//go:generate get templates/setup/crds/0060_nmstateconfig.yaml       https://raw.githubusercontent.com/openshift/assisted-service/v2.14.1/config/crd/bases/agent-install.openshift.io_nmstateconfigs.yaml
+//go:generate get templates/setup/crds/0070_baremetalhost.yaml       https://raw.githubusercontent.com/metal3-io/baremetal-operator/v0.2.0/config/crd/bases/metal3.io_baremetalhosts.yaml
+//go:generate get templates/setup/crds/0080_olm.yaml                 https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/v0.23.1/deploy/upstream/quickstart/crds.yaml
+//go:generate get templates/setup/crds/0090_metallb.yaml             https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_metallbs.yaml
+//go:generate get templates/setup/crds/0100_ipaddresspool.yaml       https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_ipaddresspools.yaml
+//go:generate get templates/setup/crds/0110_l2adverisements.yaml     https://raw.githubusercontent.com/metallb/metallb-operator/v0.13.9/config/crd/bases/metallb.io_l2advertisements.yaml
+//go:generate get templates/setup/crds/0120_nmstate.yaml             https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nmstates.yaml
+//go:generate get templates/setup/crds/0130_ncnp.yaml                https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nodenetworkconfigurationpolicies.yaml
+//go:generate get templates/setup/crds/0160_localvolume.yaml         https://raw.githubusercontent.com/openshift/local-storage-operator/release-4.12/config/crd/bases/local.storage.openshift.io_localvolumes.yaml
