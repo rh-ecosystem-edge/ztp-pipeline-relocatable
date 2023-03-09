@@ -170,8 +170,8 @@ func (c *CreateCommand) Run(cmd *cobra.Command, argv []string) error {
 		SetLogger(c.logger).
 		SetListener(listener.Func).
 		SetClient(c.client).
-		SetFS(internal.DataFS).
-		SetRoot("data/cluster").
+		SetFS(templatesFS).
+		SetRoot("templates").
 		SetDir("objects").
 		AddLabel(labels.ZTPFW, "").
 		Build()

@@ -202,8 +202,8 @@ func (t *DeleteTask) deleteLSO(ctx context.Context) error {
 		SetLogger(t.logger).
 		SetListener(listener.Func).
 		SetClient(t.client).
-		SetFS(internal.DataFS).
-		SetRoot("data/lso/objects").
+		SetFS(templatesFS).
+		SetRoot("templates/objects").
 		Build()
 	if err != nil {
 		return err

@@ -84,8 +84,8 @@ func (c *CleanupCommand) run(cmd *cobra.Command, argv []string) (err error) {
 		SetLogger(logger).
 		SetClient(client).
 		SetListener(listener.Func).
-		SetFS(internal.DataFS).
-		SetRoot("data/dev").
+		SetFS(templatesFS).
+		SetRoot("templates").
 		SetDirs("crds", "objects").
 		AddLabel(labels.ZTPFW, "").
 		Build()
