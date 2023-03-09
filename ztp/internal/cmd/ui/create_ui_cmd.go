@@ -184,8 +184,8 @@ func (t *CreateTask) Run(ctx context.Context) error {
 		SetLogger(t.logger).
 		SetListener(listener.Func).
 		SetClient(t.client).
-		SetFS(internal.DataFS).
-		SetRoot("data/ui").
+		SetFS(templatesFS).
+		SetRoot("templates").
 		SetDir("objects").
 		Build()
 	if err != nil {

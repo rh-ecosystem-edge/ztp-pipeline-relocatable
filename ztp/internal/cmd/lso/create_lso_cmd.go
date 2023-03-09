@@ -324,8 +324,8 @@ func (t *CreateTask) wipeDisks(ctx context.Context, node *models.Node) error {
 	// Generate the script:
 	engine, err := templating.NewEngine().
 		SetLogger(t.logger).
-		SetFS(internal.DataFS).
-		SetDir("data/lso/scripts").
+		SetFS(templatesFS).
+		SetDir("templates/lso/scripts").
 		Build()
 	if err != nil {
 		return err
@@ -375,8 +375,8 @@ func (t *CreateTask) deployLSO(ctx context.Context) error {
 		SetLogger(t.logger).
 		SetListener(listener.Func).
 		SetClient(t.client).
-		SetFS(internal.DataFS).
-		SetRoot("data/lso/objects").
+		SetFS(templatesFS).
+		SetRoot("templates/lso/objects").
 		Build()
 	if err != nil {
 		return err

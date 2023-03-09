@@ -238,8 +238,8 @@ func (t *DeleteTask) Run(ctx context.Context) error {
 		SetLogger(t.logger).
 		SetListener(listener.Func).
 		SetClient(t.client).
-		SetFS(internal.DataFS).
-		SetRoot("data/metallb").
+		SetFS(templatesFS).
+		SetRoot("templates").
 		SetDir("objects").
 		Build()
 	if err != nil {
