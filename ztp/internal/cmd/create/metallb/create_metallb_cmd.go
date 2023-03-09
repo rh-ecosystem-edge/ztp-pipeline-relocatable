@@ -17,10 +17,15 @@ package metallb
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	corev1 "k8s.io/api/core/v1"
+	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
@@ -41,6 +46,13 @@ func Cobra() *cobra.Command {
 	flags := result.Flags()
 	config.AddFlags(flags)
 	internal.AddEnricherFlags(flags)
+	_ = flags.DurationP(
+		waitFlagName,
+		"w",
+		10*time.Minute,
+		"Time to wait till the API endpoints are reachable. Set to zero to disable "+
+			"waiting.",
+	)
 	return result
 }
 
@@ -150,6 +162,46 @@ func (c *Command) Run(cmd *cobra.Command, argv []string) error {
 		}
 	}
 
+	// Wait for the API endpoints of the clusters to be reachable:
+	wait, err := c.flags.GetDuration(waitFlagName)
+	if err != nil {
+		c.console.Error(
+			"Failed to get value of flag '--%s': %v",
+			waitFlagName, err,
+		)
+		return exit.Error(1)
+	}
+	if wait != 0 {
+		c.console.Info(
+			"Waiting up to %s for API endpoints to be reachable",
+			wait,
+		)
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, wait)
+		defer cancel()
+		for _, cluster := range c.config.Clusters {
+			c.console.Info(
+				"Waiting for API endpoint of cluster '%s' to be reachable",
+				cluster.Name,
+			)
+			err = c.wait(ctx, cluster)
+			if os.IsTimeout(err) {
+				c.console.Error(
+					"API endpoints aren't reachable after waiting for %s",
+					wait,
+				)
+				return exit.Error(1)
+			}
+			if err != nil {
+				return err
+			}
+			c.console.Info(
+				"API endpoint of cluster '%s' is now reachable",
+				cluster.Name,
+			)
+		}
+	}
+
 	return nil
 }
 
@@ -227,3 +279,53 @@ func (t *Task) Run(ctx context.Context) error {
 		"Cluster": t.cluster,
 	})
 }
+
+func (t *Command) wait(ctx context.Context, cluster *models.Cluster) error {
+	// Check that the Kubeconfig is available:
+	if cluster.Kubeconfig == nil {
+		return fmt.Errorf(
+			"kubeconfig for cluster '%s' isn't available",
+			cluster.Name,
+		)
+	}
+
+	// Create an API client that connects directly, without the SSH tunnel:
+	client, err := internal.NewClient().
+		SetLogger(t.logger).
+		SetFlags(t.flags).
+		SetKubeconfig(cluster.Kubeconfig).
+		Build()
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	// Try a simple operation till it succeeds:
+	settings := backoff.NewExponentialBackOff()
+	settings.MaxInterval = time.Minute
+	settings.MaxElapsedTime = 0
+	operation := func() error {
+		object := &corev1.Namespace{}
+		key := clnt.ObjectKey{
+			Name: "kube-public",
+		}
+		return client.Get(ctx, key, object)
+	}
+	notify := func(err error, delay time.Duration) {
+		t.logger.V(1).Info(
+			"API check failed, will retry",
+			"error", err,
+			"delay", delay,
+		)
+	}
+	return backoff.RetryNotify(
+		operation,
+		backoff.WithContext(settings, ctx),
+		notify,
+	)
+}
+
+// Names of the command line flags:
+const (
+	waitFlagName = "wait"
+)
