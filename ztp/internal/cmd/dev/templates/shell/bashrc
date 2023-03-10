@@ -1,0 +1,14 @@
+# Source the file from the home of the user:
+if [ -f ~/.bashrc ]; then
+  . ~/.bashrc
+fi
+
+# Set an alias for the SSH commands that uses the configuration file that we generate:
+alias ssh="ssh -F {{ .Tmp }}/.ssh/config"
+alias scp="scp -F {{ .Tmp }}/.ssh/config"
+
+# Point Kubernetes clients to the cluster:
+export KUBECONFIG="{{ .Tmp }}/.kube/config"
+
+# Add the cluster name to the prompt:
+export PS1="[\u@{{ .Cluster.Name }} \W]\$ "
