@@ -1,0 +1,10 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  namespace: ztpfw-registry
+  name: quay-operator
+spec:
+  channel: "stable-3.7"
+  name: quay-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

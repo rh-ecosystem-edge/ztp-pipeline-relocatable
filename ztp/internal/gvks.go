@@ -117,6 +117,20 @@ var (
 	}
 	NMStateConfigListGVK = listGVK(NMStateConfigGVK)
 
+	QuayRegistryGVK = schema.GroupVersionKind{
+		Group:   "quay.redhat.com",
+		Version: "v1",
+		Kind:    "QuayRegistry",
+	}
+	QuayRegistryListGVK = listGVK(QuayRegistryGVK)
+
+	RouteGVK = schema.GroupVersionKind{
+		Group:   "route.openshift.io",
+		Version: "v1",
+		Kind:    "Route",
+	}
+	RouteListGVK = listGVK(RouteGVK)
+
 	StorageClusterGVK = schema.GroupVersionKind{
 		Group:   "ocs.openshift.io",
 		Version: "v1",
