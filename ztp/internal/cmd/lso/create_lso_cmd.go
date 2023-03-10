@@ -40,13 +40,13 @@ import (
 
 // Create creates and returns the `create lso` command.
 func Create() *cobra.Command {
-	c := NewDeleteCommand()
+	c := NewCreateCommand()
 	result := &cobra.Command{
 		Use:     "lso",
 		Aliases: []string{"lsos"},
 		Short:   "Deploys local storage operator",
 		Args:    cobra.NoArgs,
-		RunE:    c.Run,
+		RunE:    c.run,
 	}
 	flags := result.Flags()
 	config.AddFlags(flags)
@@ -90,8 +90,8 @@ func NewCreateCommand() *CreateCommand {
 	return &CreateCommand{}
 }
 
-// Run runs the `create lso` command.
-func (c *CreateCommand) Run(cmd *cobra.Command, argv []string) error {
+// run runs the `create lso` command.
+func (c *CreateCommand) run(cmd *cobra.Command, argv []string) error {
 	var err error
 
 	// Get the context:
@@ -174,7 +174,7 @@ func (c *CreateCommand) Run(cmd *cobra.Command, argv []string) error {
 			console: c.console,
 			cluster: cluster,
 		}
-		err = task.Run(ctx)
+		err = task.run(ctx)
 		if err != nil {
 			c.console.Error(
 				"Failed to create local storage operator for cluster '%s': %v",
@@ -186,7 +186,7 @@ func (c *CreateCommand) Run(cmd *cobra.Command, argv []string) error {
 	return nil
 }
 
-func (t *CreateTask) Run(ctx context.Context) error {
+func (t *CreateTask) run(ctx context.Context) error {
 	var err error
 
 	// Check that the Kubeconfig is available:
@@ -325,7 +325,7 @@ func (t *CreateTask) wipeDisks(ctx context.Context, node *models.Node) error {
 	engine, err := templating.NewEngine().
 		SetLogger(t.logger).
 		SetFS(templatesFS).
-		SetDir("templates/lso/scripts").
+		SetDir("templates/scripts").
 		Build()
 	if err != nil {
 		return err
@@ -376,7 +376,7 @@ func (t *CreateTask) deployLSO(ctx context.Context) error {
 		SetListener(listener.Func).
 		SetClient(t.client).
 		SetFS(templatesFS).
-		SetRoot("templates/lso/objects").
+		SetRoot("templates/objects").
 		Build()
 	if err != nil {
 		return err

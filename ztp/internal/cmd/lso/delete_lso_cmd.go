@@ -36,7 +36,7 @@ func Delete() *cobra.Command {
 		Aliases: []string{"lsos"},
 		Short:   "Deletes local storage operator",
 		Args:    cobra.NoArgs,
-		RunE:    c.Run,
+		RunE:    c.run,
 	}
 	flags := result.Flags()
 	config.AddFlags(flags)
@@ -79,8 +79,8 @@ func NewDeleteCommand() *DeleteCommand {
 	return &DeleteCommand{}
 }
 
-// Run runs the `delete lso` command.
-func (c *DeleteCommand) Run(cmd *cobra.Command, argv []string) error {
+// run runs the `delete lso` command.
+func (c *DeleteCommand) run(cmd *cobra.Command, argv []string) error {
 	var err error
 
 	// Get the context:
@@ -150,7 +150,7 @@ func (c *DeleteCommand) Run(cmd *cobra.Command, argv []string) error {
 			console: c.console,
 			cluster: cluster,
 		}
-		err = task.Run(ctx)
+		err = task.run(ctx)
 		if err != nil {
 			c.console.Error(
 				"Failed to delete local storage operator for cluster '%s': %v",
@@ -162,7 +162,7 @@ func (c *DeleteCommand) Run(cmd *cobra.Command, argv []string) error {
 	return nil
 }
 
-func (t *DeleteTask) Run(ctx context.Context) error {
+func (t *DeleteTask) run(ctx context.Context) error {
 	var err error
 
 	// Check that the Kubeconfig is available:
@@ -203,7 +203,8 @@ func (t *DeleteTask) deleteLSO(ctx context.Context) error {
 		SetListener(listener.Func).
 		SetClient(t.client).
 		SetFS(templatesFS).
-		SetRoot("templates/objects").
+		SetRoot("templates").
+		SetDir("objects").
 		Build()
 	if err != nil {
 		return err
