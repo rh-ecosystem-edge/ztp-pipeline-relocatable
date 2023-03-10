@@ -33,6 +33,13 @@ var (
 	}
 	AgentClusterInstallListGVK = listGVK(AgentClusterInstallGVK)
 
+	BackingStoreGVK = schema.GroupVersionKind{
+		Group:   "noobaa.io",
+		Version: "v1alpha1",
+		Kind:    "BackingStore",
+	}
+	BackingStoreListGVK = listGVK(BackingStoreGVK)
+
 	BareMetalHostGVK = schema.GroupVersionKind{
 		Group:   "metal3.io",
 		Version: "v1alpha1",
@@ -109,6 +116,13 @@ var (
 		Kind:    "NMStateConfig",
 	}
 	NMStateConfigListGVK = listGVK(NMStateConfigGVK)
+
+	StorageClusterGVK = schema.GroupVersionKind{
+		Group:   "ocs.openshift.io",
+		Version: "v1",
+		Kind:    "StorageCluster",
+	}
+	StorageClusterListGVK = listGVK(StorageClusterGVK)
 )
 
 func listGVK(gvk schema.GroupVersionKind) schema.GroupVersionKind {
