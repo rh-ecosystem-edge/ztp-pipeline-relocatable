@@ -130,7 +130,7 @@ var _ = Describe("Client", func() {
 		Expect(message.Code).To(Equal(200))
 	})
 
-	It("Processes requests in the order", func() {
+	It("Processes requests in order", func() {
 		// The first wrapper marks the request:
 		first := RequestTransformer(func(request *http.Request) *http.Request {
 			defer GinkgoRecover()
@@ -160,7 +160,7 @@ var _ = Describe("Client", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("Processes responses in the reversed order", func() {
+	It("Processes responses in reversed order", func() {
 		// The first wrapper checks that the mark is present:
 		first := ResponseTransformer(func(r *http.Response, e error) (*http.Response, error) {
 			defer GinkgoRecover()
@@ -250,10 +250,14 @@ var _ = Describe("Client", func() {
 		err = client.List(ctx, list)
 		Expect(err).ToNot(HaveOccurred())
 
-		// Check that the details have been written to the log:
+		// Check that the metadata requests haven't been written to the log:
 		text := buffer.String()
-		Expect(text).ToNot(ContainSubstring("/api?"))
-		Expect(text).ToNot(ContainSubstring("/api/v1?"))
-		Expect(text).ToNot(ContainSubstring("/apis?"))
+		Expect(text).ToNot(ContainSubstring(`/api?`))
+		Expect(text).ToNot(ContainSubstring(`/api/v1?`))
+		Expect(text).ToNot(ContainSubstring(`/apis?`))
+		Expect(text).ToNot(ContainSubstring(`/apis/apps/v1?`))
+
+		// Check that the data request has been written to the log:
+		Expect(text).To(ContainSubstring(`/api/v1/pods"`))
 	})
 })
