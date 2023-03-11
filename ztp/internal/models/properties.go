@@ -42,3 +42,7 @@ const ClusterImageSetProperty = "clusterimageset"
 
 // RegistryProperty is the URL of a custom image registry to use for the clusters.
 const RegistryProperty = "REGISTRY"
+
+// ODFVersionProperty is the name of the property used to define the OpenShift Data Foundation
+// version that should be installed in clusters.
+const ODFVersionProperty = "OC_ODF_VERSION"

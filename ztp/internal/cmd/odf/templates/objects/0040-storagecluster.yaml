@@ -1,0 +1,51 @@
+apiVersion: ocs.openshift.io/v1
+kind: StorageCluster
+metadata:
+  namespace: openshift-storage
+  {{ if .Cluster.SNO -}}
+  name: mcg-storagecluster
+  {{ else -}}
+  name: ocs-storagecluster
+  {{ end -}}
+  annotations:
+    cluster.ocs.openshift.io/local-devices: "true"
+    uninstall.ocs.openshift.io/cleanup-policy: delete
+    uninstall.ocs.openshift.io/mode: graceful
+spec:
+  {{ if .Cluster.SNO -}}
+  multiCloudGateway:
+    dbStorageClassName: lvms-vg1
+    reconcileStrategy: standalone
+  resources:
+    noobaa-core:
+      limits:
+        cpu: 4
+        memory: 8Gi
+    noobaa-db:
+      limits:
+        cpu: 4
+        memory: 8Gi
+    noobaa-endpoint:
+      limits:
+        cpu: 4
+        memory: 8Gi
+  {{ else -}}
+  manageNodes: false
+  monDataDirHostPath: /var/lib/rook
+  storageDeviceSets:
+  - count: {{ .Disks }}
+    dataPVCTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1
+        storageClassName: localstorage-sc-block
+        volumeMode: Block
+    name: ocs-deviceset
+    placement: {}
+    portable: False
+    replica: 3
+    resources: {}
+  {{ end -}}
