@@ -427,6 +427,7 @@ func (c *Client) Watch(ctx context.Context, list clnt.ObjectList,
 		context: ctx,
 		object:  list,
 		options: options,
+		version: "0",
 		client:  c,
 		stop:    make(chan struct{}),
 		events:  make(chan apiwatch.Event),
@@ -540,12 +541,13 @@ func (w *restartableWatch) forward() {
 		if err != nil {
 			w.logger.Error(
 				err,
-				"Watch finished with unexpected error",
+				"Watch finished with error",
 			)
 			return
 		}
 		w.logger.V(1).Info("Watch finished without error, will restart it")
 		backOff := backoff.NewExponentialBackOff()
+		backOff.InitialInterval = 10 * time.Second
 		backOff.MaxInterval = time.Minute
 		backOff.MaxElapsedTime = 0
 		err = backoff.RetryNotify(
@@ -555,7 +557,7 @@ func (w *restartableWatch) forward() {
 				w.logger.V(1).Info(
 					"Failed to create watch, will try again",
 					"error", err,
-					"delay", delay,
+					"delay", delay.String(),
 				)
 			},
 		)
@@ -577,20 +579,60 @@ func (w *restartableWatch) forwardUnderlying() error {
 			if !ok {
 				return nil
 			}
-			switch object := event.Object.(type) {
-			case clnt.Object:
-				w.version = object.GetResourceVersion()
-				w.logger.V(2).Info(
-					"Received event",
-					"type", event.Type,
-					"version", w.version,
-				)
+			switch event.Type {
+			case apiwatch.Bookmark:
+				object, ok := event.Object.(clnt.Object)
+				if ok {
+					w.version = object.GetResourceVersion()
+					w.logger.V(2).Info(
+						"Received bookmark event",
+						"version", w.version,
+					)
+				} else {
+					w.logger.V(2).Info(
+						"Received bookmark event with unknown object type",
+						"object", fmt.Sprintf("%T", event.Object),
+					)
+				}
+			case apiwatch.Error:
+				status, ok := event.Object.(*metav1.Status)
+				if ok {
+					if status.Code == http.StatusGone {
+						w.logger.V(2).Info(
+							"Received error event indicating that "+
+								"resource version is too old",
+							"version", w.version,
+							"status", status,
+						)
+						w.version = "0"
+						return nil
+					}
+					w.logger.V(2).Info(
+						"Received unknown error event",
+						"status", status,
+					)
+				} else {
+					w.logger.V(2).Info(
+						"Received error event with unknown object type",
+						"type", fmt.Sprintf("%T", event.Object),
+					)
+				}
 			default:
-				w.logger.V(2).Info(
-					"Received event with unknown object type",
-					"event_type", event.Type,
-					"object_type", fmt.Sprintf("%T", object),
-				)
+				switch object := event.Object.(type) {
+				case clnt.Object:
+					w.version = object.GetResourceVersion()
+					w.logger.V(2).Info(
+						"Received event",
+						"type", event.Type,
+						"version", w.version,
+					)
+				default:
+					w.logger.V(2).Info(
+						"Received event with unknown object type",
+						"event_type", event.Type,
+						"object_type", fmt.Sprintf("%T", object),
+					)
+				}
 			}
 			w.events <- event
 		case <-w.stop:
@@ -609,12 +651,11 @@ func (w *restartableWatch) createUnderlying() error {
 	var err error
 	options := &client.ListOptions{}
 	options.ApplyOptions(w.options)
-	if w.version != "" {
-		if options.Raw == nil {
-			options.Raw = &metav1.ListOptions{}
-		}
-		options.Raw.ResourceVersion = w.version
+	if options.Raw == nil {
+		options.Raw = &metav1.ListOptions{}
 	}
+	options.Raw.ResourceVersion = w.version
+	options.Raw.AllowWatchBookmarks = true
 	w.underlying, err = w.client.delegate.Watch(w.context, w.object, options)
 	return err
 }
