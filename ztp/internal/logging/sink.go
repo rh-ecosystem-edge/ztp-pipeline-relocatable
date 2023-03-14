@@ -15,9 +15,11 @@ License.
 package logging
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/go-logr/logr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // sink is an implementation of the logr.LogSink interface that processes the fields of log messages
@@ -80,5 +82,23 @@ func (s *sink) processFields(args []any) {
 				}
 			}
 		}
+		value := args[i+1]
+		switch value.(type) {
+		case *metav1.Status:
+			args[i+1] = s.pretty(value)
+		}
 	}
+}
+
+func (s *sink) pretty(object any) any {
+	data, err := json.Marshal(object)
+	if err != nil {
+		return object
+	}
+	var result any
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return object
+	}
+	return result
 }
