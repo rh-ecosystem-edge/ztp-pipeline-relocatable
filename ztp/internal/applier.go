@@ -479,6 +479,9 @@ func (a *Applier) waitCRDs(ctx context.Context, gvks ...schema.GroupVersionKind)
 	}
 	defer watch.Stop()
 	for event := range watch.ResultChan() {
+		if event.Type == apiwatch.Bookmark {
+			continue
+		}
 		crd, ok := event.Object.(*unstructured.Unstructured)
 		if !ok {
 			continue

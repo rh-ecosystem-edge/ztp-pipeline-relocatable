@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	apiwatch "k8s.io/apimachinery/pkg/watch"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
@@ -298,6 +299,9 @@ func (c *CreateCommand) waitHosts(ctx context.Context, cluster *models.Cluster) 
 	}
 	defer watch.Stop()
 	for event := range watch.ResultChan() {
+		if event.Type == apiwatch.Bookmark {
+			continue
+		}
 		object, ok := event.Object.(*unstructured.Unstructured)
 		if !ok {
 			continue
@@ -348,6 +352,9 @@ func (c *CreateCommand) waitInstall(ctx context.Context, cluster *models.Cluster
 	defer watch.Stop()
 	previousState := ""
 	for event := range watch.ResultChan() {
+		if event.Type == apiwatch.Bookmark {
+			continue
+		}
 		object, ok := event.Object.(*unstructured.Unstructured)
 		if !ok {
 			continue
