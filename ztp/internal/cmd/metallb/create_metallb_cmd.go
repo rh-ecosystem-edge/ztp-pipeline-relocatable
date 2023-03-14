@@ -25,7 +25,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
-	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
@@ -69,7 +68,6 @@ type CreateCommand struct {
 // runs, in particular it contains the reference to the cluster it works with, so that it isn't
 // necessary to pass this reference around all the time.
 type CreateTask struct {
-	parent  *CreateCommand
 	logger  logr.Logger
 	flags   *pflag.FlagSet
 	console *internal.Console
@@ -147,7 +145,6 @@ func (c *CreateCommand) Run(cmd *cobra.Command, argv []string) error {
 	// Create a task for each cluster, and run them:
 	for _, cluster := range c.config.Clusters {
 		task := &CreateTask{
-			parent:  c,
 			logger:  c.logger.WithValues("cluster", cluster.Name),
 			flags:   c.flags,
 			console: c.console,
@@ -159,6 +156,7 @@ func (c *CreateCommand) Run(cmd *cobra.Command, argv []string) error {
 				"Failed to create load balancer for cluster '%s': %v",
 				cluster.Name, err,
 			)
+			return exit.Error(1)
 		}
 	}
 
@@ -289,27 +287,22 @@ func (t *CreateCommand) wait(ctx context.Context, cluster *models.Cluster) error
 		)
 	}
 
-	// Create an API client that connects directly, without the SSH tunnel:
-	client, err := internal.NewClient().
-		SetLogger(t.logger).
-		SetFlags(t.flags).
-		SetKubeconfig(cluster.Kubeconfig).
-		Build()
-	if err != nil {
-		return err
-	}
-	defer client.Close()
-
 	// Try a simple operation till it succeeds:
 	settings := backoff.NewExponentialBackOff()
 	settings.MaxInterval = time.Minute
 	settings.MaxElapsedTime = 0
 	operation := func() error {
-		object := &corev1.Namespace{}
-		key := clnt.ObjectKey{
-			Name: "kube-public",
+		client, err := internal.NewClient().
+			SetLogger(t.logger).
+			SetFlags(t.flags).
+			SetKubeconfig(cluster.Kubeconfig).
+			Build()
+		if err != nil {
+			return err
 		}
-		return client.Get(ctx, key, object)
+		defer client.Close()
+		list := &corev1.NodeList{}
+		return client.List(ctx, list)
 	}
 	notify := func(err error, delay time.Duration) {
 		t.logger.V(1).Info(
