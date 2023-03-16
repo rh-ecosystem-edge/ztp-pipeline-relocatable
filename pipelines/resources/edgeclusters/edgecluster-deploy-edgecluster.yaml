@@ -21,9 +21,9 @@ spec:
     - name: mock
       type: string
       default: "false"
-    - name: ztp-log-level
+    - name: ztp-extra-args
       type: string
-      default: "0"
+      default: ""
   stepTemplate:
     env:
       - name: MOCK
@@ -39,10 +39,10 @@ spec:
           ztp create clusters \
           --config "$(params.edgeclusters-config)" \
           --output "/workspace/ztp/$(params.pipeline-name)" \
-          --mute \
-          --log-file "stdout" \
-          --log-level "$(params.ztp-log-level)" \
-          --wait "2h30m"
+          --wait "2h30m" \
+          --log-field "pr=$(params.pipeline-name)" \
+          --log-field "tr=$(context.taskRun.name)" \
+          $(params.ztp-extra-args)
         else
           echo "Deploy Edge-cluster: Mock mode on"
         fi
