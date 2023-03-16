@@ -9,17 +9,17 @@ import {
 import { ADDRESS_POOL_NAMESPACE } from './constants';
 
 export const ADDRESS_POOL_TEMPLATE = {
-  apiVersion: 'metallb.io/v1alpha1',
-  kind: 'AddressPool',
+  apiVersion: 'metallb.io/v1beta1',
+  kind: 'IPAddressPool',
   metadata: {
     generateName: 'ztpfw-', // To be filled
     name: '',
     namespace: ADDRESS_POOL_NAMESPACE,
   },
   spec: {
-    protocol: 'layer2',
+    autoAssign: false,
     addresses: [
-      '', // To be filled, example: '172.18.0.100-172.18.0.255',
+      '', // To be filled, example: '172.18.0.100/32',
     ],
   },
 };
