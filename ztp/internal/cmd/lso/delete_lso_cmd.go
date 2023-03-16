@@ -21,8 +21,11 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	corev1 "k8s.io/api/core/v1"
+	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/annotations"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/models"
@@ -214,6 +217,31 @@ func (t *DeleteTask) deleteLSO(ctx context.Context) error {
 	err = applier.Delete(ctx, nil)
 	if err != nil {
 		return err
+	}
+
+	// Delete the annotation in the namespace that indicates that the disks have been wiped:
+	namespace := &corev1.Namespace{}
+	key := clnt.ObjectKey{
+		Name: t.cluster.Name,
+	}
+	err = t.parent.client.Get(ctx, key, namespace)
+	if err != nil {
+		return nil
+	}
+	if namespace.Annotations != nil {
+		_, ok := namespace.Annotations[annotations.Wiped]
+		if ok {
+			update := namespace.DeepCopy()
+			delete(update.Annotations, annotations.Wiped)
+			err = t.parent.client.Patch(ctx, update, clnt.MergeFrom(namespace))
+			if err != nil {
+				return err
+			}
+			t.console.Info(
+				"Deleted wiped annotation from cluster '%s'",
+				t.cluster.Name,
+			)
+		}
 	}
 
 	// Deleting the CRDs:
