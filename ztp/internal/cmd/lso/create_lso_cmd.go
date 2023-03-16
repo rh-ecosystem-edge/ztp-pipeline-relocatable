@@ -20,16 +20,19 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/exp/slices"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/annotations"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/config"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/exit"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/jq"
@@ -51,14 +54,6 @@ func Create() *cobra.Command {
 	flags := result.Flags()
 	config.AddFlags(flags)
 	internal.AddEnricherFlags(flags)
-	_ = flags.Bool(
-		wipeFlagName,
-		false,
-		"Enable or disable wiping the storage disks of the nodes of the cluster. This "+
-			"is disabled by default to prevent accidentally wiping the disks of nodes "+
-			"in testing and development environments. In production environments it "+
-			"should be explicitly enabled.",
-	)
 	return result
 }
 
@@ -253,31 +248,10 @@ func (t *CreateTask) run(ctx context.Context) error {
 		return err
 	}
 
-	// Wipe the disks of the control plane nodes:
-	wipe, err := t.flags.GetBool(wipeFlagName)
+	// Wipe the disks:
+	err = t.wipeClusterDisks(ctx)
 	if err != nil {
-		return fmt.Errorf(
-			"failed to get the value of the '--%s' flag",
-			wipeFlagName,
-		)
-	}
-	if wipe {
-		for _, node := range nodes {
-			t.console.Info(
-				"Wiping disks of node '%s' of cluster '%s'",
-				node.Name, t.cluster.Name,
-			)
-			err = t.wipeDisks(ctx, node)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		t.console.Warn(
-			"Will not wipe the disks of cluster '%s', to enable it add "+
-				" the '--%s=true' flag",
-			t.cluster.Name, wipeFlagName,
-		)
+		return err
 	}
 
 	// Deploy the operator:
@@ -289,7 +263,58 @@ func (t *CreateTask) run(ctx context.Context) error {
 	return nil
 }
 
-func (t *CreateTask) wipeDisks(ctx context.Context, node *models.Node) error {
+func (t *CreateTask) wipeClusterDisks(ctx context.Context) error {
+	// In order to not wipe the disks multiple times we will add an annotation to the namespace
+	// of the cluster indicating if it has been wiped already, so we need to check if the
+	// annotation is already there.
+	namespace := &corev1.Namespace{}
+	key := clnt.ObjectKey{
+		Name: t.cluster.Name,
+	}
+	err := t.parent.client.Get(ctx, key, namespace)
+	if err != nil {
+		return err
+	}
+	wiped := false
+	if namespace.Annotations != nil {
+		value, ok := namespace.Annotations[annotations.Wiped]
+		if ok {
+			wiped, err = strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if wiped {
+		t.console.Warn(
+			"Disks of of cluster '%s' have already been wiped",
+			t.cluster.Name,
+		)
+		return nil
+	}
+
+	// Wipe the disks of the control plane nodes:
+	for _, node := range t.cluster.ControlPlaneNodes() {
+		t.console.Info(
+			"Wiping disks of node '%s' of cluster '%s'",
+			node.Name, t.cluster.Name,
+		)
+		err = t.wipeNodeDisks(ctx, node)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Add to the namespace the annotation that indicates the the disks have already been wiped:
+	update := namespace.DeepCopy()
+	if update.Annotations == nil {
+		update.Annotations = map[string]string{}
+	}
+	update.Annotations[annotations.Wiped] = strconv.FormatBool(true)
+	return t.parent.client.Patch(ctx, update, clnt.MergeFrom(namespace))
+}
+
+func (t *CreateTask) wipeNodeDisks(ctx context.Context, node *models.Node) error {
 	// Create a logger specific for this node:
 	logger := t.logger.WithValues("node", node.Name)
 
@@ -480,8 +505,3 @@ func (t *CreateTask) waitVolume(ctx context.Context, volume *unstructured.Unstru
 	}
 	return nil
 }
-
-// Names of command line flags:
-const (
-	wipeFlagName = "wipe"
-)
