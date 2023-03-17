@@ -12,9 +12,6 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
-    - name: kubeconfig
-      type: string
-      default: ""
     - name: pipeline-name
       type: string
       default: $(context.taskRun.name)
@@ -24,20 +21,11 @@ spec:
     - name: mock
       type: string
       default: "false"
+    - name: ztp-extra-args
+      type: string
+      default: ""
   stepTemplate:
     env:
-      - name: WORKDIR
-        value: "/workspace/ztp/$(params.pipeline-name)"
-      - name: OUTPUTDIR
-        value: "/workspace/ztp/$(params.pipeline-name)/build/$(context.taskRun.name)"
-      - name: EDGECLUSTERS_CONFIG
-        value: $(params.edgeclusters-config)
-      - name: KUBECONFIG
-        value: "$(workspaces.ztp.path)/kubeconfig"
-      - name: DEPLOY_ODF_DIR
-        value: "deploy-lso"
-      - name: SHARED_DIR
-        value: "shared-utils"
       - name: MOCK
         value: $(params.mock)
   steps:
@@ -48,8 +36,11 @@ spec:
         #!/usr/bin/bash
 
         if [[ "${MOCK}" == 'false' ]]; then
-          cd ${WORKDIR}/${DEPLOY_ODF_DIR}
-          ./deploy.sh
+          ztp create lso \
+          --config "$(params.edgeclusters-config)" \
+          --log-field "pr=$(params.pipeline-name)" \
+          --log-field "tr=$(context.taskRun.name)" \
+          $(params.ztp-extra-args)
         else
-          echo "Deploy ODF: Mock mode on"
+          echo "Deploy LSO: Mock mode on"
         fi
