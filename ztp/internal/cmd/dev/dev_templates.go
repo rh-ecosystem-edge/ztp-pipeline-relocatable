@@ -40,3 +40,4 @@ var templatesFS embed.FS
 //go:generate get templates/setup/crds/0130_ncnp.yaml                https://raw.githubusercontent.com/nmstate/kubernetes-nmstate/v0.76.0/deploy/crds/nmstate.io_nodenetworkconfigurationpolicies.yaml
 //go:generate get templates/setup/crds/0160_localvolume.yaml         https://raw.githubusercontent.com/openshift/local-storage-operator/release-4.12/config/crd/bases/local.storage.openshift.io_localvolumes.yaml
 //go:generate get templates/setup/crds/0170_backingstore.yaml        https://raw.githubusercontent.com/noobaa/noobaa-operator/v5.11.0/deploy/crds/noobaa.io_backingstores_crd.yaml
+//go:generate get templates/setup/crds/0180_lvmcluster.yaml          https://raw.githubusercontent.com/openshift/lvm-operator/release-4.12/config/crd/bases/lvm.topolvm.io_lvmclusters.yaml

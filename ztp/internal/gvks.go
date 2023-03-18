@@ -96,6 +96,13 @@ var (
 	}
 	LocalVolumeListGVK = listGVK(LocalVolumeGVK)
 
+	LVMClusterGVK = schema.GroupVersionKind{
+		Group:   "lvm.topolvm.io",
+		Version: "v1alpha1",
+		Kind:    "LVMCluster",
+	}
+	LVMClusterListGVK = listGVK(LVMClusterGVK)
+
 	ManagedClusterGVK = schema.GroupVersionKind{
 		Group:   "cluster.open-cluster-management.io",
 		Version: "v1",

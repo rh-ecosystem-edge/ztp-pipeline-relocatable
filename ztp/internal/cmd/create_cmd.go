@@ -20,6 +20,7 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/cluster"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/icsp"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/lso"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/lvmo"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/metallb"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/odf"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/ui"
@@ -35,6 +36,7 @@ func Create() *cobra.Command {
 	result.AddCommand(cluster.Create())
 	result.AddCommand(icsp.Create())
 	result.AddCommand(lso.Create())
+	result.AddCommand(lvmo.Create())
 	result.AddCommand(metallb.Create())
 	result.AddCommand(odf.Create())
 	result.AddCommand(ui.Create())

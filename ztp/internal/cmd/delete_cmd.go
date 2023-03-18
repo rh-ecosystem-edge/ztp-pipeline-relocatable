@@ -19,6 +19,7 @@ import (
 
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/cluster"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/lso"
+	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/lvmo"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/metallb"
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/cmd/ui"
 )
@@ -32,6 +33,7 @@ func Delete() *cobra.Command {
 	}
 	result.AddCommand(cluster.Delete())
 	result.AddCommand(lso.Delete())
+	result.AddCommand(lvmo.Delete())
 	result.AddCommand(metallb.Delete())
 	result.AddCommand(ui.Delete())
 	return result
