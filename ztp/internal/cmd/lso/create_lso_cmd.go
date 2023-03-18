@@ -306,12 +306,8 @@ func (t *CreateTask) wipeClusterDisks(ctx context.Context) error {
 	}
 
 	// Add to the namespace the annotation that indicates the the disks have already been wiped:
-	update := namespace.DeepCopy()
-	if update.Annotations == nil {
-		update.Annotations = map[string]string{}
-	}
-	update.Annotations[annotations.Wiped] = strconv.FormatBool(true)
-	return t.parent.client.Patch(ctx, update, clnt.MergeFrom(namespace))
+	return t.parent.client.AddAnnotation(ctx, namespace, annotations.Wiped,
+		strconv.FormatBool(true))
 }
 
 func (t *CreateTask) wipeNodeDisks(ctx context.Context, node *models.Node) error {
