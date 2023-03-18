@@ -16,6 +16,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -489,6 +490,97 @@ func (c *Client) DeleteCRDGroup(ctx context.Context, group string) (n int, err e
 		)
 	}
 	return
+}
+
+// AddLabel adds a label with the given name and value to an object.
+func (c *Client) AddLabel(ctx context.Context, object clnt.Object, name, value string) error {
+	return c.AddLabels(ctx, object, map[string]string{name: value})
+}
+
+// AddLabels adds multiple labels with the given names and values to an object.
+func (c *Client) AddLabels(ctx context.Context, object clnt.Object,
+	labels map[string]string) error {
+	patchData := map[string]any{
+		"metadata": map[string]any{
+			"labels": labels,
+		},
+	}
+	patchBytes, err := json.Marshal(patchData)
+	if err != nil {
+		return err
+	}
+	patchObject := clnt.RawPatch(types.MergePatchType, patchBytes)
+	return c.delegate.Patch(ctx, object, patchObject)
+}
+
+// DeleteLabels deletes the annotation with the given name from an object.
+func (c *Client) DeleteLabel(ctx context.Context, object clnt.Object, name string) error {
+	return c.DeleteLabels(ctx, object, name)
+}
+
+// DeleteLabels deletes multiple labels with the given names from an object.
+func (c *Client) DeleteLabels(ctx context.Context, object clnt.Object, names ...string) error {
+	patchLabels := map[string]any{}
+	for _, name := range names {
+		patchLabels[name] = nil
+	}
+	patchData := map[string]any{
+		"metadata": map[string]any{
+			"labels": patchLabels,
+		},
+	}
+	patchBytes, err := json.Marshal(patchData)
+	if err != nil {
+		return err
+	}
+	c.logger.Info("Patch", "patch", string(patchBytes))
+	patchObject := clnt.RawPatch(types.MergePatchType, patchBytes)
+	return c.delegate.Patch(ctx, object, patchObject)
+}
+
+// AddAnnotation adds an annotation with the given name and value to an object.
+func (c *Client) AddAnnotation(ctx context.Context, object clnt.Object, name, value string) error {
+	return c.AddAnnotations(ctx, object, map[string]string{name: value})
+}
+
+// AddAnnotations adds multiple annotations with the given name and value to an object.
+func (c *Client) AddAnnotations(ctx context.Context, object clnt.Object,
+	annotations map[string]string) error {
+	patchData := map[string]any{
+		"metadata": map[string]any{
+			"annotations": annotations,
+		},
+	}
+	patchBytes, err := json.Marshal(patchData)
+	if err != nil {
+		return err
+	}
+	patchObject := clnt.RawPatch(types.MergePatchType, patchBytes)
+	return c.delegate.Patch(ctx, object, patchObject)
+}
+
+// DeleteAnnotation deletes the annotation with the given name from an object.
+func (c *Client) DeleteAnnotation(ctx context.Context, object clnt.Object, name string) error {
+	return c.DeleteAnnotations(ctx, object, name)
+}
+
+// DeleteAnnotations deletes multiple annotations with the given names from an object.
+func (c *Client) DeleteAnnotations(ctx context.Context, object clnt.Object, names ...string) error {
+	patchAnnotations := map[string]any{}
+	for _, name := range names {
+		patchAnnotations[name] = nil
+	}
+	patchData := map[string]any{
+		"metadata": map[string]any{
+			"annotations": patchAnnotations,
+		},
+	}
+	patchBytes, err := json.Marshal(patchData)
+	if err != nil {
+		return err
+	}
+	patchObject := clnt.RawPatch(types.MergePatchType, patchBytes)
+	return c.delegate.Patch(ctx, object, patchObject)
 }
 
 // Close closes the client and releases all the resources it is using. It is specially important to

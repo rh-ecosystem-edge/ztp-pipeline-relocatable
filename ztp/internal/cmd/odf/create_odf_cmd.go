@@ -24,9 +24,9 @@ import (
 	"github.com/imdario/mergo"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"golang.org/x/exp/maps"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -345,24 +345,28 @@ func (t *CreateTask) deployODF(ctx context.Context) error {
 	// For non SNO clusters we need to wait till the Ceph storage class is created and then make
 	// it the default:
 	if !t.cluster.SNO {
-		storageClassKey := clnt.ObjectKey{
-			Name: fmt.Sprintf("%s-ceph-rbd", storageCluster.GetName()),
+		storageClass := &storagev1.StorageClass{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: fmt.Sprintf("%s-ceph-rbd", storageCluster.GetName()),
+			},
 		}
 		t.console.Info(
 			"Waiting for storage class '%s' of cluster '%s'",
-			storageClassKey.Name, t.cluster.Name,
+			storageClass, t.cluster.Name,
 		)
-		err = t.waitStorageClass(ctx, storageClassKey)
+		err = t.waitStorageClass(ctx, storageClass)
 		if err != nil {
 			return err
 		}
-		err = t.annotateStorageClass(ctx, storageClassKey)
+		err = t.client.AddAnnotation(ctx, storageClass,
+			"storageclass.kubernetes.io/is-default-class", "true",
+		)
 		if err != nil {
 			return err
 		}
 		t.console.Info(
 			"Marked storage class '%s' of cluster '%s' as default",
-			storageClassKey.Name, t.cluster.Name,
+			storageClass, t.cluster.Name,
 		)
 	}
 
@@ -391,7 +395,10 @@ func (t *CreateTask) labelNodes(ctx context.Context) error {
 
 	// Add the labels:
 	for i, node := range nodes {
-		err = t.labelNode(ctx, node, i)
+		err = t.client.AddLabels(ctx, node, map[string]string{
+			"cluster.ocs.openshift.io/openshift-storage": "",
+			"topology.rook.io/rack":                      fmt.Sprintf("rack%d", i),
+		})
 		if err != nil {
 			return err
 		}
@@ -400,29 +407,6 @@ func (t *CreateTask) labelNodes(ctx context.Context) error {
 			node, t.cluster.Name,
 		)
 	}
-	return nil
-}
-
-func (t *CreateTask) labelNode(ctx context.Context, node *corev1.Node, i int) error {
-	labels := map[string]string{
-		"cluster.ocs.openshift.io/openshift-storage": "",
-		"topology.rook.io/rack":                      fmt.Sprintf("rack%d", i),
-	}
-	update := node.DeepCopy()
-	if update.Labels == nil {
-		update.Labels = labels
-	} else {
-		maps.Copy(update.Labels, labels)
-	}
-	err := t.client.Patch(ctx, update, clnt.MergeFrom(node))
-	if err != nil {
-		return err
-	}
-	t.logger.V(1).Info(
-		"Labeled node",
-		"node", node.Name,
-		"labels", labels,
-	)
 	return nil
 }
 
@@ -568,13 +552,13 @@ func (t *CreateTask) resizeBackingStore(ctx context.Context, key clnt.ObjectKey)
 	return t.client.Patch(ctx, update, clnt.MergeFrom(update))
 }
 
-func (t *CreateTask) waitStorageClass(ctx context.Context, key clnt.ObjectKey) error {
+func (t *CreateTask) waitStorageClass(ctx context.Context, object *storagev1.StorageClass) error {
 	list := &storagev1.StorageClassList{}
 	watch, err := t.client.Watch(
 		ctx,
 		list,
 		clnt.MatchingFields{
-			"metadata.name": key.Name,
+			"metadata.name": object.Name,
 		},
 	)
 	if err != nil {
@@ -584,39 +568,12 @@ func (t *CreateTask) waitStorageClass(ctx context.Context, key clnt.ObjectKey) e
 	for range watch.ResultChan() {
 		t.console.Info(
 			"Storage class '%s' of cluster '%s' is now available",
-			key.Name, t.cluster.Name,
+			object, t.cluster.Name,
 		)
 		return nil
 	}
 	return fmt.Errorf(
 		"timed out while waiting for storage class '%s' of cluster '%s'",
-		key.Name, t.cluster.Name,
+		object.Name, t.cluster.Name,
 	)
-}
-
-func (t *CreateTask) annotateStorageClass(ctx context.Context, key clnt.ObjectKey) error {
-	annotations := map[string]string{
-		"storageclass.kubernetes.io/is-default-class": "true",
-	}
-	object := &storagev1.StorageClass{}
-	err := t.client.Get(ctx, key, object)
-	if err != nil {
-		return err
-	}
-	update := object.DeepCopy()
-	if update.Annotations == nil {
-		update.Annotations = annotations
-	} else {
-		maps.Copy(update.Annotations, annotations)
-	}
-	err = t.client.Patch(ctx, update, clnt.MergeFrom(object))
-	if err != nil {
-		return err
-	}
-	t.logger.V(1).Info(
-		"Annotated storage class",
-		"class", key.Name,
-		"annotations", annotations,
-	)
-	return nil
 }
