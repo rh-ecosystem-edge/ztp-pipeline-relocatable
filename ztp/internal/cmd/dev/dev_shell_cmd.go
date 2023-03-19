@@ -220,7 +220,7 @@ func (c *ShellCommand) runShell() error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(tmpDir)
+	defer os.RemoveAll(tmpDir)
 
 	// Write the kubeconfig:
 	if c.cluster.Kubeconfig != nil {

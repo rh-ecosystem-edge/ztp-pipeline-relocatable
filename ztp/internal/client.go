@@ -87,8 +87,8 @@ func (b *ClientBuilder) SetLogger(value logr.Logger) *ClientBuilder {
 //
 //	client, err := NewClient().
 //		SetLogger(logger).
-//		AddTransportWrapper(addMyHeader).
-//		AddTransportWrapper(readMyHeader).
+//		AddWrapper(addMyHeader).
+//		AddWrapper(readMyHeader).
 //		Build()
 //	if err != nil {
 //		...

@@ -1,0 +1,14 @@
+apiVersion: quay.redhat.com/v1
+kind: QuayRegistry
+metadata:
+  namespace: ztpfw-registry
+  name: ztpfw-registry
+spec:
+  configBundleSecret: config-bundle-secret
+  components:
+    - kind: clairpostgres
+      managed: false
+    - kind: clair
+      managed: false
+    - kind: mirror
+      managed: false
