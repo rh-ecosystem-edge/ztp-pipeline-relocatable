@@ -293,49 +293,51 @@ func (t *CreateTask) deployRegistry(ctx context.Context) error {
 		return err
 	}
 
-	// Check if the registry token is available:
-	var tokenBytes []byte
-	tokenSecret := &corev1.Secret{}
-	tokenKey := clnt.ObjectKey{
+	// Check if the secret containing the registry user and password is available:
+	var registryUser, registryPass string
+	secretObject := &corev1.Secret{}
+	secretKey := clnt.ObjectKey{
 		Namespace: registry.GetNamespace(),
 		Name:      "quay-token",
 	}
-	err = t.client.Get(ctx, tokenKey, tokenSecret)
+	err = t.client.Get(ctx, secretKey, secretObject)
 	switch {
 	case err == nil:
 		t.console.Warn(
 			"Registry token secret '%s' for cluster '%s' already exists",
-			tokenSecret, t.cluster.Name,
+			secretKey, t.cluster.Name,
 		)
-		tokenBytes = tokenSecret.Data["token"]
+		registryUser = string(secretObject.Data["user"])
+		registryPass = string(secretObject.Data["token"])
 	case apierrors.IsNotFound(err):
 		t.console.Info(
-			"Registry token secret '%s' for cluster '%s' doesn't exist, will "+
-				"initialize registry",
-			tokenKey, t.cluster.Name,
+			"Registry secret '%s' for cluster '%s' doesn't exist, will initialize "+
+				"the registry",
+			secretKey, t.cluster.Name,
 		)
-		tokenBytes, err = t.initializeRegistry(ctx, registry)
+		registryUser, registryPass, err = t.initializeRegistry(ctx, registry)
 		if err != nil {
 			return err
 		}
-		tokenSecret.Namespace = tokenKey.Namespace
-		tokenSecret.Name = tokenKey.Name
-		tokenSecret.Data = map[string][]byte{
-			"token": tokenBytes,
+		secretObject.Namespace = secretKey.Namespace
+		secretObject.Name = secretKey.Name
+		secretObject.Data = map[string][]byte{
+			"user":  []byte(registryUser),
+			"token": []byte(registryPass),
 		}
-		err = t.client.Create(ctx, tokenSecret)
+		err = t.client.Create(ctx, secretObject)
 		if err != nil {
 			return err
 		}
 		t.console.Info(
-			"Created registry token secret '%s' for cluster '%s'",
-			tokenSecret, t.cluster.Name,
+			"Created registry secret '%s' for cluster '%s'",
+			secretKey, t.cluster.Name,
 		)
 	default:
 		return err
 	}
 
-	// Create a pull secret using the administrator credentials:
+	// Find the address of the registry:
 	routeObject := &unstructured.Unstructured{}
 	routeObject.SetGroupVersionKind(internal.RouteGVK)
 	routeKey := clnt.ObjectKey{
@@ -346,21 +348,27 @@ func (t *CreateTask) deployRegistry(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var routeHost string
+	var registryHost string
 	err = t.jq.Query(
 		`.status.ingress[0]?.host`,
-		routeObject, &routeHost,
+		routeObject, &registryHost,
 	)
 	if err != nil {
 		return err
 	}
-	if routeHost == "" {
+	if registryHost == "" {
 		return fmt.Errorf(
 			"failed to update pull secret for cluster '%s' because route '%s' "+
 				"doesn't have a host",
 			t.cluster.Name, routeKey,
 		)
 	}
+	t.logger.V(1).Info(
+		"Found registry host",
+		"host", registryHost,
+	)
+
+	// Create a pull secret using the administrator credentials:
 	pullSecretObject := &corev1.Secret{}
 	pullSecretKey := clnt.ObjectKey{
 		Namespace: "openshift-config",
@@ -383,25 +391,27 @@ func (t *CreateTask) deployRegistry(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var pullSecretAuth string
+	var existingAuth string
 	err = t.jq.Query(
-		fmt.Sprintf(`.auths["%s"].auth`, routeHost),
-		pullSecretAuths, &pullSecretAuth,
+		fmt.Sprintf(`.auths["%s"].auth`, registryHost),
+		pullSecretAuths, &existingAuth,
 	)
 	if err != nil {
 		return err
 	}
-	tokenString := base64.StdEncoding.EncodeToString(tokenBytes)
-	if pullSecretAuth == tokenString {
+	registryAuth := base64.StdEncoding.EncodeToString([]byte(
+		fmt.Sprintf("%s:%s", registryUser, registryPass),
+	))
+	if existingAuth == registryAuth {
 		t.console.Warn(
-			"Pull secret for cluster '%s' already contains registry token",
-			t.cluster.Name,
+			"Pull secret for cluster '%s' already contains auth for registry '%s'",
+			t.cluster.Name, registryHost,
 		)
 	} else {
 		err = mergo.MapWithOverwrite(&pullSecretAuths, map[string]any{
 			"auths": map[string]any{
-				routeHost: map[string]any{
-					"auth": base64.StdEncoding.EncodeToString(tokenBytes),
+				registryHost: map[string]any{
+					"auth": registryAuth,
 				},
 			},
 		})
@@ -419,13 +429,13 @@ func (t *CreateTask) deployRegistry(ctx context.Context) error {
 			return err
 		}
 		t.console.Info(
-			"Added registry token to pull secret for cluster '%s'",
-			t.cluster.Name,
+			"Added auth for registry '%s' to pull secret for cluster '%s'",
+			registryHost, t.cluster.Name,
 		)
 	}
 
 	// Configure the cluster so that it trusts the registry:
-	err = t.trustRegistry(ctx, routeHost)
+	err = t.trustRegistry(ctx, registryHost)
 	if err != nil {
 		return err
 	}
@@ -477,44 +487,45 @@ func (t *CreateTask) waitRegistry(ctx context.Context, registry *unstructured.Un
 }
 
 func (t *CreateTask) initializeRegistry(ctx context.Context,
-	registry *unstructured.Unstructured) (result []byte, err error) {
-	// Get the API host name from the route:
-	route := &unstructured.Unstructured{}
-	route.SetGroupVersionKind(internal.RouteGVK)
-	key := clnt.ObjectKey{
+	registry *unstructured.Unstructured) (user, pass string, err error) {
+	// Get the API host name from the routeObject:
+	routeObject := &unstructured.Unstructured{}
+	routeObject.SetGroupVersionKind(internal.RouteGVK)
+	routeKey := clnt.ObjectKey{
 		Namespace: registry.GetNamespace(),
 		Name:      fmt.Sprintf("%s-quay", registry.GetName()),
 	}
-	err = t.client.Get(ctx, key, route)
+	err = t.client.Get(ctx, routeKey, routeObject)
 	if err != nil {
 		return
 	}
-	var host string
+	var quayHost string
 	err = t.jq.Query(
 		`.status.ingress[0]?.host`,
-		route, &host,
+		routeObject, &quayHost,
 	)
 	if err != nil {
 		return
 	}
-	if host == "" {
+	if quayHost == "" {
 		err = fmt.Errorf(
 			"failed to initialize registry for cluster '%s' because route '%s' "+
 				"doesn't have a host",
-			t.cluster.Name, key,
+			t.cluster.Name, routeKey,
 		)
 		return
 	}
+	quayURL := fmt.Sprintf("https://%s", quayHost)
 	t.logger.V(1).Info(
-		"Found registry host name",
-		"value", host,
+		"Found registry host",
+		"host", quayHost,
+		"url", quayURL,
 	)
 
 	// Create the client for the registry API:
-	url := fmt.Sprintf("https://%s", host)
-	client, err := quay.NewClient().
+	quayClient, err := quay.NewClient().
 		SetLogger(t.logger).
-		SetURL(url).
+		SetURL(quayURL).
 		SetInsecure(true).
 		SetFlags(t.flags).
 		Build()
@@ -523,40 +534,49 @@ func (t *CreateTask) initializeRegistry(ctx context.Context,
 	}
 
 	// Enable the administrator user:
-	_, err = client.UserInitialize(ctx, &quay.UserInitializeRequest{
-		Username:    "dummy",
-		Password:    "dummy123",
-		Email:       "quayadmin@example.com",
+	_, err = quayClient.UserInitialize(ctx, &quay.UserInitializeRequest{
+		Username:    quayAdminUser,
+		Password:    quayAdminPass,
+		Email:       quayAdminMail,
 		AccessToken: true,
 	})
 	if err != nil {
 		return
 	}
-	token := client.Token()
+	quayAdminToken := quayClient.Token()
 	t.logger.V(1).Info(
-		"Initialized registry user",
-		"!token", token,
+		"Initialized registry administrator",
+		"user", quayAdminUser,
+		"mail", quayAdminMail,
+		"!password", quayAdminPass,
+		"!token", quayAdminToken,
 	)
 	t.console.Info(
-		"Initialized registry user for cluster '%s'",
-		t.cluster.Name,
+		"Initialized registry administrator '%s' for cluster '%s'",
+		quayAdminUser, t.cluster.Name,
 	)
 
 	// Create the organizations that are required for mirroring to succeed:
-	err = client.OrganizationCreate(ctx, &quay.OrganizationCreateRequest{
-		Name:  "ztpfw",
-		Email: "ztpfw@redhat.com",
+	err = quayClient.OrganizationCreate(ctx, &quay.OrganizationCreateRequest{
+		Name:  quayOrgName,
+		Email: quayOrgMail,
 	})
 	if err != nil {
 		return
 	}
+	t.logger.V(1).Info(
+		"Created registry organization",
+		"name", quayOrgName,
+		"mail", quayOrgMail,
+	)
 	t.console.Info(
-		"Created registry organizations for cluster '%s'",
-		t.cluster.Name,
+		"Created registry organizations '%s' for cluster '%s'",
+		quayOrgName, t.cluster.Name,
 	)
 
-	// Return the token:
-	result = []byte(token)
+	// Return the user name and the token:
+	user = quayAdminUser
+	pass = quayAdminPass
 	return
 }
 
@@ -682,3 +702,12 @@ func (t *CreateTask) installCA(ctx context.Context, node *models.Node, ca []byte
 
 	return nil
 }
+
+// Details of the quay administrator user:
+const (
+	quayAdminUser = "dummy"
+	quayAdminMail = "admin@example.com"
+	quayAdminPass = "dummy123"
+	quayOrgName   = "ztpfw"
+	quayOrgMail   = "ztpfw@redht.com"
+)
