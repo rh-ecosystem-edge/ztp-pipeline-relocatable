@@ -122,13 +122,91 @@ func (b *RegistryToolBuilder) Build() (result *RegistryTool, err error) {
 	return
 }
 
-// AddTrustedRegistry sets the given server as an additional trusted registry.
-func (t *RegistryTool) AddTrustedRegistry(ctx context.Context, server string, ca []byte) error {
+// IsTrusted checks if the given server is an additional trusted registry. If the CA is nil it will
+// be fetched from the registry server.
+func (t *RegistryTool) IsTrusted(ctx context.Context, server string, ca []byte) (result bool,
+	err error) {
+	// Fetch the CA for the server if not explicitly passed:
+	if ca == nil {
+		ca, err = t.FetchCA(server)
+		if err != nil {
+			return
+		}
+	}
+
+	// Get the name of the configmap that is currently used for additional trusted registry
+	// certificate authorities:
+	configObject := &unstructured.Unstructured{}
+	configObject.SetGroupVersionKind(ImageConfigGVK)
+	configKey := clnt.ObjectKey{
+		Name: t.configName,
+	}
+	err = t.client.Get(ctx, configKey, configObject)
+	if err != nil {
+		return
+	}
+	var configmapName string
+	err = t.jq.Query(`.spec.additionalTrustedCA.name`, configObject, &configmapName)
+	if err != nil {
+		return
+	}
+	if configmapName == "" {
+		t.logger.V(1).Info(
+			"No additional registry is trusted",
+			"registry", server,
+		)
+		return
+	}
+
+	// Load the configmap:
+	configmapObject := &corev1.ConfigMap{}
+	configmapKey := clnt.ObjectKey{
+		Namespace: "openshift-config",
+		Name:      configmapName,
+	}
+	err = t.client.Get(ctx, configmapKey, configmapObject)
+	if apierrors.IsNotFound(err) {
+		t.logger.V(1).Info(
+			"Trusted registry configmap doesn't exist",
+			"registry", server,
+			"configmap", configmapKey,
+		)
+		err = nil
+		return
+	}
+	if err != nil {
+		return
+	}
+
+	// Check if our server is in the list:
+	serverKey, err := t.configKey(server)
+	if err != nil {
+		return
+	}
+	serverCA, ok := configmapObject.Data[serverKey]
+	if ok && bytes.Equal(ca, []byte(serverCA)) {
+		t.logger.V(1).Info(
+			"Registry is already trusted",
+			"registry", server,
+		)
+		result = true
+		return
+	}
+	t.logger.V(1).Info(
+		"Registry isn't trusted",
+		"registry", server,
+	)
+	return
+}
+
+// AddTrusted sets the given server as an additional trusted registry. If the CA is nil it will be
+// fetched from the registry server.
+func (t *RegistryTool) AddTrusted(ctx context.Context, server string, ca []byte) error {
 	var err error
 
 	// Fetch the CA for the sever if not explicitly passed:
 	if ca == nil {
-		ca, err = t.fetchCA(server)
+		ca, err = t.FetchCA(server)
 		if err != nil {
 			return err
 		}
@@ -179,8 +257,8 @@ func (t *RegistryTool) AddTrustedRegistry(ctx context.Context, server string, ca
 	}
 	serverCA, ok := configmapData[serverKey]
 	if ok && bytes.Equal(ca, []byte(serverCA)) {
-		t.logger.Info(
-			"Trusted registry is already configured",
+		t.logger.V(1).Info(
+			"Registry is already trusted",
 			"registry", server,
 		)
 		return nil
@@ -197,7 +275,7 @@ func (t *RegistryTool) AddTrustedRegistry(ctx context.Context, server string, ca
 		if err != nil {
 			return err
 		}
-		t.logger.Info(
+		t.logger.V(1).Info(
 			"Created trusted registry configmap",
 			"registry", server,
 			"configmap", configmapKey,
@@ -212,7 +290,7 @@ func (t *RegistryTool) AddTrustedRegistry(ctx context.Context, server string, ca
 		if err != nil {
 			return err
 		}
-		t.logger.Info(
+		t.logger.V(1).Info(
 			"Updated trusted registry configmap",
 			"registry", server,
 			"configmap", configmapKey,
@@ -236,9 +314,10 @@ func (t *RegistryTool) AddTrustedRegistry(ctx context.Context, server string, ca
 		if err != nil {
 			return err
 		}
-		t.logger.Info(
-			"Updated image configuration to trust registry",
+		t.logger.V(1).Info(
+			"Updated image configuration",
 			"registry", server,
+			"configmap", configmapKey,
 		)
 	}
 
@@ -268,8 +347,8 @@ func (t *RegistryTool) configKey(address string) (result string, err error) {
 	return
 }
 
-// fetchCA fetches the CA certificate from the given address.
-func (t *RegistryTool) fetchCA(address string) (result []byte, err error) {
+// FetchCA fetches the CA certificate from the given address.
+func (t *RegistryTool) FetchCA(address string) (result []byte, err error) {
 	// Set the default port:
 	_, _, err = net.SplitHostPort(address)
 	if t.isMissingPort(err) {

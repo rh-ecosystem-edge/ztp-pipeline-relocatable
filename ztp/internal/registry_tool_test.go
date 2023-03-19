@@ -95,7 +95,7 @@ var _ = Describe("Registry tool", func() {
 		})
 	})
 
-	Describe("Add trusted registry", func() {
+	Describe("Trusted registries", func() {
 		var (
 			randomName   string
 			jqTool       *jq.Tool
@@ -168,11 +168,7 @@ var _ = Describe("Registry tool", func() {
 
 		It("Adds first trusted registry", func() {
 			// Add the registry:
-			err := registryTool.AddTrustedRegistry(
-				ctx,
-				"my.registry.com",
-				[]byte("my-ca"),
-			)
+			err := registryTool.AddTrusted(ctx, "my.registry.com", []byte("my-ca"))
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the image config has been updated:
@@ -251,7 +247,7 @@ var _ = Describe("Registry tool", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			// Add the registry:
-			err = registryTool.AddTrustedRegistry(ctx, "my.registry.com", []byte("my-ca"))
+			err = registryTool.AddTrusted(ctx, "my.registry.com", []byte("my-ca"))
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the image configuration hasn't changed:
@@ -321,7 +317,7 @@ var _ = Describe("Registry tool", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			// Add the registry, but with a different CA certificate:
-			err = registryTool.AddTrustedRegistry(ctx, "my.registry.com", []byte("my-new-ca"))
+			err = registryTool.AddTrusted(ctx, "my.registry.com", []byte("my-new-ca"))
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the CA has been replaced:
@@ -335,7 +331,7 @@ var _ = Describe("Registry tool", func() {
 
 		It("Generates configmap key with two dots when port explicitly set", func() {
 			// Add the registry:
-			err := registryTool.AddTrustedRegistry(ctx, "my.registry.com:5000", []byte("my-ca"))
+			err := registryTool.AddTrusted(ctx, "my.registry.com:5000", []byte("my-ca"))
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the CA has been added with the right key:
@@ -354,12 +350,10 @@ var _ = Describe("Registry tool", func() {
 		It("Fetches CA from server if not explicitly passed", func() {
 			// Create the server:
 			server := NewTLSServer()
-			defer func() {
-				server.Close()
-			}()
+			defer server.Close()
 
 			// Add the registry:
-			err := registryTool.AddTrustedRegistry(ctx, server.Addr(), nil)
+			err := registryTool.AddTrusted(ctx, server.Addr(), nil)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Check that the CA has been added:
@@ -385,6 +379,111 @@ var _ = Describe("Registry tool", func() {
 				server.Addr(),
 				&tls.Config{
 					RootCAs: caPool,
+				},
+			)
+			Expect(err).ToNot(HaveOccurred())
+			defer func() {
+				err := conn.Close()
+				Expect(err).ToNot(HaveOccurred())
+			}()
+		})
+
+		It("Check returns false if no registry is trusted", func() {
+			trusted, err := registryTool.IsTrusted(
+				ctx, "my.registry.com", []byte("my-ca"),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(trusted).To(BeFalse())
+		})
+
+		It("Check returns true if only this registry is trusted", func() {
+			// Add the registry:
+			err := registryTool.AddTrusted(ctx, "my.registry.com", []byte("my-ca"))
+			Expect(err).ToNot(HaveOccurred())
+
+			// Check that it returns true:
+			trusted, err := registryTool.IsTrusted(
+				ctx, "my.registry.com", []byte("my-ca"),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(trusted).To(BeTrue())
+		})
+
+		It("Check returns false if other registries are trusted, but not this", func() {
+			// Add the other registries:
+			err := registryTool.AddTrusted(ctx, "your.registry.com", []byte("your-ca"))
+			Expect(err).ToNot(HaveOccurred())
+
+			// Check that it returns false:
+			trusted, err := registryTool.IsTrusted(
+				ctx, "my.registry.com", []byte("my-ca"),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(trusted).To(BeFalse())
+		})
+
+		It("Check returns true if this and other registries are trusted", func() {
+			// Add this and other registries:
+			err := registryTool.AddTrusted(ctx, "your.registry.com", []byte("your-ca"))
+			Expect(err).ToNot(HaveOccurred())
+			err = registryTool.AddTrusted(ctx, "your.registry.com", []byte("your-ca"))
+			Expect(err).ToNot(HaveOccurred())
+
+			// Check that it returns true:
+			trusted, err := registryTool.IsTrusted(
+				ctx, "my.registry.com", []byte("my-ca"),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(trusted).To(BeFalse())
+		})
+
+		It("Check returns false if this registry is trusted but with other CA", func() {
+			// Add this registry with an old CA:
+			err := registryTool.AddTrusted(ctx, "your.registry.com", []byte("my-old-ca"))
+			Expect(err).ToNot(HaveOccurred())
+
+			// Check that it returns false with the new CA:
+			trusted, err := registryTool.IsTrusted(
+				ctx, "my.registry.com", []byte("my-new-ca"),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(trusted).To(BeFalse())
+		})
+	})
+
+	Describe("Fetch CA", func() {
+		var tool *RegistryTool
+
+		BeforeEach(func() {
+			var err error
+
+			// Create the tool:
+			tool, err = NewRegistryTool().
+				SetLogger(logger).
+				SetClient(client).
+				Build()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Succeeds with fake server", func() {
+			// Prepare the registry server:
+			server := NewTLSServer()
+			defer server.Close()
+
+			// Fetch the CA:
+			ca, err := tool.FetchCA(server.Addr())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(ca).ToNot(BeNil())
+
+			// Check that the CA can be used to connect to the server:
+			pool := x509.NewCertPool()
+			ok := pool.AppendCertsFromPEM(ca)
+			Expect(ok).To(BeTrue())
+			conn, err := tls.Dial(
+				"tcp",
+				server.Addr(),
+				&tls.Config{
+					RootCAs: pool,
 				},
 			)
 			Expect(err).ToNot(HaveOccurred())

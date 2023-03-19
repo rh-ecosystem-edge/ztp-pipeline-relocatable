@@ -252,9 +252,24 @@ func (t *CreateTask) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = registryTool.AddTrustedRegistry(ctx, t.cluster.Registry.URL, t.cluster.Registry.CA)
+	trusted, err := registryTool.IsTrusted(ctx, t.cluster.Registry.URL, t.cluster.Registry.CA)
 	if err != nil {
 		return err
+	}
+	if trusted {
+		t.console.Warn(
+			"Registry '%s' is already trusted in cluster '%s'",
+			t.cluster.Registry.URL, t.cluster.Name,
+		)
+	} else {
+		err = registryTool.AddTrusted(ctx, t.cluster.Registry.URL, t.cluster.Registry.CA)
+		if err != nil {
+			return err
+		}
+		t.console.Info(
+			"Added trusted registry '%s' to cluster '%s'",
+			t.cluster.Registry.URL, t.cluster.Name,
+		)
 	}
 
 	// Create the image content source policies:
