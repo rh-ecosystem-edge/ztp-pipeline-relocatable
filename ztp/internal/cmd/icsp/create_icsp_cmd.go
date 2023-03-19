@@ -26,9 +26,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v3"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -247,7 +245,14 @@ func (t *CreateTask) Run(ctx context.Context) error {
 	}
 
 	// Configure the cluster so that it trusts the registry:
-	err = t.trustRegistry(ctx, t.cluster.Registry.URL, t.cluster.Registry.CA)
+	registryTool, err := internal.NewRegistryTool().
+		SetLogger(t.logger).
+		SetClient(t.client).
+		Build()
+	if err != nil {
+		return err
+	}
+	err = registryTool.AddTrustedRegistry(ctx, t.cluster.Registry.URL, t.cluster.Registry.CA)
 	if err != nil {
 		return err
 	}
@@ -259,66 +264,6 @@ func (t *CreateTask) Run(ctx context.Context) error {
 			return err
 		}
 	}
-
-	return nil
-}
-
-func (t *CreateTask) trustRegistry(ctx context.Context, registryURI string, registryCA []byte) error {
-	// Create the configmap containing the additional trusted CA certificates:
-	trustedCAConfig := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "openshift-config",
-			Name:      "ztpfwregistry",
-		},
-		Data: map[string]string{
-			registryURI: string(registryCA),
-		},
-	}
-	err := t.client.Create(ctx, trustedCAConfig)
-	switch {
-	case err == nil:
-		t.console.Info(
-			"Created additional trusted CA '%s' for registry '%s' in cluster '%s'",
-			trustedCAConfig, registryURI, t.cluster.Name,
-		)
-	case apierrors.IsAlreadyExists(err):
-		t.console.Warn(
-			"Additional trusted CA '%s' for registry '%s' already exists in "+
-				"cluster '%s'",
-			trustedCAConfig, registryURI, t.cluster.Name,
-		)
-	default:
-		return err
-	}
-
-	// Update the cluster configuration to trust the CA certificates:
-	imageConfig := &unstructured.Unstructured{}
-	imageConfig.SetGroupVersionKind(internal.ImageConfigGVK)
-	imageKey := clnt.ObjectKey{
-		Namespace: "openshift-config",
-		Name:      "cluster",
-	}
-	err = t.client.Get(ctx, imageKey, imageConfig)
-	if err != nil {
-		return err
-	}
-	imageUpdate := imageConfig.DeepCopy()
-	err = unstructured.SetNestedField(
-		imageUpdate.Object,
-		trustedCAConfig.Name,
-		"spec", "additionalTrustedCA", "name",
-	)
-	if err != nil {
-		return err
-	}
-	err = t.client.Patch(ctx, imageUpdate, clnt.MergeFrom(imageConfig))
-	if err != nil {
-		return err
-	}
-	t.console.Info(
-		"Updated image pull configuration of cluster '%s' to trust registry '%s'",
-		t.cluster.Name, registryURI,
-	)
 
 	return nil
 }
