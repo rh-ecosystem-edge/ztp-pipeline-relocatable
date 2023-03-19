@@ -12,22 +12,22 @@ implied. See the License for the specific language governing permissions and lim
 License.
 */
 
-package lso
+package lvmo
 
 import (
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"strconv"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/exp/slices"
 	corev1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -41,13 +41,13 @@ import (
 	"github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp/internal/templating"
 )
 
-// Create creates and returns the `create lso` command.
+// Create creates and returns the `create lvmo` command.
 func Create() *cobra.Command {
 	c := NewCreateCommand()
 	result := &cobra.Command{
-		Use:     "lso",
-		Aliases: []string{"lsos"},
-		Short:   "Deploys local storage operator",
+		Use:     "lvmo",
+		Aliases: []string{"lvmos"},
+		Short:   "Deploys logical volume manager operator",
 		Args:    cobra.NoArgs,
 		RunE:    c.run,
 	}
@@ -57,7 +57,7 @@ func Create() *cobra.Command {
 	return result
 }
 
-// CreateCommand contains the data and logic needed to run the `create lso` command.
+// CreateCommand contains the data and logic needed to run the `create lvmo` command.
 type CreateCommand struct {
 	logger  logr.Logger
 	flags   *pflag.FlagSet
@@ -76,16 +76,17 @@ type CreateTask struct {
 	flags   *pflag.FlagSet
 	jq      *jq.Tool
 	console *internal.Console
+	version string
 	cluster *models.Cluster
 	client  *internal.Client
 }
 
-// NewCreateCommand creates a new runner that knows how to execute the `create lso` command.
+// NewCreateCommand creates a new runner that knows how to execute the `create lvmo` command.
 func NewCreateCommand() *CreateCommand {
 	return &CreateCommand{}
 }
 
-// run runs the `create lso` command.
+// run runs the `create lvmo` command.
 func (c *CreateCommand) run(cmd *cobra.Command, argv []string) error {
 	var err error
 
@@ -120,6 +121,16 @@ func (c *CreateCommand) run(cmd *cobra.Command, argv []string) error {
 		c.console.Error(
 			"Failed to load configuration: %v",
 			err,
+		)
+		return exit.Error(1)
+	}
+
+	// Check that the ODF version is set:
+	version, ok := c.config.Properties[models.ODFVersionProperty]
+	if !ok {
+		c.console.Error(
+			"ODF version property '%s' isn't set",
+			models.ODFVersionProperty,
 		)
 		return exit.Error(1)
 	}
@@ -167,14 +178,17 @@ func (c *CreateCommand) run(cmd *cobra.Command, argv []string) error {
 			flags:   c.flags,
 			jq:      c.jq,
 			console: c.console,
+			version: version,
 			cluster: cluster,
 		}
 		err = task.run(ctx)
 		if err != nil {
 			c.console.Error(
-				"Failed to create local storage operator for cluster '%s': %v",
+				"Failed to create logical volume manager operator for "+
+					"cluster '%s': %v",
 				cluster.Name, err,
 			)
+			return exit.Error(1)
 		}
 	}
 
@@ -221,23 +235,6 @@ func (t *CreateTask) run(ctx context.Context) error {
 		)
 	}
 
-	// Currently we assume that all the control plane nodes nodes have the same storage disks, so
-	// we need to verify it:
-	disks0 := slices.Clone(nodes[0].StorageDisks)
-	sort.Strings(disks0)
-	for i := 1; i < len(nodes); i++ {
-		disksI := slices.Clone(nodes[i].StorageDisks)
-		sort.Strings(disksI)
-		if !slices.Equal(disks0, disksI) {
-			return fmt.Errorf(
-				"all control plane nodes should have the same storage disks, "+
-					"but node '%s' has %s and node '%s' has %s",
-				nodes[0].Name, logging.All(disks0),
-				nodes[i].Name, logging.All(disksI),
-			)
-		}
-	}
-
 	// Create the client to connect to the cluster:
 	t.client, err = internal.NewClient().
 		SetLogger(t.logger).
@@ -255,7 +252,7 @@ func (t *CreateTask) run(ctx context.Context) error {
 	}
 
 	// Deploy the operator:
-	err = t.deployLSO(ctx)
+	err = t.deployLVMO(ctx)
 	if err != nil {
 		return err
 	}
@@ -383,7 +380,7 @@ func (t *CreateTask) wipeNodeDisks(ctx context.Context, node *models.Node) error
 	return nil
 }
 
-func (t *CreateTask) deployLSO(ctx context.Context) error {
+func (t *CreateTask) deployLVMO(ctx context.Context) error {
 	// Create the applier:
 	listener, err := internal.NewApplierListener().
 		SetLogger(t.logger).
@@ -403,19 +400,9 @@ func (t *CreateTask) deployLSO(ctx context.Context) error {
 		return err
 	}
 
-	// Calculate the variables:
-	hostnames := t.getHostnames()
-	disks := t.getDisks()
-	t.logger.Info(
-		"Calculated LSO details",
-		"hostnames", hostnames,
-		"disks", disks,
-	)
-
 	// Create the objects:
 	objects, err := applier.Render(ctx, map[string]any{
-		"Hostnames": hostnames,
-		"Disks":     disks,
+		"Version": t.version,
 	})
 	if err != nil {
 		return err
@@ -425,53 +412,69 @@ func (t *CreateTask) deployLSO(ctx context.Context) error {
 		return err
 	}
 
-	// Find the volume:
-	var volume *unstructured.Unstructured
+	// Find the LVM cluster:
+	var cluster *unstructured.Unstructured
 	for _, object := range objects {
-		if object.GroupVersionKind() == internal.LocalVolumeGVK {
-			volume = object
+		if object.GroupVersionKind() == internal.LVMClusterGVK {
+			cluster = object
 			break
 		}
 	}
-	if volume == nil {
-		return fmt.Errorf("failed to find created local volume")
+	if cluster == nil {
+		return fmt.Errorf("failed to find created LVM cluster")
 	}
 
 	// Wait till the volume is available:
-	return t.waitVolume(ctx, volume)
-}
-
-func (t *CreateTask) getHostnames() []string {
-	nodes := t.cluster.ControlPlaneNodes()
-	names := make([]string, len(nodes))
-	for i, node := range nodes {
-		names[i] = node.Hostname
+	err = t.waitLVMCluster(ctx, cluster)
+	if err != nil {
+		return err
 	}
-	sort.Strings(names)
-	return names
-}
 
-func (t *CreateTask) getDisks() []string {
-	// Note that currently the configuration assumes that all the nodes have the same storage
-	// disks, and that is validated before this point, so we can just get the storage disks of
-	// the first control plane node.
-	disks := t.cluster.ControlPlaneNodes()[0].StorageDisks
-	sort.Strings(disks)
-	return disks
-}
-
-func (t *CreateTask) waitVolume(ctx context.Context, volume *unstructured.Unstructured) error {
+	// Wait till the storage class is created and then make it the default:
+	var deviceClass string
+	err = t.jq.Query(`.spec.storage.deviceClasses[0].name`, cluster, &deviceClass)
+	if err != nil {
+		return err
+	}
+	storageClass := &storagev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: fmt.Sprintf("lvms-%s", deviceClass),
+		},
+	}
 	t.console.Info(
-		"Waiting for local volume '%s' of cluster '%s' to be available",
-		volume, t.cluster.Name,
+		"Waiting for storage class '%s' of cluster '%s'",
+		storageClass, t.cluster.Name,
+	)
+	err = t.waitStorageClass(ctx, storageClass)
+	if err != nil {
+		return err
+	}
+	err = t.client.AddAnnotation(ctx, storageClass,
+		"storageclass.kubernetes.io/is-default-class", "true",
+	)
+	if err != nil {
+		return err
+	}
+	t.console.Info(
+		"Marked storage class '%s' of cluster '%s' as default",
+		storageClass, t.cluster.Name,
+	)
+
+	return nil
+}
+
+func (t *CreateTask) waitLVMCluster(ctx context.Context, cluster *unstructured.Unstructured) error {
+	t.console.Info(
+		"Waiting for LVM cluster '%s' of cluster '%s' to be ready",
+		cluster, t.cluster.Name,
 	)
 	list := &unstructured.UnstructuredList{}
-	list.SetGroupVersionKind(internal.LocalVolumeGVK)
+	list.SetGroupVersionKind(internal.LVMClusterGVK)
 	watch, err := t.client.Watch(
 		ctx, list,
-		clnt.InNamespace(volume.GetNamespace()),
+		clnt.InNamespace(cluster.GetNamespace()),
 		clnt.MatchingFields{
-			"metadata.name": volume.GetName(),
+			"metadata.name": cluster.GetName(),
 		},
 	)
 	if err != nil {
@@ -483,21 +486,47 @@ func (t *CreateTask) waitVolume(ctx context.Context, volume *unstructured.Unstru
 		if !ok {
 			continue
 		}
-		var available string
+		var ready string
 		err = t.jq.Query(
-			`.status.conditions[]? | select(.type == "Available") | .status`,
-			object.Object, &available,
+			`.status.ready`,
+			object.Object, &ready,
 		)
 		if err != nil {
 			return err
 		}
-		if available == "True" {
+		if ready == "true" {
 			t.console.Info(
-				"Local volume '%s' of cluster '%s' is now available",
-				volume, t.cluster.Name,
+				"LVM cluster '%s' of cluster '%s' is now ready",
+				cluster, t.cluster.Name,
 			)
 			break
 		}
 	}
 	return nil
+}
+
+func (t *CreateTask) waitStorageClass(ctx context.Context, object *storagev1.StorageClass) error {
+	list := &storagev1.StorageClassList{}
+	watch, err := t.client.Watch(
+		ctx,
+		list,
+		clnt.MatchingFields{
+			"metadata.name": object.Name,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	defer watch.Stop()
+	for range watch.ResultChan() {
+		t.console.Info(
+			"Storage class '%s' of cluster '%s' is now available",
+			object, t.cluster.Name,
+		)
+		return nil
+	}
+	return fmt.Errorf(
+		"timed out while waiting for storage class '%s' of cluster '%s'",
+		object.Name, t.cluster.Name,
+	)
 }
