@@ -3,6 +3,7 @@ module github.com/rh-ecosystem-edge/ztp-pipeline-relocatable/ztp
 go 1.19
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/coreos/ignition/v2 v2.14.0
 	github.com/go-logr/logr v1.2.3
@@ -26,7 +27,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coreos/go-json v0.0.0-20211020211907-c63f628265de // indirect
-	github.com/coreos/go-semver v0.3.0 // indirect
+	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/coreos/vcontext v0.0.0-20211021162308-f1dbbca7bef4 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect

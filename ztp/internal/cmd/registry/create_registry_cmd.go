@@ -304,7 +304,7 @@ func (t *CreateTask) deployRegistry(ctx context.Context) error {
 	switch {
 	case err == nil:
 		t.console.Warn(
-			"Registry token secret '%s' for cluster '%s' already exists",
+			"Registry secret '%s' for cluster '%s' already exists",
 			secretKey, t.cluster.Name,
 		)
 		registryUser = string(secretObject.Data["user"])
