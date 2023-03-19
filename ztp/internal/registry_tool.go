@@ -102,20 +102,6 @@ func (b *RegistryToolBuilder) Build() (result *RegistryTool, err error) {
 		return
 	}
 
-	// Warn if custom object names have been specified, as that is intended only for unit tests:
-	if b.configName != "" {
-		b.logger.Info(
-			"Using custom image configuration object name is intended only for unit tests",
-			"name", b.configName,
-		)
-	}
-	if b.configmapName != "" {
-		b.logger.Info(
-			"Using custom CA configmap name is intended only for unit tests",
-			"name", b.configmapName,
-		)
-	}
-
 	// Create the jq tool:
 	jqTool, err := jq.NewTool().
 		SetLogger(b.logger).
