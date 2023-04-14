@@ -198,7 +198,7 @@ spec:
   - name: mirror-olm-images
     taskRef:
       name: edgecluster-deploy-disconnected-registry-edgeclusters-olm
-    timeout: "2h30m0s"
+    timeout: "4h30m0s"
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
