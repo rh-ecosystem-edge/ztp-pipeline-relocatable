@@ -15,12 +15,6 @@ spec:
     - name: mock
       type: string
       default: "false"
-    - name: ztp-log-level
-      type: string
-      default: "0"
-    - name: ztp-log-level
-      type: string
-      default: "0"
   workspaces:
     - name: ztp
   tasks:
@@ -60,8 +54,6 @@ spec:
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-log-level
-        value: $(params.ztp-log-level)
     runAfter:
       - pre-flight
     workspaces:
