@@ -137,14 +137,14 @@ spec:
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-lvmo
     workspaces:
