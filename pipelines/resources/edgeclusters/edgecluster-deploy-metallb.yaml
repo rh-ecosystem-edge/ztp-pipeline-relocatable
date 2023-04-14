@@ -12,6 +12,9 @@ spec:
     - name: ztp-container-image
       type: string
       default: "quay.io/ztpfw/pipeline:latest"
+    - name: kubeconfig
+      type: string
+      default: ""
     - name: pipeline-name
       type: string
       default: $(context.taskRun.name)
@@ -21,9 +24,22 @@ spec:
     - name: mock
       type: string
       default: "false"
-    - name: ztp-extra-args
-      type: string
-      default: ""
+  stepTemplate:
+    env:
+      - name: WORKDIR
+        value: "/workspace/ztp/$(params.pipeline-name)"
+      - name: OUTPUTDIR
+        value: "/workspace/ztp/$(params.pipeline-name)/build/$(context.taskRun.name)"
+      - name: EDGECLUSTERS_CONFIG
+        value: $(params.edgeclusters-config)
+      - name: KUBECONFIG
+        value: "$(workspaces.ztp.path)/kubeconfig"
+      - name: DEPLOY_METALLB_DIR
+        value: "deploy-metallb"
+      - name: SHARED_DIR
+        value: "shared-utils"
+      - name: MOCK
+        value: $(params.mock)
   steps:
     - name: deploy-metallb
       image: "$(params.ztp-container-image)"
@@ -31,13 +47,9 @@ spec:
       script: |
         #!/usr/bin/bash
 
-        if [[ "$(params.mock)" == 'false' ]]; then
-          ztp create metallbs \
-          --config "$(params.edgeclusters-config)" \
-          --log-field "$(params.pipeline-name)" \
-          --log-field "$(context.taskRun.name)" \
-          --wait "30m" \
-          $(params.ztp-extra-args)
+        if [[ "${MOCK}" == 'false' ]]; then
+          cd ${WORKDIR}/${DEPLOY_METALLB_DIR}
+          ./deploy.sh
         else
           echo "Deploy MetalLB: Mock mode on"
         fi

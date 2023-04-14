@@ -15,9 +15,9 @@ spec:
     - name: mock
       type: string
       default: "false"
-    - name: ztp-extra-args
+    - name: ztp-log-level
       type: string
-      default: ""
+      default: "0"
   workspaces:
     - name: ztp
   tasks:
@@ -57,8 +57,8 @@ spec:
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
+      - name: ztp-log-level
+        value: $(params.ztp-log-level)
     runAfter:
       - pre-flight
     workspaces:
@@ -80,8 +80,6 @@ spec:
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-edgeclusters
     workspaces:
@@ -96,19 +94,20 @@ spec:
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-icsp-edgeclusters-pre
     workspaces:
       - name: ztp
         workspace: ztp
+
 
   # Deploy LVMO
   - name: deploy-lvmo
