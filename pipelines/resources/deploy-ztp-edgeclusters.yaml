@@ -15,9 +15,6 @@ spec:
     - name: mock
       type: string
       default: "false"
-    - name: ztp-extra-args
-      type: string
-      default: ""
   workspaces:
     - name: ztp
   tasks:
@@ -57,8 +54,6 @@ spec:
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - pre-flight
     workspaces:
@@ -80,8 +75,6 @@ spec:
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-edgeclusters
     workspaces:
@@ -96,14 +89,14 @@ spec:
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-icsp-edgeclusters-pre
     workspaces:
@@ -117,14 +110,14 @@ spec:
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-metallb
     workspaces:
@@ -137,14 +130,14 @@ spec:
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-metallb
     workspaces:
@@ -158,14 +151,14 @@ spec:
     params:
       - name: edgeclusters-config
         value: $(params.edgeclusters-config)
+      - name: kubeconfig
+        value: $(params.kubeconfig)
       - name: ztp-container-image
         value: $(params.ztp-container-image)
       - name: mock
         value: $(params.mock)
       - name: pipeline-name
         value: $(context.pipelineRun.name)
-      - name: ztp-extra-args
-        value: $(params.ztp-extra-args)
     runAfter:
       - deploy-lso
     workspaces:
