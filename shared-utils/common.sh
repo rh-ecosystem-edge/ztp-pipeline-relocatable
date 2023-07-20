@@ -335,7 +335,7 @@ function wipe_edge_disks() {
                 storage_disks=$(yq e ".edgeclusters[${index}].[].master${master}.storage_disk" $EDGECLUSTERS_FILE | awk '{print $2}' | xargs echo)
                 for disk in ${storage_disks}; do
                     echo ">>> Wipe disk ${disk} at ${master} ${NODE_IP}"
-                    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP} "sudo sgdisk --zap-all $disk;sudo dd if=/dev/zero of=$disk bs=1M count=100 oflag=direct,dsync; sudo blkdiscard $disk"
+                    ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${NODE_IP%%/*} "sudo wipefs --all --force $disk;"
                 done
                 echo ">>>>"
                 echo "Remove all the existing VolumeGroups"
