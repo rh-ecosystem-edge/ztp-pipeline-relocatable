@@ -361,7 +361,7 @@ function grab_node_ext_ips() {
     EDGE_NODE_NAME=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent -n ${edgecluster} ${agent} -o jsonpath={.spec.hostname})
     master=${EDGE_NODE_NAME##*-}
     CHANGE_EDGE_MASTER_MGMT_INT=$(yq eval ".edgeclusters[${edgeclusternumber}].${edgecluster}.master${master}.nic_ext_dhcp" ${EDGECLUSTERS_FILE})
-    EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${edgecluster} --no-headers -ojson | jq -r "(.status.inventory.interfaces[] | select(.name==\"${CHANGE_EDGE_MASTER_MGMT_INT}\")).ipV4Addresses[] | select(. | contains(\"192.168.7\") | not)")
+    EDGE_NODE_IP_RAW=$(oc --kubeconfig=${KUBECONFIG_HUB} get agent ${agent} -n ${edgecluster} --no-headers -ojson | jq -r "(.status.inventory.interfaces[] | select(.name==\"${CHANGE_EDGE_MASTER_MGMT_INT}\")).ipV4Addresses[] | select(. | contains(\"192.168.7.\") | not)")
     EDGE_NODE_IP=${EDGE_NODE_IP_RAW%%/*}
     echo "$EDGE_NODE_IP"
 }
