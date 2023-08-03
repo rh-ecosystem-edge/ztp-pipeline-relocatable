@@ -2,7 +2,7 @@ version: stable
 network_type: OVNKubernetes
 kvm_openstack: true
 cluster: test-ci
-domain: alklabs.local
+domain: factory.local
 numcpus: 16
 disk_size: 100
 network: bare-net

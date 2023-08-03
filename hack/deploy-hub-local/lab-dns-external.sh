@@ -15,7 +15,7 @@ dns=none" > /etc/NetworkManager/conf.d/00-no-dnsmasq.conf
 #!/bin/bash
 
 echo "
-search alklabs.local test-ci.alklabs.local edgecluster0-cluster.alklabs.local
+search factory.local test-ci.factory.local edgecluster0-cluster.factory.local
 nameserver 127.0.0.1
 options edns0 trust-ad
 " > /run/NetworkManager/resolv.conf
