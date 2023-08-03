@@ -1,0 +1,12 @@
+# Author: Pablo Iranzo Gómez (Pablo.Iranzo@redhat.com)
+
+# Copyright (C) 2020 Pablo Iranzo Gómez <Pablo.Iranzo@gmail.com>
+# description: Checks ZTPFW Validations results
+# long_name: ZTPFW Validations
+#
+# Defines which plugins to include, exclude, etc
+# Syntax
+# +keyword : includes keyword in plugin search
+# -keyword : excludes keyword in plugin search
+
++validations
