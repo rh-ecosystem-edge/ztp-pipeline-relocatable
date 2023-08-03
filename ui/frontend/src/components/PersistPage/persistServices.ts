@@ -31,7 +31,7 @@ const createAddressPool = async (
     const object = cloneDeep(ADDRESS_POOL_TEMPLATE);
     object.metadata.generateName = `ztpfw-${type}-`;
     // object.metadata.namespace = namespace;
-    object.spec.addresses = [`${serviceIp}-${serviceIp}`];
+    object.spec.addresses = [`${serviceIp}/32`];
 
     const response = await createResource(object).promise;
     console.log('Resource created: ', response);
@@ -65,20 +65,20 @@ const patchAddressPool = async (
     {
       op: 'replace',
       path: '/spec/addresses',
-      value: [`${serviceIp}-${serviceIp}`],
+      value: [`${serviceIp}/32`],
     },
   ];
 
   try {
     await patchResource(addrPoolObj, addrPoolPatches).promise;
     console.log(
-      `Patched ${addressPoolName} AddressPool name in the ${ADDRESS_POOL_NAMESPACE} namespace`,
+      `Patched ${addressPoolName} IPAddressPool name in the ${ADDRESS_POOL_NAMESPACE} namespace`,
     );
   } catch (e) {
     console.error('Can not patch resource: ', e, addrPoolObj, addrPoolPatches);
     setError({
       title: RESOURCE_PATCH_TITLE,
-      message: `Can not update ${addressPoolName} AddressPool in the ${ADDRESS_POOL_NAMESPACE} namespace.`,
+      message: `Can not update ${addressPoolName} IPAddressPool in the ${ADDRESS_POOL_NAMESPACE} namespace.`,
     });
     return false;
   }
