@@ -1,0 +1,8 @@
+.main-navigation {
+  margin-left: var(--pf-global--spacer--lg);
+  /* margin-right: var(--pf-global--spacer--lg); */
+}
+
+.main-navigation .pf-c-nav__section-title {
+  border-bottom: none !important;
+}

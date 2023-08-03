@@ -1,0 +1,28 @@
+.page-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  min-width: 768px;
+  max-width: 1024px; /* TODO */
+}
+
+.page-content {
+  background-color: white;
+  border-radius: 2px;
+  height: 540px;
+}
+
+.page-header {
+  margin-top: var(--pf-global--spacer--xl);
+  margin-bottom: var(--pf-global--spacer--sm);
+  margin-left: var(--pf-global--spacer--lg);
+  margin-right: var(--pf-global--spacer--lg);
+}
+
+.page-header-middle {
+  margin: auto;
+  width: 10rem;
+  padding: 10px;
+}

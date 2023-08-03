@@ -1,0 +1,9 @@
+.content-section {
+  width: 50vw;
+  background-color: var(--pf-global--BackgroundColor--200);
+  border-radius: 16px;
+}
+
+.content-section:not(:first-of-type) {
+  margin-top: var(--pf-global--spacer--lg);
+}

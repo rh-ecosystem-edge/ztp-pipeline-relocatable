@@ -1,6 +1,12 @@
 import { FormGroupProps, TextInputProps } from '@patternfly/react-core';
-import { TlsCertificate } from '../copy-backend-common';
-import { ChangeDomainInputType } from '../backend-shared';
+import { CustomCertsType, TlsCertificate } from '../copy-backend-common';
+
+export type UIError = {
+  title: string;
+  message?: string;
+};
+
+export type setUIErrorType = (error?: UIError) => void;
 
 export type IpTripletIndex = 0 | 1 | 2 | 3;
 
@@ -13,12 +19,24 @@ export type IpTripletProps = {
   setFocus: (newPosition: IpTripletIndex | null) => void;
   validated: TextInputProps['validated'];
   isNarrow?: boolean;
+  isDisabled?: boolean;
 };
 
 export type IpTripletSelectorValidationType = {
   valid: boolean;
   message?: string;
   triplets: IpTripletProps['validated'][];
+};
+
+export type CertificateProps = {
+  name: string;
+  domain: string;
+
+  customCerts: CustomCertsType;
+  setCustomCertificate: (domain: string, certificate: TlsCertificate) => void;
+  customCertsValidation: CustomCertsValidationType;
+
+  isSpaceItemsNone?: boolean;
 };
 
 export type CustomCertsValidationType = {
@@ -30,40 +48,4 @@ export type CustomCertsValidationType = {
     keyValidated: FormGroupProps['validated'];
     keyLabelInvalid?: string;
   };
-};
-
-export type K8SStateContextDataFields = {
-  username: string;
-  password: string;
-  apiaddr: string; // 12 characters
-  ingressIp: string; // 12 characters
-  domain: string;
-  originalDomain?: string;
-  customCerts: ChangeDomainInputType['customCerts'];
-};
-
-export type K8SStateContextData = K8SStateContextDataFields & {
-  isDirty: () => boolean;
-  setClean: () => void;
-  isAllValid: () => boolean;
-
-  usernameValidation?: string; // just a message or empty
-  handleSetUsername: (newVal: string) => void;
-
-  passwordValidation: boolean;
-  handleSetPassword: (newVal: string) => void;
-
-  apiaddrValidation: IpTripletSelectorValidationType;
-  handleSetApiaddr: (newApiaddr: string) => void;
-
-  ingressIpValidation: IpTripletSelectorValidationType;
-  handleSetIngressIp: (newIp: string) => void;
-
-  handleSetDomain: (newDomain: string) => void;
-  forceDomainValidation: (message: string) => void;
-  domainValidation?: string;
-
-  setCustomCertificate: (domain: string, certificate: TlsCertificate) => void;
-  customCertsValidation: CustomCertsValidationType;
-  clearCustomCertificates: () => void;
 };

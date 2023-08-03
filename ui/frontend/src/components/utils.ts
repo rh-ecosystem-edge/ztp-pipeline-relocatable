@@ -1,14 +1,36 @@
 import { FormGroupProps } from '@patternfly/react-core';
 import { Buffer } from 'buffer';
 
-import { DNS_NAME_REGEX, USERNAME_REGEX } from '../backend-shared';
-import { TlsCertificate } from '../copy-backend-common';
-import { isPasswordPolicyMet } from './PasswordPage/utils';
-import { IpTripletSelectorValidationType, K8SStateContextData } from './types';
+import { DNS_NAME_REGEX, getCondition, TlsCertificate } from '../copy-backend-common';
+import { getRequest } from '../resources';
+import { getClusterOperator } from '../resources/clusteroperator';
+
+import { DELAY_BEFORE_QUERY_RETRY, EMPTY_VIP, MAX_LIVENESS_CHECK_COUNT } from './constants';
+import {
+  CustomCertsValidationType,
+  IpTripletSelectorValidationType,
+  setUIErrorType,
+} from './types';
 
 export const toBase64 = (str: string) => Buffer.from(str).toString('base64');
 export const fromBase64ToUtf8 = (b64Str?: string): string | undefined =>
   b64Str === undefined ? undefined : Buffer.from(b64Str, 'base64').toString('utf8');
+
+export const ipWithoutDots = (ip?: string): string => {
+  if (ip) {
+    const triplets = ip.split('.');
+    if (triplets.length === 4) {
+      let result = triplets[0].padStart(3, ' ');
+      result += triplets[1].padStart(3, ' ');
+      result += triplets[2].padStart(3, ' ');
+      result += triplets[3].padStart(3, ' ');
+      return result;
+    }
+  }
+
+  console.info('Unrecognized ip address format "', ip, '"');
+  return EMPTY_VIP; // 12 characters
+};
 
 export const addIpDots = (addressWithoutDots: string): string => {
   if (addressWithoutDots?.length === 12) {
@@ -21,6 +43,18 @@ export const addIpDots = (addressWithoutDots: string): string => {
   }
 
   throw new Error('Invalid address: ' + addressWithoutDots);
+};
+
+export const domainValidator = (domain: string) => {
+  if (!domain) {
+    return 'Provide a valid domain for the cluster.';
+  }
+
+  if (domain?.match(DNS_NAME_REGEX)) {
+    return ''; // passed
+  }
+
+  return "Valid domain wasn't provided.";
 };
 
 export const ipTripletAddressValidator = (
@@ -58,39 +92,107 @@ export const ipTripletAddressValidator = (
   return validation;
 };
 
-export const domainValidator = (domain: string): K8SStateContextData['domainValidation'] => {
-  if (!domain || domain?.match(DNS_NAME_REGEX)) {
-    return ''; // passed ; optional - pass for empty as well
-  }
-  return "Valid domain wasn't provided.";
+export const delay = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+export const getZtpfwUrl = () => `https://${window.location.hostname}:${window.location.port}`;
+
+export const reloadPage = () => {
+  window.location.reload();
 };
 
-export const usernameValidator = (username = ''): K8SStateContextData['username'] => {
-  if (username.length >= 54) {
-    return 'Valid username can not be longer than 54 characters.';
-  }
+export const waitForLivenessProbe = async (
+  counter = MAX_LIVENESS_CHECK_COUNT,
+  ztpfwUrl?: string,
+) => {
+  // This works thanks to the route backup
+  ztpfwUrl = ztpfwUrl || getZtpfwUrl();
 
-  if (username === 'kubeadmin') {
-    return 'The kubeadmin username is reserved.';
-  }
+  try {
+    // We can not check new domain for availability due to CORS
+    await delay(DELAY_BEFORE_QUERY_RETRY);
+    console.info('Checking livenessProbe');
+    await getRequest(`${ztpfwUrl}/livenessProbe`).promise;
 
-  if (!username || username.match(USERNAME_REGEX)) {
-    return ''; // passed
+    return true;
+  } catch (e) {
+    console.info('ZTPFW UI is not yet ready: ', e);
+    if (counter > 0) {
+      await waitForLivenessProbe(counter - 1, ztpfwUrl);
+    } else {
+      console.error('ZTPFW UI did not turn ready, giving up');
+      return false;
+    }
   }
-
-  return "Valid username wasn't provided.";
 };
 
-export const passwordValidator = (pwd: string): K8SStateContextData['passwordValidation'] => {
-  return isPasswordPolicyMet(pwd);
+export const waitForClusterOperator = async (
+  setError: setUIErrorType,
+  name: string,
+  waitOnReconciliationStart?: boolean, // Block on starting the reconciliation the operator reconciliation start
+): Promise<boolean> => {
+  console.info(
+    'waitForClusterOperator started for: ',
+    name,
+    ' . Block on start: ',
+    waitForClusterOperator,
+  );
+
+  if (waitOnReconciliationStart) {
+    try {
+      for (let counter = 0; counter < MAX_LIVENESS_CHECK_COUNT; counter++) {
+        console.log('Waiting to start, query co: ', name);
+        const operator = await getClusterOperator(name).promise;
+        if (getCondition(operator, 'Progressing')?.status === 'True') {
+          // Started
+          console.log('Operator is progressing now: ', name);
+          break;
+        }
+        await delay(DELAY_BEFORE_QUERY_RETRY);
+      }
+    } catch (e) {
+      console.error('waitForClusterOperator error: ', e);
+    }
+  }
+
+  // Wait on reconciliation end
+  for (let counter = 0; counter < MAX_LIVENESS_CHECK_COUNT; counter++) {
+    try {
+      console.log('Querying co: ', name);
+      const operator = await getClusterOperator(name).promise;
+      if (
+        getCondition(operator, 'Progressing')?.status === 'False' &&
+        getCondition(operator, 'Degraded')?.status === 'False' &&
+        getCondition(operator, 'Available')?.status === 'True'
+      ) {
+        // all good
+        setError(undefined);
+        return true;
+      }
+    } catch (e) {
+      console.error('waitForClusterOperator error: ', e);
+      // do not report, keep trying
+    }
+
+    await delay(DELAY_BEFORE_QUERY_RETRY);
+  }
+
+  setError({
+    title: 'Reading operator status failed',
+    message: `Failed to query status of ${name} cluster operator on time.`,
+  });
+
+  return false;
 };
 
 export const customCertsValidator = (
-  oldValidation: K8SStateContextData['customCertsValidation'],
+  oldValidation: CustomCertsValidationType,
   domain: string,
   certificate: TlsCertificate,
-): K8SStateContextData['customCertsValidation'] => {
-  const validation: K8SStateContextData['customCertsValidation'] = { ...oldValidation };
+): CustomCertsValidationType => {
+  const validation: CustomCertsValidationType = { ...oldValidation };
 
   let certValidated: FormGroupProps['validated'] = 'default';
   let certLabelHelperText = '';
@@ -146,44 +248,3 @@ export const customCertsValidator = (
 
   return validation;
 };
-
-export const ipWithoutDots = (ip?: string): string => {
-  if (ip) {
-    const triplets = ip.split('.');
-    if (triplets.length === 4) {
-      let result = triplets[0].padStart(3, ' ');
-      result += triplets[1].padStart(3, ' ');
-      result += triplets[2].padStart(3, ' ');
-      result += triplets[3].padStart(3, ' ');
-      return result;
-    }
-  }
-
-  console.info('Unrecognized ip address format "', ip, '"');
-  return '            '; // 12 characters
-};
-
-export const delay = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
-export const getZtpfwUrl = () => `https://${window.location.hostname}:${window.location.port}`;
-
-export const bindOnBeforeUnloadPage = (message: string) => {
-  if (window.onbeforeunload) {
-    console.error('There is already window.onbeforeunload registered!! Rewriting it.');
-  }
-
-  window.onbeforeunload = () => message;
-};
-
-export const unbindOnBeforeUnloadPage = () => {
-  window.onbeforeunload = null;
-};
-
-export const getLoginCallbackUrl = () => `${window.location.origin}/login/callback`;
-
-// Relative URIs only are allowed here. The only exception is OCP Web Console
-export const getAuthorizationEndpointUrl = () =>
-  `/oauth/authorize?response_type=code&client_id=ztpfwoauth&redirect_uri=${getLoginCallbackUrl()}&scope=user%3Afull&state=`;

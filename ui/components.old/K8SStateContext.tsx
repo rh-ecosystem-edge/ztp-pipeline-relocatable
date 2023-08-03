@@ -1,13 +1,13 @@
-import React from 'react';
-import { isEqual } from 'lodash';
+import React from "react";
+import { isEqual } from "lodash";
 
 import {
   IpTripletSelectorValidationType,
   K8SStateContextData,
   K8SStateContextDataFields,
   CustomCertsValidationType,
-} from './types';
-import { ChangeDomainInputType, TlsCertificate } from '../copy-backend-common';
+} from "./types";
+import { ChangeDomainInputType, TlsCertificate } from "../copy-backend-common";
 import {
   customCertsValidator,
   domainValidator,
@@ -15,47 +15,49 @@ import {
   ipWithoutDots,
   passwordValidator,
   usernameValidator,
-} from './utils';
+} from "./utils";
 
 const K8SStateContext = React.createContext<K8SStateContextData | null>(null);
 
 export const K8SStateContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [username, setUsername] = React.useState('');
-  const [usernameValidation, setUsernameValidation] = React.useState<string>('');
+  const [username, setUsername] = React.useState("");
+  const [usernameValidation, setUsernameValidation] =
+    React.useState<string>("");
   const handleSetUsername = React.useCallback(
     (newVal: string) => {
       setUsernameValidation(usernameValidator(newVal));
       setUsername(newVal);
     },
-    [setUsername],
+    [setUsername]
   );
 
-  const [password, setPassword] = React.useState('');
+  const [password, setPassword] = React.useState("");
   const [passwordValidation, setPasswordValidation] = React.useState(true);
   const handleSetPassword = React.useCallback(
     (newVal: string) => {
       setPasswordValidation(passwordValidator(newVal));
       setPassword(newVal);
     },
-    [setPassword],
+    [setPassword]
   );
 
-  const [apiaddr, setApiaddr] = React.useState(ipWithoutDots('192.168.7.200')); // 192168  7200
-  const [ingressIp, setIngressIp] = React.useState(ipWithoutDots('192.168.7.201')); // 192168  7201
-  const [apiaddrValidation, setApiaddrValidation] = React.useState<IpTripletSelectorValidationType>(
-    {
+  const [apiaddr, setApiaddr] = React.useState(ipWithoutDots("192.168.7.200")); // 192168  7200
+  const [ingressIp, setIngressIp] = React.useState(
+    ipWithoutDots("192.168.7.201")
+  ); // 192168  7201
+  const [apiaddrValidation, setApiaddrValidation] =
+    React.useState<IpTripletSelectorValidationType>({
       valid: true,
       triplets: [],
-    },
-  );
+    });
   const handleSetApiaddr = React.useCallback(
     (newIp: string) => {
       setApiaddrValidation(ipTripletAddressValidator(newIp, ingressIp));
       setApiaddr(newIp);
     },
-    [setApiaddr, ingressIp],
+    [setApiaddr, ingressIp]
   );
 
   const [ingressIpValidation, setIngressIpValidation] =
@@ -68,14 +70,15 @@ export const K8SStateContextProvider: React.FC<{
       setIngressIpValidation(ipTripletAddressValidator(newIp, apiaddr));
       setIngressIp(newIp);
     },
-    [setIngressIp, apiaddr],
+    [setIngressIp, apiaddr]
   );
 
-  const [domain, setDomain] = React.useState<string>('');
+  const [domain, setDomain] = React.useState<string>("");
   const [originalDomain, setOriginalDomain] = React.useState<string>();
   const [domainValidation, setDomainValidation] =
-    React.useState<K8SStateContextData['domainValidation']>();
-  const forceDomainValidation = setDomainValidation; /* We probably don't need anything more here */
+    React.useState<K8SStateContextData["domainValidation"]>();
+  const forceDomainValidation =
+    setDomainValidation; /* We probably don't need anything more here */
   const handleSetDomain = React.useCallback(
     (newDomain: string) => {
       setDomainValidation(domainValidator(newDomain));
@@ -85,10 +88,12 @@ export const K8SStateContextProvider: React.FC<{
         setOriginalDomain(newDomain);
       }
     },
-    [originalDomain],
+    [originalDomain]
   );
 
-  const [customCerts, setCustomCerts] = React.useState<ChangeDomainInputType['customCerts']>({});
+  const [customCerts, setCustomCerts] = React.useState<
+    ChangeDomainInputType["customCerts"]
+  >({});
   const [customCertsValidation, setCustomCertsValidation] =
     React.useState<CustomCertsValidationType>({});
 
@@ -97,9 +102,11 @@ export const K8SStateContextProvider: React.FC<{
       const newCustomCerts = { ...customCerts };
       newCustomCerts[domain] = certificate;
       setCustomCerts(newCustomCerts);
-      setCustomCertsValidation(customCertsValidator(customCertsValidation, domain, certificate));
+      setCustomCertsValidation(
+        customCertsValidator(customCertsValidation, domain, certificate)
+      );
     },
-    [customCertsValidation, customCerts, setCustomCerts],
+    [customCertsValidation, customCerts, setCustomCerts]
   );
 
   const clearCustomCertificates = React.useCallback(() => {
@@ -116,8 +123,8 @@ export const K8SStateContextProvider: React.FC<{
       !domainValidation &&
       !Object.keys(customCertsValidation).find(
         (d) =>
-          customCertsValidation[d].certValidated === 'error' ||
-          customCertsValidation[d].keyValidated === 'error',
+          customCertsValidation[d].certValidated === "error" ||
+          customCertsValidation[d].keyValidated === "error"
       );
     return result;
   }, [
@@ -142,7 +149,8 @@ export const K8SStateContextProvider: React.FC<{
   const fieldValues = React.useRef<K8SStateContextDataFields>(_fv);
   fieldValues.current = _fv;
 
-  const [snapshot, setSnapshot] = React.useState<K8SStateContextDataFields>(_fv);
+  const [snapshot, setSnapshot] =
+    React.useState<K8SStateContextDataFields>(_fv);
   const setClean = React.useCallback(() => {
     setSnapshot(fieldValues.current);
   }, [fieldValues]);
@@ -178,13 +186,19 @@ export const K8SStateContextProvider: React.FC<{
     clearCustomCertificates,
   };
 
-  return <K8SStateContext.Provider value={value}>{children}</K8SStateContext.Provider>;
+  return (
+    <K8SStateContext.Provider value={value}>
+      {children}
+    </K8SStateContext.Provider>
+  );
 };
 
 export const useK8SStateContext = () => {
   const context = React.useContext(K8SStateContext);
   if (!context) {
-    throw new Error('useK8SStateContext must be used within K8SStateContextProvider.');
+    throw new Error(
+      "useK8SStateContext must be used within K8SStateContextProvider."
+    );
   }
   return context;
 };

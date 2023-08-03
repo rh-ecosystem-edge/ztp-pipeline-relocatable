@@ -26,12 +26,12 @@
   "devDependencies": {
     "@types/file-saver": "^2.0.5",
     "@types/lodash": "^4.14.178",
-    "dpdm": "^3.8.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^4.0.0",
+    "dpdm": "^3.10.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "jest-fetch-mock": "^3.0.3",
     "jest-location-mock": "^1.0.9",
-    "prettier": "^2.5.1",
+    "prettier": "^2.7.1",
     "string.prototype.replaceall": "^1.0.6"
   },
   "scripts": {
@@ -46,7 +46,7 @@
     "test:circular": "dpdm --warning false --tree false --exit-code circular:1 src/index.tsx",
     "eject": "react-scripts eject",
     "clean": "rm -rf node_modules build src/copy-backend-common",
-    "lint": "CI=true eslint -c .eslintrc --ext .js,.jsx,.ts,.tsx --debug ./src",
+    "lint": "CI=true eslint -c .eslintrc --ext .js,.jsx,.ts,.tsx ./src",
     "lint:fix": "yarn lint --fix",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,md,scss,yaml,yml}'"
   },

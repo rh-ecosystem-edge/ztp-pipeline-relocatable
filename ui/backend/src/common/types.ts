@@ -6,11 +6,13 @@ export type TlsCertificate = {
   'tls.key.filename'?: string;
 };
 
+export type CustomCertsType = {
+  [key: /* ~ domain */ string]: TlsCertificate;
+};
+
 export type ChangeDomainInputType = {
   clusterDomain?: string;
-  customCerts?: {
-    [key: /* ~ domain */ string]: TlsCertificate;
-  };
+  customCerts?: CustomCertsType;
 };
 
 export type ValidateDomainAPIResult = { result: boolean };

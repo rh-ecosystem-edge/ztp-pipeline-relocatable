@@ -14,6 +14,7 @@ export const IpTriplet: React.FC<IpTripletProps> = ({
   setFocus,
   validated,
   isNarrow,
+  isDisabled,
 }) => {
   const input = React.createRef<HTMLInputElement>();
 
@@ -74,6 +75,7 @@ export const IpTriplet: React.FC<IpTripletProps> = ({
       type="text"
       onChange={onChange}
       aria-label={`IP triplet, position ${position + 1}`}
+      isDisabled={isDisabled}
     />
   );
 };

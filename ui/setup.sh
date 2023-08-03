@@ -35,8 +35,9 @@ echo export TOKEN=$(oc whoami -t) >>./backend/envs
 #rm /tmp/tmp_SA_TOKEN
 #echo TOKEN=$SA_TOKEN >> ./backend/envs
 
-echo export TLS_KEY_FILE=$(pwd)/scripts/certs/tls.key >>./backend/envs
-echo export TLS_CERT_FILE=$(pwd)/scripts/certs/tls.crt >>./backend/envs
+./scripts/createTlsSecret.sh
+echo export TLS_KEY_FILE=$(pwd)/certs/tls.key >>./backend/envs
+echo export TLS_CERT_FILE=$(pwd)/certs/tls.crt >>./backend/envs
 echo export CORS=${FRONTEND_URL} >>./backend/envs
 
 REDIRECT_URIS=$(oc get OAuthClient $OAUTH2_CLIENT_ID -o json | jq -c "[.redirectURIs[], \"$OAUTH2_REDIRECT_URL\"] | unique")
