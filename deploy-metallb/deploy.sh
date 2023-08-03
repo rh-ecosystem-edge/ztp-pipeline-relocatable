@@ -177,7 +177,7 @@ function copy_files() {
     dst_folder=${3}
 
     if [[ -z ${src_files} ]]; then
-        echo "Source files variable empty: ${src_files[@]}"
+        echo "Source files variable empty:" "${src_files[@]}"
         exit 1
     fi
 
@@ -191,8 +191,8 @@ function copy_files() {
         exit 1
     fi
 
-    echo "Copying source files: ${src_files[@]} to Node ${dst_node}"
-    ${SCP_COMMAND} -i ${RSA_KEY_FILE} ${src_files[@]} core@${dst_node}:${dst_folder}
+    echo "Copying source files:" "${src_files[@]}" "to Node ${dst_node}"
+    ${SCP_COMMAND} -i ${RSA_KEY_FILE} "${src_files[@]}" core@${dst_node}:${dst_folder}
 }
 
 function check_external_access() {
@@ -257,7 +257,7 @@ if ! ./verify.sh; then
         # Remote working
         echo ">> Copying files to the Edge-cluster ${edgecluster}"
         ${SSH_COMMAND} -i ${RSA_KEY_FILE} core@${EDGE_NODE_IP} "mkdir -p ~/manifests ~/.kube"
-        for _file in ${files[@]}; do
+        for _file in "${files[@]}"; do
             copy_files "${_file}" "${EDGE_NODE_IP}" "./manifests/"
         done
         copy_files "./manifests/*.yaml" "${EDGE_NODE_IP}" "./manifests/"
